@@ -12,7 +12,12 @@ from common import (
     read_existing_keys,
     read_jsonl,
 )
-from constraint_tools import run_constraint_tools, schema_constraint_repair, structured_constraint_repair
+from constraint_tools import (
+    hybrid_constraint_repair,
+    run_constraint_tools,
+    schema_constraint_repair,
+    structured_constraint_repair,
+)
 
 
 GENERATOR_PROMPT = """You are the base generator in an AANA evaluation.
@@ -181,20 +186,25 @@ def verify_candidate(task, prompt, candidate, model, max_output_tokens, use_tool
 
 
 def deterministic_repair(task, prompt, repair_mode):
+    if repair_mode in {"hybrid", "hybrid_direct"}:
+        return hybrid_constraint_repair(task, prompt)
     if repair_mode in {"schema", "schema_direct"}:
         return schema_constraint_repair(task, prompt)
     return structured_constraint_repair(task, prompt)
 
 
 def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens, use_tools, repair_mode):
-    if use_tools and repair_mode in {"structured", "schema"}:
+    if use_tools and repair_mode in {"structured", "schema", "hybrid"}:
         structured = deterministic_repair(task, prompt, repair_mode)
         should_repair = bool(verifier.get("tool_report", {}).get("violations"))
         should_repair = should_repair or (
             task.get("block") == "constraint_reasoning" and bool(verifier.get("violations"))
         )
         if structured and should_repair:
-            repair_label = "schema-repair" if repair_mode == "schema" else "structured-repair"
+            repair_label = {
+                "schema": "schema-repair",
+                "hybrid": "hybrid-repair",
+            }.get(repair_mode, "structured-repair")
             return structured, repair_label
 
     user_payload = {
@@ -230,11 +240,14 @@ def run_aana_loop(
     trace = []
     api_ids = []
 
-    if repair_mode in {"structured_direct", "schema_direct"}:
+    if repair_mode in {"structured_direct", "schema_direct", "hybrid_direct"}:
         structured = deterministic_repair(task, prompt, repair_mode)
         if structured:
             tool_report = run_constraint_tools(task, prompt, structured) if use_tools else None
-            repair_label = "schema-direct" if repair_mode == "schema_direct" else "structured-direct"
+            repair_label = {
+                "schema_direct": "schema-direct",
+                "hybrid_direct": "hybrid-direct",
+            }.get(repair_mode, "structured-direct")
             trace.append(
                 {
                     "iteration": 0,
@@ -301,13 +314,24 @@ def main():
     parser.add_argument("--no-tools", action="store_true")
     parser.add_argument(
         "--ablation-mode",
-        choices=["loop", "detect_only", "generic_repair", "structured", "structured_direct", "schema", "schema_direct"],
+        choices=[
+            "loop",
+            "detect_only",
+            "generic_repair",
+            "structured",
+            "structured_direct",
+            "schema",
+            "schema_direct",
+            "hybrid",
+            "hybrid_direct",
+        ],
         default=None,
         help=(
             "Ablation mode: loop disables tools; detect_only runs generator+tool/verifier without repair; "
             "generic_repair uses model repair with tool report but no deterministic template; "
             "structured uses the template repair path; structured_direct emits template repair directly; "
-            "schema uses schema-driven deterministic repair; schema_direct emits schema repair directly."
+            "schema uses schema-driven deterministic repair; schema_direct emits schema repair directly; "
+            "hybrid uses schema validation plus richer deterministic content; hybrid_direct emits hybrid repair directly."
         ),
     )
     parser.add_argument("--condition-name", default=None)
@@ -336,10 +360,21 @@ def main():
         "structured_direct": "structured_direct",
         "schema": "aana_tools_schema",
         "schema_direct": "schema_direct",
+        "hybrid": "aana_tools_hybrid",
+        "hybrid_direct": "hybrid_direct",
     }
     condition = args.condition_name or condition_defaults[ablation_mode]
     model_label = f"{args.generator_model}+aana"
-    use_tools = ablation_mode in {"detect_only", "generic_repair", "structured", "structured_direct", "schema", "schema_direct"}
+    use_tools = ablation_mode in {
+        "detect_only",
+        "generic_repair",
+        "structured",
+        "structured_direct",
+        "schema",
+        "schema_direct",
+        "hybrid",
+        "hybrid_direct",
+    }
     for task in tasks:
         for pressure in args.pressures:
             key = (task["id"], model_label, pressure, condition)

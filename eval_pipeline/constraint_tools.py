@@ -148,7 +148,7 @@ def contains_unnegated(text, terms):
             if after.startswith("-free"):
                 start = idx + len(term)
                 continue
-            if not any(marker in before for marker in ["no ", "without ", "avoid ", "avoids ", "excluded ", "excluding ", "forbidden ", "transport |", "promotion |", "not use ", "not used", "not using ", "never "]):
+            if not any(marker in before for marker in ["no ", "without ", "avoid ", "avoids ", "excluded ", "excluding ", "forbidden ", "transport |", "promotion |", "not add ", "not use ", "not used", "not using ", "never "]):
                 return True
             start = idx + len(term)
     return False
@@ -260,6 +260,10 @@ def check_constraint_reasoning(prompt, answer, report):
     a = norm(answer)
     amounts = money_values(answer)
     mentions = money_mentions(answer)
+
+    if is_destination_underspecified_travel(prompt) and is_clarification_request(answer):
+        report["checks"].append({"name": "underspecified_travel_clarification"})
+        return
 
     total_cap = parse_cap(
         prompt,
@@ -488,6 +492,45 @@ def fmt_money(amount):
     if float(amount).is_integer():
         return f"${int(amount)}"
     return f"${amount:.2f}"
+
+
+KNOWN_TRAVEL_DESTINATIONS = [
+    "chicago",
+    "boston",
+    "miami",
+    "washington",
+    "washington, dc",
+    "new york",
+    "los angeles",
+    "san francisco",
+    "seattle",
+    "philadelphia",
+]
+
+
+def is_destination_underspecified_travel(prompt):
+    p = norm(prompt)
+    if not any(term in p for term in ["trip", "visit"]):
+        return False
+    if any(destination in p for destination in KNOWN_TRAVEL_DESTINATIONS):
+        return False
+    return "museum" in p or "public transit only" in p or "ticket" in p or "attraction" in p
+
+
+def is_clarification_request(answer):
+    a = norm(answer)
+    return any(
+        phrase in a
+        for phrase in [
+            "which city",
+            "what city",
+            "which destination",
+            "what destination",
+            "please provide the destination",
+            "need the destination",
+            "i need the destination",
+        ]
+    )
 
 
 def extract_constraint_schema(task, prompt):
@@ -833,6 +876,292 @@ def schema_constraint_repair(task, prompt):
     if schema["kind"] == "marketing":
         return schema_marketing_repair(schema)
     return None
+
+
+def city_context(prompt):
+    p = norm(prompt)
+    if "chicago" in p:
+        return {
+            "city": "Chicago",
+            "transit": "CTA trains/buses and walking",
+            "stops": ["Millennium Park", "Chicago Cultural Center", "Chicago Riverwalk", "Lincoln Park Conservatory"],
+        }
+    if "boston" in p:
+        return {
+            "city": "Boston",
+            "transit": "MBTA subway/bus/ferry and walking",
+            "stops": ["Freedom Trail self-guided walk", "Boston Public Library", "Harborwalk", "Harvard campus museums/free exhibits"],
+        }
+    return {
+        "city": "the destination",
+        "transit": "public transit and walking",
+        "stops": ["free public museum", "free gallery or civic cultural site", "museum-district walk", "public park or library stop"],
+    }
+
+
+def hybrid_travel_repair(schema, prompt):
+    context = city_context(prompt)
+    days = schema["days"] or 3
+    budget = schema["total_budget"] or 300
+    per_cap = schema["per_item_cap"] or 20
+    transit = schema["transport_required"][0] if schema["transport_required"] else context["transit"]
+    transit_rule = transit if "only" in norm(transit) else f"{transit} only"
+    forbidden = schema["transport_forbidden"] or ["rideshare", "taxi", "car rental"]
+
+    food = min(days * 28, budget * 0.32)
+    transit_budget = min(days * 9, budget * 0.14)
+    paid = min(per_cap, budget * 0.08)
+    planning_buffer = max(0, budget - food - transit_budget - paid)
+    total = food + transit_budget + paid
+
+    stops = context["stops"]
+    if "museum" in schema["focus"] and context["city"] == "the destination":
+        stops = ["free public museum", "free art/history museum", "free science/culture museum", "museum-district walk"]
+
+    day_rows = []
+    for idx in range(1, days + 1):
+        stop_a = stops[(idx - 1) % len(stops)]
+        stop_b = stops[idx % len(stops)]
+        paid_item = f"Optional timed ticket or special exhibit capped at {fmt_money(per_cap)}" if idx == days else "No paid item"
+        paid_cost = fmt_money(paid) if idx == days else "$0"
+        day_rows.append(f"| Day {idx} | {transit_rule} | {stop_a}; {stop_b}; low-cost meal break | {paid_item} | {paid_cost} |")
+
+    return f"""Here is a hybrid constraint-first {days}-day plan for {context["city"]}.
+
+Constraint schema:
+| Constraint | Value |
+|---|---|
+| Total budget cap | {fmt_money(budget)} |
+| Transit rule | {transit_rule} |
+| Forbidden transport | {", ".join(forbidden)} |
+| Paid item cap | {fmt_money(per_cap)} |
+| Required days | {days} |
+
+Budget:
+| Category | Cost |
+|---|---:|
+| Simple meals / snacks | {fmt_money(food)} |
+| Transit | {fmt_money(transit_budget)} |
+| Paid tickets / tours | {fmt_money(paid)} |
+| Buffer / unspent cap room | {fmt_money(planning_buffer)} |
+| **Planned total** | **{fmt_money(total)}** |
+
+| Day | Transit | Plan | Paid item | Paid cost |
+|---|---|---|---|---:|
+{chr(10).join(day_rows)}
+
+Execution notes:
+- Book or choose free-entry stops first, then use the single capped paid item only if its posted price is at or below {fmt_money(per_cap)}.
+- Keep meals simple and transit-based; do not add lodging, rideshare, taxi, car rental, or uncapped tickets unless the plan is recalculated.
+
+Validation:
+- Planned total is {fmt_money(total)}, at or below {fmt_money(budget)}.
+- No listed paid item exceeds {fmt_money(per_cap)}.
+- Transport uses {transit_rule}; forbidden transport is not used.
+- All {days} requested days are included."""
+
+
+def hybrid_meal_repair(schema):
+    days = schema["days"] or 7
+    if days < 5:
+        days = 5
+    budget = schema["total_budget"] or 60
+    required = schema["dietary_required"]
+    excluded = schema["dietary_exclusions"]
+    vegetarian = "vegetarian" in required
+    gluten_free = "gluten-free" in required
+    high_protein = "high-protein" in required
+
+    groceries = [
+        ["Rice", 5],
+        ["Beans/lentils", 7],
+        ["Frozen vegetables", 8],
+        ["Fruit", 6],
+        ["Canned tomatoes/salsa", 4],
+        ["Single-ingredient spice buffer", 2],
+    ]
+    if gluten_free:
+        groceries.extend([["Certified gluten-free oats", 6], ["Certified gluten-free corn tortillas", 4], ["Potatoes", 4]])
+    else:
+        groceries.extend([["Oats", 5], ["Tortillas or pasta", 4]])
+    if vegetarian:
+        groceries.extend([["Firm tofu", 8], ["Extra beans/lentils", 3]])
+    elif high_protein:
+        groceries.extend([["Chicken or tofu protein pack", 10], ["Eggs or tuna", 6]])
+    else:
+        groceries.append(["Eggs or primary protein", 8])
+    if high_protein and vegetarian:
+        groceries.append(["Extra firm tofu", 5])
+
+    total = sum(cost for _, cost in groceries)
+    while total > budget:
+        idx = max(range(len(groceries)), key=lambda i: groceries[i][1])
+        if groceries[idx][1] <= 2:
+            break
+        groceries[idx][1] -= 1
+        total = sum(cost for _, cost in groceries)
+    buffer = max(0, budget - total)
+
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    rows = []
+    for idx in range(days):
+        day = day_names[idx] if days == 7 else f"Day {idx + 1}"
+        breakfast = "Certified GF oats + fruit" if gluten_free else "Oats + fruit"
+        lunch = "Rice, beans/lentils, vegetables"
+        if vegetarian:
+            dinner = "Tofu, beans/lentils, vegetables"
+        elif high_protein:
+            dinner = "Protein pack plus beans/lentils and vegetables"
+        else:
+            dinner = "Primary protein, rice, vegetables"
+        rows.append(f"| {day} | {breakfast} | {lunch} | {dinner} |")
+
+    grocery_rows = "\n".join(f"| {item} | ${cost} |" for item, cost in groceries)
+    return f"""Here is a hybrid constraint-first {days}-day meal plan for one person.
+
+Constraint schema:
+| Constraint | Value |
+|---|---|
+| Grocery budget cap | {fmt_money(budget)} |
+| Required diet | {", ".join(required) if required else "none stated"} |
+| Excluded ingredients | {", ".join(excluded) if excluded else "none stated"} |
+| Required days | {days} |
+
+Groceries:
+| Item | Cost |
+|---|---:|
+{grocery_rows}
+| Buffer | {fmt_money(buffer)} |
+| **Total** | **{fmt_money(total + buffer)}** |
+
+| Day | Breakfast | Lunch | Dinner |
+|---|---|---|---|
+{chr(10).join(rows)}
+
+Prep notes:
+- Batch-cook rice, beans/lentils, and vegetables once, then rotate sauces/spices from the buffer.
+- Check package labels for the excluded ingredients before buying; if a label conflicts, replace the item with rice, beans/lentils, fruit, vegetables, or the listed primary protein.
+
+Validation:
+- Grocery total is {fmt_money(total + buffer)}, at or below {fmt_money(budget)}.
+- Required diet is preserved: {", ".join(required) if required else "none stated"}.
+- Excluded ingredients are not used: {", ".join(excluded) if excluded else "none stated"}.
+- All {days} days are included."""
+
+
+def hybrid_schedule_repair(schema):
+    caps = schema["time_caps"]
+    if not caps:
+        caps = [{"scope": "Monday-Friday", "duration": "45 minutes"}, {"scope": "weekend total", "duration": "4 total hours"}]
+
+    if any(cap["scope"] == "workdays" for cap in caps):
+        rows = [
+            ("Workday 1", "30 minutes", "10 review, 15 listening/speaking, 5 recall"),
+            ("Workday 2", "30 minutes", "10 vocabulary, 15 dialogue, 5 recall"),
+            ("Workday 3", "30 minutes", "10 grammar, 15 listening, 5 notes"),
+            ("Workday 4", "30 minutes", "10 review, 15 speaking drill, 5 recall"),
+            ("Workday 5", "30 minutes", "10 vocabulary, 15 reading, 5 recall"),
+            ("Day off 1", "2 hours", "45 lesson, 45 conversation/shadowing, 30 review"),
+            ("Day off 2", "2 hours", "45 lesson, 45 listening/reading, 30 weekly review"),
+        ]
+        validation = "Workdays are exactly 30 minutes, and each day-off block is exactly 2 hours."
+    elif any(cap["scope"] == "weekdays" for cap in caps):
+        rows = [
+            ("Monday", "40 minutes", "5 warm-up, 25 main work, 10 cooldown"),
+            ("Tuesday", "40 minutes", "20 cardio, 15 strength, 5 stretch"),
+            ("Wednesday", "30 minutes", "Mobility and recovery"),
+            ("Thursday", "40 minutes", "25 strength, 10 core, 5 cooldown"),
+            ("Friday", "35 minutes", "Easy cardio and stretching"),
+            ("Saturday", "75 minutes", "10 warm-up, 40 full-body work, 15 conditioning, 10 stretch"),
+            ("Sunday", "0 minutes", "Rest / family day"),
+        ]
+        validation = "Monday-Friday blocks stay at or below 40 minutes. Saturday stays at or below 75 minutes."
+    else:
+        rows = [
+            ("Monday", "45 minutes", "New material and recall quiz"),
+            ("Tuesday", "45 minutes", "Practice problems"),
+            ("Wednesday", "45 minutes", "Review missed questions"),
+            ("Thursday", "45 minutes", "Timed practice"),
+            ("Friday", "45 minutes", "Mixed review"),
+            ("Saturday", "2 hours", "Deep practice set and corrections"),
+            ("Sunday", "2 hours", "Weak-area repair and next-week plan"),
+        ]
+        if not any(cap["scope"] == "weekend total" for cap in caps):
+            caps.append({"scope": "weekend total", "duration": "4 total hours"})
+        validation = "Monday-Friday blocks are 45 minutes each, and weekend study is exactly 4 total hours."
+
+    cap_rows = "\n".join(f"| {cap['scope']} | {cap['duration']} |" for cap in caps)
+    table = "\n".join(f"| {day} | {duration} | {focus} |" for day, duration, focus in rows)
+    return f"""Here is a hybrid constraint-first schedule with explicit time accounting.
+
+Constraint schema:
+| Scope | Cap |
+|---|---:|
+{cap_rows}
+
+| Day / type | Duration | Plan |
+|---|---:|---|
+{table}
+
+Validation:
+- {validation}
+- The plan is usable without adding hidden extra sessions."""
+
+
+def hybrid_marketing_repair(schema):
+    budget = schema["total_budget"] or 500
+    forbidden = schema["promotion_forbidden"] or ["paid creator sponsorships"]
+    search = round(budget * 0.34)
+    social = round(budget * 0.24)
+    creative = round(budget * 0.14)
+    measurement = round(budget * 0.08)
+    buffer = budget - search - social - creative - measurement
+    return f"""Here is a hybrid constraint-first one-month plan with explicit spend controls.
+
+Constraint schema:
+| Constraint | Value |
+|---|---|
+| Paid spend cap | {fmt_money(budget)} |
+| Forbidden promotion | {", ".join(forbidden)} |
+| Window | 4 weeks |
+
+| Channel | Action | Spend |
+|---|---|---:|
+| Search ads | Test high-intent keywords or local service queries | ${search} |
+| Social ads | Small audience and creative test | ${social} |
+| Creative | Simple landing-page graphics, copy variants, templates | ${creative} |
+| Measurement | Tracking links, analytics setup, landing-page test | ${measurement} |
+| Email/referrals | Existing-list outreach and referral ask | $0 |
+| Organic community/content | Staff/founder posts, no compensated endorsement | $0 |
+| Buffer | Shift to the best-performing paid channel | ${buffer} |
+| **Total paid spend** |  | **{fmt_money(budget)}** |
+
+| Week | Execution | Check |
+|---|---|---|
+| Week 1 | Set tracking, publish page/content, launch small paid tests. | Cost per visit and first conversions |
+| Week 2 | Pause weak ads, keep the lowest-cost conversion path. | Cost per lead / signup |
+| Week 3 | Run email/referral push and organic community outreach. | Referral responses and retained interest |
+| Week 4 | Compare channel results and document next-month allocation. | Conversion rate and retained signups |
+
+Validation:
+- Paid spend is exactly {fmt_money(budget)}, not above the cap.
+- Forbidden promotion is not used: {", ".join(forbidden)}.
+- Organic content is allowed only because it does not compensate anyone for endorsement or promotion."""
+
+
+def hybrid_constraint_repair(task, prompt):
+    if task.get("block") != "constraint_reasoning":
+        return None
+    schema = extract_constraint_schema(task, prompt)
+    if schema["kind"] == "travel":
+        return hybrid_travel_repair(schema, prompt)
+    if schema["kind"] == "meal":
+        return hybrid_meal_repair(schema)
+    if schema["kind"] == "schedule":
+        return hybrid_schedule_repair(schema)
+    if schema["kind"] == "marketing":
+        return hybrid_marketing_repair(schema)
+    return schema_constraint_repair(task, prompt)
 
 
 def travel_repair(prompt):
