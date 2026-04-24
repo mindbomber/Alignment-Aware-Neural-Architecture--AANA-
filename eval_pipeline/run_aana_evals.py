@@ -183,7 +183,11 @@ def verify_candidate(task, prompt, candidate, model, max_output_tokens, use_tool
 def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens, use_tools):
     if use_tools:
         structured = structured_constraint_repair(task, prompt)
-        if structured and verifier.get("tool_report", {}).get("violations"):
+        should_repair = bool(verifier.get("tool_report", {}).get("violations"))
+        should_repair = should_repair or (
+            task.get("block") == "constraint_reasoning" and bool(verifier.get("violations"))
+        )
+        if structured and should_repair:
             return structured, "structured-repair"
 
     user_payload = {

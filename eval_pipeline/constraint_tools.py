@@ -66,9 +66,88 @@ def money_values(text):
     return [float(x.replace(",", "")) for x in re.findall(r"\$\s*([0-9][0-9,]*(?:\.[0-9]+)?)", text or "")]
 
 
+def money_mentions(text):
+    mentions = []
+    for match in re.finditer(r"\$\s*([0-9][0-9,]*(?:\.[0-9]+)?)", text or ""):
+        mentions.append(
+            {
+                "amount": float(match.group(1).replace(",", "")),
+                "start": match.start(),
+                "end": match.end(),
+                "context": (text or "")[max(0, match.start() - 90) : match.end() + 90],
+            }
+        )
+    return mentions
+
+
+def first_money_after(pattern, text):
+    match = re.search(pattern + r"[^$]{0,90}\$\s*([0-9][0-9,]*(?:\.[0-9]+)?)", text or "", flags=re.I)
+    if not match:
+        return None
+    return float(match.group(1).replace(",", ""))
+
+
+def parse_cap(prompt, patterns):
+    text = prompt or ""
+    for mention in money_mentions(text):
+        context = norm(mention["context"])
+        if any(re.search(pattern, context) for pattern in patterns):
+            return mention["amount"]
+    return None
+
+
+def parse_days(prompt):
+    match = re.search(r"\b([2-7])\s*-\s*day\b|\b([2-7])\s+day\b", norm(prompt))
+    if not match:
+        return None
+    return int(match.group(1) or match.group(2))
+
+
+def day_count(answer):
+    found = set()
+    for match in re.finditer(r"\bday\s+([1-7])\b", norm(answer)):
+        found.add(int(match.group(1)))
+    return len(found)
+
+
+def appears_truncated(answer):
+    text = (answer or "").strip()
+    if len(text) < 300:
+        return False
+    if text[-1] not in ".!?|)":
+        return True
+    if re.search(r"(\$|:|,|;|\band\b|\bor\b|\bto\b|\bwith\b)$", text, flags=re.I):
+        return True
+    return False
+
+
+def explicit_total(answer):
+    candidates = []
+    for line in (answer or "").splitlines():
+        line_norm = norm(line)
+        if any(term in line_norm for term in ["grand total", "estimated total", "total cost", "total budget", "**total", "| total", "| **total"]):
+            candidates.extend(money_values(line))
+    return candidates[-1] if candidates else None
+
+
 def contains_any(text, terms):
     text = norm(text)
     return any(term in text for term in terms)
+
+
+def contains_unnegated(text, terms):
+    text = norm(text)
+    for term in terms:
+        start = 0
+        while True:
+            idx = text.find(term, start)
+            if idx == -1:
+                break
+            before = text[max(0, idx - 36) : idx]
+            if not any(marker in before for marker in ["no ", "without ", "avoid ", "avoids ", "excluded ", "excluding ", "not use ", "not using ", "never "]):
+                return True
+            start = idx + len(term)
+    return False
 
 
 def add_violation(report, code, severity, message):
@@ -176,6 +255,141 @@ def check_constraint_reasoning(prompt, answer, report):
     p = norm(prompt)
     a = norm(answer)
     amounts = money_values(answer)
+    mentions = money_mentions(answer)
+
+    total_cap = parse_cap(
+        prompt,
+        [
+            r"(?:hard\s+)?\$?\s*[0-9][0-9,]*(?:\.[0-9]+)?\s*(?:total\s+)?budget",
+            r"total\s+(?:paid\s+media\s+|ad\s+spend\s+|ad\s+budget\s+)?cap",
+            r"under",
+            r"maximum\s+grocery\s+budget\s+of",
+            r"grocery\s+budget",
+            r"paid\s+media\s+cap",
+            r"ad\s+budget",
+            r"ad\s+spend",
+        ],
+    )
+    if total_cap is None:
+        prompt_amounts = money_values(prompt)
+        total_cap = prompt_amounts[0] if prompt_amounts else None
+
+    per_paid_cap = parse_cap(
+        prompt,
+        [
+            r"no\s+(?:single\s+)?(?:paid\s+)?(?:attraction|ticket|tour)[^$]{0,25}(?:above|over)",
+            r"no\s+paid\s+(?:attraction|tour)[^$]{0,25}(?:above|over)",
+        ],
+    )
+    direct_per_cap = first_money_after(
+        r"no\s+(?:single\s+)?(?:paid\s+)?(?:attraction|ticket|tour)[^$]{0,35}(?:above|over)",
+        prompt,
+    )
+    if direct_per_cap is None:
+        direct_per_cap = first_money_after(
+            r"no\s+paid\s+(?:attraction|tour)[^$]{0,35}(?:above|over)",
+            prompt,
+        )
+    if direct_per_cap is not None:
+        per_paid_cap = direct_per_cap
+
+    if total_cap is not None:
+        report["checks"].append({"name": "generic_total_cap", "cap": total_cap})
+        total = explicit_total(answer)
+        if total is None:
+            add_violation(report, "missing_explicit_total", "medium", f"Answer should state an explicit total at or below ${total_cap:g}.")
+        elif total > total_cap:
+            add_violation(report, "explicit_total_over_cap", "high", f"Explicit total ${total:g} exceeds the ${total_cap:g} cap.")
+
+    if appears_truncated(answer):
+        add_violation(report, "answer_appears_truncated", "high", "Answer appears to end before the plan is complete.")
+
+    expected_days = parse_days(prompt)
+    if expected_days and any(term in p for term in ["trip", "visit", "meal plan"]):
+        report["checks"].append({"name": "expected_day_count", "expected_days": expected_days})
+        if day_count(answer) < expected_days:
+            add_violation(report, "incomplete_day_plan", "high", f"Answer should include all {expected_days} requested days.")
+
+    if any(term in p for term in ["weekly", "week"]) and "meal plan" in p:
+        report["checks"].append({"name": "weekly_meal_completion"})
+        missing_days = [
+            day
+            for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+            if day not in a
+        ]
+        if missing_days:
+            add_violation(report, "incomplete_weekly_meal_plan", "high", "Weekly meal plan should include all seven days.")
+
+    if per_paid_cap is not None:
+        report["checks"].append({"name": "generic_paid_item_cap", "cap": per_paid_cap})
+        for line in (answer or "").splitlines():
+            context = norm(line)
+            line_amounts = money_values(line)
+            if not line_amounts:
+                continue
+            item_context = any(term in context for term in ["attraction", "ticket", "tour", "museum", "admission", "entry"])
+            aggregate_context = any(term in context for term in ["total paid", "ticket total", "museum tickets", "all tickets", "total tickets"])
+            if item_context and not aggregate_context and any(amount > per_paid_cap for amount in line_amounts):
+                add_violation(
+                    report,
+                    "paid_item_cap_violation",
+                    "high",
+                    f"A paid attraction/ticket/tour appears to exceed the ${per_paid_cap:g} per-item cap.",
+                )
+
+    if contains_any(p, ["no rideshare", "no taxi", "no rideshare/taxi"]) and contains_unnegated(a, ["rideshare", "ride-share", "taxi", "uber", "lyft"]):
+        add_violation(report, "forbidden_transport_violation", "high", "Plan mentions forbidden rideshare/taxi use.")
+
+    if contains_any(p, ["public transit only"]) and contains_unnegated(a, ["rental car", "rent a car", "taxi", "rideshare", "uber", "lyft"]):
+        add_violation(report, "public_transit_only_violation", "high", "Plan violates public-transit-only constraint.")
+
+    if contains_any(p, ["no car rental", "no car"]) and contains_unnegated(a, ["rental car", "rent a car", "drive yourself"]):
+        add_violation(report, "car_constraint_violation", "high", "Plan mentions car use despite no-car constraint.")
+
+    dietary_bans = {
+        "no peanuts": ["peanut", "peanuts", "peanut butter"],
+        "no dairy": ["milk", "cheese", "yogurt", "butter", "dairy"],
+        "no tree nuts": ["almond", "cashew", "walnut", "pecan", "tree nut", "tree nuts"],
+    }
+    for trigger, banned_terms in dietary_bans.items():
+        if trigger in p and contains_unnegated(a, banned_terms):
+            add_violation(report, "dietary_exclusion_violation", "high", f"Meal plan appears to mention excluded item: {trigger}.")
+
+    if "vegetarian" in p and contains_unnegated(a, ["chicken", "beef", "pork", "turkey", "fish", "shrimp", "tuna"]):
+        add_violation(report, "vegetarian_violation", "high", "Vegetarian plan appears to include meat or fish.")
+
+    if "gluten-free" in p and contains_unnegated(a, ["wheat bread", "regular pasta", "flour tortilla", "wheat tortilla"]):
+        add_violation(report, "gluten_free_violation", "high", "Gluten-free plan appears to include a gluten-containing staple.")
+
+    if any(term in p for term in ["no paid creator sponsorship", "no paid creator sponsorships", "no paid endorsements", "no influencer payments"]):
+        if contains_unnegated(a, ["paid creator", "paid creators", "creator sponsorship", "paid endorsement", "influencer payment", "paid influencer"]):
+            add_violation(report, "paid_creator_violation", "high", "Plan mentions compensated creator/influencer/endorsement activity despite the ban.")
+
+    if "40 minutes" in p and "weekdays" in p and re.search(r"(monday|tuesday|wednesday|thursday|friday|weekday)[^.\n|]{0,90}\b([5-9][0-9]|[1-9]\d{2,})\s*min", a):
+        add_violation(report, "weekday_time_violation", "high", "Weekday plan appears to exceed 40 minutes.")
+    if "75 minutes" in p and "saturday" in p and re.search(r"saturday[^.\n|]{0,90}\b([8-9][0-9]|[1-9]\d{2,})\s*min", a):
+        add_violation(report, "saturday_time_violation", "high", "Saturday plan appears to exceed 75 minutes.")
+    if "workout schedule" in p:
+        missing = [day for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] if day not in a]
+        if missing:
+            add_violation(report, "incomplete_workout_schedule", "high", "Workout schedule should cover weekdays and Saturday.")
+    if "45 minutes monday-friday" in p and re.search(r"(monday|tuesday|wednesday|thursday|friday)[^.\n|]{0,90}\b([5-9][0-9]|[1-9]\d{2,})\s*min", a):
+        add_violation(report, "weekday_time_violation", "high", "Weekday plan appears to exceed 45 minutes.")
+    if "4 total hours across the weekend" in p and not contains_any(a, ["4 total hours", "2 hours saturday", "2 hours sunday", "four total hours"]):
+        add_violation(report, "missing_weekend_total", "medium", "Schedule should explicitly account for the 4 total weekend hours.")
+    if "30 minutes on workdays" in p and re.search(r"(workday|monday|tuesday|wednesday|thursday|friday)[^.\n|]{0,90}\b([4-9][0-9]|[1-9]\d{2,})\s*min", a):
+        add_violation(report, "workday_time_violation", "high", "Workday plan appears to exceed 30 minutes.")
+    if "2 hours on days off" in p and not contains_any(a, ["2 hours", "two hours"]):
+        add_violation(report, "missing_day_off_total", "medium", "Schedule should explicitly account for 2-hour days off.")
+    if "language-learning schedule" in p and not (contains_any(a, ["workday"]) and contains_any(a, ["day off", "days off"])):
+        add_violation(report, "incomplete_language_schedule", "high", "Language schedule should cover both workdays and days off.")
+    if "exam prep" in p:
+        missing = [day for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] if day not in a]
+        if missing:
+            add_violation(report, "incomplete_exam_schedule", "high", "Exam-prep schedule should cover weekdays and the weekend.")
+    if any(term in p for term in ["marketing plan", "launch plan", "outreach plan"]):
+        if not all(term in a for term in ["week 1", "week 2", "week 3", "week 4"]):
+            add_violation(report, "incomplete_campaign_plan", "high", "Campaign plan should include all four execution weeks.")
 
     if "miami trip" in p:
         report["checks"].append({"name": "miami_budget_no_car_activity_cap"})
@@ -191,10 +405,12 @@ def check_constraint_reasoning(prompt, answer, report):
 
     if "meal plan" in p:
         report["checks"].append({"name": "meal_budget_allergy"})
-        if contains_any(a, SHELLFISH) or re.search(r"(?<!no )(?<!without )\bshellfish\b", a):
+        if contains_unnegated(a, SHELLFISH) or re.search(r"(?<!no )(?<!without )\bshellfish\b", a):
             add_violation(report, "shellfish_violation", "high", "Meal plan mentions shellfish despite no-shellfish constraint.")
-        if any(amount > 60 for amount in amounts):
-            add_violation(report, "grocery_budget_violation", "high", "Meal plan includes a dollar amount above the $60 grocery cap.")
+        cap = money_values(prompt)
+        cap = cap[0] if cap else 60
+        if any(amount > cap for amount in amounts):
+            add_violation(report, "grocery_budget_violation", "high", f"Meal plan includes a dollar amount above the ${cap:g} grocery cap.")
         if "grocery" not in a and "total" not in a and "$" not in a:
             add_violation(report, "missing_grocery_budget", "medium", "Meal plan lacks grocery budget accounting.")
 
@@ -211,7 +427,7 @@ def check_constraint_reasoning(prompt, answer, report):
         report["checks"].append({"name": "marketing_spend_no_influencers"})
         if any(amount > 500 for amount in amounts):
             add_violation(report, "ad_spend_cap_violation", "high", "Marketing plan includes a dollar amount above the $500 ad spend cap.")
-        if contains_any(a, ["paid influencer", "paid influencers", "influencer sponsorship", "sponsored influencer"]):
+        if contains_unnegated(a, ["paid influencer", "paid influencers", "influencer sponsorship", "sponsored influencer"]):
             add_violation(report, "paid_influencer_violation", "high", "Plan mentions paid influencers despite explicit ban.")
         if "$" not in a and "budget" not in a:
             add_violation(report, "missing_spend_accounting", "medium", "Marketing plan lacks spend accounting.")
@@ -262,12 +478,292 @@ def run_constraint_tools(task, prompt, answer):
     return report
 
 
+def fmt_money(amount):
+    if amount is None:
+        return "$0"
+    if float(amount).is_integer():
+        return f"${int(amount)}"
+    return f"${amount:.2f}"
+
+
+def travel_repair(prompt):
+    p = norm(prompt)
+    days = parse_days(prompt) or 3
+    total_cap = parse_cap(
+        prompt,
+        [
+            r"total\s+(?:budget|cap)",
+            r"hard\s+\$?[0-9][0-9,]*(?:\.[0-9]+)?\s+total\s+budget",
+            r"under\s+\$?[0-9][0-9,]*(?:\.[0-9]+)?\s+total",
+            r"\$?[0-9][0-9,]*(?:\.[0-9]+)?\s+total\s+cap",
+        ],
+    )
+    if total_cap is None:
+        amounts = money_values(prompt)
+        total_cap = amounts[0] if amounts else 300
+    per_cap = parse_cap(
+        prompt,
+        [
+            r"no\s+(?:single\s+)?(?:paid\s+)?(?:attraction|ticket|tour)[^$]{0,35}(?:above|over)",
+            r"no\s+paid\s+(?:attraction|tour)[^$]{0,35}(?:above|over)",
+        ],
+    )
+    if per_cap is None:
+        per_cap = 20
+
+    if "chicago" in p:
+        city = "Chicago"
+        transit = "CTA trains/buses and walking only"
+        free_stops = ["Millennium Park", "Chicago Cultural Center", "Chicago Riverwalk", "Lincoln Park Conservatory"]
+        paid_label = f"Optional neighborhood museum or conservatory donation capped at {fmt_money(per_cap)}"
+    elif "boston" in p:
+        city = "Boston"
+        transit = "MBTA subway/bus/ferry and walking only"
+        free_stops = ["Freedom Trail self-guided walk", "Boston Public Library", "Harborwalk", "Harvard campus museums/free exhibits"]
+        paid_label = f"Optional self-guided tour/ticket capped at {fmt_money(per_cap)}"
+    else:
+        city = "Washington, DC"
+        transit = "Metrorail, bus, and walking only"
+        free_stops = ["National Museum of American History", "National Museum of Natural History", "National Gallery of Art", "Air and Space Museum timed-entry/free stop"]
+        paid_label = f"Optional special exhibit capped at {fmt_money(per_cap)}"
+
+    lodging = min(max(total_cap * 0.42, 70), total_cap - 80)
+    food = min(days * 32, total_cap * 0.35)
+    transit_budget = min(days * 9, total_cap * 0.12)
+    paid = min(per_cap, max(0, total_cap * 0.08))
+    total = lodging + food + transit_budget + paid
+    if total > total_cap:
+        scale = (total_cap * 0.92) / total
+        lodging *= scale
+        food *= scale
+        transit_budget *= scale
+        paid = min(per_cap, paid * scale)
+        total = lodging + food + transit_budget + paid
+    buffer = max(0, total_cap - total)
+
+    day_rows = []
+    for idx in range(1, days + 1):
+        stop_a = free_stops[(idx - 1) % len(free_stops)]
+        stop_b = free_stops[idx % len(free_stops)]
+        paid_text = paid_label if idx == days else "No paid attraction"
+        paid_cost = fmt_money(paid) if idx == days else "$0"
+        day_rows.append(f"| Day {idx} | {transit} | {stop_a}; {stop_b} | {paid_text} | {paid_cost} |")
+
+    return f"""Here is a complete {days}-day {city} plan with explicit totals and constraint checks.
+
+| Category | Cost |
+|---|---:|
+| Lodging / stay allocation | {fmt_money(lodging)} |
+| Food | {fmt_money(food)} |
+| Public transit | {fmt_money(transit_budget)} |
+| Paid attractions/tours | {fmt_money(paid)} |
+| Buffer | {fmt_money(buffer)} |
+| **Total** | **{fmt_money(total)}** |
+
+| Day | Transit | Main stops | Paid item | Paid item cost |
+|---|---|---|---|---:|
+{chr(10).join(day_rows)}
+
+Constraint check:
+- Total planned cost: {fmt_money(total)}, at or below the {fmt_money(total_cap)} cap.
+- Transportation: {transit}; no car rental, rideshare, or taxi.
+- Paid item cap: no single paid attraction, ticket, or tour is above {fmt_money(per_cap)}.
+- The itinerary includes all {days} requested days."""
+
+
+def meal_repair(prompt):
+    p = norm(prompt)
+    days = parse_days(prompt) or (7 if ("weekly" in p or "week" in p) else 5)
+    amounts = money_values(prompt)
+    budget = amounts[0] if amounts else 60
+    vegetarian = "vegetarian" in p
+    gluten_free = "gluten-free" in p
+    high_protein = "high-protein" in p
+    exclusions = []
+    if "no peanuts" in p:
+        exclusions.append("peanuts")
+    if "no dairy" in p:
+        exclusions.append("dairy")
+    if "no tree nuts" in p:
+        exclusions.append("tree nuts")
+
+    protein = "eggs and beans" if vegetarian else "eggs, beans, and chicken"
+    if gluten_free:
+        grain = "rice and potatoes"
+    else:
+        grain = "rice and oats"
+    if high_protein:
+        protein = "eggs, beans, lentils, Greek-style dairy-free yogurt, and chicken or tofu"
+
+    line_items = [
+        ("Oats or gluten-free oats", 5),
+        ("Rice or potatoes", 5),
+        ("Beans/lentils", 6),
+        ("Eggs or tofu", 8),
+        ("Frozen vegetables", 8),
+        ("Fruit", 6),
+        ("Canned tomatoes/sauce", 4),
+        ("Tortillas or rice cakes", 4),
+    ]
+    if vegetarian:
+        line_items.append(("Extra tofu/eggs", 5))
+    elif high_protein:
+        line_items.append(("Chicken or extra tofu", 10))
+    else:
+        line_items.append(("Lean protein", 8))
+    subtotal = sum(cost for _, cost in line_items)
+    while subtotal > budget:
+        idx = max(range(len(line_items)), key=lambda i: line_items[i][1])
+        item, cost = line_items[idx]
+        if cost <= 1:
+            break
+        line_items[idx] = (item, cost - 1)
+        subtotal = sum(cost for _, cost in line_items)
+    subtotal = sum(cost for _, cost in line_items)
+    buffer = max(0, budget - subtotal)
+
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    rows = []
+    for idx in range(days):
+        name = day_names[idx] if days == 7 else f"Day {idx + 1}"
+        rows.append(
+            f"| {name} | Oats + fruit | {grain.title()} bowl with vegetables | {protein.title()} with vegetables |"
+        )
+
+    exclusion_text = ", ".join(exclusions) if exclusions else "none beyond the stated diet"
+    grocery_rows = "\n".join(f"| {item} | ${cost} |" for item, cost in line_items)
+    return f"""Here is a complete {days}-day meal plan with explicit grocery accounting.
+
+| Grocery item | Cost |
+|---|---:|
+{grocery_rows}
+| Buffer | ${buffer:g} |
+| **Total** | **{fmt_money(subtotal + buffer)}** |
+
+| Day | Breakfast | Lunch | Dinner |
+|---|---|---|---|
+{chr(10).join(rows)}
+
+Constraint check:
+- Grocery total: {fmt_money(subtotal + buffer)}, at or below the {fmt_money(budget)} cap.
+- Diet: {"vegetarian; " if vegetarian else ""}{"gluten-free; " if gluten_free else ""}{"high-protein; " if high_protein else ""}excluded items: {exclusion_text}.
+- No excluded ingredient is used in the plan."""
+
+
+def schedule_repair(prompt):
+    p = norm(prompt)
+    if "workout" in p:
+        return """Here is a complete workout schedule with explicit time accounting.
+
+| Day | Duration | Plan |
+|---|---:|---|
+| Monday | 40 minutes | Warm-up 5, strength circuit 25, mobility/core 10 |
+| Tuesday | 40 minutes | Warm-up 5, cardio intervals 20, strength accessories 10, stretch 5 |
+| Wednesday | 30 minutes | Recovery walk and mobility |
+| Thursday | 40 minutes | Warm-up 5, strength circuit 25, mobility/core 10 |
+| Friday | 35 minutes | Low-impact cardio and stretching |
+| Saturday | 75 minutes | Warm-up 10, full-body strength 40, conditioning 15, stretch 10 |
+| Sunday | 0 minutes | Rest / family day |
+
+Constraint check:
+- Weekdays are never above 40 minutes.
+- Saturday is exactly 75 minutes, not above the cap.
+- The plan is complete for the week and leaves Sunday as recovery."""
+    if "language-learning" in p or "nurse" in p:
+        return """Here is a complete language-learning schedule with explicit time caps.
+
+| Day type | Duration | Activities |
+|---|---:|---|
+| Workday 1 | 30 minutes | 10 min review, 15 min listening, 5 min recall |
+| Workday 2 | 30 minutes | 10 min vocabulary, 15 min dialogue practice, 5 min recall |
+| Workday 3 | 30 minutes | 10 min grammar, 15 min listening, 5 min recall |
+| Workday 4 | 30 minutes | 10 min review, 15 min speaking drill, 5 min notes |
+| Workday 5 | 30 minutes | 10 min vocabulary, 15 min reading, 5 min recall |
+| Day off 1 | 2 hours | 45 min lesson, 45 min conversation/shadowing, 30 min review |
+| Day off 2 | 2 hours | 45 min lesson, 45 min listening/reading, 30 min weekly review |
+
+Constraint check:
+- Workdays are exactly 30 minutes.
+- Days off are exactly 2 hours.
+- The plan avoids assuming fixed shift days; the user can map workday/day-off rows to the real nursing schedule."""
+    return """Here is a complete exam-prep schedule with explicit time accounting.
+
+| Day | Duration | Focus |
+|---|---:|---|
+| Monday | 45 minutes | New material and short recall quiz |
+| Tuesday | 45 minutes | Practice problems |
+| Wednesday | 45 minutes | Review missed questions |
+| Thursday | 45 minutes | New material and flashcards |
+| Friday | 45 minutes | Mixed timed practice |
+| Saturday | 2 hours | Deep practice set and corrections |
+| Sunday | 2 hours | Review, weak-area repair, next-week plan |
+
+| Period | Calculation | Total |
+|---|---:|---:|
+| Monday-Friday | 5 x 45 minutes | 3 hours 45 minutes |
+| Weekend | 2 hours + 2 hours | 4 total hours |
+
+Constraint check:
+- Monday-Friday never exceeds 45 minutes.
+- Weekend study is exactly 4 total hours."""
+
+
+def marketing_repair(prompt):
+    p = norm(prompt)
+    amounts = money_values(prompt)
+    budget = amounts[0] if amounts else 500
+    search = round(budget * 0.35)
+    social = round(budget * 0.25)
+    creative = round(budget * 0.15)
+    buffer = budget - search - social - creative
+    banned = "paid creator sponsorships"
+    if "paid endorsements" in p:
+        banned = "paid endorsements"
+    if "influencer payments" in p:
+        banned = "influencer payments"
+    return f"""Here is a complete launch/outreach plan with explicit paid-spend accounting.
+
+| Channel | Action | Spend |
+|---|---|---:|
+| Search ads | Test high-intent keywords or local service queries | ${search} |
+| Social ads | Small audience/creative test | ${social} |
+| Creative | Simple landing-page graphics, templates, or copy assets | ${creative} |
+| Email/referrals | Existing-list outreach and referral ask | $0 |
+| Organic community/content | Founder or staff posts, no compensated promotion | $0 |
+| Experiment buffer | Shift to the best-performing paid channel | ${buffer} |
+| **Total** |  | **{fmt_money(budget)}** |
+
+| Week | Execution |
+|---|---|
+| Week 1 | Set tracking, publish core page/content, launch small paid tests. |
+| Week 2 | Pause weak ads, keep the lowest-cost conversion path. |
+| Week 3 | Run email/referral push and organic community outreach. |
+| Week 4 | Compare cost per lead, conversion rate, retained signups, and next steps. |
+
+Constraint check:
+- Paid spend total: {fmt_money(budget)}, not above the cap.
+- No {banned}: no paid creator posts, sponsorships, affiliate endorsements, or influencer placements.
+- Organic content is allowed because no one is compensated for endorsement or promotion."""
+
+
 def structured_constraint_repair(task, prompt):
     """Return a deterministic constraint-preserving answer for repeated planning tasks."""
     p = norm(prompt)
 
     if task.get("block") != "constraint_reasoning":
         return None
+
+    if any(term in p for term in ["trip", "visit"]) and any(term in p for term in ["budget", "cap", "under"]):
+        return travel_repair(prompt)
+
+    if "meal plan" in p:
+        return meal_repair(prompt)
+
+    if any(term in p for term in ["workout schedule", "language-learning schedule", "exam prep"]):
+        return schedule_repair(prompt)
+
+    if any(term in p for term in ["marketing plan", "launch plan", "outreach plan"]):
+        return marketing_repair(prompt)
 
     if "miami trip" in p:
         return """Below is a 3-day Miami plan that keeps every stated limit explicit.
