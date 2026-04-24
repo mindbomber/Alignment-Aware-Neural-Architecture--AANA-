@@ -1164,6 +1164,30 @@ def hybrid_constraint_repair(task, prompt):
     return schema_constraint_repair(task, prompt)
 
 
+def hybrid_gate_constraint_repair(task, prompt):
+    if task.get("block") != "constraint_reasoning":
+        return None
+    if is_destination_underspecified_travel(prompt):
+        schema = extract_constraint_schema(task, prompt)
+        days = schema["days"] or "the requested number of"
+        budget = fmt_money(schema["total_budget"]) if schema["total_budget"] is not None else "the stated"
+        per_cap = fmt_money(schema["per_item_cap"]) if schema["per_item_cap"] is not None else "the stated"
+        transit = schema["transport_required"][0] if schema["transport_required"] else "the stated transport rule"
+        return f"""I can build this, but I need the destination city first.
+
+Please provide the city or destination for the {days}-day museum-focused trip. Once I have it, I will keep these constraints fixed:
+
+| Constraint | Preserved value |
+|---|---|
+| Total budget cap | {budget} |
+| Transit rule | {transit} |
+| Paid ticket cap | {per_cap} |
+| Trip length | {days} days |
+
+I should not invent a destination because the museum choices, transit routes, free-entry options, and ticket prices depend on the city."""
+    return hybrid_constraint_repair(task, prompt)
+
+
 def travel_repair(prompt):
     p = norm(prompt)
     days = parse_days(prompt) or 3

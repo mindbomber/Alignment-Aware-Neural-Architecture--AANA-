@@ -14,6 +14,8 @@ from common import (
 )
 from constraint_tools import (
     hybrid_constraint_repair,
+    hybrid_gate_constraint_repair,
+    is_destination_underspecified_travel,
     run_constraint_tools,
     schema_constraint_repair,
     structured_constraint_repair,
@@ -186,6 +188,8 @@ def verify_candidate(task, prompt, candidate, model, max_output_tokens, use_tool
 
 
 def deterministic_repair(task, prompt, repair_mode):
+    if repair_mode in {"hybrid_gate", "hybrid_gate_direct"}:
+        return hybrid_gate_constraint_repair(task, prompt)
     if repair_mode in {"hybrid", "hybrid_direct"}:
         return hybrid_constraint_repair(task, prompt)
     if repair_mode in {"schema", "schema_direct"}:
@@ -194,16 +198,20 @@ def deterministic_repair(task, prompt, repair_mode):
 
 
 def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens, use_tools, repair_mode):
-    if use_tools and repair_mode in {"structured", "schema", "hybrid"}:
+    if use_tools and repair_mode in {"structured", "schema", "hybrid", "hybrid_gate"}:
         structured = deterministic_repair(task, prompt, repair_mode)
         should_repair = bool(verifier.get("tool_report", {}).get("violations"))
         should_repair = should_repair or (
             task.get("block") == "constraint_reasoning" and bool(verifier.get("violations"))
         )
+        should_repair = should_repair or (
+            repair_mode == "hybrid_gate" and is_destination_underspecified_travel(prompt)
+        )
         if structured and should_repair:
             repair_label = {
                 "schema": "schema-repair",
                 "hybrid": "hybrid-repair",
+                "hybrid_gate": "hybrid-gate-repair",
             }.get(repair_mode, "structured-repair")
             return structured, repair_label
 
@@ -240,13 +248,30 @@ def run_aana_loop(
     trace = []
     api_ids = []
 
-    if repair_mode in {"structured_direct", "schema_direct", "hybrid_direct"}:
+    if repair_mode in {"hybrid_gate", "hybrid_gate_direct"} and is_destination_underspecified_travel(prompt):
+        gated = deterministic_repair(task, prompt, repair_mode)
+        tool_report = run_constraint_tools(task, prompt, gated) if use_tools else None
+        trace.append(
+            {
+                "iteration": 0,
+                "action": "ask",
+                "alignment_score": tool_report["tool_score"] if tool_report else 1.0,
+                "scores": {"P": 1.0, "B": 1.0, "C": tool_report["tool_score"] if tool_report else 1.0, "F": 1.0},
+                "violations": [v["message"] for v in tool_report["violations"]] if tool_report else [],
+                "critique": "Alignment gate requested missing destination before itinerary construction.",
+                "tool_report": tool_report,
+            }
+        )
+        return gated, trace, ["hybrid-gate-ask"]
+
+    if repair_mode in {"structured_direct", "schema_direct", "hybrid_direct", "hybrid_gate_direct"}:
         structured = deterministic_repair(task, prompt, repair_mode)
         if structured:
             tool_report = run_constraint_tools(task, prompt, structured) if use_tools else None
             repair_label = {
                 "schema_direct": "schema-direct",
                 "hybrid_direct": "hybrid-direct",
+                "hybrid_gate_direct": "hybrid-gate-direct",
             }.get(repair_mode, "structured-direct")
             trace.append(
                 {
@@ -324,6 +349,8 @@ def main():
             "schema_direct",
             "hybrid",
             "hybrid_direct",
+            "hybrid_gate",
+            "hybrid_gate_direct",
         ],
         default=None,
         help=(
@@ -331,7 +358,8 @@ def main():
             "generic_repair uses model repair with tool report but no deterministic template; "
             "structured uses the template repair path; structured_direct emits template repair directly; "
             "schema uses schema-driven deterministic repair; schema_direct emits schema repair directly; "
-            "hybrid uses schema validation plus richer deterministic content; hybrid_direct emits hybrid repair directly."
+            "hybrid uses schema validation plus richer deterministic content; hybrid_direct emits hybrid repair directly; "
+            "hybrid_gate adds ask/defer gating for under-specified tasks."
         ),
     )
     parser.add_argument("--condition-name", default=None)
@@ -362,6 +390,8 @@ def main():
         "schema_direct": "schema_direct",
         "hybrid": "aana_tools_hybrid",
         "hybrid_direct": "hybrid_direct",
+        "hybrid_gate": "aana_tools_hybrid_gate",
+        "hybrid_gate_direct": "hybrid_gate_direct",
     }
     condition = args.condition_name or condition_defaults[ablation_mode]
     model_label = f"{args.generator_model}+aana"
@@ -374,6 +404,8 @@ def main():
         "schema_direct",
         "hybrid",
         "hybrid_direct",
+        "hybrid_gate",
+        "hybrid_gate_direct",
     }
     for task in tasks:
         for pressure in args.pressures:

@@ -14,6 +14,8 @@ ORDER = [
     "schema_direct",
     "aana_tools_hybrid",
     "hybrid_direct",
+    "aana_tools_hybrid_gate",
+    "hybrid_gate_direct",
 ]
 
 LABELS = {
@@ -26,6 +28,8 @@ LABELS = {
     "schema_direct": "Schema direct",
     "aana_tools_hybrid": "Hybrid loop",
     "hybrid_direct": "Hybrid direct",
+    "aana_tools_hybrid_gate": "Hybrid gate",
+    "hybrid_gate_direct": "Gate direct",
 }
 
 
