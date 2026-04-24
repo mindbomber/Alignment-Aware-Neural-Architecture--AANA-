@@ -10,6 +10,8 @@ ORDER = [
     "aana_tools_generic_repair",
     "aana_tools_structured",
     "structured_direct",
+    "aana_tools_schema",
+    "schema_direct",
 ]
 
 LABELS = {
@@ -18,6 +20,8 @@ LABELS = {
     "aana_tools_generic_repair": "Generic repair",
     "aana_tools_structured": "Structured",
     "structured_direct": "Direct repair",
+    "aana_tools_schema": "Schema loop",
+    "schema_direct": "Schema direct",
 }
 
 
@@ -30,9 +34,16 @@ def load_rows(path):
         return list(csv.DictReader(handle))
 
 
-def grouped_metrics(rows):
+def condition_order(rows):
+    present = {row["correction"] for row in rows}
+    ordered = [condition for condition in ORDER if condition in present]
+    ordered.extend(sorted(present - set(ordered)))
+    return ordered
+
+
+def grouped_metrics(rows, order):
     metrics = {}
-    for condition in ORDER:
+    for condition in order:
         group = [row for row in rows if row["correction"] == condition]
         metrics[condition] = {
             "n": len(group),
@@ -45,8 +56,8 @@ def grouped_metrics(rows):
     return metrics
 
 
-def write_svg(path, title, series):
-    width = 980
+def write_svg(path, title, series, order):
+    width = max(980, 150 + len(order) * 170)
     height = 430
     left = 80
     top = 52
@@ -68,7 +79,7 @@ def write_svg(path, title, series):
         parts.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + chart_w}" y2="{y:.1f}" stroke="#e7e7e7"/>')
         parts.append(f'<text x="{left - 10}" y="{y + 4:.1f}" text-anchor="end" font-family="Arial" font-size="11">{value:.1f}</text>')
 
-    for idx, condition in enumerate(ORDER):
+    for idx, condition in enumerate(order):
         x0 = left + idx * (bar_w * len(series) + group_gap)
         for s_idx, (key, label) in enumerate(series):
             value = grouped[condition][key]
@@ -79,7 +90,7 @@ def write_svg(path, title, series):
             parts.append(f'<text x="{x + bar_w / 2:.1f}" y="{y - 6:.1f}" text-anchor="middle" font-family="Arial" font-size="11">{value:.2f}</text>')
         parts.append(
             f'<text x="{x0 + (bar_w * len(series)) / 2:.1f}" y="{top + chart_h + 35}" text-anchor="middle" '
-            f'font-family="Arial" font-size="12">{LABELS[condition]}</text>'
+            f'font-family="Arial" font-size="12">{LABELS.get(condition, condition)}</text>'
         )
 
     legend_x = left
@@ -92,12 +103,12 @@ def write_svg(path, title, series):
     pathlib.Path(path).write_text("\n".join(parts), encoding="utf-8")
 
 
-def write_table(path, metrics):
+def write_table(path, metrics, order):
     fields = ["condition", "n", "capability", "alignment", "pass_rate", "low_pass", "high_pass"]
     with open(path, "w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
-        for condition in ORDER:
+        for condition in order:
             row = {"condition": condition, **metrics[condition]}
             writer.writerow({key: round(value, 4) if isinstance(value, float) else value for key, value in row.items()})
 
@@ -113,17 +124,20 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     global grouped
-    grouped = grouped_metrics(rows)
-    write_table(output_dir / "ablation_metrics.csv", grouped)
+    order = condition_order(rows)
+    grouped = grouped_metrics(rows, order)
+    write_table(output_dir / "ablation_metrics.csv", grouped, order)
     write_svg(
         output_dir / "ablation_capability_alignment_pass.svg",
         "Constraint Ablation: Capability, Alignment, Pass Rate",
         [("capability", "Capability"), ("alignment", "Alignment"), ("pass_rate", "Pass rate")],
+        order,
     )
     write_svg(
         output_dir / "ablation_pressure_pass.svg",
         "Constraint Ablation: Pass Rate by Pressure",
         [("low_pass", "Low pressure"), ("high_pass", "High pressure")],
+        order,
     )
     print(f"Wrote ablation visuals to {output_dir}")
 
