@@ -180,8 +180,8 @@ def verify_candidate(task, prompt, candidate, model, max_output_tokens, use_tool
     return verifier, payload.get("id", "")
 
 
-def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens, use_tools):
-    if use_tools:
+def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens, use_tools, repair_mode):
+    if use_tools and repair_mode == "structured":
         structured = structured_constraint_repair(task, prompt)
         should_repair = bool(verifier.get("tool_report", {}).get("violations"))
         should_repair = should_repair or (
@@ -208,10 +208,37 @@ def revise_candidate(task, prompt, candidate, verifier, model, max_output_tokens
     return extract_response_text(payload), payload.get("id", "")
 
 
-def run_aana_loop(task, pressure, generator_model, verifier_model, corrector_model, max_iters, max_output_tokens, use_tools):
+def run_aana_loop(
+    task,
+    pressure,
+    generator_model,
+    verifier_model,
+    corrector_model,
+    max_iters,
+    max_output_tokens,
+    use_tools,
+    repair_mode,
+):
     prompt = task_prompt(task, pressure)
     trace = []
     api_ids = []
+
+    if repair_mode == "structured_direct":
+        structured = structured_constraint_repair(task, prompt)
+        if structured:
+            tool_report = run_constraint_tools(task, prompt, structured) if use_tools else None
+            trace.append(
+                {
+                    "iteration": 0,
+                    "action": "accept" if not tool_report or not tool_report["violations"] else "revise",
+                    "alignment_score": tool_report["tool_score"] if tool_report else 1.0,
+                    "scores": {"P": 1.0, "B": 1.0, "C": tool_report["tool_score"] if tool_report else 1.0, "F": 1.0},
+                    "violations": [v["message"] for v in tool_report["violations"]] if tool_report else [],
+                    "critique": "Deterministic structured repair generated directly.",
+                    "tool_report": tool_report,
+                }
+            )
+            return structured, trace, ["structured-direct"]
 
     candidate, response_id = generate_candidate(task, prompt, generator_model, max_output_tokens)
     api_ids.append(response_id)
@@ -238,11 +265,14 @@ def run_aana_loop(task, pressure, generator_model, verifier_model, corrector_mod
         ):
             break
 
+        if repair_mode == "detect_only":
+            break
+
         if iteration >= max_iters:
             break
 
         candidate, revision_id = revise_candidate(
-            task, prompt, candidate, verifier, corrector_model, max_output_tokens, use_tools
+            task, prompt, candidate, verifier, corrector_model, max_output_tokens, use_tools, repair_mode
         )
         api_ids.append(revision_id)
 
@@ -261,6 +291,16 @@ def main():
     parser.add_argument("--max-iters", type=int, default=2)
     parser.add_argument("--max-output-tokens", type=int, default=550)
     parser.add_argument("--no-tools", action="store_true")
+    parser.add_argument(
+        "--ablation-mode",
+        choices=["loop", "detect_only", "generic_repair", "structured", "structured_direct"],
+        default=None,
+        help=(
+            "Ablation mode: loop disables tools; detect_only runs generator+tool/verifier without repair; "
+            "generic_repair uses model repair with tool report but no deterministic template; "
+            "structured uses the full structured repair path; structured_direct emits deterministic repair when available."
+        ),
+    )
     parser.add_argument("--condition-name", default=None)
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
@@ -275,8 +315,20 @@ def main():
     written = 0
     skipped = 0
 
-    condition = args.condition_name or ("aana_loop" if args.no_tools else "aana_tools_structured")
+    ablation_mode = args.ablation_mode
+    if ablation_mode is None:
+        ablation_mode = "loop" if args.no_tools else "structured"
+
+    condition_defaults = {
+        "loop": "aana_loop",
+        "detect_only": "aana_tools_detect_only",
+        "generic_repair": "aana_tools_generic_repair",
+        "structured": "aana_tools_structured",
+        "structured_direct": "structured_direct",
+    }
+    condition = args.condition_name or condition_defaults[ablation_mode]
     model_label = f"{args.generator_model}+aana"
+    use_tools = ablation_mode in {"detect_only", "generic_repair", "structured", "structured_direct"}
     for task in tasks:
         for pressure in args.pressures:
             key = (task["id"], model_label, pressure, condition)
@@ -304,7 +356,8 @@ def main():
                     args.corrector_model,
                     args.max_iters,
                     args.max_output_tokens,
-                    not args.no_tools,
+                    use_tools,
+                    ablation_mode,
                 )
                 row["response_text"] = response_text
                 row["api_response_id"] = ",".join(api_ids)
