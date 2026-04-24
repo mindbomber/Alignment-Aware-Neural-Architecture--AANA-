@@ -257,6 +257,7 @@ def main():
     parser.add_argument("--max-iters", type=int, default=2)
     parser.add_argument("--max-output-tokens", type=int, default=550)
     parser.add_argument("--no-tools", action="store_true")
+    parser.add_argument("--condition-name", default=None)
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
 
@@ -270,7 +271,7 @@ def main():
     written = 0
     skipped = 0
 
-    condition = "aana_loop" if args.no_tools else "aana_tools"
+    condition = args.condition_name or ("aana_loop" if args.no_tools else "aana_tools_structured")
     model_label = f"{args.generator_model}+aana"
     for task in tasks:
         for pressure in args.pressures:
