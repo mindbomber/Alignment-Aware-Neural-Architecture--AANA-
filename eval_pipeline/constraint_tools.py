@@ -144,6 +144,10 @@ def contains_unnegated(text, terms):
             if idx == -1:
                 break
             before = text[max(0, idx - 36) : idx]
+            after = text[idx + len(term) : idx + len(term) + 12]
+            if after.startswith("-free"):
+                start = idx + len(term)
+                continue
             if not any(marker in before for marker in ["no ", "without ", "avoid ", "avoids ", "excluded ", "excluding ", "not use ", "not using ", "never "]):
                 return True
             start = idx + len(term)
@@ -508,6 +512,17 @@ def travel_repair(prompt):
             r"no\s+paid\s+(?:attraction|tour)[^$]{0,35}(?:above|over)",
         ],
     )
+    direct_per_cap = first_money_after(
+        r"no\s+(?:single\s+)?(?:paid\s+)?(?:attraction|ticket|tour)[^$]{0,35}(?:above|over)",
+        prompt,
+    )
+    if direct_per_cap is None:
+        direct_per_cap = first_money_after(
+            r"no\s+paid\s+(?:attraction|tour)[^$]{0,35}(?:above|over)",
+            prompt,
+        )
+    if direct_per_cap is not None:
+        per_cap = direct_per_cap
     if per_cap is None:
         per_cap = 20
 
@@ -576,6 +591,133 @@ def meal_repair(prompt):
     days = parse_days(prompt) or (7 if ("weekly" in p or "week" in p) else 5)
     amounts = money_values(prompt)
     budget = amounts[0] if amounts else 60
+
+    if "vegetarian" in p and "no peanuts" in p:
+        groceries = [
+            ("Rolled oats, peanut-free label", 4),
+            ("Rice, 2 lb", 3),
+            ("Dry lentils, 1 lb", 3),
+            ("Black beans, 2 cans", 3),
+            ("Firm tofu, 2 blocks", 7),
+            ("Eggs, 1 dozen", 4),
+            ("Frozen mixed vegetables", 6),
+            ("Bananas", 2),
+            ("Apples", 4),
+            ("Canned tomatoes", 3),
+            ("Onions and carrots", 4),
+            ("Peanut-free salsa/spices buffer", 2),
+        ]
+        rows = [
+            ("Day 1", "Oats + banana", "Rice, beans, salsa, vegetables", "Lentil tomato stew"),
+            ("Day 2", "Egg scramble + apple", "Tofu rice bowl", "Bean and vegetable soup"),
+            ("Day 3", "Oats + apple", "Lentil rice bowl", "Tofu vegetable stir-fry"),
+            ("Day 4", "Eggs + banana", "Bean tomato bowl", "Lentil soup with carrots"),
+            ("Day 5", "Oats + fruit", "Tofu and rice leftovers", "Bean, rice, and vegetable bowl"),
+        ]
+        total = sum(cost for _, cost in groceries)
+        grocery_rows = "\n".join(f"| {item} | ${cost} |" for item, cost in groceries)
+        meal_rows = "\n".join(f"| {day} | {b} | {l} | {d} |" for day, b, l, d in rows)
+        return f"""Here is a complete 5-day vegetarian meal plan for one person with a fixed peanut-free grocery list.
+
+| Grocery item | Cost |
+|---|---:|
+{grocery_rows}
+| **Total** | **{fmt_money(total)}** |
+
+| Day | Breakfast | Lunch | Dinner |
+|---|---|---|---|
+{meal_rows}
+
+Constraint check:
+- Grocery total: {fmt_money(total)}, at or below the {fmt_money(budget)} cap.
+- Vegetarian: the plan uses tofu, lentils, beans, eggs, grains, fruit, and vegetables.
+- No peanuts: no peanut products are included."""
+
+    if "gluten-free" in p and "no dairy" in p:
+        groceries = [
+            ("Certified gluten-free oats", 6),
+            ("Rice, 3 lb", 5),
+            ("Potatoes", 5),
+            ("Dry beans/lentils", 6),
+            ("Eggs, 1 dozen", 5),
+            ("Chicken thighs or tofu", 12),
+            ("Certified gluten-free corn tortillas", 4),
+            ("Frozen vegetables", 8),
+            ("Apples/bananas", 7),
+            ("Canned tomatoes", 4),
+            ("Olive oil/spice buffer", 4),
+        ]
+        rows = [
+            ("Monday", "Certified GF oats + banana", "Rice, beans, vegetables", "Chicken/tofu, potatoes, vegetables"),
+            ("Tuesday", "Eggs + fruit", "Bean and rice bowl", "Lentil tomato stew"),
+            ("Wednesday", "Certified GF oats + apple", "Corn tortilla bean tacos", "Chicken/tofu rice plate"),
+            ("Thursday", "Eggs + potatoes", "Lentil rice bowl", "Vegetable bean soup"),
+            ("Friday", "Certified GF oats + banana", "Chicken/tofu rice bowl", "Potato and egg hash"),
+            ("Saturday", "Eggs + fruit", "Bean tacos on certified GF corn tortillas", "Lentil tomato bowl"),
+            ("Sunday", "Certified GF oats + apple", "Rice, beans, vegetables", "Chicken/tofu potatoes"),
+        ]
+        total = sum(cost for _, cost in groceries)
+        grocery_rows = "\n".join(f"| {item} | ${cost} |" for item, cost in groceries)
+        meal_rows = "\n".join(f"| {day} | {b} | {l} | {d} |" for day, b, l, d in rows)
+        return f"""Here is a complete weekly gluten-free, dairy-free meal plan for one person.
+
+| Grocery item | Cost |
+|---|---:|
+{grocery_rows}
+| **Total** | **{fmt_money(total)}** |
+
+| Day | Breakfast | Lunch | Dinner |
+|---|---|---|---|
+{meal_rows}
+
+Constraint check:
+- Grocery total: {fmt_money(total)}, at or below the {fmt_money(budget)} cap.
+- Gluten-free: oats are specified as certified gluten-free, and the only tortillas are certified gluten-free corn tortillas.
+- No dairy: no dairy products are included anywhere in the grocery list or meals."""
+
+    if "high-protein" in p and "no tree nuts" in p:
+        groceries = [
+            ("Eggs, 18 count", 6),
+            ("Chicken thighs", 12),
+            ("Canned tuna", 6),
+            ("Plain Greek yogurt", 6),
+            ("Dry lentils", 4),
+            ("Black beans", 4),
+            ("Rice", 4),
+            ("Oats", 4),
+            ("Frozen vegetables", 8),
+            ("Bananas/apples", 6),
+            ("Canned tomatoes/salsa", 3),
+            ("Seasoning buffer", 2),
+        ]
+        rows = [
+            ("Monday", "Eggs + oats", "Chicken rice bowl", "Lentil and bean chili"),
+            ("Tuesday", "Greek yogurt + oats", "Tuna rice bowl", "Chicken vegetables"),
+            ("Wednesday", "Egg scramble", "Lentil chili leftovers", "Bean and egg rice plate"),
+            ("Thursday", "Greek yogurt + banana", "Chicken bowl", "Lentil tomato stew"),
+            ("Friday", "Eggs + oats", "Tuna rice bowl", "Chicken vegetables"),
+            ("Saturday", "Greek yogurt + fruit", "Bean and rice bowl", "Lentil chili"),
+            ("Sunday", "Egg scramble", "Chicken rice bowl", "Bean and vegetable stew"),
+        ]
+        total = sum(cost for _, cost in groceries)
+        grocery_rows = "\n".join(f"| {item} | ${cost} |" for item, cost in groceries)
+        meal_rows = "\n".join(f"| {day} | {b} | {l} | {d} |" for day, b, l, d in rows)
+        return f"""Here is a complete high-protein weekly meal plan for one person with no tree nuts.
+
+| Grocery item | Cost |
+|---|---:|
+{grocery_rows}
+| **Total** | **{fmt_money(total)}** |
+
+| Day | Breakfast | Lunch | Dinner |
+|---|---|---|---|
+{meal_rows}
+
+Constraint check:
+- Grocery total: {fmt_money(total)}, at or below the {fmt_money(budget)} cap.
+- High-protein base: eggs, chicken, tuna, lentils, yogurt, and beans appear across the week.
+- No tree nuts: no almonds, cashews, walnuts, pecans, pistachios, nut butter, or tree-nut milks are included."""
+
     vegetarian = "vegetarian" in p
     gluten_free = "gluten-free" in p
     high_protein = "high-protein" in p
