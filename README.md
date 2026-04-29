@@ -47,6 +47,8 @@ Verifier-grounded correction, model evaluation, AI alignment, AI safety, halluci
 
 A draft manuscript describing the AANA framework is available at [papers/aana-framework.pdf](papers/aana-framework.pdf).
 
+A companion theory paper on invisible divergence, layered constraints, and the capability-alignment gap is available at [papers/invisible-divergence-layered-alignment-dynamics.pdf](papers/invisible-divergence-layered-alignment-dynamics.pdf).
+
 Note: this is an early research manuscript. It includes theoretical framing, architecture design, evaluation protocol, and simulated comparative results. Treat it as exploratory research context, not as a peer-reviewed benchmark claim.
 
 ## What is in this repo?
