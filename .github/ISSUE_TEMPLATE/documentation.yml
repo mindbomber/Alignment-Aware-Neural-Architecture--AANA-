@@ -1,0 +1,27 @@
+name: Documentation improvement
+description: Suggest a clarification, example, or correction for the docs.
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: page
+    attributes:
+      label: Which page or section?
+      description: Link or name the README/docs section involved.
+      placeholder: "Example: docs/results-interpretation.md, Gap score section"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or missing?
+      description: Explain what confused you or what should be added.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Optional wording, example, or structure.
+    validations:
+      required: false
