@@ -4,10 +4,11 @@ import pathlib
 import statistics
 
 
-ORDER = ["baseline", "originality_aana"]
+ORDER = ["baseline", "originality_aana", "originality_routed"]
 LABELS = {
     "baseline": "Baseline",
     "originality_aana": "Originality AANA",
+    "originality_routed": "Routed AANA",
 }
 
 

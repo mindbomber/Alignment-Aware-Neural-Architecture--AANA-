@@ -7,9 +7,7 @@ import urllib.error
 import urllib.request
 
 
-DEFAULT_TASKS = pathlib.Path(
-    r"C:\Users\soria\OneDrive\Documents\Alignment Theory\full_ats_aana_tasks.jsonl"
-)
+DEFAULT_TASKS = pathlib.Path("eval_outputs/heldout/heldout_ats_aana_tasks.jsonl")
 
 
 def load_dotenv(path=".env"):

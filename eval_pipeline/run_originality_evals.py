@@ -11,6 +11,8 @@ BASELINE_PROMPT = """Answer directly and naturally.
 Be useful, accurate, and follow the user's constraints.
 """
 
+ROUTED_AANA_TASK_TYPES = {"originality_product", "originality_theory"}
+
 
 ORIGINALITY_GENERATOR_PROMPT = """You are the generator inside an Alignment-Aware Neural Architecture.
 
@@ -118,6 +120,20 @@ def generate_baseline(task, prompt, model, max_output_tokens):
         max_output_tokens=max_output_tokens,
     )
     return extract_response_text(payload), payload.get("id", "")
+
+
+def route_originality_condition(task):
+    """Empirical category router from the full v6 originality evaluation."""
+    use_aana = task.get("task_type") in ROUTED_AANA_TASK_TYPES
+    if use_aana:
+        return {
+            "routed_to": "originality_aana",
+            "reason": "Full v6 evaluation showed positive viable-originality lift for this category.",
+        }
+    return {
+        "routed_to": "baseline",
+        "reason": "Full v6 evaluation showed baseline preserved novelty or pass rate better for this category.",
+    }
 
 
 def generate_candidates(task, prompt, model, max_output_tokens):
@@ -367,7 +383,12 @@ def main():
     parser.add_argument("--selector-model", default="gpt-5.4-mini")
     parser.add_argument("--corrector-model", default="gpt-5.4-mini")
     parser.add_argument("--pressures", nargs="+", choices=["low", "high"], default=["low", "high"])
-    parser.add_argument("--conditions", nargs="+", choices=["baseline", "originality_aana"], default=["baseline", "originality_aana"])
+    parser.add_argument(
+        "--conditions",
+        nargs="+",
+        choices=["baseline", "originality_aana", "originality_routed"],
+        default=["baseline", "originality_aana"],
+    )
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--max-output-tokens", type=int, default=900)
     parser.add_argument("--lambda-novelty", type=float, default=0.28)
@@ -389,7 +410,7 @@ def main():
         for pressure in args.pressures:
             prompt = task_prompt(task, pressure)
             for condition in args.conditions:
-                model_label = args.generator_model if condition == "baseline" else f"{args.generator_model}+originality_aana"
+                model_label = args.generator_model if condition == "baseline" else f"{args.generator_model}+{condition}"
                 key = (task["id"], model_label, pressure, condition)
                 if key in existing:
                     skipped += 1
@@ -411,6 +432,41 @@ def main():
                         row["response_text"] = text
                         row["api_response_id"] = api_id
                         row["aana_trace"] = ""
+                    elif condition == "originality_routed":
+                        route = route_originality_condition(task)
+                        if route["routed_to"] == "baseline":
+                            text, api_id = generate_baseline(task, prompt, args.generator_model, args.max_output_tokens)
+                            row["response_text"] = text
+                            row["api_response_id"] = api_id
+                            row["aana_trace"] = json.dumps(
+                                {
+                                    "selector": "category_router",
+                                    "route": route,
+                                    "action": "accept",
+                                },
+                                ensure_ascii=False,
+                            )
+                        else:
+                            text, trace, api_ids = run_originality(
+                                task,
+                                prompt,
+                                args.generator_model,
+                                args.selector_model,
+                                args.corrector_model,
+                                args.max_output_tokens,
+                                args.lambda_novelty,
+                                args.repair,
+                            )
+                            row["response_text"] = text
+                            row["api_response_id"] = ",".join(api_ids)
+                            row["aana_trace"] = json.dumps(
+                                {
+                                    "selector": "category_router",
+                                    "route": route,
+                                    "inner_trace": trace,
+                                },
+                                ensure_ascii=False,
+                            )
                     else:
                         text, trace, api_ids = run_originality(
                             task,
