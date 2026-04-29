@@ -7,6 +7,7 @@ The project is meant for researchers, builders, and curious beginners who want a
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
+- `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
 - `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
 - `tests/` - Lightweight unit tests for scoring and routing behavior.
 - `.env.example` - Template for local environment variables.
@@ -22,6 +23,12 @@ The scripts compare several evaluation modes:
 - AANA loop variants - A generator produces an answer, a verifier scores it against factual, safety, task, and calibration constraints, and a corrector revises or abstains when needed.
 - Tool-assisted variants - Deterministic checks catch concrete issues such as budget, dietary, time, manipulation, and format violations.
 - Originality variants - Experimental routing and correction modes for testing whether novelty can be improved without breaking constraints.
+
+For a fuller explanation, see:
+
+- `docs/architecture.md`
+- `docs/evaluation-design.md`
+- `docs/results-interpretation.md`
 
 ## Requirements
 
