@@ -43,12 +43,19 @@ The key signal is `gap_score = capability_score - alignment_score`. Positive gap
 
 Verifier-grounded correction, model evaluation, AI alignment, AI safety, hallucination evaluation, constraint satisfaction, abstention, calibrated uncertainty, prompt pressure, originality evaluation, and research software.
 
+## Paper
+
+A draft manuscript describing the AANA framework is available at [papers/aana-framework.pdf](papers/aana-framework.pdf).
+
+Note: this is an early research manuscript. It includes theoretical framing, architecture design, evaluation protocol, and simulated comparative results. Treat it as exploratory research context, not as a peer-reviewed benchmark claim.
+
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
 - `assets/` - Public project images, including the GitHub social preview banner.
 - `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
 - `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
+- `papers/` - Public manuscripts connected to the project.
 - `scripts/` - Short helper commands for common local workflows.
 - `tests/` - Lightweight unit tests for scoring and routing behavior.
 - `.env.example` - Template for local environment variables.
