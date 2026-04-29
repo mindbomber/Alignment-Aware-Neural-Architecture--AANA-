@@ -16,5 +16,6 @@ This project does not yet use formal version numbers. Until releases are created
 - Added architecture, evaluation-design, and results-interpretation documentation.
 - Added cross-platform development helper commands under `scripts/`.
 - Added public roadmap, README badges, and release-process documentation.
+- Added a GitHub social preview banner under `assets/`.
 - Changed the default task path from a local machine path to a repo-relative generated file.
 - Expanded `.gitignore` for local environments, caches, generated outputs, and example generated CSVs.

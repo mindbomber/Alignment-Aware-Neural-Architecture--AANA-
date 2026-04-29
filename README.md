@@ -5,6 +5,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![Status: Alpha Research](https://img.shields.io/badge/status-alpha%20research-orange.svg)](ROADMAP.md)
 
+![AANA repository social preview](assets/github-social-preview.png)
+
 This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
@@ -12,6 +14,7 @@ The project is meant for researchers, builders, and curious beginners who want a
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
+- `assets/` - Public project images, including the GitHub social preview banner.
 - `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
 - `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
 - `scripts/` - Short helper commands for common local workflows.
