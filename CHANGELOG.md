@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 This project does not yet use formal version numbers. Until releases are created, entries are grouped by date.
 
-## 2026-04-28
+## v0.1.0 - 2026-04-28
 
 - Prepared the repository for public open-source sharing.
 - Added beginner-facing README documentation.
@@ -15,5 +15,6 @@ This project does not yet use formal version numbers. Until releases are created
 - Added GitHub issue templates and a pull request template.
 - Added architecture, evaluation-design, and results-interpretation documentation.
 - Added cross-platform development helper commands under `scripts/`.
+- Added public roadmap, README badges, and release-process documentation.
 - Changed the default task path from a local machine path to a repo-relative generated file.
 - Expanded `.gitignore` for local environments, caches, generated outputs, and example generated CSVs.

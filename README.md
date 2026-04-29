@@ -1,5 +1,10 @@
 # Alignment-Aware Neural Architecture (AANA) Evaluation Pipeline
 
+[![CI](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/actions/workflows/ci.yml/badge.svg)](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![Status: Alpha Research](https://img.shields.io/badge/status-alpha%20research-orange.svg)](ROADMAP.md)
+
 This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
@@ -13,6 +18,8 @@ The project is meant for researchers, builders, and curious beginners who want a
 - `tests/` - Lightweight unit tests for scoring and routing behavior.
 - `.env.example` - Template for local environment variables.
 - `.gitignore` - Keeps local secrets, generated outputs, caches, and build artifacts out of git.
+- `ROADMAP.md` - Public plan for future improvements and research directions.
+- `CHANGELOG.md` - Public history of notable changes.
 - `eval_outputs/` - Generated locally when you run experiments. It is intentionally ignored because result files can be large, expensive to regenerate, or contain model outputs you may not want to publish automatically.
 
 ## How AANA works here
