@@ -7,6 +7,8 @@ The project is meant for researchers, builders, and curious beginners who want a
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
+- `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
+- `tests/` - Lightweight unit tests for scoring and routing behavior.
 - `.env.example` - Template for local environment variables.
 - `.gitignore` - Keeps local secrets, generated outputs, caches, and build artifacts out of git.
 - `eval_outputs/` - Generated locally when you run experiments. It is intentionally ignored because result files can be large, expensive to regenerate, or contain model outputs you may not want to publish automatically.
@@ -103,6 +105,20 @@ Generate originality tasks and run originality experiments:
 ```powershell
 python eval_pipeline/generate_originality_tasks.py
 python eval_pipeline/run_originality_evals.py --limit 4 --conditions baseline originality_aana
+```
+
+## Examples and tests
+
+Score the checked-in sample outputs:
+
+```powershell
+python eval_pipeline/score_outputs.py --input examples/sample_raw_outputs.jsonl --scored examples/sample_scored_outputs.csv --summary examples/sample_summary_by_condition.csv
+```
+
+Run the unit tests:
+
+```powershell
+python -m unittest discover -s tests
 ```
 
 ## Important safety notes

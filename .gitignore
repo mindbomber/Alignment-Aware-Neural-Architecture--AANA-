@@ -16,3 +16,5 @@ build/
 *.egg-info/
 .DS_Store
 Thumbs.db
+examples/sample_scored_outputs.csv
+examples/sample_summary_by_condition.csv
