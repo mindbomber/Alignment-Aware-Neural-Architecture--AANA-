@@ -9,6 +9,7 @@ The project is meant for researchers, builders, and curious beginners who want a
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
 - `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
 - `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
+- `scripts/` - Short helper commands for common local workflows.
 - `tests/` - Lightweight unit tests for scoring and routing behavior.
 - `.env.example` - Template for local environment variables.
 - `.gitignore` - Keeps local secrets, generated outputs, caches, and build artifacts out of git.
@@ -126,6 +127,12 @@ Run the unit tests:
 
 ```powershell
 python -m unittest discover -s tests
+```
+
+Or use the helper script:
+
+```powershell
+python scripts/dev.py check
 ```
 
 ## Important safety notes

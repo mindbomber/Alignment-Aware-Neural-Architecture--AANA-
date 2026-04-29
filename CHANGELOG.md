@@ -13,5 +13,6 @@ This project does not yet use formal version numbers. Until releases are created
 - Added lightweight unit tests for scoring and originality routing.
 - Added GitHub Actions CI for compile checks and tests.
 - Added architecture, evaluation-design, and results-interpretation documentation.
+- Added cross-platform development helper commands under `scripts/`.
 - Changed the default task path from a local machine path to a repo-relative generated file.
 - Expanded `.gitignore` for local environments, caches, generated outputs, and example generated CSVs.

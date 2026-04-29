@@ -17,7 +17,7 @@ jobs:
           python-version: "3.11"
 
       - name: Compile Python files
-        run: python -m compileall eval_pipeline tests
+        run: python scripts/dev.py compile
 
       - name: Run tests
-        run: python -m unittest discover -s tests
+        run: python scripts/dev.py test
