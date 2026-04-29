@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "Alignment-Aware Neural Architecture (AANA) Evaluation Pipeline"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: "Sori"
+    given-names: "Armando"
+repository-code: "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
+license: MIT
+abstract: "A Python evaluation pipeline for testing Alignment-Aware Neural Architecture ideas, including verifier-grounded correction, constraint preservation, abstention, and originality experiments for AI assistant outputs."
+keywords:
+  - alignment
+  - AI safety
+  - LLM evaluation
+  - verifier-grounded correction
+  - AANA
