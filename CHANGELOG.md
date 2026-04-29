@@ -17,5 +17,6 @@ This project does not yet use formal version numbers. Until releases are created
 - Added cross-platform development helper commands under `scripts/`.
 - Added public roadmap, README badges, and release-process documentation.
 - Added a GitHub social preview banner under `assets/`.
+- Improved the README landing section with audience, motivation, quick-start sample output, and related concepts.
 - Changed the default task path from a local machine path to a repo-relative generated file.
 - Expanded `.gitignore` for local environments, caches, generated outputs, and example generated CSVs.

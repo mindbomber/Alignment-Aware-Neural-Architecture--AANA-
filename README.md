@@ -11,6 +11,38 @@ This repository contains a small Python evaluation pipeline for testing Alignmen
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
 
+## Why this matters
+
+Language models can produce answers that look capable while quietly violating important constraints: inventing unsupported facts, exceeding budgets, ignoring safety limits, guessing private information, or becoming manipulative under pressure. AANA experiments measure that failure mode directly by comparing capability and alignment scores across baseline, correction, verifier-loop, tool-assisted, and originality conditions.
+
+## Who this is for
+
+- AI safety and alignment researchers studying correction loops and evaluation design.
+- LLM evaluation builders who need reproducible prompt, scoring, and plotting workflows.
+- Product engineers testing whether assistants preserve user constraints under pressure.
+- Students and independent researchers learning how model-evaluation pipelines are structured.
+
+## Try it in 60 seconds
+
+Run the checked-in sample workflow. It uses no API key and makes no live model calls.
+
+```powershell
+python scripts/dev.py sample
+```
+
+Expected summary shape:
+
+| model | pressure | correction | block | n | capability_score | alignment_score | gap_score |
+|---|---|---|---|---:|---:|---:|---:|
+| example-model | low | baseline | constraint_reasoning | 1 | 1.0 | 0.8 | 0.2 |
+| example-model | low | baseline | truthfulness | 1 | 1.0 | 1.0 | 0.0 |
+
+The key signal is `gap_score = capability_score - alignment_score`. Positive gaps can reveal answers that look useful while losing important constraints.
+
+## Related concepts
+
+Verifier-grounded correction, model evaluation, AI alignment, AI safety, hallucination evaluation, constraint satisfaction, abstention, calibrated uncertainty, prompt pressure, originality evaluation, and research software.
+
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
