@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AANA Evaluation Pipeline</title>
+    <meta
+      name="description"
+      content="A public-friendly introduction to the Alignment-Aware Neural Architecture evaluation pipeline: testing whether AI answers stay useful while preserving important constraints."
+    >
+    <meta property="og:title" content="AANA Evaluation Pipeline">
+    <meta
+      property="og:description"
+      content="A fun, visual tour of verifier-grounded correction, constraint checks, and alignment evaluation."
+    >
+    <meta property="og:image" content="assets/site/aana-hero.png">
+    <link rel="stylesheet" href="site.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <nav class="site-nav" aria-label="Primary navigation">
+      <div class="nav-inner">
+        <a class="brand" href="#">
+          <span class="brand-mark" aria-hidden="true">AA</span>
+          <span>AANA Evaluation Pipeline</span>
+        </a>
+        <div class="nav-links">
+          <a href="#plain-language">Plain English</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#evidence">Evidence</a>
+          <a href="#try-it">Try It</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-media" aria-hidden="true">
+        <img src="assets/site/aana-hero.png" alt="">
+      </div>
+      <div class="hero-content">
+        <div class="hero-copy">
+          <p class="eyebrow">AI answers through an obstacle course</p>
+          <h1>AANA helps test whether AI stays helpful when the rules matter.</h1>
+          <p class="hero-lede">
+            This project turns tricky AI behavior into something people can see: generate an answer,
+            check it against constraints, repair it when possible, and measure whether usefulness and
+            responsibility move together.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#plain-language">Start the tour</a>
+            <a class="button secondary" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-">View the code</a>
+          </div>
+        </div>
+        <div class="hero-snapshot" aria-label="Current project highlights">
+          <div class="snap">
+            <strong>120</strong>
+            <span>matched constraint-reasoning rows in the tracked comparison</span>
+          </div>
+          <div class="snap">
+            <strong>98.3%</strong>
+            <span>pass rate for the tool-structured AANA condition in this sample</span>
+          </div>
+          <div class="snap">
+            <strong>0</strong>
+            <span>fail-rate rows for the strongest tool-assisted conditions in this sample</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="section alt" id="plain-language">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Plain English</p>
+              <h2>Think of it as a science-fair track for AI answers.</h2>
+            </div>
+            <p>
+              A direct answer can sound confident and useful while quietly breaking a budget,
+              inventing evidence, ignoring a safety limit, or guessing when it should ask a question.
+              AANA makes those hidden failures easier to test.
+            </p>
+          </div>
+
+          <div class="explain-grid">
+            <article class="info-card">
+              <strong>The question</strong>
+              <h3>Can the answer do the job?</h3>
+              <p>Capability measures whether the response is useful, complete, and relevant.</p>
+            </article>
+            <article class="info-card">
+              <strong>The catch</strong>
+              <h3>Did it keep the promises?</h3>
+              <p>Alignment checks whether the answer preserved facts, safety, constraints, refusal, and uncertainty.</p>
+            </article>
+            <article class="info-card">
+              <strong>The signal</strong>
+              <h3>Where did they split apart?</h3>
+              <p>The gap score highlights answers that look good but lose important requirements.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="story">
+        <div class="section-inner story-grid">
+          <div class="feature-image">
+            <img src="assets/site/constraint-course.png" alt="A playful obstacle course representing AI answers passing through constraint checks.">
+          </div>
+          <div>
+            <p class="eyebrow">Why it matters</p>
+            <h2>Real-world prompts often come with invisible tripwires.</h2>
+            <div class="step-list">
+              <div class="step">
+                <span class="step-number">1</span>
+                <div>
+                  <h3>Pressure rises.</h3>
+                  <p>Users ask for faster, cheaper, more certain, or more persuasive answers.</p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-number">2</span>
+                <div>
+                  <h3>Constraints get dropped.</h3>
+                  <p>A model may satisfy the surface request while losing budget, evidence, safety, or format rules.</p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="step-number">3</span>
+                <div>
+                  <h3>AANA measures the gap.</h3>
+                  <p>The pipeline compares direct answers with verifier-grounded correction and tool-assisted checks.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section deep" id="how-it-works">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">How it works</p>
+              <h2>Generate. Verify. Repair. Gate. Score.</h2>
+            </div>
+            <p class="muted">
+              The project is not claiming perfect AI alignment. It is research software for making
+              correction loops, verifier feedback, and failure modes explicit enough to study.
+            </p>
+          </div>
+
+          <div class="pipeline" aria-label="AANA pipeline flow">
+            <div class="pipeline-stage">
+              <strong>Task</strong>
+              <span>A prompt arrives with facts, goals, and constraints.</span>
+            </div>
+            <div class="pipeline-stage">
+              <strong>Generator</strong>
+              <span>The model creates a candidate answer.</span>
+            </div>
+            <div class="pipeline-stage">
+              <strong>Verifier</strong>
+              <span>Scores check factual, human-impact, task, and calibration constraints.</span>
+            </div>
+            <div class="pipeline-stage">
+              <strong>Corrector</strong>
+              <span>The answer is revised, asked about, refused, deferred, or accepted.</span>
+            </div>
+            <div class="pipeline-stage">
+              <strong>Results</strong>
+              <span>JSONL, CSV, and SVG outputs make the tradeoffs inspectable.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section alt" id="evidence">
+        <div class="section-inner evidence-grid">
+          <div>
+            <p class="eyebrow">Current signal</p>
+            <h2>The strongest AANA variants preserved constraints far more often in the tracked sample.</h2>
+            <p>
+              In the checked-in 120-row constraint-reasoning comparison, the baseline pass rate is
+              45.8%. The tool-structured AANA condition reaches 98.3% pass rate while increasing
+              capability from 0.662 to 0.922. These are model-judged research results, not a certified
+              benchmark claim.
+            </p>
+            <div class="metrics">
+              <article class="metric-card">
+                <strong>Baseline pass rate</strong>
+                <b>45.8%</b>
+                <p>Direct answers without the same correction loop.</p>
+              </article>
+              <article class="metric-card">
+                <strong>AANA tools structured</strong>
+                <b>98.3%</b>
+                <p>Verifier loop plus deterministic constraint checks.</p>
+              </article>
+              <article class="metric-card">
+                <strong>Capability lift</strong>
+                <b>+0.260</b>
+                <p>Capability delta versus baseline in this sample.</p>
+              </article>
+            </div>
+            <div class="section-actions">
+              <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/docs/constraint-reasoning-aana-report.md">Read the report</a>
+              <a class="button ink" href="evidence/manifest.json">Open the manifest</a>
+            </div>
+          </div>
+          <div class="feature-image">
+            <img src="assets/site/evidence-beacon.png" alt="A friendly research scene where data points become a clear insight signal.">
+          </div>
+        </div>
+
+        <div class="section-inner plot-strip" aria-label="Evidence plots">
+          <a class="plot-link" href="evidence/plots/fig1_cap_vs_align.svg">
+            <img src="evidence/plots/fig1_cap_vs_align.svg" alt="Capability versus alignment plot.">
+            <span>Capability vs. alignment</span>
+          </a>
+          <a class="plot-link" href="evidence/plots/fig2_gap_pressure.svg">
+            <img src="evidence/plots/fig2_gap_pressure.svg" alt="Gap by pressure plot.">
+            <span>Gap under pressure</span>
+          </a>
+          <a class="plot-link" href="evidence/plots/fig3_gap_correction.svg">
+            <img src="evidence/plots/fig3_gap_correction.svg" alt="Gap by correction condition plot.">
+            <span>Gap by correction</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="section" id="try-it">
+        <div class="section-inner story-grid">
+          <div>
+            <p class="eyebrow">Try it in 60 seconds</p>
+            <h2>Run the sample workflow without an API key.</h2>
+            <p>
+              The checked-in sample uses tiny example files so newcomers can see the file formats,
+              scoring flow, and summary output before spending money on live model calls.
+            </p>
+            <div class="section-actions">
+              <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
+              <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/README.md">Read the full README</a>
+            </div>
+          </div>
+
+          <div class="demo-shell" aria-label="Sample terminal command">
+            <div class="demo-top">
+              <span class="lights" aria-hidden="true"><span></span><span></span><span></span></span>
+              <b>local sample</b>
+            </div>
+            <pre><code>python scripts/dev.py sample
+
+# What to watch:
+# capability_score - useful and task-fit
+# alignment_score  - preserves constraints
+# gap_score        - where capability and alignment diverge</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section alt" id="resources">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Go deeper</p>
+              <h2>Research context without hiding the caveats.</h2>
+            </div>
+            <p>
+              The project is alpha research code. It includes reproducible artifacts, early papers,
+              and explicit limitations so readers can inspect the evidence trail.
+            </p>
+          </div>
+          <div class="resource-grid">
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/docs/architecture.md">
+              <h3>Architecture</h3>
+              <p>A beginner-friendly breakdown of generator, verifier, corrector, and scorer roles.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/docs/evaluation-design.md">
+              <h3>Evaluation Design</h3>
+              <p>How tasks, conditions, pressure levels, and scoring files fit together.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/papers/aana-framework.pdf">
+              <h3>AANA Paper</h3>
+              <p>The early manuscript that frames verifier-grounded correction.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/main/docs/results-interpretation.md">
+              <h3>Reading Results</h3>
+              <p>How to interpret capability, alignment, gap score, and pass rate.</p>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>AANA Evaluation Pipeline. MIT licensed alpha research software.</p>
+        <a href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-">GitHub repository</a>
+      </div>
+    </footer>
+
+    <script src="site.js"></script>
+  </body>
+</html>
