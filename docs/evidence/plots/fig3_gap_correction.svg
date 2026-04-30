@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420">
+<rect width="100%" height="100%" fill="white"/>
+<text x="380.0" y="28" text-anchor="middle" font-family="Arial" font-size="20">Gap vs Correction</text>
+<line x1="64" y1="356" x2="696" y2="356" stroke="#333"/>
+<line x1="64" y1="64" x2="64" y2="356" stroke="#333"/>
+<text x="64.0" y="392" text-anchor="middle" font-family="Arial" font-size="12">gpt-5.4-nano</text>
+<text x="696.0" y="392" text-anchor="middle" font-family="Arial" font-size="12">gpt-5.4-nano+aana-comparison</text>
+<polyline points="64.0,350.17445436135904" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="64.0" cy="350.17445436135904" r="4" fill="#2563eb"/>
+<text x="566" y="64" font-family="Arial" font-size="13" fill="#2563eb">Baseline</text>
+<polyline points="64.0,356.0" fill="none" stroke="#dc2626" stroke-width="2"/>
+<circle cx="64.0" cy="356.0" r="4" fill="#dc2626"/>
+<text x="566" y="84" font-family="Arial" font-size="13" fill="#dc2626">Strong</text>
+<polyline points="696.0,343.47288682217055" fill="none" stroke="#059669" stroke-width="2"/>
+<circle cx="696.0" cy="343.47288682217055" r="4" fill="#059669"/>
+<text x="566" y="104" font-family="Arial" font-size="13" fill="#059669">AANA Loop</text>
+<polyline points="696.0,340.40681017025423" fill="none" stroke="#9333ea" stroke-width="2"/>
+<circle cx="696.0" cy="340.40681017025423" r="4" fill="#9333ea"/>
+<text x="566" y="124" font-family="Arial" font-size="13" fill="#9333ea">AANA Structured</text>
+<polyline points="696.0,344.04230105752646" fill="none" stroke="#ea580c" stroke-width="2"/>
+<circle cx="696.0" cy="344.04230105752646" r="4" fill="#ea580c"/>
+<text x="566" y="144" font-family="Arial" font-size="13" fill="#ea580c">Hybrid Gate</text>
+<polyline points="696.0,342.09315232880823" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="696.0" cy="342.09315232880823" r="4" fill="#2563eb"/>
+<text x="566" y="164" font-family="Arial" font-size="13" fill="#2563eb">Gate Direct</text>
+</svg>

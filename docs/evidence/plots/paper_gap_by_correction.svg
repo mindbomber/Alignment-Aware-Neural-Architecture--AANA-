@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="500" viewBox="0 0 980 500">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#111827}.small{font-size:12px}.title{font-size:20px;font-weight:700}.axis{stroke:#374151}.grid{stroke:#e5e7eb}</style>
+<text class="title" x="490.0" y="32" text-anchor="middle">Capability-Alignment Gap by Correction Condition</text>
+<text class="small" x="20" y="227.0" transform="rotate(-90 20 227.0)" text-anchor="middle">gap score</text>
+<line class="grid" x1="86" y1="390.0" x2="942" y2="390.0"/>
+<text class="small" x="76" y="394.0" text-anchor="end">-0.11</text>
+<line class="grid" x1="86" y1="324.8" x2="942" y2="324.8"/>
+<text class="small" x="76" y="328.8" text-anchor="end">-0.05</text>
+<line class="grid" x1="86" y1="259.6" x2="942" y2="259.6"/>
+<text class="small" x="76" y="263.6" text-anchor="end">0.01</text>
+<line class="grid" x1="86" y1="194.4" x2="942" y2="194.4"/>
+<text class="small" x="76" y="198.4" text-anchor="end">0.08</text>
+<line class="grid" x1="86" y1="129.19999999999993" x2="942" y2="129.19999999999993"/>
+<text class="small" x="76" y="133.19999999999993" text-anchor="end">0.14</text>
+<line class="grid" x1="86" y1="64.0" x2="942" y2="64.0"/>
+<text class="small" x="76" y="68.0" text-anchor="end">0.20</text>
+<line class="axis" x1="86" y1="273.59014197696223" x2="942" y2="273.59014197696223"/>
+<rect x="126.33333333333333" y="273.59014197696223" width="62" height="93.18028395392446" fill="#059669" rx="3"/>
+<text class="small" x="157.33333333333331" y="384.7704259308867" text-anchor="middle">-0.089</text>
+<text class="small" x="157.33333333333331" y="448" text-anchor="middle">Baseline</text>
+<rect x="269.0" y="273.59014197696223" width="62" height="116.40985802303777" fill="#059669" rx="3"/>
+<text class="small" x="300.0" y="408.0" text-anchor="middle">-0.111</text>
+<text class="small" x="300.0" y="448" text-anchor="middle">Strong</text>
+<rect x="411.66666666666663" y="273.59014197696223" width="62" height="66.45754085186178" fill="#059669" rx="3"/>
+<text class="small" x="442.66666666666663" y="358.047682828824" text-anchor="middle">-0.063</text>
+<text class="small" x="442.66666666666663" y="448" text-anchor="middle">AANA Loop</text>
+<rect x="554.3333333333334" y="273.59014197696223" width="62" height="54.231449236538936" fill="#059669" rx="3"/>
+<text class="small" x="585.3333333333334" y="345.82159121350116" text-anchor="middle">-0.052</text>
+<text class="small" x="585.3333333333334" y="448" text-anchor="middle">AANA Structured</text>
+<rect x="697.0" y="273.59014197696223" width="62" height="68.72810072327883" fill="#059669" rx="3"/>
+<text class="small" x="728.0" y="360.31824270024106" text-anchor="middle">-0.066</text>
+<text class="small" x="728.0" y="448" text-anchor="middle">Hybrid Gate</text>
+<rect x="839.6666666666666" y="273.59014197696223" width="62" height="60.95579962496652" fill="#059669" rx="3"/>
+<text class="small" x="870.6666666666666" y="352.54594160192875" text-anchor="middle">-0.058</text>
+<text class="small" x="870.6666666666666" y="448" text-anchor="middle">Gate Direct</text>
+</svg>

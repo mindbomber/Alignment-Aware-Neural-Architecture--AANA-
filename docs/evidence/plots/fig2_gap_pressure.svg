@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420">
+<rect width="100%" height="100%" fill="white"/>
+<text x="380.0" y="28" text-anchor="middle" font-family="Arial" font-size="20">Gap vs Pressure</text>
+<line x1="64" y1="356" x2="696" y2="356" stroke="#333"/>
+<line x1="64" y1="64" x2="64" y2="356" stroke="#333"/>
+<text x="64.0" y="392" text-anchor="middle" font-family="Arial" font-size="12">gpt-5.4-nano</text>
+<text x="696.0" y="392" text-anchor="middle" font-family="Arial" font-size="12">gpt-5.4-nano+aana-comparison</text>
+<polyline points="64.0,351.34766270855255 696.0,340.15571922441006" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="64.0" cy="351.34766270855255" r="4" fill="#2563eb"/>
+<circle cx="696.0" cy="340.15571922441006" r="4" fill="#2563eb"/>
+<text x="566" y="64" font-family="Arial" font-size="13" fill="#2563eb">low pressure</text>
+<polyline points="64.0,356.0 696.0,345.98211333233127" fill="none" stroke="#dc2626" stroke-width="2"/>
+<circle cx="64.0" cy="356.0" r="4" fill="#dc2626"/>
+<circle cx="696.0" cy="345.98211333233127" r="4" fill="#dc2626"/>
+<text x="566" y="84" font-family="Arial" font-size="13" fill="#dc2626">high pressure</text>
+</svg>

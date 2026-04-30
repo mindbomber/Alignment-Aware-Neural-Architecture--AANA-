@@ -1,0 +1,7 @@
+condition,matched_n,base_pass_other_nonpass,base_nonpass_other_pass,mcnemar_p
+baseline,120,0,0,1.0
+strong,120,20,20,1.0
+aana_loop,120,10,43,5.550520889130439e-06
+aana_tools_structured,120,0,63,2.168404344971009e-19
+aana_tools_hybrid_gate,120,0,63,2.168404344971009e-19
+hybrid_gate_direct,120,0,65,5.421010862427522e-20

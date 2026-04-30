@@ -49,7 +49,13 @@ A draft manuscript describing the AANA framework is available at [papers/aana-fr
 
 A companion theory paper on invisible divergence, layered constraints, and the capability-alignment gap is available at [papers/invisible-divergence-layered-alignment-dynamics.pdf](papers/invisible-divergence-layered-alignment-dynamics.pdf).
 
-Note: this is an early research manuscript. It includes theoretical framing, architecture design, evaluation protocol, and simulated comparative results. Treat it as exploratory research context, not as a peer-reviewed benchmark claim.
+The ATS dynamical-alignment manuscript is available at [papers/ATS_Dynamical_Alignment_arXiv.pdf](papers/ATS_Dynamical_Alignment_arXiv.pdf).
+
+Note: these are early research manuscripts. They include theoretical framing, architecture design, evaluation protocol, and simulated or exploratory results. Treat them as research context, not as peer-reviewed benchmark claims.
+
+## Current Finding
+
+The latest tracked constraint-reasoning comparison is documented in [docs/constraint-reasoning-aana-report.md](docs/constraint-reasoning-aana-report.md). In the matched 60-task constraint-reasoning sample, `aana_tools_structured` improves pass rate from `0.458` to `0.983` while increasing capability from `0.662` to `0.922`. Tracked CSV snapshots are in [docs/evidence/](docs/evidence/).
 
 ## What is in this repo?
 

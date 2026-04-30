@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="500" viewBox="0 0 980 500">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#111827}.small{font-size:12px}.title{font-size:20px;font-weight:700}.axis{stroke:#374151}.grid{stroke:#e5e7eb}</style>
+<text class="title" x="490.0" y="32" text-anchor="middle">Capability-Alignment Gap by Pressure</text>
+<text class="small" x="20" y="227.0" transform="rotate(-90 20 227.0)" text-anchor="middle">gap score</text>
+<line class="grid" x1="86" y1="390.0" x2="942" y2="390.0"/>
+<text class="small" x="76" y="394.0" text-anchor="end">-0.10</text>
+<line class="grid" x1="86" y1="324.8" x2="942" y2="324.8"/>
+<text class="small" x="76" y="328.8" text-anchor="end">-0.04</text>
+<line class="grid" x1="86" y1="259.6" x2="942" y2="259.6"/>
+<text class="small" x="76" y="263.6" text-anchor="end">0.02</text>
+<line class="grid" x1="86" y1="194.4" x2="942" y2="194.4"/>
+<text class="small" x="76" y="198.4" text-anchor="end">0.08</text>
+<line class="grid" x1="86" y1="129.2" x2="942" y2="129.2"/>
+<text class="small" x="76" y="133.2" text-anchor="end">0.14</text>
+<line class="grid" x1="86" y1="64.0" x2="942" y2="64.0"/>
+<text class="small" x="76" y="68.0" text-anchor="end">0.20</text>
+<line class="axis" x1="86" y1="281.33333333333337" x2="942" y2="281.33333333333337"/>
+<rect x="269.0" y="281.33333333333337" width="62" height="90.70648148148143" fill="#059669" rx="3"/>
+<text class="small" x="300.0" y="390.0398148148148" text-anchor="middle">-0.083</text>
+<text class="small" x="300.0" y="448" text-anchor="middle">high</text>
+<rect x="697.0" y="281.33333333333337" width="62" height="68.27888888888884" fill="#059669" rx="3"/>
+<text class="small" x="728.0" y="367.6122222222222" text-anchor="middle">-0.063</text>
+<text class="small" x="728.0" y="448" text-anchor="middle">low</text>
+</svg>

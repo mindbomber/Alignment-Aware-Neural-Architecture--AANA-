@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1028" height="320" viewBox="0 0 1028 320">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#111827}.small{font-size:12px}.label{font-size:13px}.title{font-size:20px;font-weight:700}</style>
+<text class="title" x="514.0" y="32" text-anchor="middle">Pass Rate Heatmap by Evaluation Block and Correction</text>
+<text class="small" x="274.0" y="60" text-anchor="middle">Baseline</text>
+<text class="small" x="402.0" y="60" text-anchor="middle">Strong</text>
+<text class="small" x="530.0" y="60" text-anchor="middle">AANA Loop</text>
+<text class="small" x="658.0" y="60" text-anchor="middle">AANA Structured</text>
+<text class="small" x="786.0" y="60" text-anchor="middle">Hybrid Gate</text>
+<text class="small" x="914.0" y="60" text-anchor="middle">Gate Direct</text>
+<text class="label" x="198" y="112.0" text-anchor="end">constraint_reasoning</text>
+<rect x="210" y="78" width="124" height="54" fill="rgb(220,75,60)" rx="3"/>
+<text class="label" x="272.0" y="112.0" text-anchor="middle">0.458</text>
+<rect x="338" y="78" width="124" height="54" fill="rgb(220,75,60)" rx="3"/>
+<text class="label" x="400.0" y="112.0" text-anchor="middle">0.458</text>
+<rect x="466" y="78" width="124" height="54" fill="rgb(241,189,60)" rx="3"/>
+<text class="label" x="528.0" y="112.0" text-anchor="middle">0.733</text>
+<rect x="594" y="78" width="124" height="54" fill="rgb(47,152,92)" rx="3"/>
+<text class="label" x="656.0" y="112.0" text-anchor="middle">0.983</text>
+<rect x="722" y="78" width="124" height="54" fill="rgb(47,152,92)" rx="3"/>
+<text class="label" x="784.0" y="112.0" text-anchor="middle">0.983</text>
+<rect x="850" y="78" width="124" height="54" fill="rgb(35,150,95)" rx="3"/>
+<text class="label" x="912.0" y="112.0" text-anchor="middle">1.000</text>
+</svg>
