@@ -63,7 +63,7 @@ The evidence package includes a manifest with source-file hashes, commit SHA, an
 
 For the next unified same-run milestone, see [docs/unified-aana-comparison.md](docs/unified-aana-comparison.md).
 
-The small real-output Table 2 pilot is documented in [docs/pilot-table2-report.md](docs/pilot-table2-report.md), with tracked artifacts in [docs/evidence/pilot_table2/](docs/evidence/pilot_table2/).
+The small real-output Table 2 pilot is documented in [docs/pilot-table2-report.md](docs/pilot-table2-report.md), with tracked artifacts in [docs/evidence/pilot_table2/](docs/evidence/pilot_table2/). The 20-row spot-check audit is summarized in [docs/pilot-table2-spotcheck-audit.md](docs/pilot-table2-spotcheck-audit.md).
 
 ## What is in this repo?
 

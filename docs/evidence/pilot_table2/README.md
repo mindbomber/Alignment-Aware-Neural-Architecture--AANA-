@@ -7,6 +7,7 @@ Files:
 - `pilot_tasks.jsonl` - The 40-prompt pilot task set.
 - `table2_pilot_summary.csv` - The condition-level pilot table.
 - `manual_spotcheck_sample.csv` - Twenty randomly sampled judged outputs for human review.
+- `reviewer_spotcheck_audit.csv` - Filled reviewer spot-check decisions and notes for the 20 sampled rows.
 - `manifest.json` - Commands, hashes, models, conditions, directional tests, and caveats.
 
 The full raw and judged output files remain in local `eval_outputs/pilot_table2/` and are intentionally not tracked. Their hashes are recorded in `manifest.json`.
