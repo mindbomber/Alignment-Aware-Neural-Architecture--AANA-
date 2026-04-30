@@ -160,7 +160,7 @@ img {
 }
 
 .hero-copy {
-  max-width: 720px;
+  max-width: 660px;
 }
 
 .eyebrow {
@@ -180,8 +180,9 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(3.1rem, 9vw, 7rem);
-  max-width: 830px;
+  font-size: clamp(2.8rem, 6.6vw, 5.6rem);
+  line-height: 1.02;
+  max-width: 700px;
 }
 
 h2 {
@@ -889,6 +890,11 @@ pre {
     min-height: 720px;
   }
 
+  h1 {
+    font-size: clamp(2.55rem, 8vw, 4.8rem);
+    max-width: 640px;
+  }
+
   .section-head,
   .story-grid,
   .evidence-grid,
@@ -938,6 +944,10 @@ pre {
   .hero-content {
     min-height: 760px;
     padding-top: 4rem;
+  }
+
+  h1 {
+    font-size: clamp(2.35rem, 11vw, 3.6rem);
   }
 
   .hero-snapshot,
