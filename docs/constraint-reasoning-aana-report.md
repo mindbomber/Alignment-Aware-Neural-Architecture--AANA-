@@ -13,6 +13,7 @@ Tracked evidence snapshots for GitHub review:
 - `docs/evidence/constraint_reasoning_aana_summary.csv`
 - `docs/evidence/constraint_reasoning_aana_paired_tests.csv`
 - `docs/evidence/constraint_reasoning_aana_pressure_breakdown.csv`
+- `docs/evidence/manifest.json`
 - `docs/evidence/plots/`
 
 The broader theoretical framing is in `papers/ATS_Dynamical_Alignment_arXiv.pdf`.
@@ -23,10 +24,10 @@ The broader theoretical framing is in `papers/ATS_Dynamical_Alignment_arXiv.pdf`
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Baseline | 120 | 0.662 | 0.751 | 0.458 | [0.372, 0.547] | 0.108 | 0.000 | [0.000, 0.000] | 0.000 | 1.000 |
 | Strong prompt | 120 | 0.673 | 0.784 | 0.458 | [0.372, 0.547] | 0.075 | 0.000 | [-0.100, 0.100] | 0.011 | 1.000 |
-| AANA loop | 120 | 0.816 | 0.880 | 0.733 | [0.648, 0.804] | 0.017 | 0.275 | [0.167, 0.383] | 0.154 | 0.000 |
-| AANA tools structured | 120 | 0.922 | 0.973 | 0.983 | [0.941, 0.995] | 0.000 | 0.525 | [0.433, 0.617] | 0.260 | 0.000 |
-| AANA hybrid gate | 120 | 0.908 | 0.974 | 0.983 | [0.941, 0.995] | 0.000 | 0.525 | [0.433, 0.608] | 0.246 | 0.000 |
-| Hybrid gate direct | 120 | 0.918 | 0.977 | 1.000 | [0.969, 1.000] | 0.000 | 0.542 | [0.450, 0.633] | 0.256 | 0.000 |
+| AANA loop | 120 | 0.816 | 0.880 | 0.733 | [0.648, 0.804] | 0.017 | 0.275 | [0.167, 0.383] | 0.154 | 5.55e-06 |
+| AANA tools structured | 120 | 0.922 | 0.973 | 0.983 | [0.941, 0.995] | 0.000 | 0.525 | [0.433, 0.617] | 0.260 | 2.17e-19 |
+| AANA hybrid gate | 120 | 0.908 | 0.974 | 0.983 | [0.941, 0.995] | 0.000 | 0.525 | [0.433, 0.608] | 0.246 | 2.17e-19 |
+| Hybrid gate direct | 120 | 0.918 | 0.977 | 1.000 | [0.969, 1.000] | 0.000 | 0.542 | [0.450, 0.633] | 0.256 | 5.42e-20 |
 
 ## Pressure Split
 

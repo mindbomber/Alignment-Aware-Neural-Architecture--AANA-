@@ -39,6 +39,8 @@ Expected summary shape:
 
 The key signal is `gap_score = capability_score - alignment_score`. Positive gaps can reveal answers that look useful while losing important constraints.
 
+Latest evidence package: [Constraint-Reasoning AANA Evidence Package v0.1](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1).
+
 ## Related concepts
 
 Verifier-grounded correction, model evaluation, AI alignment, AI safety, hallucination evaluation, constraint satisfaction, abstention, calibrated uncertainty, prompt pressure, originality evaluation, and research software.
@@ -56,6 +58,8 @@ Note: these are early research manuscripts. They include theoretical framing, ar
 ## Current Finding
 
 The latest tracked constraint-reasoning comparison is documented in [docs/constraint-reasoning-aana-report.md](docs/constraint-reasoning-aana-report.md). In the matched 60-task constraint-reasoning sample, `aana_tools_structured` improves pass rate from `0.458` to `0.983` while increasing capability from `0.662` to `0.922`. Tracked CSV snapshots are in [docs/evidence/](docs/evidence/).
+
+The evidence package includes a manifest with source-file hashes, commit SHA, analysis commands, confidence-interval methods, and known caveats: [docs/evidence/manifest.json](docs/evidence/manifest.json).
 
 ## What is in this repo?
 
@@ -198,6 +202,12 @@ python scripts/dev.py check
 - Review generated outputs before sharing them publicly.
 - Do not commit `.env`, raw private prompts, API keys, or unpublished data.
 - The evaluator is experimental research code, not a certified benchmark.
+
+## Limitations
+
+- Current reported scores are model-judged, not human-adjudicated.
+- The constraint-reasoning evidence package uses matched task IDs, but `hybrid_gate` rows come from a schema-ablation run.
+- The next target is a unified same-run rerun with one frozen task file, model versions, judge model, command log, and dated manifest.
 
 ## Repository status
 

@@ -1,0 +1,67 @@
+{
+  "name": "Constraint-Reasoning AANA Evidence Package",
+  "version": "0.1",
+  "release_tag": "constraint-reasoning-aana-v0.1",
+  "release_url": "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1",
+  "repo_commit_sha": "0fda62e3bfc24c470cb574a960625f470f1fb996",
+  "generated_date": "2026-04-30",
+  "task_count": 60,
+  "pressure_levels": ["low", "high"],
+  "row_count": 120,
+  "block": "constraint_reasoning",
+  "conditions": [
+    "baseline",
+    "strong",
+    "aana_loop",
+    "aana_tools_structured",
+    "aana_tools_hybrid_gate",
+    "hybrid_gate_direct"
+  ],
+  "analysis_command": "python eval_pipeline/compare_constraint_reasoning.py",
+  "plot_command": "python eval_pipeline/plot_results.py --summary eval_outputs/constraint_reasoning_aana_evidence/plot_summary_by_condition.csv --output-dir eval_outputs/constraint_reasoning_aana_evidence/plots",
+  "analysis_methods": {
+    "pass_rate_interval": "Wilson 95% confidence interval",
+    "delta_interval": "paired pressure-stratified bootstrap, 10000 iterations, fixed random seeds",
+    "paired_test": "exact two-sided McNemar/binomial test over discordant pass/non-pass outcomes"
+  },
+  "tracked_outputs": [
+    {
+      "path": "docs/evidence/constraint_reasoning_aana_summary.csv",
+      "sha256": "934D8395DDE0BF64EDD52FBDD1E5BEEE9BDB39047D0B9EAAED81A8ECB300B66F"
+    },
+    {
+      "path": "docs/evidence/constraint_reasoning_aana_paired_tests.csv",
+      "sha256": "56CEDAE72DFDA5858A6AA05CAA5AAD5B17F62E3E3DFC810172EBBB09DC548E58"
+    },
+    {
+      "path": "docs/evidence/constraint_reasoning_aana_pressure_breakdown.csv",
+      "sha256": "70810F7C60631BD91E1B6F418076032C25311BA5AB8E09E52C314E5ACF6C089D"
+    }
+  ],
+  "source_files_not_tracked_in_git": [
+    {
+      "path": "eval_outputs/heldout_v2/judged_outputs_v2.csv",
+      "sha256": "A04F74709FD6DA48B14EA505DAD68718D444E9F2B9EAD79266E13F65646FAD8A"
+    },
+    {
+      "path": "eval_outputs/schema_ablation/hybrid_gate_judged.csv",
+      "sha256": "5E92C74148586FD993671D2C01F07FB00C486BA25D011BAAA21F3201BF783269"
+    }
+  ],
+  "paper": {
+    "path": "papers/ATS_Dynamical_Alignment_arXiv.pdf",
+    "sha256": "4D17A6B4BB218C20BFB0A1C919144B05A2CCE177A8A24B6C16863A5B6DC22901"
+  },
+  "primary_result": {
+    "baseline_pass_rate": 0.458,
+    "aana_tools_structured_pass_rate": 0.983,
+    "baseline_capability": 0.662,
+    "aana_tools_structured_capability": 0.922,
+    "aana_tools_structured_mcnemar_p": 2.168404344971009e-19
+  },
+  "known_caveats": [
+    "Scores are model-judged, not human-adjudicated.",
+    "Hybrid-gate rows come from a schema-ablation run, but use the same constraint task IDs and pressure split.",
+    "The next milestone is a unified same-run rerun with frozen task file, model versions, judge model, command log, and dated manifest."
+  ]
+}

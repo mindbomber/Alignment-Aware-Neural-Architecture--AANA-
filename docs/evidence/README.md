@@ -7,6 +7,7 @@ Files:
 - `constraint_reasoning_aana_summary.csv` - Aggregate condition-level metrics, confidence intervals, deltas, and McNemar p-values.
 - `constraint_reasoning_aana_paired_tests.csv` - Paired pass/non-pass discordance counts against baseline.
 - `constraint_reasoning_aana_pressure_breakdown.csv` - High-pressure and low-pressure splits by condition.
+- `manifest.json` - Release tag, commit SHA, source file hashes, methods, caveats, and primary result.
 - `plots/` - SVG visualizations generated from the plot-compatible summary.
 
 These snapshots are intentionally separate from `eval_outputs/`, which is gitignored because local experiment outputs can be large and may contain raw model generations. Regenerate the snapshots with:
