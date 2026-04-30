@@ -721,12 +721,14 @@ p {
 
 .paper-preview {
   background: #edf7fa;
-  display: block;
+  display: flex;
+  height: 400px;
+  overflow: hidden;
 }
 
 .paper-preview img {
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
   object-position: center;
   width: 100%;
 }
@@ -995,6 +997,10 @@ pre {
   .infographic-grid,
   .paper-grid {
     grid-template-columns: 1fr;
+  }
+
+  .paper-preview {
+    height: 300px;
   }
 
   .hero-actions,
