@@ -66,20 +66,20 @@
             <a class="button secondary" href="#videos">Watch videos</a>
             <a class="button secondary" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-">View the code</a>
           </div>
-          <p class="hero-note">Early model-judged research evidence, not a certified benchmark claim.</p>
+          <p class="hero-note">Early model-judged evidence. Useful signal, not a certified benchmark claim.</p>
         </div>
         <div class="hero-snapshot" aria-label="Current project highlights">
           <div class="snap">
             <strong>120</strong>
-            <span>matched constraint-reasoning rows in the tracked comparison</span>
+            <span>matched constraint-reasoning cases in the pilot comparison</span>
           </div>
           <div class="snap">
             <strong>98.3%</strong>
-            <span>pass rate for the tool-structured AANA condition in this sample</span>
+            <span>pass rate for the strongest tool-structured AANA run</span>
           </div>
           <div class="snap">
             <strong>0</strong>
-            <span>fail-rate rows for the strongest tool-assisted conditions in this sample</span>
+            <span>failed cases in the strongest tool-assisted runs</span>
           </div>
         </div>
       </div>
@@ -91,12 +91,12 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Watch first</p>
-              <h2>Two short videos introduce the alignment problem and the AANA response.</h2>
+              <h2>Start with the story: why better answers can still drift.</h2>
             </div>
             <p>
-              These videos are placed near the top for visitors who want the story before reading
-              papers, reports, or evidence files. Each video can be played in-page, opened directly,
-              downloaded, or shared by link.
+              Before the charts and papers, these short videos show the core tension: an AI system
+              can get more capable while losing track of the constraints that make its answers worth
+              trusting.
             </p>
           </div>
 
@@ -108,8 +108,8 @@
               </button>
               <div class="video-copy">
                 <h3>The Alignment Illusion</h3>
-                <p>Why systems can look increasingly capable while drifting away from the constraints that make outputs trustworthy.</p>
-                <p class="media-note">Loads on play. Full MP4: 32.2 MB.</p>
+                <p>A quick tour of the failure mode: answers that look sharper on the surface while the important boundaries slip out of view.</p>
+                <p class="media-note">Preview now, save the full 32.2 MB MP4 for later.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/the-alignment-illusion.mp4" data-modal="video">Open video</a>
                   <a class="button ink" href="assets/site/the-alignment-illusion.mp4" download>Download MP4</a>
@@ -125,8 +125,8 @@
               </button>
               <div class="video-copy">
                 <h3>A New Way to Build Safer AI</h3>
-                <p>How verifier-grounded correction, grounding, and gating can make alignment a maintained process.</p>
-                <p class="media-note">Loads on play. Full MP4: 42.9 MB.</p>
+                <p>AANA treats alignment as a process: check the answer, ground it, repair what can be repaired, and block what should not pass.</p>
+                <p class="media-note">Preview now, save the full 42.9 MB MP4 for later.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/a-new-way-to-build-safer-ai.mp4" data-modal="video">Open video</a>
                   <a class="button ink" href="assets/site/a-new-way-to-build-safer-ai.mp4" download>Download MP4</a>
@@ -143,7 +143,7 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Plain English</p>
-              <h2>Think of it as a science-fair track for AI answers.</h2>
+              <h2>Think of it as an obstacle course for AI answers.</h2>
             </div>
             <p>
               A direct answer can sound confident and useful while quietly breaking a budget,
@@ -156,17 +156,17 @@
             <article class="info-card">
               <strong>The question</strong>
               <h3>Can the answer do the job?</h3>
-              <p>Capability measures whether the response is useful, complete, and relevant.</p>
+              <p>Capability asks whether the response is useful enough to be tempting.</p>
             </article>
             <article class="info-card">
               <strong>The catch</strong>
               <h3>Did it keep the promises?</h3>
-              <p>Alignment checks whether the answer preserved facts, safety, constraints, refusal, and uncertainty.</p>
+              <p>Alignment asks whether it stayed honest about facts, limits, safety, and uncertainty.</p>
             </article>
             <article class="info-card">
               <strong>The signal</strong>
               <h3>Where did they split apart?</h3>
-              <p>The gap score highlights answers that look good but lose important requirements.</p>
+              <p>The gap score surfaces the polished answers that quietly lose the plot.</p>
             </article>
           </div>
         </div>
@@ -199,7 +199,7 @@
                 <span class="step-number">3</span>
                 <div>
                   <h3>AANA measures the gap.</h3>
-                  <p>The pipeline compares direct answers with verifier-grounded correction and tool-assisted checks.</p>
+                  <p>AANA compares one-shot answers with answers that must survive verification, repair, and gating.</p>
                 </div>
               </div>
             </div>
@@ -223,23 +223,23 @@
           <div class="pipeline" aria-label="AANA pipeline flow">
             <div class="pipeline-stage">
               <strong>Task</strong>
-              <span>A prompt arrives with facts, goals, and constraints.</span>
+              <span>A request arrives with goals, facts, boundaries, and tradeoffs.</span>
             </div>
             <div class="pipeline-stage">
               <strong>Generator</strong>
-              <span>The model creates a candidate answer.</span>
+              <span>The model takes its first shot.</span>
             </div>
             <div class="pipeline-stage">
               <strong>Verifier</strong>
-              <span>Scores check factual, human-impact, task, and calibration constraints.</span>
+              <span>Verifier checks look for broken facts, risky impacts, task drift, and false confidence.</span>
             </div>
             <div class="pipeline-stage">
               <strong>Corrector</strong>
-              <span>The answer is revised, asked about, refused, deferred, or accepted.</span>
+              <span>The system repairs, asks, refuses, defers, or lets the answer through.</span>
             </div>
             <div class="pipeline-stage">
               <strong>Results</strong>
-              <span>JSONL, CSV, and SVG outputs make the tradeoffs inspectable.</span>
+              <span>The trail stays visible: records, tables, and charts show what changed.</span>
             </div>
           </div>
         </div>
@@ -249,28 +249,28 @@
         <div class="section-inner evidence-grid">
           <div>
             <p class="eyebrow">Current signal</p>
-            <h2>The strongest AANA variants preserved constraints far more often in the tracked sample.</h2>
+            <h2>In the pilot run, correction loops held the line far better than direct answers.</h2>
             <p>
-              In the checked-in 120-row constraint-reasoning comparison, the baseline pass rate is
-              45.8%. The tool-structured AANA condition reaches 98.3% pass rate while increasing
-              capability from 0.662 to 0.922. These are model-judged research results, not a certified
-              benchmark claim.
+              In the published 120-case comparison, direct answers passed 45.8% of the constraint
+              checks. The strongest tool-structured AANA run reached 98.3% while lifting the
+              capability score from 0.662 to 0.922. Treat this as a research signal, not a certified
+              benchmark.
             </p>
             <div class="metrics">
               <article class="metric-card">
-                <strong>Baseline pass rate</strong>
+                <strong>Direct-answer pass rate</strong>
                 <b>45.8%</b>
-                <p>Direct answers without the same correction loop.</p>
+                <p>Useful answers, but without the same guardrails.</p>
               </article>
               <article class="metric-card">
-                <strong>AANA tools structured</strong>
+                <strong>Best AANA run</strong>
                 <b>98.3%</b>
-                <p>Verifier loop plus deterministic constraint checks.</p>
+                <p>Verifier feedback plus deterministic constraint checks.</p>
               </article>
               <article class="metric-card">
                 <strong>Capability lift</strong>
                 <b>+0.260</b>
-                <p>Capability delta versus baseline in this sample.</p>
+                <p>The strongest run improved usefulness while preserving more constraints.</p>
               </article>
             </div>
             <div class="section-actions">
@@ -304,11 +304,11 @@
           <div class="section-head">
             <div>
             <p class="eyebrow">Shareable graphic</p>
-              <h2>Three shareable infographics for explaining AANA fast.</h2>
+              <h2>Three visual maps for explaining AANA fast.</h2>
             </div>
             <p>
-              These are built in the same technical poster style as the research visuals: dense,
-              dark, diagram-heavy, and accurate enough to share before people read the papers.
+              Use these when someone needs the big idea first: the loop, the pressure dynamics,
+              and the layered constraints that make alignment more than a single yes-or-no check.
             </p>
           </div>
 
@@ -320,12 +320,12 @@
               <p class="eyebrow">Featured infographic</p>
               <h3>The Mechanics of Dynamic Alignment</h3>
               <p>
-                A layered systems view of optimization pressure, constructed constraints,
-                biological impact constraints, physical feasibility, and the AANA correction loop.
+                A layered view of what pushes systems off course and how correction loops can keep
+                outputs inside reality-bound constraints.
               </p>
               <div class="section-actions">
                 <a class="button ink" href="assets/site/dynamic-alignment-layered-systems.png" download>Download PNG</a>
-                <a class="button ink" href="assets/site/dynamic-alignment-layered-systems.png" target="_blank" rel="noopener">Open share link</a>
+                <a class="button ink" href="assets/site/dynamic-alignment-layered-systems.png" target="_blank" rel="noopener">View full image</a>
               </div>
               <a class="share-link" href="assets/site/dynamic-alignment-layered-systems.png" target="_blank" rel="noopener">assets/site/dynamic-alignment-layered-systems.png</a>
             </div>
@@ -337,10 +337,10 @@
                 <img src="assets/site/aana-system-loop-detailed.png" alt="Detailed infographic explaining the AANA system loop, verifier domains, correction actions, and pilot results." loading="lazy">
               </a>
               <h3>AANA System Loop</h3>
-              <p>Explains the generator, verifier stack, grounding, correction policy, alignment gate, action set, and pilot result signal.</p>
+              <p>A compact map of the loop: propose, verify, ground, correct, gate, and measure.</p>
               <div class="section-actions">
                 <a class="button ink" href="assets/site/aana-system-loop-detailed.png" download>Download PNG</a>
-                <a class="button ink" href="assets/site/aana-system-loop-detailed.png" target="_blank" rel="noopener">Open share link</a>
+                <a class="button ink" href="assets/site/aana-system-loop-detailed.png" target="_blank" rel="noopener">View full image</a>
               </div>
               <a class="share-link" href="assets/site/aana-system-loop-detailed.png" target="_blank" rel="noopener">assets/site/aana-system-loop-detailed.png</a>
             </article>
@@ -350,10 +350,10 @@
                 <img src="assets/site/aana-dynamics-detailed.png" alt="Detailed infographic explaining alignment dynamics, viable regions, scaling laws, constraint layers, and AANA as a correction loop." loading="lazy">
               </a>
               <h3>Alignment Dynamics</h3>
-              <p>Explains viable design space, pressure-amplified misclassification, correction capacity, layered constraints, and the AANA response.</p>
+              <p>A systems view of pressure, drift, viable regions, correction capacity, and layered constraints.</p>
               <div class="section-actions">
                 <a class="button ink" href="assets/site/aana-dynamics-detailed.png" download>Download PNG</a>
-                <a class="button ink" href="assets/site/aana-dynamics-detailed.png" target="_blank" rel="noopener">Open share link</a>
+                <a class="button ink" href="assets/site/aana-dynamics-detailed.png" target="_blank" rel="noopener">View full image</a>
               </div>
               <a class="share-link" href="assets/site/aana-dynamics-detailed.png" target="_blank" rel="noopener">assets/site/aana-dynamics-detailed.png</a>
             </article>
@@ -365,11 +365,11 @@
         <div class="section-inner slides-grid">
           <div>
             <p class="eyebrow">Downloadable deck</p>
-            <h2>Alignment Dynamics slideshow.</h2>
+            <h2>A presentation deck for the alignment dynamics story.</h2>
             <p>
-              This 15-slide companion deck packages the same theory in a presentation format:
-              pressure, misclassification, viable regions, correction capacity, and the AANA loop.
-              Use the PDF for reading and sharing; use the PowerPoint file when you want to edit or present.
+              The 15-slide deck turns the theory into a talk track: pressure, misclassification,
+              viable regions, correction capacity, and the AANA loop. Read the PDF, or use the
+              PowerPoint when you want to present or adapt the material.
             </p>
             <div class="section-actions">
               <a class="button ink" href="assets/site/alignment-dynamics-slides.pdf" data-modal="pdf">Open PDF</a>
@@ -395,12 +395,12 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Research papers</p>
-              <h2>Read the manuscripts behind the project.</h2>
+              <h2>The deeper theory behind the public story.</h2>
             </div>
             <p>
-              These papers provide the formal framing behind AANA, alignment dynamics,
-              invisible divergence, layered constraints, and verifier-grounded correction.
-              They are early research manuscripts, not peer-reviewed benchmark claims.
+              These manuscripts give the formal version of the ideas shown above: verifier-grounded
+              correction, alignment dynamics, invisible divergence, and layered constraints. They are
+              early research papers, not peer-reviewed benchmark claims.
             </p>
           </div>
 
@@ -412,7 +412,7 @@
               <div class="paper-copy">
                 <p class="eyebrow">Architecture paper</p>
                 <h3>Alignment-Aware Neural Architectures</h3>
-                <p>Defines the AANA loop: generator, verifier stack, grounding module, correction policy, and alignment gate.</p>
+                <p>The architectural blueprint for turning one-shot generation into a checked correction loop.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/papers/aana-framework.pdf" data-modal="pdf">Open paper</a>
                   <a class="button ink" href="assets/site/papers/aana-framework.pdf" download>Download PDF</a>
@@ -427,7 +427,7 @@
               <div class="paper-copy">
                 <p class="eyebrow">Dynamics paper</p>
                 <h3>Alignment as a Dynamical System</h3>
-                <p>Frames alignment as a pressure-sensitive stability problem under incomplete constraint representation.</p>
+                <p>A mathematical lens on why alignment can decay under pressure unless correction scales with it.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/papers/ats-dynamical-alignment.pdf" data-modal="pdf">Open paper</a>
                   <a class="button ink" href="assets/site/papers/ats-dynamical-alignment.pdf" download>Download PDF</a>
@@ -442,7 +442,7 @@
               <div class="paper-copy">
                 <p class="eyebrow">Layered constraints</p>
                 <h3>Invisible Divergence</h3>
-                <p>Explains how capability can improve while hidden alignment-relevant constraints quietly drift.</p>
+                <p>Why visible capability can rise while hidden constraints pull the system away from what matters.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/papers/invisible-divergence-layered-alignment-dynamics.pdf" data-modal="pdf">Open paper</a>
                   <a class="button ink" href="assets/site/papers/invisible-divergence-layered-alignment-dynamics.pdf" download>Download PDF</a>
@@ -457,10 +457,10 @@
         <div class="section-inner story-grid">
           <div>
             <p class="eyebrow">Try it in 60 seconds</p>
-            <h2>Run the sample workflow without an API key.</h2>
+            <h2>Run a tiny local sample without an API key.</h2>
             <p>
-              The checked-in sample uses tiny example files so newcomers can see the file formats,
-              scoring flow, and summary output before spending money on live model calls.
+              The included sample is small on purpose: enough to see the scoring flow, output files,
+              and gap signals before running larger model experiments.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
@@ -488,29 +488,29 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Go deeper</p>
-              <h2>Research context without hiding the caveats.</h2>
+              <h2>Follow the evidence trail.</h2>
             </div>
             <p>
-              The project is alpha research code. It includes reproducible artifacts, early papers,
-              and explicit limitations so readers can inspect the evidence trail.
+              AANA is alpha research software, so the caveats matter. The docs collect the design
+              choices, evaluation setup, results notes, and limitations in one place.
             </p>
           </div>
           <div class="resource-grid">
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/architecture.md" target="_blank" rel="noopener">
               <h3>Architecture</h3>
-              <p>A beginner-friendly breakdown of generator, verifier, corrector, and scorer roles.</p>
+              <p>How the moving parts fit together: generator, verifier, corrector, scorer, and gate.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/evaluation-design.md" target="_blank" rel="noopener">
               <h3>Evaluation Design</h3>
-              <p>How tasks, conditions, pressure levels, and scoring files fit together.</p>
+              <p>The experiment recipe: tasks, pressure settings, conditions, scores, and artifacts.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/papers/aana-framework.pdf" target="_blank" rel="noopener">
               <h3>AANA Paper</h3>
-              <p>The early manuscript that frames verifier-grounded correction.</p>
+              <p>The manuscript version of the AANA architecture and correction-loop framing.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/results-interpretation.md" target="_blank" rel="noopener">
               <h3>Reading Results</h3>
-              <p>How to interpret capability, alignment, gap score, and pass rate.</p>
+              <p>A guide to reading capability, alignment, gap score, and pass rate without overclaiming.</p>
             </a>
           </div>
         </div>
