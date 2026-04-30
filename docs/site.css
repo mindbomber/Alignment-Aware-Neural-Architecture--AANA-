@@ -313,6 +313,36 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.video-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.video-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgba(16, 32, 44, 0.1);
+  overflow: hidden;
+}
+
+.video-card video {
+  aspect-ratio: 16 / 9;
+  background: var(--ink);
+  display: block;
+  width: 100%;
+}
+
+.video-copy {
+  padding: 1.25rem;
+}
+
+.video-copy p {
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+
 .info-card,
 .metric-card,
 .resource-card {
@@ -744,6 +774,7 @@ pre {
   }
 
   .explain-grid,
+  .video-grid,
   .metrics,
   .plot-strip,
   .resource-grid,
@@ -786,6 +817,7 @@ pre {
 
   .hero-snapshot,
   .explain-grid,
+  .video-grid,
   .metrics,
   .plot-strip,
   .resource-grid,
