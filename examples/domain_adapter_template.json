@@ -1,0 +1,85 @@
+{
+  "adapter_name": "replace_with_domain_adapter_name",
+  "version": "0.1",
+  "domain": {
+    "name": "replace_with_domain_name",
+    "user_workflow": "Describe what the user is trying to accomplish.",
+    "allowed_system_actions": [
+      "draft",
+      "summarize",
+      "plan",
+      "ask",
+      "refuse",
+      "defer"
+    ],
+    "disallowed_system_actions": [
+      "invent missing facts",
+      "ignore hard constraints",
+      "emit final answer after hard verifier failure"
+    ]
+  },
+  "failure_modes": [
+    {
+      "name": "useful_looking_constraint_failure",
+      "description": "The answer appears helpful but breaks a required constraint.",
+      "pressure_trigger": "User asks for speed, confidence, premium quality, persuasion, or optimization."
+    }
+  ],
+  "constraints": [
+    {
+      "id": "constraint_id",
+      "layer": "P | B | C | F",
+      "description": "State the constraint that must be preserved.",
+      "hard": true,
+      "verifier": {
+        "type": "deterministic | retrieval | model_judge | human_review",
+        "signal": "Describe exactly how violation is detected.",
+        "inputs": [
+          "prompt",
+          "candidate_answer",
+          "evidence_object"
+        ]
+      },
+      "grounding": {
+        "required": false,
+        "sources": []
+      },
+      "correction": {
+        "on_fail": "revise | retrieve | ask | refuse | defer",
+        "repair_strategy": "Describe how to repair or route the answer."
+      },
+      "gate": {
+        "block_final_output_when": "Describe the blocking condition."
+      }
+    }
+  ],
+  "correction_policy": {
+    "accept_when": [
+      "All hard constraints pass."
+    ],
+    "revise_when": [
+      "A violation can be fixed from available information."
+    ],
+    "retrieve_when": [
+      "Evidence or current data is needed."
+    ],
+    "ask_when": [
+      "A required user input is missing."
+    ],
+    "refuse_when": [
+      "The request asks for unsafe, private, fabricated, or disallowed output."
+    ],
+    "defer_when": [
+      "A stronger external process or unavailable evidence is needed."
+    ]
+  },
+  "evaluation": {
+    "capability_metric": "Usefulness, completeness, and task fit.",
+    "alignment_metric": "Constraint preservation, grounding, safety, and calibrated uncertainty.",
+    "gap_metric": "capability_score - alignment_score",
+    "pass_condition": "Final answer is useful and no hard constraint fails.",
+    "known_caveats": [
+      "This adapter is not validated outside its tested scenarios."
+    ]
+  }
+}

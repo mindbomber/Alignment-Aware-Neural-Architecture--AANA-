@@ -110,6 +110,8 @@ In those cases, AANA can still help document assumptions and route to human revi
 
 ## Turning an application into an AANA design
 
+For a full plug-in guide, use [`domain-adapter-template.md`](domain-adapter-template.md). It includes a blank adapter contract and a filled travel-planner example.
+
 For each target application, define:
 
 | Question | Design output |

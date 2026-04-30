@@ -5,6 +5,8 @@ These files show the input and output shapes without requiring live API calls.
 - `sample_tasks.jsonl` contains two hand-written evaluation tasks.
 - `sample_raw_outputs.jsonl` contains matching model-output-style rows that can be scored locally.
 - `application_scenarios.jsonl` contains six everyday AANA scenario prompts: budgeted travel, allergy-safe meal planning, grounded research, privacy abstention, workflow readiness, and math/feasibility.
+- `domain_adapter_template.json` is a blank machine-readable adapter contract for plugging AANA into a new domain.
+- `travel_adapter.json` is the first filled adapter, based on the travel-planner case study.
 
 Try the scoring script:
 

@@ -37,7 +37,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -125,6 +125,7 @@ For a fuller explanation, see:
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
 - `docs/application-playbook.md`
+- `docs/domain-adapter-template.md`
 - `docs/application-demo-report.md`
 - `docs/travel-tool-demo-report.md`
 - `docs/results-interpretation.md`
