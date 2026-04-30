@@ -37,6 +37,8 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
+For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+
 ## Who this is for
 
 - AI safety and alignment researchers studying correction loops and evaluation design.
@@ -94,7 +96,7 @@ Paper-ready replacement text for the pilot-results section is available in [docs
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
 - `assets/` - Public project images, including the GitHub social preview banner.
 - `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
-- `examples/` - Tiny example inputs and outputs that show the file formats without requiring API calls.
+- `examples/` - Tiny example inputs, outputs, and everyday application scenarios that show the file formats without requiring API calls.
 - `papers/` - Public manuscripts connected to the project.
 - `scripts/` - Short helper commands for common local workflows.
 - `tests/` - Lightweight unit tests for scoring and routing behavior.
