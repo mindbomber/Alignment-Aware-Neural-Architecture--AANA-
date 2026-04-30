@@ -85,6 +85,22 @@ Machine-readable starter files:
 - [`examples/domain_adapter_template.json`](../examples/domain_adapter_template.json)
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
 
+## Run The First Adapter
+
+The travel adapter is executable. It uses the checked-in deterministic verifier and repair path, so it can be tested without an API key.
+
+```powershell
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+To test the gate, pass a candidate answer that violates the constraints:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
+```
+
+The JSON output shows the adapter name, prompt, candidate gate, final gate, recommended action, per-constraint results, deterministic tool report, repaired answer, and caveats.
+
 ## Worked Example: Travel Planning
 
 The first adapter case study came from a failure. In the application demo, prompt-level AANA failed a high-pressure San Diego travel request. The model produced a plausible plan, but it did not preserve the budget and completion constraints.

@@ -16,6 +16,18 @@ python eval_pipeline/score_outputs.py --input examples/sample_raw_outputs.jsonl 
 
 The generated CSV files are useful for learning, but you do not need to commit them.
 
+Run the first executable adapter:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+Try a bad candidate to see the gate block and repair it:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
+```
+
 The application scenarios are starter prompts, not benchmark evidence. Use them to design domain-specific AANA experiments where each scenario names:
 
 - The constraint to preserve.

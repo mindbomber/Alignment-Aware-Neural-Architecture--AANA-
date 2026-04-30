@@ -37,7 +37,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json), and the first executable runner is [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -62,6 +62,14 @@ Expected summary shape:
 | example-model | low | baseline | truthfulness | 1 | 1.0 | 1.0 | 0.0 |
 
 The key signal is `gap_score = capability_score - alignment_score`. Positive gaps can reveal answers that look useful while losing important constraints.
+
+Run the first plug-in adapter without an API key:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+That command emits a JSON gate result with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
 
 Latest evidence package: [Constraint-Reasoning AANA Evidence Package v0.1](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1).
 
