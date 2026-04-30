@@ -128,6 +128,8 @@ The most important practical rule is simple: if you cannot name the constraint, 
 
 The file `examples/application_scenarios.jsonl` contains small scenario prompts for everyday domains. They are not benchmark claims. They are starting points for showing how AANA can move from controlled evidence into application-specific tests.
 
+The first small real-output run is summarized in [`application-demo-report.md`](application-demo-report.md). It found a positive high-pressure alignment signal for AANA-style correction, while also showing that travel planning needs stronger domain-specific verifiers before it should be treated as robust.
+
 Recommended next experiment:
 
 1. Freeze 5-10 scenarios per domain.

@@ -83,6 +83,8 @@ Note: these are early research manuscripts. They include theoretical framing, ar
 
 The latest tracked constraint-reasoning comparison is documented in [docs/constraint-reasoning-aana-report.md](docs/constraint-reasoning-aana-report.md). In the matched 60-task constraint-reasoning sample, `aana_tools_structured` improves pass rate from `0.458` to `0.983` while increasing capability from `0.662` to `0.922`. Tracked CSV snapshots are in [docs/evidence/](docs/evidence/).
 
+The first everyday application demo is documented in [docs/application-demo-report.md](docs/application-demo-report.md). Across six starter application scenarios, high-pressure AANA-style correction improved model-judged alignment from `0.7600` to `0.8383` and pass rate from `0.5000` to `0.8333`, while also exposing a travel-planning failure case that needs domain-specific verifiers.
+
 The evidence package includes a manifest with source-file hashes, commit SHA, analysis commands, confidence-interval methods, and known caveats: [docs/evidence/manifest.json](docs/evidence/manifest.json).
 
 For the next unified same-run milestone, see [docs/unified-aana-comparison.md](docs/unified-aana-comparison.md).
@@ -120,6 +122,8 @@ For a fuller explanation, see:
 
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
+- `docs/application-playbook.md`
+- `docs/application-demo-report.md`
 - `docs/results-interpretation.md`
 - `docs/unified-aana-comparison.md`
 

@@ -1,0 +1,51 @@
+{
+  "name": "AANA Application Demo v0.1",
+  "date": "2026-04-30",
+  "description": "Small real-output application demo across six everyday AANA scenario prompts.",
+  "source_tasks": "examples/application_scenarios.jsonl",
+  "generator_model": "gpt-5.4-nano",
+  "judge_model": "gpt-5.4-mini",
+  "pressures": [
+    "low",
+    "high"
+  ],
+  "corrections": [
+    "baseline",
+    "strong"
+  ],
+  "rows": 24,
+  "task_count": 6,
+  "commands": [
+    "python eval_pipeline/run_evals.py --tasks examples/application_scenarios.jsonl --output eval_outputs/application_demo/raw_outputs.jsonl --models gpt-5.4-nano --pressures low high --corrections baseline strong --no-resume --max-output-tokens 650",
+    "python eval_pipeline/judge_score_outputs.py --input eval_outputs/application_demo/raw_outputs.jsonl --judge-jsonl eval_outputs/application_demo/judge_scores.jsonl --judged eval_outputs/application_demo/judged_outputs.csv --summary eval_outputs/application_demo/summary_by_condition.csv --judge-model gpt-5.4-mini --no-resume --max-output-tokens 450"
+  ],
+  "caveats": [
+    "Small n=6 scenario demo; not a benchmark claim.",
+    "Scores are model-judged and should be treated as early signal.",
+    "Only baseline and strong prompt-style AANA correction were compared; deterministic tools were not specialized for every application domain.",
+    "One high-pressure travel-planning case worsened under strong correction, showing the need for domain-specific verifiers and repair tools."
+  ],
+  "files": [
+    {
+      "path": "docs/evidence/application_demo/raw_outputs.jsonl",
+      "bytes": 54445,
+      "sha256": "60ccfe3b736461686fe908d5d7159159d0102e51400855754fa35b742ea3bb55"
+    },
+    {
+      "path": "docs/evidence/application_demo/judge_scores.jsonl",
+      "bytes": 13773,
+      "sha256": "8d6fabc5056453f0d99ee76cbade68004aa4725b01b4099989f369e2a19d49f4"
+    },
+    {
+      "path": "docs/evidence/application_demo/judged_outputs.csv",
+      "bytes": 56009,
+      "sha256": "1f2d30467a9f6b79e1b5b9516e38ffb249ba0fdbdeb2f9d95d86ed5ccbee42cc"
+    },
+    {
+      "path": "docs/evidence/application_demo/summary_by_condition.csv",
+      "bytes": 435,
+      "sha256": "3f55d39b840282221768dd81af36f679e6f6281981417474737e8204b9b2f08d"
+    }
+  ],
+  "commit_before_packaging": "92ec730abeac8b74fc7fdcef6e909a92512fce3b"
+}
