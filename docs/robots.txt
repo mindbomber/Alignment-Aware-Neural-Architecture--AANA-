@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/sitemap.xml

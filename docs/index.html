@@ -8,12 +8,22 @@
       name="description"
       content="A public-friendly introduction to the Alignment-Aware Neural Architecture evaluation pipeline: testing whether AI answers stay useful while preserving important constraints."
     >
+    <link rel="canonical" href="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
+    <link rel="icon" href="assets/site/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/site/apple-touch-icon.png">
     <meta property="og:title" content="AANA Evaluation Pipeline">
     <meta
       property="og:description"
       content="A fun, visual tour of verifier-grounded correction, constraint checks, and alignment evaluation."
     >
-    <meta property="og:image" content="assets/site/aana-hero.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
+    <meta property="og:image" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/assets/site/aana-hero.png">
+    <meta property="og:image:alt" content="AANA evaluation pipeline hero image showing an AI answer passing through verification checkpoints.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AANA Evaluation Pipeline">
+    <meta name="twitter:description" content="A public-friendly tour of verifier-grounded correction, constraint checks, and alignment evaluation.">
+    <meta name="twitter:image" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/assets/site/aana-hero.png">
     <link rel="stylesheet" href="site.css">
   </head>
   <body>
@@ -52,8 +62,10 @@
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#plain-language">Start the tour</a>
+            <a class="button secondary" href="#videos">Watch videos</a>
             <a class="button secondary" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-">View the code</a>
           </div>
+          <p class="hero-note">Early model-judged research evidence, not a certified benchmark claim.</p>
         </div>
         <div class="hero-snapshot" aria-label="Current project highlights">
           <div class="snap">
@@ -89,13 +101,14 @@
 
           <div class="video-grid">
             <article class="video-card">
-              <video controls preload="metadata" playsinline>
-                <source src="assets/site/the-alignment-illusion.mp4" type="video/mp4">
-                Your browser does not support embedded MP4 video.
-              </video>
+              <button class="video-poster" type="button" data-video-src="assets/site/the-alignment-illusion.mp4" aria-label="Play The Alignment Illusion">
+                <img src="assets/site/poster-alignment-illusion.jpg" alt="" loading="lazy" width="1280" height="720">
+                <span class="play-icon" aria-hidden="true"></span>
+              </button>
               <div class="video-copy">
                 <h3>The Alignment Illusion</h3>
                 <p>Why systems can look increasingly capable while drifting away from the constraints that make outputs trustworthy.</p>
+                <p class="media-note">Loads on play. Full MP4: 32.2 MB.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/the-alignment-illusion.mp4">Open video</a>
                   <a class="button ink" href="assets/site/the-alignment-illusion.mp4" download>Download MP4</a>
@@ -105,13 +118,14 @@
             </article>
 
             <article class="video-card">
-              <video controls preload="metadata" playsinline>
-                <source src="assets/site/a-new-way-to-build-safer-ai.mp4" type="video/mp4">
-                Your browser does not support embedded MP4 video.
-              </video>
+              <button class="video-poster" type="button" data-video-src="assets/site/a-new-way-to-build-safer-ai.mp4" aria-label="Play A New Way to Build Safer AI">
+                <img src="assets/site/poster-safer-ai.jpg" alt="" loading="lazy" width="1280" height="720">
+                <span class="play-icon" aria-hidden="true"></span>
+              </button>
               <div class="video-copy">
                 <h3>A New Way to Build Safer AI</h3>
                 <p>How verifier-grounded correction, grounding, and gating can make alignment a maintained process.</p>
+                <p class="media-note">Loads on play. Full MP4: 42.9 MB.</p>
                 <div class="section-actions">
                   <a class="button ink" href="assets/site/a-new-way-to-build-safer-ai.mp4">Open video</a>
                   <a class="button ink" href="assets/site/a-new-way-to-build-safer-ai.mp4" download>Download MP4</a>
@@ -160,7 +174,7 @@
       <section class="section" id="story">
         <div class="section-inner story-grid">
           <div class="feature-image">
-            <img src="assets/site/constraint-course.png" alt="A playful obstacle course representing AI answers passing through constraint checks.">
+            <img src="assets/site/constraint-course.png" alt="A playful obstacle course representing AI answers passing through constraint checks." loading="lazy">
           </div>
           <div>
             <p class="eyebrow">Why it matters</p>
@@ -264,21 +278,21 @@
             </div>
           </div>
           <div class="feature-image">
-            <img src="assets/site/evidence-beacon.png" alt="A friendly research scene where data points become a clear insight signal.">
+            <img src="assets/site/evidence-beacon.png" alt="A friendly research scene where data points become a clear insight signal." loading="lazy">
           </div>
         </div>
 
         <div class="section-inner plot-strip" aria-label="Evidence plots">
           <a class="plot-link" href="evidence/plots/fig1_cap_vs_align.svg">
-            <img src="evidence/plots/fig1_cap_vs_align.svg" alt="Capability versus alignment plot.">
+            <img src="evidence/plots/fig1_cap_vs_align.svg" alt="Capability versus alignment plot." loading="lazy">
             <span>Capability vs. alignment</span>
           </a>
           <a class="plot-link" href="evidence/plots/fig2_gap_pressure.svg">
-            <img src="evidence/plots/fig2_gap_pressure.svg" alt="Gap by pressure plot.">
+            <img src="evidence/plots/fig2_gap_pressure.svg" alt="Gap by pressure plot." loading="lazy">
             <span>Gap under pressure</span>
           </a>
           <a class="plot-link" href="evidence/plots/fig3_gap_correction.svg">
-            <img src="evidence/plots/fig3_gap_correction.svg" alt="Gap by correction condition plot.">
+            <img src="evidence/plots/fig3_gap_correction.svg" alt="Gap by correction condition plot." loading="lazy">
             <span>Gap by correction</span>
           </a>
         </div>
@@ -289,7 +303,7 @@
           <div class="section-head">
             <div>
             <p class="eyebrow">Shareable graphic</p>
-              <h2>Two detailed infographics for explaining AANA fast.</h2>
+              <h2>Three shareable infographics for explaining AANA fast.</h2>
             </div>
             <p>
               These are built in the same technical poster style as the research visuals: dense,
@@ -299,7 +313,7 @@
 
           <article class="featured-infographic">
             <a class="featured-infographic-image" href="assets/site/dynamic-alignment-layered-systems.png" aria-label="Open the dynamic alignment layered systems infographic">
-              <img src="assets/site/dynamic-alignment-layered-systems.png" alt="Wide infographic titled The Mechanics of Dynamic Alignment: A Layered Systems Approach.">
+              <img src="assets/site/dynamic-alignment-layered-systems.png" alt="Wide infographic titled The Mechanics of Dynamic Alignment: A Layered Systems Approach." loading="lazy">
             </a>
             <div class="featured-infographic-copy">
               <p class="eyebrow">Featured infographic</p>
@@ -319,7 +333,7 @@
           <div class="infographic-grid">
             <article class="infographic-card">
               <a class="infographic-preview" href="assets/site/aana-system-loop-detailed.png" aria-label="Open the detailed AANA system loop infographic">
-                <img src="assets/site/aana-system-loop-detailed.png" alt="Detailed infographic explaining the AANA system loop, verifier domains, correction actions, and pilot results.">
+                <img src="assets/site/aana-system-loop-detailed.png" alt="Detailed infographic explaining the AANA system loop, verifier domains, correction actions, and pilot results." loading="lazy">
               </a>
               <h3>AANA System Loop</h3>
               <p>Explains the generator, verifier stack, grounding, correction policy, alignment gate, action set, and pilot result signal.</p>
@@ -332,7 +346,7 @@
 
             <article class="infographic-card">
               <a class="infographic-preview" href="assets/site/aana-dynamics-detailed.png" aria-label="Open the detailed alignment dynamics infographic">
-                <img src="assets/site/aana-dynamics-detailed.png" alt="Detailed infographic explaining alignment dynamics, viable regions, scaling laws, constraint layers, and AANA as a correction loop.">
+                <img src="assets/site/aana-dynamics-detailed.png" alt="Detailed infographic explaining alignment dynamics, viable regions, scaling laws, constraint layers, and AANA as a correction loop." loading="lazy">
               </a>
               <h3>Alignment Dynamics</h3>
               <p>Explains viable design space, pressure-amplified misclassification, correction capacity, layered constraints, and the AANA response.</p>
@@ -368,15 +382,10 @@
             <a class="share-link" href="assets/site/alignment-dynamics-slides.pdf">assets/site/alignment-dynamics-slides.pdf</a>
           </div>
 
-          <div class="pdf-preview">
-            <object data="assets/site/alignment-dynamics-slides.pdf#view=FitH" type="application/pdf">
-              <div class="pdf-fallback">
-                <h3>PDF preview unavailable</h3>
-                <p>Your browser can still open or download the slide deck.</p>
-                <a class="button ink" href="assets/site/alignment-dynamics-slides.pdf">Open PDF</a>
-              </div>
-            </object>
-          </div>
+          <a class="slides-preview" href="assets/site/alignment-dynamics-slides.pdf" aria-label="Open Alignment Dynamics slideshow PDF">
+            <img src="assets/site/alignment-dynamics-slides-preview.jpg" alt="Preview image for the Alignment Dynamics slideshow." loading="lazy" width="960" height="720">
+            <span>Open the 15-slide PDF</span>
+          </a>
         </div>
       </section>
 

@@ -1,4 +1,5 @@
 const copyButton = document.querySelector("[data-copy-command]");
+const videoPosters = document.querySelectorAll("[data-video-src]");
 
 if (copyButton) {
   copyButton.addEventListener("click", async () => {
@@ -17,3 +18,19 @@ if (copyButton) {
     }
   });
 }
+
+videoPosters.forEach((poster) => {
+  poster.addEventListener("click", () => {
+    const source = poster.getAttribute("data-video-src");
+    const video = document.createElement("video");
+
+    video.controls = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.preload = "metadata";
+    video.innerHTML = `<source src="${source}" type="video/mp4">Your browser does not support embedded MP4 video.`;
+
+    poster.replaceWith(video);
+    video.focus();
+  });
+});

@@ -204,6 +204,13 @@ p {
   max-width: 680px;
 }
 
+.hero-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+  font-weight: 750;
+  margin-top: 1rem;
+}
+
 .hero-actions,
 .section-actions {
   display: flex;
@@ -327,11 +334,48 @@ p {
   overflow: hidden;
 }
 
-.video-card video {
+.video-card video,
+.video-poster {
   aspect-ratio: 16 / 9;
   background: var(--ink);
   display: block;
   width: 100%;
+}
+
+.video-poster {
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+
+.video-poster img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.play-icon {
+  align-items: center;
+  background: rgba(16, 32, 44, 0.82);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 68px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+}
+
+.play-icon::before {
+  border-bottom: 14px solid transparent;
+  border-left: 22px solid var(--white);
+  border-top: 14px solid transparent;
+  content: "";
+  margin-left: 5px;
 }
 
 .video-copy {
@@ -341,6 +385,11 @@ p {
 .video-copy p {
   color: var(--muted);
   margin-top: 0.75rem;
+}
+
+.media-note {
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .info-card,
@@ -631,27 +680,28 @@ p {
   padding: 0.45rem 0.6rem;
 }
 
-.pdf-preview {
-  background: var(--ink);
+.slides-preview {
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
-  min-height: 640px;
+  color: inherit;
   overflow: hidden;
+  text-decoration: none;
 }
 
-.pdf-preview object {
-  border: 0;
+.slides-preview img {
+  aspect-ratio: 4 / 3;
   display: block;
-  height: min(78vh, 760px);
-  min-height: 640px;
+  object-fit: cover;
   width: 100%;
 }
 
-.pdf-fallback {
-  background: var(--white);
-  min-height: 640px;
-  padding: 2rem;
+.slides-preview span {
+  border-top: 1px solid var(--line);
+  display: block;
+  font-weight: 900;
+  padding: 1rem 1.25rem;
 }
 
 .demo-shell {
