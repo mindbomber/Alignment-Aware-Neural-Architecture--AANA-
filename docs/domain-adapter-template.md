@@ -2,6 +2,8 @@
 
 AANA becomes useful in real applications through domain adapters.
 
+If you are new to the repo, start with [`getting-started.md`](getting-started.md) first. It explains the no-key demo, live API setup, provider limits, and the shortest path to a first working adapter.
+
 A domain adapter is the small layer that translates "be aligned" into concrete checks for one setting: what must not be violated, how the system checks it, what evidence it needs, how it repairs failures, and when the final answer is allowed to leave the system.
 
 Use this template when you want to plug AANA into a new domain.

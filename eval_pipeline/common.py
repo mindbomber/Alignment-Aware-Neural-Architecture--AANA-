@@ -77,6 +77,23 @@ def extract_response_text(payload):
     return "\n".join(parts).strip()
 
 
+def responses_api_config():
+    load_dotenv()
+    api_key = os.environ.get("AANA_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("AANA_API_KEY or OPENAI_API_KEY is not set in the environment or .env.")
+
+    explicit_url = os.environ.get("AANA_RESPONSES_URL") or os.environ.get("OPENAI_RESPONSES_URL")
+    if explicit_url:
+        return explicit_url, api_key
+
+    base_url = os.environ.get("AANA_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
+    if base_url:
+        return base_url.rstrip("/") + "/responses", api_key
+
+    return "https://api.openai.com/v1/responses", api_key
+
+
 def call_responses_api(
     *,
     model,
@@ -86,10 +103,7 @@ def call_responses_api(
     retries=3,
     timeout=120,
 ):
-    load_dotenv()
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set in the environment or .env.")
+    responses_url, api_key = responses_api_config()
 
     body = {
         "model": model,
@@ -102,7 +116,7 @@ def call_responses_api(
 
     data = json.dumps(body).encode("utf-8")
     request = urllib.request.Request(
-        "https://api.openai.com/v1/responses",
+        responses_url,
         data=data,
         headers={
             "Authorization": f"Bearer {api_key}",

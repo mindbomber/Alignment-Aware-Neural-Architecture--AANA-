@@ -13,6 +13,8 @@ This repository contains a small Python evaluation pipeline for testing Alignmen
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
 
+Start here if you want the lowest-friction path from idea to working demo: [docs/getting-started.md](docs/getting-started.md).
+
 ## Why this matters
 
 Language models can produce answers that look capable while quietly violating important constraints: inventing unsupported facts, exceeding budgets, ignoring safety limits, guessing private information, or becoming manipulative under pressure. AANA experiments measure that failure mode directly by comparing capability and alignment scores across baseline, correction, verifier-loop, tool-assisted, and originality conditions.
@@ -37,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For a more practical bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json), and the first executable runner is [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json), and the first executable runner is [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -130,6 +132,7 @@ The scripts compare several evaluation modes:
 
 For a fuller explanation, see:
 
+- `docs/getting-started.md`
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
 - `docs/application-playbook.md`
@@ -142,7 +145,9 @@ For a fuller explanation, see:
 ## Requirements
 
 - Python 3.10 or newer.
-- An OpenAI API key for scripts that call the Responses API.
+- No API key is needed for sample scoring or deterministic adapter runs.
+- An OpenAI API key is needed for the checked-in live model loops by default.
+- Responses-compatible endpoints can be configured with `AANA_API_KEY` plus `AANA_BASE_URL` or `AANA_RESPONSES_URL`.
 
 The current pipeline only uses the Python standard library, so there is no required `pip install` step for the checked-in scripts.
 
@@ -162,6 +167,15 @@ Copy-Item .env.example .env
 ```
 
 Edit `.env` and replace `your_openai_api_key_here` with your real API key. Never commit `.env`.
+
+If you use a Responses-compatible proxy or provider, set:
+
+```text
+AANA_API_KEY=your_provider_or_proxy_key
+AANA_BASE_URL=https://your-provider.example/v1
+```
+
+Native non-Responses providers need provider adapters before the live model loops can use them.
 
 3. Generate a local task file.
 

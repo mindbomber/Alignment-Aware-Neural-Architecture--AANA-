@@ -2,6 +2,8 @@
 
 The current evidence shows that AANA-style correction can preserve explicit constraints better than direct answers in a controlled evaluation setting. The next question is how to use that pattern outside the lab.
 
+For the lowest-friction setup path, start with [`getting-started.md`](getting-started.md). This playbook explains where AANA fits; the getting-started guide shows how to run the no-key demo, configure live model calls, and turn one workflow into an adapter.
+
 AANA is useful when an AI system faces a request that has real constraints attached to it: budgets, time windows, facts, citations, permissions, safety boundaries, privacy limits, eligibility rules, required formats, or impossible premises. The architecture turns those constraints into checks and routes the answer through a correction path before it reaches the user.
 
 In plain language:
