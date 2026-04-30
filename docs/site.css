@@ -705,6 +705,40 @@ p {
   padding: 1rem 1.25rem;
 }
 
+.paper-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.paper-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgba(16, 32, 44, 0.1);
+  overflow: hidden;
+}
+
+.paper-preview {
+  background: #edf7fa;
+  display: block;
+}
+
+.paper-preview img {
+  aspect-ratio: 0.78 / 1;
+  object-fit: cover;
+  width: 100%;
+}
+
+.paper-copy {
+  padding: 1.25rem;
+}
+
+.paper-copy p:not(.eyebrow) {
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+
 .demo-shell {
   background: #0c1720;
   border-radius: 8px;
@@ -909,7 +943,8 @@ pre {
   .metrics,
   .plot-strip,
   .resource-grid,
-  .infographic-grid {
+  .infographic-grid,
+  .paper-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -956,7 +991,8 @@ pre {
   .metrics,
   .plot-strip,
   .resource-grid,
-  .infographic-grid {
+  .infographic-grid,
+  .paper-grid {
     grid-template-columns: 1fr;
   }
 
