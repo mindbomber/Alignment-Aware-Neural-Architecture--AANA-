@@ -12,6 +12,11 @@ Files:
 
 The full raw and judged output files remain in local `eval_outputs/pilot_table2/` and are intentionally not tracked. Their hashes are recorded in `manifest.json`.
 
+Paper integration drafts:
+
+- `docs/paper-pilot-results-section.md`
+- `docs/paper-pilot-results-section.tex`
+
 Reproduce locally:
 
 ```powershell

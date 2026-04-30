@@ -65,6 +65,8 @@ For the next unified same-run milestone, see [docs/unified-aana-comparison.md](d
 
 The small real-output Table 2 pilot is documented in [docs/pilot-table2-report.md](docs/pilot-table2-report.md), with tracked artifacts in [docs/evidence/pilot_table2/](docs/evidence/pilot_table2/). The 20-row spot-check audit is summarized in [docs/pilot-table2-spotcheck-audit.md](docs/pilot-table2-spotcheck-audit.md).
 
+Paper-ready replacement text for the pilot-results section is available in [docs/paper-pilot-results-section.md](docs/paper-pilot-results-section.md), with a LaTeX snippet at [docs/paper-pilot-results-section.tex](docs/paper-pilot-results-section.tex).
+
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
