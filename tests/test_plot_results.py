@@ -12,7 +12,12 @@ from plot_results import read_csv, svg_report_plots
 
 class PlotResultsTests(unittest.TestCase):
     def test_svg_report_plots_create_gap_and_pass_rate_visuals(self):
-        rows = read_csv(ROOT / "eval_outputs" / "judge_summary_by_condition.csv")
+        rows = read_csv(ROOT / "docs" / "evidence" / "constraint_reasoning_aana_pressure_breakdown.csv")
+        for row in rows:
+            row["model"] = "example"
+            row["correction"] = row["condition"]
+            row["block"] = "constraint_reasoning"
+            row["partial_rate"] = 0.0
 
         with tempfile.TemporaryDirectory() as tmp:
             output_dir = pathlib.Path(tmp)

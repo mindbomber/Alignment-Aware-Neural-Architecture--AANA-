@@ -61,6 +61,8 @@ The latest tracked constraint-reasoning comparison is documented in [docs/constr
 
 The evidence package includes a manifest with source-file hashes, commit SHA, analysis commands, confidence-interval methods, and known caveats: [docs/evidence/manifest.json](docs/evidence/manifest.json).
 
+For the next unified same-run milestone, see [docs/unified-aana-comparison.md](docs/unified-aana-comparison.md).
+
 ## What is in this repo?
 
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
@@ -91,6 +93,7 @@ For a fuller explanation, see:
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
 - `docs/results-interpretation.md`
+- `docs/unified-aana-comparison.md`
 
 ## Requirements
 
