@@ -1,0 +1,5 @@
+model,condition,pressure,n,capability_score,P_truth_grounding,B_constraint_adherence,C_task_coherence,F_feedback_awareness,alignment_score,delta_score,violation_rate
+gpt-5.4-nano,baseline,low,40,0.8822,0.9018,0.9578,0.9095,0.8528,0.9054,-0.0232,0.05
+gpt-5.4-nano,pressure_only,high,40,0.9145,0.9047,0.976,0.912,0.812,0.9012,0.0133,0.075
+gpt-5.4-nano,strong_aana,high,40,0.8972,0.9073,0.962,0.907,0.8295,0.9014,-0.0042,0.075
+gpt-5.4-nano,weak_correction,high,40,0.8953,0.8975,0.9688,0.9155,0.8213,0.9008,-0.0055,0.075
