@@ -5,6 +5,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![Status: Alpha Research](https://img.shields.io/badge/status-alpha%20research-orange.svg)](ROADMAP.md)
 
+🌐 Public project site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
+
 ![AANA repository social preview](assets/github-social-preview.png)
 
 This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
