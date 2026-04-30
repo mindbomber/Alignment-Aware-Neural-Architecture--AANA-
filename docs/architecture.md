@@ -4,6 +4,21 @@ Alignment-Aware Neural Architecture (AANA) is an evaluation pattern for testing 
 
 The core idea is simple: do not treat the first answer as final. Generate an answer, inspect it, repair it if needed, and only then score the result.
 
+## Where the architecture fits
+
+AANA works best when the system can point to a concrete constraint and do something about it. It is not mainly a politeness layer or a prompt that asks the model to be more careful. It is a correction architecture for cases where failures can be checked and routed.
+
+Strong application areas include:
+
+- Budgeted planning: totals, per-item caps, route limits, inventory limits, and time windows.
+- Math and feasibility checks: arithmetic, impossible requirements, physical constraints, and consistency checks.
+- Grounded research: citations, unsupported claims, missing evidence, and confidence calibration.
+- Safety and exclusion rules: allergies, forbidden ingredients, policy limits, compliance constraints, or user-specified boundaries.
+- Privacy and abstention: requests for unavailable, private, anonymous, or unsupported information.
+- Agent workflows: actions that require preconditions, permissions, evidence, or escalation before the system proceeds.
+
+The architecture is weaker when the desired output is mostly subjective, when there is no verifier, or when the harm cannot be observed until long after the answer is produced. In those cases, AANA may still help structure the workflow, but it should not be presented as a complete safety solution.
+
 ## High-level flow
 
 ```mermaid

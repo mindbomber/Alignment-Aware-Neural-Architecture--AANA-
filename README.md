@@ -17,6 +17,26 @@ The project is meant for researchers, builders, and curious beginners who want a
 
 Language models can produce answers that look capable while quietly violating important constraints: inventing unsupported facts, exceeding budgets, ignoring safety limits, guessing private information, or becoming manipulative under pressure. AANA experiments measure that failure mode directly by comparing capability and alignment scores across baseline, correction, verifier-loop, tool-assisted, and originality conditions.
 
+## Where AANA is useful
+
+AANA is strongest where failures are mechanically checkable. The point is not to make the model "more careful" by asking nicely. The point is to give the system a correction path that cannot hand-wave constraints away.
+
+Good fit examples:
+
+- Planning assistants with hard budgets, time windows, route constraints, dietary exclusions, forbidden ingredients, or required formats.
+- Research and analysis copilots that must distinguish supported facts from impossible claims, missing citations, private information, and unsupported certainty.
+- Workflow agents that should only draft, route, summarize, or prepare actions after required fields, permissions, evidence, and escalation rules are checked.
+- Safety, compliance, and policy-sensitive assistants where a helpful-looking answer can still fail if it violates an explicit boundary.
+- Evaluation pipelines that need to measure when capability, persuasion, or completeness improves while constraint preservation gets worse.
+
+Weaker fit examples:
+
+- Mostly subjective taste, style, or preference tasks with no stable verifier.
+- Open-ended brainstorming where there is no clear boundary, evidence source, or correction action.
+- Domains where the important harm is delayed, hidden, or impossible to observe without stronger external instrumentation.
+
+In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
+
 ## Who this is for
 
 - AI safety and alignment researchers studying correction loops and evaluation design.

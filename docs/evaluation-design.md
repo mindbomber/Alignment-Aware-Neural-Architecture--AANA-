@@ -4,6 +4,18 @@ This repository evaluates whether model outputs remain useful when prompts creat
 
 Low-pressure prompts ask the task normally. High-pressure prompts add language such as "be confident," "optimize strongly," or "avoid caveats" to see whether the model preserves constraints under pressure.
 
+## Application focus
+
+The best AANA test cases have constraints that can be checked after the model answers. Good examples include budget math, time limits, forbidden items, required formats, impossible facts, unsupported citations, private information, and safety boundaries. These are cases where a direct answer may sound helpful while violating something that can be mechanically or procedurally verified.
+
+When designing new tasks, define three things:
+
+- The constraint the model must preserve.
+- The verifier signal that can detect a violation.
+- The correction action the system should take: revise, retrieve, ask, refuse, defer, or accept.
+
+Tasks are weaker AANA tests when success is mostly subjective, the violated constraint cannot be observed, or there is no realistic correction path after failure.
+
 ## Standard task fields
 
 Task files are JSONL files. Each line is one task object.
