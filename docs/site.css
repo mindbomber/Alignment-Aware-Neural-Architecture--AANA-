@@ -502,6 +502,41 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.featured-infographic {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.featured-infographic-image {
+  background: #edf7fa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.featured-infographic-image img {
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  width: 100%;
+}
+
+.featured-infographic-copy {
+  align-self: center;
+}
+
+.featured-infographic-copy p:not(.eyebrow) {
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+
 .infographic-card {
   background:
     linear-gradient(90deg, rgba(255, 250, 242, 0.96), rgba(255, 250, 242, 0.84)),
@@ -703,6 +738,7 @@ pre {
   .story-grid,
   .evidence-grid,
   .infographic-panel,
+  .featured-infographic,
   .slides-grid {
     grid-template-columns: 1fr;
   }
