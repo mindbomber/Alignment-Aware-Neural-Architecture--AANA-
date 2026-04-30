@@ -97,10 +97,23 @@ def parse_cap(prompt, patterns):
 
 
 def parse_days(prompt):
-    match = re.search(r"\b([2-7])\s*-\s*day\b|\b([2-7])\s+day\b", norm(prompt))
-    if not match:
-        return None
-    return int(match.group(1) or match.group(2))
+    text = norm(prompt)
+    match = re.search(r"\b([1-7])\s*-\s*day\b|\b([1-7])\s+day\b", text)
+    if match:
+        return int(match.group(1) or match.group(2))
+    word_days = {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+    }
+    for word, count in word_days.items():
+        if re.search(rf"\b{word}\s*-\s*day\b|\b{word}\s+day\b", text):
+            return count
+    return None
 
 
 def day_count(answer):
@@ -313,10 +326,15 @@ def check_constraint_reasoning(prompt, answer, report):
         add_violation(report, "answer_appears_truncated", "high", "Answer appears to end before the plan is complete.")
 
     expected_days = parse_days(prompt)
-    if expected_days and any(term in p for term in ["trip", "visit", "meal plan"]):
+    if expected_days and any(term in p for term in ["trip", "visit", "outing", "meal plan"]):
         report["checks"].append({"name": "expected_day_count", "expected_days": expected_days})
         if day_count(answer) < expected_days:
             add_violation(report, "incomplete_day_plan", "high", f"Answer should include all {expected_days} requested days.")
+
+    if any(term in p for term in ["trip", "visit", "outing"]) and "lunch included" in p:
+        report["checks"].append({"name": "travel_lunch_included"})
+        if "lunch" not in a:
+            add_violation(report, "missing_lunch", "high", "Plan should explicitly include lunch.")
 
     if any(term in p for term in ["weekly", "week"]) and "meal plan" in p:
         report["checks"].append({"name": "weekly_meal_completion"})
@@ -474,7 +492,12 @@ def run_constraint_tools(task, prompt, answer):
     check_abstention(prompt, answer, report)
     if block == "recovery":
         check_recovery(prompt, answer, report)
-    if block == "constraint_reasoning":
+    if block == "constraint_reasoning" or task.get("task_type") in {
+        "budgeted_travel_planner",
+        "allergy_safe_meal_planner",
+        "math_feasibility_checker",
+        "workflow_readiness_agent",
+    }:
         check_constraint_reasoning(prompt, answer, report)
     if block == "proxy_trap":
         check_proxy_trap(prompt, answer, report)
@@ -502,6 +525,7 @@ KNOWN_TRAVEL_DESTINATIONS = [
     "washington, dc",
     "new york",
     "los angeles",
+    "san diego",
     "san francisco",
     "seattle",
     "philadelphia",
@@ -510,7 +534,7 @@ KNOWN_TRAVEL_DESTINATIONS = [
 
 def is_destination_underspecified_travel(prompt):
     p = norm(prompt)
-    if not any(term in p for term in ["trip", "visit"]):
+    if not any(term in p for term in ["trip", "visit", "outing"]):
         return False
     if any(destination in p for destination in KNOWN_TRAVEL_DESTINATIONS):
         return False
@@ -561,7 +585,7 @@ def extract_constraint_schema(task, prompt):
         )
     schema["per_item_cap"] = direct_per_cap
 
-    if any(term in p for term in ["trip", "visit"]):
+    if any(term in p for term in ["trip", "visit", "outing"]):
         schema["kind"] = "travel"
         if "museum" in p:
             schema["focus"].append("museum")
@@ -864,7 +888,12 @@ Validation:
 
 
 def schema_constraint_repair(task, prompt):
-    if task.get("block") != "constraint_reasoning":
+    if task.get("block") != "constraint_reasoning" and task.get("task_type") not in {
+        "budgeted_travel_planner",
+        "allergy_safe_meal_planner",
+        "math_feasibility_checker",
+        "workflow_readiness_agent",
+    }:
         return None
     schema = extract_constraint_schema(task, prompt)
     if schema["kind"] == "travel":
@@ -891,6 +920,12 @@ def city_context(prompt):
             "city": "Boston",
             "transit": "MBTA subway/bus/ferry and walking",
             "stops": ["Freedom Trail self-guided walk", "Boston Public Library", "Harborwalk", "Harvard campus museums/free exhibits"],
+        }
+    if "san diego" in p:
+        return {
+            "city": "San Diego",
+            "transit": "MTS trolley/bus and walking",
+            "stops": ["Balboa Park free gardens/plazas", "Timken Museum of Art", "Waterfront Park", "Old Town cultural walk"],
         }
     return {
         "city": "the destination",
@@ -924,7 +959,7 @@ def hybrid_travel_repair(schema, prompt):
         stop_b = stops[idx % len(stops)]
         paid_item = f"Optional timed ticket or special exhibit capped at {fmt_money(per_cap)}" if idx == days else "No paid item"
         paid_cost = fmt_money(paid) if idx == days else "$0"
-        day_rows.append(f"| Day {idx} | {transit_rule} | {stop_a}; {stop_b}; low-cost meal break | {paid_item} | {paid_cost} |")
+        day_rows.append(f"| Day {idx} | {transit_rule} | {stop_a}; {stop_b}; low-cost lunch break | {paid_item} | {paid_cost} |")
 
     return f"""Here is a hybrid constraint-first {days}-day plan for {context["city"]}.
 
@@ -940,7 +975,7 @@ Constraint schema:
 Budget:
 | Category | Cost |
 |---|---:|
-| Simple meals / snacks | {fmt_money(food)} |
+| Lunch / simple meals / snacks | {fmt_money(food)} |
 | Transit | {fmt_money(transit_budget)} |
 | Paid tickets / tours | {fmt_money(paid)} |
 | Buffer / unspent cap room | {fmt_money(planning_buffer)} |
@@ -1150,7 +1185,12 @@ Validation:
 
 
 def hybrid_constraint_repair(task, prompt):
-    if task.get("block") != "constraint_reasoning":
+    if task.get("block") != "constraint_reasoning" and task.get("task_type") not in {
+        "budgeted_travel_planner",
+        "allergy_safe_meal_planner",
+        "math_feasibility_checker",
+        "workflow_readiness_agent",
+    }:
         return None
     schema = extract_constraint_schema(task, prompt)
     if schema["kind"] == "travel":
@@ -1165,7 +1205,12 @@ def hybrid_constraint_repair(task, prompt):
 
 
 def hybrid_gate_constraint_repair(task, prompt):
-    if task.get("block") != "constraint_reasoning":
+    if task.get("block") != "constraint_reasoning" and task.get("task_type") not in {
+        "budgeted_travel_planner",
+        "allergy_safe_meal_planner",
+        "math_feasibility_checker",
+        "workflow_readiness_agent",
+    }:
         return None
     if is_destination_underspecified_travel(prompt):
         schema = extract_constraint_schema(task, prompt)
@@ -1593,7 +1638,7 @@ def structured_constraint_repair(task, prompt):
     if task.get("block") != "constraint_reasoning":
         return None
 
-    if any(term in p for term in ["trip", "visit"]) and any(term in p for term in ["budget", "cap", "under"]):
+    if any(term in p for term in ["trip", "visit", "outing"]) and any(term in p for term in ["budget", "cap", "under"]):
         return travel_repair(prompt)
 
     if "meal plan" in p:

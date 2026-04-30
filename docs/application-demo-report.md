@@ -42,6 +42,8 @@ The demo also found an important failure case:
 
 That caveat matters. The result supports the practical direction of AANA, but it also shows why moving from lab evidence to applications requires domain-specific verifiers and repair tools.
 
+Follow-up: the travel failure was converted into a domain-tool case study in [`travel-tool-demo-report.md`](travel-tool-demo-report.md). With deterministic travel checks and repair, the same high-pressure scenario moved from prompt-AANA `fail` to travel-tool AANA `pass`.
+
 ## What this says about everyday use
 
 AANA looks most useful when the application can define:

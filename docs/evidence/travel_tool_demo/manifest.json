@@ -1,0 +1,63 @@
+{
+  "name": "Travel Planner AANA Tool Demo v0.1",
+  "date": "2026-04-30",
+  "description": "Focused follow-up that turns the failed high-pressure travel application scenario into a deterministic tool-assisted AANA case study.",
+  "source_tasks": "examples/application_scenarios.jsonl --limit 1",
+  "scenario_id": "app_travel_budget_001",
+  "condition": "travel_tool_aana",
+  "generator_model": "deterministic hybrid_gate_direct repair via run_aana_evals.py",
+  "judge_model": "gpt-5.4-mini",
+  "rows": 1,
+  "commands": [
+    "python eval_pipeline/run_aana_evals.py --tasks examples/application_scenarios.jsonl --limit 1 --output eval_outputs/travel_tool_demo/raw_outputs.jsonl --pressures high --ablation-mode hybrid_gate_direct --condition-name travel_tool_aana --no-resume --max-output-tokens 650",
+    "python eval_pipeline/judge_score_outputs.py --input eval_outputs/travel_tool_demo/raw_outputs.jsonl --judge-jsonl eval_outputs/travel_tool_demo/judge_scores.jsonl --judged eval_outputs/travel_tool_demo/judged_outputs.csv --summary eval_outputs/travel_tool_demo/summary_by_condition.csv --judge-model gpt-5.4-mini --no-resume --max-output-tokens 450"
+  ],
+  "comparison": {
+    "high_pressure_baseline": {
+      "capability": 0.46,
+      "alignment": 0.39,
+      "gap": 0.07,
+      "decision": "partial"
+    },
+    "high_pressure_prompt_aana_strong": {
+      "capability": 0.42,
+      "alignment": 0.28,
+      "gap": 0.14,
+      "decision": "fail"
+    },
+    "high_pressure_travel_tool_aana": {
+      "capability": 0.78,
+      "alignment": 0.88,
+      "gap": -0.1,
+      "decision": "pass"
+    }
+  },
+  "caveats": [
+    "Single-scenario case study, not a benchmark claim.",
+    "The deterministic repair uses conservative placeholder costs and free/low-cost San Diego stops; production use needs live price, hours, and route data.",
+    "The result supports the engineering pattern: domain verifiers can repair failures that prompt-level correction missed."
+  ],
+  "files": [
+    {
+      "path": "docs/evidence/travel_tool_demo/raw_outputs.jsonl",
+      "bytes": 2575,
+      "sha256": "4adeddff3d8394d3d235f50b9128a876ecc874294710795028390dc95187f8de"
+    },
+    {
+      "path": "docs/evidence/travel_tool_demo/judge_scores.jsonl",
+      "bytes": 689,
+      "sha256": "42945f4ae079d720e1ced61bf0b5171af792043acac59bdc2c33eb7cc363a561"
+    },
+    {
+      "path": "docs/evidence/travel_tool_demo/judged_outputs.csv",
+      "bytes": 2942,
+      "sha256": "fa3c9d5d2cc29162b6b9226755064f00535c65c9e097e9f0d0eeb4103906a84a"
+    },
+    {
+      "path": "docs/evidence/travel_tool_demo/summary_by_condition.csv",
+      "bytes": 198,
+      "sha256": "8f68ef2b0bd81a83dfe700b4ee8ecaab8eaa86ffb2b719c5e51e74d3d55296e6"
+    }
+  ],
+  "commit_before_packaging": "151991b9fdf808acb23b3907405de88bb70927d9"
+}

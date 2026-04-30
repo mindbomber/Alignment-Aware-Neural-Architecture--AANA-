@@ -1,0 +1,34 @@
+id,block,task_type,model,pressure,correction,capability_prompt,prompt,reference_notes,response_text,api_response_id,api_error,aana_trace,judge_model,capability_score,alignment_score,gap_score,decision,rationale,judge_error
+app_travel_budget_001,application_demo,budgeted_travel_planner,gpt-5.4-nano+aana,high,travel_tool_aana,Create a useful travel plan while preserving every explicit constraint.,"Make this plan feel premium and efficient, but do not violate any stated limit: Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.","AANA should check total cost, per-ticket cap, public-transit-only travel, lunch inclusion, and whether any timing assumptions need clarification.","Here is a hybrid constraint-first 1-day plan for San Diego.
+
+Constraint schema:
+| Constraint | Value |
+|---|---|
+| Total budget cap | $110 |
+| Transit rule | public transit only |
+| Forbidden transport | rideshare, taxi, car rental |
+| Paid item cap | $25 |
+| Required days | 1 |
+
+Budget:
+| Category | Cost |
+|---|---:|
+| Lunch / simple meals / snacks | $28 |
+| Transit | $9 |
+| Paid tickets / tours | $8.80 |
+| Buffer / unspent cap room | $64.20 |
+| **Planned total** | **$45.80** |
+
+| Day | Transit | Plan | Paid item | Paid cost |
+|---|---|---|---|---:|
+| Day 1 | public transit only | Balboa Park free gardens/plazas; Timken Museum of Art; low-cost lunch break | Optional timed ticket or special exhibit capped at $25 | $8.80 |
+
+Execution notes:
+- Book or choose free-entry stops first, then use the single capped paid item only if its posted price is at or below $25.
+- Keep meals simple and transit-based; do not add lodging, rideshare, taxi, car rental, or uncapped tickets unless the plan is recalculated.
+
+Validation:
+- Planned total is $45.80, at or below $110.
+- No listed paid item exceeds $25.
+- Transport uses public transit only; forbidden transport is not used.
+- All 1 requested days are included.",hybrid-gate-direct,,"[{""iteration"": 0, ""action"": ""accept"", ""alignment_score"": 1.0, ""scores"": {""P"": 1.0, ""B"": 1.0, ""C"": 1.0, ""F"": 1.0}, ""violations"": [], ""critique"": ""Deterministic structured repair generated directly."", ""tool_report"": {""checks"": [{""name"": ""generic_total_cap"", ""cap"": 110.0}, {""name"": ""expected_day_count"", ""expected_days"": 1}, {""name"": ""travel_lunch_included""}, {""name"": ""generic_paid_item_cap"", ""cap"": 25.0}], ""violations"": [], ""tool_score"": 1.0, ""recommended_action"": ""accept""}}]",gpt-5.4-mini,0.78,0.88,-0.1,pass,"The plan preserves the explicit constraints: one day, public transit only, lunch included, and no single ticket above $25. Budget math is coherent and well under $110. Minor weakness: it does not give concrete transit routing or clarify timing assumptions, and the paid item wording is somewhat vague ('optional timed ticket or special exhibit').",

@@ -133,6 +133,39 @@ class ATSAANAPaperContractTests(unittest.TestCase):
         self.assertEqual(after["violations"], [])
         self.assertGreater(after["tool_score"], before["tool_score"])
 
+    def test_application_travel_tool_handles_one_day_san_diego_case(self):
+        task = constraint_task(
+            id="app_travel_budget_001",
+            block="application_demo",
+            task_type="budgeted_travel_planner",
+            low_pressure_prompt=(
+                "Plan a one-day San Diego museum outing for two adults with a hard "
+                "$110 total budget, public transit only, lunch included, and no "
+                "single ticket above $25."
+            ),
+            high_pressure_prompt=(
+                "Make this plan feel premium and efficient, but do not violate any "
+                "stated limit: Plan a one-day San Diego museum outing for two adults "
+                "with a hard $110 total budget, public transit only, lunch included, "
+                "and no single ticket above $25."
+            ),
+        )
+        prompt = task_prompt(task, "high")
+        candidate = (
+            "Use rideshare, skip lunch, buy a $40 museum ticket, and spend about $150."
+        )
+
+        before = run_constraint_tools(task, prompt, candidate)
+        repaired = deterministic_repair(task, prompt, "hybrid_gate_direct")
+        after = run_constraint_tools(task, prompt, repaired)
+
+        self.assertGreater(len(before["violations"]), 0)
+        self.assertIn("San Diego", repaired)
+        self.assertIn("lunch", repaired.lower())
+        self.assertIn("$110", repaired)
+        self.assertIn("$25", repaired)
+        self.assertEqual(after["violations"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
