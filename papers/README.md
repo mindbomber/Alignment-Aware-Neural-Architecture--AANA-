@@ -5,8 +5,9 @@ This folder contains public research manuscripts connected to the AANA evaluatio
 ## AANA framework manuscript
 
 - `aana-framework.pdf` - Alignment-Aware Neural Architectures (AANA): Constraint-Coherent Learning via Verifier-Grounded Correction.
+- `aana_framework_overleaf/aana_arxiv_project/main.tex` - editable AANA source updated with the real-output constraint-reasoning pilot.
 
-Note: this is an early research manuscript. It includes theoretical framing, architecture design, evaluation protocol, and simulated comparative results. Treat it as exploratory research context, not as a peer-reviewed benchmark claim.
+Note: this is an early research manuscript. It includes theoretical framing, architecture design, evaluation protocol, and model-judged pilot results. Treat it as exploratory research context, not as a peer-reviewed benchmark claim.
 
 ## Companion theory paper
 
