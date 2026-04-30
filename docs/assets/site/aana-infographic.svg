@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-labelledby="title desc">
+  <title id="title">AANA project infographic</title>
+  <desc id="desc">Public-friendly infographic explaining how the AANA evaluation pipeline generates, verifies, corrects, gates, and scores AI answers.</desc>
+  <defs>
+    <linearGradient id="hero" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#10202c"/>
+      <stop offset="0.48" stop-color="#087c82"/>
+      <stop offset="1" stop-color="#ff6b5f"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#f6c445"/>
+      <stop offset="1" stop-color="#ff6b5f"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#10202c" flood-opacity="0.18"/>
+    </filter>
+    <style>
+      .bg { fill: #fffaf2; }
+      .ink { fill: #10202c; }
+      .muted { fill: #536371; }
+      .white { fill: #fff; }
+      .aqua { fill: #20b7b2; }
+      .aquaDark { fill: #087c82; }
+      .coral { fill: #ff6b5f; }
+      .yellow { fill: #f6c445; }
+      .lime { fill: #88c943; }
+      .card { fill: #fff; stroke: rgba(16,32,44,.14); stroke-width: 2; rx: 18; filter: url(#softShadow); }
+      .smallCaps { font: 800 24px Inter, Arial, sans-serif; letter-spacing: 3px; text-transform: uppercase; }
+      .title { font: 900 84px Inter, Arial, sans-serif; letter-spacing: 0; }
+      .subtitle { font: 500 34px Inter, Arial, sans-serif; }
+      .h2 { font: 900 42px Inter, Arial, sans-serif; }
+      .h3 { font: 900 31px Inter, Arial, sans-serif; }
+      .body { font: 500 25px Inter, Arial, sans-serif; }
+      .bodySmall { font: 500 22px Inter, Arial, sans-serif; }
+      .metric { font: 900 60px Inter, Arial, sans-serif; }
+      .mono { font: 700 22px Consolas, Menlo, monospace; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1200" height="1800"/>
+  <path fill="url(#hero)" d="M0 0h1200v585H0z"/>
+  <circle cx="1010" cy="125" r="165" fill="#ffffff" opacity=".09"/>
+  <circle cx="102" cy="430" r="210" fill="#20b7b2" opacity=".18"/>
+  <circle cx="950" cy="420" r="120" fill="#f6c445" opacity=".18"/>
+
+  <g transform="translate(76 74)">
+    <text class="smallCaps yellow" x="0" y="0">Alignment-Aware Neural Architecture</text>
+    <text class="title white" x="0" y="105">AANA</text>
+    <text class="subtitle white" opacity=".92" x="0" y="160">A practical way to test whether AI answers stay useful while keeping the rules that matter.</text>
+  </g>
+
+  <g transform="translate(78 260)">
+    <path d="M20 92 C160 -8, 320 190, 482 88 S782 -2, 1020 100" fill="none" stroke="#f6c445" stroke-width="12" stroke-linecap="round"/>
+    <g transform="translate(0 52)">
+      <polygon points="0,44 104,0 78,78 52,52" fill="#fff" opacity=".95"/>
+      <polygon points="52,52 78,78 60,60" fill="#20b7b2"/>
+    </g>
+    <g transform="translate(210 15)">
+      <rect width="130" height="130" rx="18" fill="#20b7b2"/>
+      <path d="M35 69l22 22 42-54" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(500 78)">
+      <rect width="150" height="110" rx="18" fill="#fff" opacity=".9"/>
+      <path d="M35 58h80M35 32h80M35 84h48" stroke="#087c82" stroke-width="11" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(820 42)">
+      <circle cx="70" cy="70" r="70" fill="#ff6b5f"/>
+      <path d="M45 74l18 18 36-45" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <g transform="translate(76 650)">
+    <rect class="card" width="1048" height="245"/>
+    <text class="smallCaps aquaDark" x="42" y="58">Plain English</text>
+    <text class="h2 ink" x="42" y="116">AI answers can look good while quietly breaking constraints.</text>
+    <text class="body muted" x="42" y="168">AANA stress-tests that gap. It compares direct answers with verifier-grounded correction loops,</text>
+    <text class="body muted" x="42" y="205">tool-assisted checks, and scored evidence files that people can inspect.</text>
+  </g>
+
+  <g transform="translate(76 955)">
+    <text class="smallCaps aquaDark" x="0" y="0">The pipeline</text>
+    <g transform="translate(0 36)">
+      <rect class="card" width="196" height="190"/>
+      <circle class="yellow" cx="52" cy="55" r="25"/>
+      <text class="h3 ink" x="34" y="65">1</text>
+      <text class="h3 ink" x="32" y="105">Task</text>
+      <text class="bodySmall muted" x="32" y="142">Prompt plus</text>
+      <text class="bodySmall muted" x="32" y="171">constraints.</text>
+    </g>
+    <g transform="translate(213 36)">
+      <rect class="card" width="196" height="190"/>
+      <circle class="aqua" cx="52" cy="55" r="25"/>
+      <text class="h3 white" x="34" y="65">2</text>
+      <text class="h3 ink" x="32" y="105">Generate</text>
+      <text class="bodySmall muted" x="32" y="142">Create a</text>
+      <text class="bodySmall muted" x="32" y="171">candidate.</text>
+    </g>
+    <g transform="translate(426 36)">
+      <rect class="card" width="196" height="190"/>
+      <circle class="coral" cx="52" cy="55" r="25"/>
+      <text class="h3 white" x="34" y="65">3</text>
+      <text class="h3 ink" x="32" y="105">Verify</text>
+      <text class="bodySmall muted" x="32" y="142">Check facts,</text>
+      <text class="bodySmall muted" x="32" y="171">safety, task fit.</text>
+    </g>
+    <g transform="translate(639 36)">
+      <rect class="card" width="196" height="190"/>
+      <circle class="lime" cx="52" cy="55" r="25"/>
+      <text class="h3 ink" x="34" y="65">4</text>
+      <text class="h3 ink" x="32" y="105">Correct</text>
+      <text class="bodySmall muted" x="32" y="142">Revise, ask,</text>
+      <text class="bodySmall muted" x="32" y="171">refuse, defer.</text>
+    </g>
+    <g transform="translate(852 36)">
+      <rect class="card" width="196" height="190"/>
+      <circle class="yellow" cx="52" cy="55" r="25"/>
+      <text class="h3 ink" x="34" y="65">5</text>
+      <text class="h3 ink" x="32" y="105">Score</text>
+      <text class="bodySmall muted" x="32" y="142">Export CSV,</text>
+      <text class="bodySmall muted" x="32" y="171">JSONL, plots.</text>
+    </g>
+  </g>
+
+  <g transform="translate(76 1260)">
+    <rect class="card" width="330" height="250"/>
+    <text class="smallCaps aquaDark" x="32" y="54">Baseline</text>
+    <text class="metric ink" x="32" y="126">45.8%</text>
+    <text class="bodySmall muted" x="32" y="168">pass rate in the</text>
+    <text class="bodySmall muted" x="32" y="198">tracked sample</text>
+
+    <rect class="card" x="359" width="330" height="250"/>
+    <text class="smallCaps aquaDark" x="391" y="54">AANA tools</text>
+    <text class="metric ink" x="391" y="126">98.3%</text>
+    <text class="bodySmall muted" x="391" y="168">pass rate in the</text>
+    <text class="bodySmall muted" x="391" y="198">same comparison</text>
+
+    <rect class="card" x="718" width="330" height="250"/>
+    <text class="smallCaps aquaDark" x="750" y="54">Capability</text>
+    <text class="metric ink" x="750" y="126">+0.260</text>
+    <text class="bodySmall muted" x="750" y="168">delta versus</text>
+    <text class="bodySmall muted" x="750" y="198">baseline</text>
+  </g>
+
+  <g transform="translate(76 1578)">
+    <rect width="1048" height="132" rx="18" fill="#10202c"/>
+    <text class="h3 white" x="34" y="55">Research code, not a certified benchmark.</text>
+    <text class="bodySmall white" opacity=".78" x="34" y="93">The value is transparency: reproducible tasks, judged outputs, evidence manifests, and caveats.</text>
+    <text class="mono yellow" x="34" y="122">mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/</text>
+  </g>
+</svg>

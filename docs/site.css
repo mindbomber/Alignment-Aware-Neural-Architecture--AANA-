@@ -484,6 +484,40 @@ p {
   padding: 0.85rem 1rem;
 }
 
+.infographic-panel {
+  align-items: center;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 242, 0.96), rgba(255, 250, 242, 0.82)),
+    url("assets/site/aana-infographic-background.png") center / cover;
+  border-radius: 8px;
+  display: grid;
+  gap: clamp(1.5rem, 5vw, 3rem);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.infographic-preview {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.infographic-preview img {
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  width: 100%;
+}
+
+.share-link {
+  color: var(--aqua-dark);
+  display: inline-block;
+  font-weight: 850;
+  margin-top: 1rem;
+  overflow-wrap: anywhere;
+}
+
 .demo-shell {
   background: #0c1720;
   border-radius: 8px;
@@ -596,7 +630,8 @@ pre {
 
   .section-head,
   .story-grid,
-  .evidence-grid {
+  .evidence-grid,
+  .infographic-panel {
     grid-template-columns: 1fr;
   }
 
