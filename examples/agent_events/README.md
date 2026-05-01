@@ -15,6 +15,14 @@ python scripts/aana_cli.py validate-event --event examples/agent_events/travel_b
 python scripts/aana_cli.py agent-check --event examples/agent_events/travel_booking.json
 ```
 
+Create a new starter event from a gallery adapter:
+
+```powershell
+python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+```
+
+Then replace `candidate_action` with the action your agent is about to take and replace `available_evidence` with the verified context the gate should use.
+
 Current examples:
 
 - `support_reply.json`: support draft invents account facts and private payment detail.

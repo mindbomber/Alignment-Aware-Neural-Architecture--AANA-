@@ -136,6 +136,18 @@ def command_run_agent_examples(args):
     return 0 if report["valid"] else 1
 
 
+def command_scaffold_agent_event(args):
+    created = agent_api.scaffold_agent_event(
+        args.adapter_id,
+        output_dir=args.output_dir,
+        gallery_path=args.gallery,
+        agent=args.agent,
+        force=args.force,
+    )
+    print_json({"created": created})
+    return 0
+
+
 def command_policy_presets(args):
     presets = agent_api.list_policy_presets()
     if args.json:
@@ -240,6 +252,13 @@ def build_parser():
     agent_examples_parser.add_argument("--events-dir", default=str(agent_api.DEFAULT_AGENT_EVENTS_DIR), help="Directory of agent event JSON files.")
     agent_examples_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     agent_examples_parser.set_defaults(func=command_run_agent_examples)
+
+    scaffold_event_parser = subparsers.add_parser("scaffold-agent-event", help="Create a starter agent event JSON from a gallery adapter.")
+    scaffold_event_parser.add_argument("adapter_id", help="Gallery adapter id, such as support_reply.")
+    scaffold_event_parser.add_argument("--output-dir", default=str(agent_api.DEFAULT_AGENT_EVENTS_DIR), help="Directory for generated event JSON.")
+    scaffold_event_parser.add_argument("--agent", default="openclaw", help="Agent name to place in the event.")
+    scaffold_event_parser.add_argument("--force", action="store_true", help="Overwrite an existing event file.")
+    scaffold_event_parser.set_defaults(func=command_scaffold_agent_event)
 
     policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
     policy_parser.add_argument("--json", action="store_true", help="Emit JSON.")

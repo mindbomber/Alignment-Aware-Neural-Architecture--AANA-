@@ -204,3 +204,61 @@ def run_agent_event_examples(events_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=D
         "count": len(rows),
         "checked_examples": rows,
     }
+
+
+def build_agent_event_from_gallery(adapter_id, gallery_path=DEFAULT_GALLERY, agent="openclaw"):
+    gallery = load_gallery(gallery_path)
+    entry = find_entry(gallery, adapter_id)
+    expected = entry.get("expected", {}) if isinstance(entry.get("expected"), dict) else {}
+    event_id = f"draft-{adapter_id}-001"
+    evidence = [
+        f"Workflow: {entry.get('workflow', 'replace with verified workflow notes')}",
+        "Replace this list with verified facts, records, constraints, or retrieved evidence.",
+    ]
+    for constraint_id in expected.get("failing_constraints", []):
+        evidence.append(f"Constraint to preserve: {constraint_id}")
+
+    return {
+        "event_version": AGENT_EVENT_VERSION,
+        "event_id": event_id,
+        "agent": agent,
+        "adapter_id": adapter_id,
+        "user_request": entry.get("prompt", "Replace with the user request to check."),
+        "candidate_action": entry.get("bad_candidate", "Replace with the agent's planned answer or action."),
+        "available_evidence": evidence,
+        "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
+        "metadata": {
+            "scenario": adapter_id,
+            "policy_preset": suggested_policy_preset(adapter_id),
+            "expected_candidate_gate": expected.get("candidate_gate"),
+            "expected_gate_decision": expected.get("gate_decision"),
+            "expected_recommended_action": expected.get("recommended_action"),
+            "notes": "Replace starter values with a real planned agent action before production use.",
+        },
+    }
+
+
+def suggested_policy_preset(adapter_id):
+    for preset_name, preset in POLICY_PRESETS.items():
+        if adapter_id in preset.get("recommended_adapters", []):
+            return preset_name
+    return "custom"
+
+
+def scaffold_agent_event(adapter_id, output_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=DEFAULT_GALLERY, agent="openclaw", force=False):
+    output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / f"{adapter_id}.json"
+    if path.exists() and not force:
+        raise FileExistsError(f"{path} already exists. Use --force to overwrite.")
+
+    event = build_agent_event_from_gallery(adapter_id, gallery_path=gallery_path, agent=agent)
+    path.write_text(json.dumps(event, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {
+        "event": str(path),
+        "next_steps": [
+            f"python scripts/aana_cli.py validate-event --event {path}",
+            f"python scripts/aana_cli.py agent-check --event {path}",
+            "Replace the starter candidate_action and available_evidence with a real agent workflow case.",
+        ],
+    }

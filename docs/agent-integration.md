@@ -60,6 +60,14 @@ python scripts/aana_cli.py run-agent-examples
 
 The pack lives in [`examples/agent_events/`](../examples/agent_events/) and currently covers support replies, travel booking/planning, and meal planning.
 
+Scaffold a new event from a gallery adapter:
+
+```powershell
+python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+```
+
+Then edit the generated `candidate_action` and `available_evidence` fields to match the real action your agent is about to take.
+
 ## Python API
 
 Agents that can call Python directly do not need to shell out to the CLI. Import the small API shim and pass the same event object:
@@ -220,6 +228,7 @@ For a new agent workflow:
 ```powershell
 python scripts/aana_cli.py scaffold "your agent workflow"
 python scripts/aana_cli.py validate-adapter examples/your_agent_workflow_adapter.json
+python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 ```
 
 Then add deterministic verifier logic and a gallery entry when the adapter has a real executable path.

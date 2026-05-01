@@ -99,6 +99,12 @@ Run the executable agent-event examples across support, travel, and meal-plannin
 python scripts/aana_cli.py run-agent-examples
 ```
 
+Create a starter event for your own agent workflow from an existing gallery adapter:
+
+```powershell
+python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+```
+
 Print the versioned agent schemas:
 
 ```powershell

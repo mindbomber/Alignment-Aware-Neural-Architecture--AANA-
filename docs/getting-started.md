@@ -26,6 +26,7 @@ python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py run-agent-examples
+python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
@@ -46,6 +47,8 @@ For AI-agent integrations, see [`agent-integration.md`](agent-integration.md).
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
 
 Before an agent starts calling AANA, validate the event shape with `python scripts/aana_cli.py validate-event --event <event.json>`. This catches missing adapter IDs, missing prompts, malformed evidence lists, and unsupported actions before the workflow runs. To see the pattern across domains, run `python scripts/aana_cli.py run-agent-examples`; it checks the support, travel, and meal-planning event pack under `examples/agent_events/`.
+
+To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `travel_planning`, or `meal_planning`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
 If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py` and POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
 

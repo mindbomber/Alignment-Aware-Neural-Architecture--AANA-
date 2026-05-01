@@ -109,6 +109,14 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("demo-travel-booking-001", output)
         self.assertIn("demo-meal-planning-001", output)
 
+    def test_scaffold_agent_event_creates_event(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, output = self.run_cli(["scaffold-agent-event", "support_reply", "--output-dir", tmp])
+
+            self.assertEqual(code, 0)
+            self.assertIn("support_reply.json", output)
+            self.assertTrue((pathlib.Path(tmp) / "support_reply.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

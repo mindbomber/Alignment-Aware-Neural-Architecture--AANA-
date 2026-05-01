@@ -1,4 +1,5 @@
 import pathlib
+import tempfile
 import unittest
 
 from eval_pipeline import agent_api
@@ -46,6 +47,17 @@ class AgentApiTests(unittest.TestCase):
         self.assertIn("demo-support-refund-001", event_ids)
         self.assertIn("demo-travel-booking-001", event_ids)
         self.assertIn("demo-meal-planning-001", event_ids)
+
+    def test_scaffold_agent_event_from_gallery(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            created = agent_api.scaffold_agent_event("support_reply", output_dir=tmp)
+
+            path = pathlib.Path(created["event"])
+            self.assertTrue(path.exists())
+            event = agent_api.load_json_file(path)
+            self.assertEqual(event["adapter_id"], "support_reply")
+            self.assertEqual(event["metadata"]["expected_gate_decision"], "pass")
+            self.assertTrue(agent_api.validate_event(event)["valid"])
 
 
 if __name__ == "__main__":
