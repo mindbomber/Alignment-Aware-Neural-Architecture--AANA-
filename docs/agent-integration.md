@@ -133,8 +133,12 @@ Available routes:
 - `GET /schemas`
 - `GET /schemas/agent-event.schema.json`
 - `GET /schemas/agent-check-result.schema.json`
+- `GET /schemas/workflow-request.schema.json`
+- `GET /schemas/workflow-result.schema.json`
 - `POST /validate-event`
 - `POST /agent-check`
+- `POST /validate-workflow`
+- `POST /workflow-check`
 
 PowerShell example:
 
@@ -145,6 +149,14 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $eve
 ```
 
 This is the easiest integration path for agent frameworks that expose local tools, webhooks, or HTTP request actions. Keep the bridge bound to `127.0.0.1` unless you have a real deployment boundary, authentication, logging, and network controls.
+
+For non-agent apps, notebooks, and workflow tools, use the more general Workflow Contract:
+
+```powershell
+$workflow = Get-Content examples/workflow_research_summary.json -Raw
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-workflow -Body $workflow -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Body $workflow -ContentType 'application/json'
+```
 
 The OpenAPI route is useful for tools that can import an HTTP contract:
 

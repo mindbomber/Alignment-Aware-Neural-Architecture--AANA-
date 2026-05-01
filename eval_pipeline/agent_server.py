@@ -12,7 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from eval_pipeline import agent_api, agent_contract
+from eval_pipeline import agent_api, agent_contract, workflow_contract
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -82,6 +82,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/workflow-check": {
+                "post": {
+                    "operationId": "checkWorkflowRequest",
+                    "summary": "Check a proposed AI output or action with the AANA Workflow Contract.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowRequest"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "AANA workflow gate result.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowResult"}}},
+                        },
+                        "400": {
+                            "description": "Invalid workflow request or unknown adapter.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
             "/validate-event": {
                 "post": {
                     "operationId": "validateAgentEvent",
@@ -89,6 +109,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     "requestBody": {
                         "required": True,
                         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgentEvent"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Validation report.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationReport"}}},
+                        },
+                        "400": {
+                            "description": "Request body is not valid JSON.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
+            "/validate-workflow": {
+                "post": {
+                    "operationId": "validateWorkflowRequest",
+                    "summary": "Validate an AANA workflow request without running the gate.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowRequest"}}},
                     },
                     "responses": {
                         "200": {
@@ -114,6 +154,8 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
             "schemas": {
                 "AgentEvent": agent_contract.AGENT_EVENT_SCHEMA,
                 "AgentCheckResult": agent_contract.AGENT_CHECK_RESULT_SCHEMA,
+                "WorkflowRequest": workflow_contract.WORKFLOW_REQUEST_SCHEMA,
+                "WorkflowResult": workflow_contract.WORKFLOW_RESULT_SCHEMA,
                 "Health": {
                     "type": "object",
                     "properties": {
@@ -172,8 +214,14 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
     if method == "GET" and parsed.path == "/schemas/agent-check-result.schema.json":
         return 200, agent_contract.AGENT_CHECK_RESULT_SCHEMA
 
+    if method == "GET" and parsed.path == "/schemas/workflow-request.schema.json":
+        return 200, workflow_contract.WORKFLOW_REQUEST_SCHEMA
+
+    if method == "GET" and parsed.path == "/schemas/workflow-result.schema.json":
+        return 200, workflow_contract.WORKFLOW_RESULT_SCHEMA
+
     if method == "GET" and parsed.path == "/schemas":
-        return 200, agent_contract.schema_catalog()
+        return 200, agent_api.schema_catalog()
 
     if method == "POST" and parsed.path == "/agent-check":
         try:
@@ -192,6 +240,22 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
         except json.JSONDecodeError as exc:
             return 400, {"error": str(exc)}
 
+    if method == "POST" and parsed.path == "/workflow-check":
+        try:
+            workflow_request = json.loads(body.decode("utf-8") if body else "{}")
+            if not isinstance(workflow_request, dict):
+                raise ValueError("Request body must be a JSON object.")
+            return 200, agent_api.check_workflow_request(workflow_request, gallery_path=gallery_path)
+        except (json.JSONDecodeError, OSError, ValueError) as exc:
+            return 400, {"error": str(exc)}
+
+    if method == "POST" and parsed.path == "/validate-workflow":
+        try:
+            workflow_request = json.loads(body.decode("utf-8") if body else "{}")
+            return 200, agent_api.validate_workflow_request(workflow_request)
+        except json.JSONDecodeError as exc:
+            return 400, {"error": str(exc)}
+
     return 404, {
         "error": "Unknown route.",
         "routes": [
@@ -201,8 +265,12 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
             "GET /schemas",
             "GET /schemas/agent-event.schema.json",
             "GET /schemas/agent-check-result.schema.json",
+            "GET /schemas/workflow-request.schema.json",
+            "GET /schemas/workflow-result.schema.json",
             "POST /validate-event",
             "POST /agent-check",
+            "POST /validate-workflow",
+            "POST /workflow-check",
         ],
     }
 
@@ -241,7 +309,7 @@ def make_handler(gallery_path):
 def run_server(host=DEFAULT_HOST, port=DEFAULT_PORT, gallery_path=agent_api.DEFAULT_GALLERY):
     server = ThreadingHTTPServer((host, port), make_handler(gallery_path))
     print(f"AANA agent bridge listening on http://{host}:{port}")
-    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check")
+    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

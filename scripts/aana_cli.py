@@ -100,6 +100,44 @@ def command_agent_check(args):
     return 0 if response["gate_decision"] == "pass" else 1
 
 
+def command_workflow_check(args):
+    evidence = list(args.evidence or [])
+    constraints = list(args.constraint or [])
+    result = agent_api.check_workflow(
+        adapter=args.adapter,
+        request=args.request,
+        candidate=args.candidate,
+        evidence=evidence,
+        constraints=constraints,
+        workflow_id=args.workflow_id,
+        gallery_path=args.gallery,
+    )
+    print_json(result)
+    return 0 if result["gate_decision"] == "pass" else 1
+
+
+def command_validate_workflow(args):
+    workflow_request = agent_api.load_json_file(args.workflow)
+    report = agent_api.validate_workflow_request(workflow_request)
+    if args.json:
+        print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Workflow request is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+        for issue in report["issues"]:
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_workflow_schema(args):
+    catalog = agent_api.schema_catalog()
+    if args.name == "all":
+        print_json(catalog)
+    else:
+        print_json(catalog[args.name])
+    return 0
+
+
 def command_validate_event(args):
     event = agent_api.load_json_file(args.event)
     report = agent_api.validate_event(event)
@@ -272,12 +310,12 @@ def doctor_report(gallery_path=DEFAULT_GALLERY):
         checks.append(check_status("agent_event_examples", "fail", str(exc)))
 
     schemas = agent_api.schema_catalog()
-    schema_ok = "agent_event" in schemas and "agent_check_result" in schemas
+    schema_ok = {"agent_event", "agent_check_result", "workflow_request", "workflow_result"}.issubset(schemas)
     checks.append(
         check_status(
             "agent_schemas",
             "pass" if schema_ok else "fail",
-            "Agent event and result schemas are available." if schema_ok else "Agent schemas are incomplete.",
+            "Agent and workflow schemas are available." if schema_ok else "Agent or workflow schemas are incomplete.",
             {"schemas": sorted(schemas.keys())},
         )
     )
@@ -385,6 +423,20 @@ def build_parser():
     agent_parser.add_argument("--adapter-id", default=None, help="Override adapter id from the event.")
     agent_parser.set_defaults(func=command_agent_check)
 
+    workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
+    workflow_parser.add_argument("--adapter", required=True, help="Gallery adapter id, such as research_summary.")
+    workflow_parser.add_argument("--request", required=True, help="User request or workflow instruction.")
+    workflow_parser.add_argument("--candidate", default=None, help="Proposed output or action to check.")
+    workflow_parser.add_argument("--evidence", action="append", default=[], help="Verified evidence item. Repeat as needed.")
+    workflow_parser.add_argument("--constraint", action="append", default=[], help="Constraint to preserve. Repeat as needed.")
+    workflow_parser.add_argument("--workflow-id", default=None, help="Optional workflow id for logs/results.")
+    workflow_parser.set_defaults(func=command_workflow_check)
+
+    validate_workflow_parser = subparsers.add_parser("validate-workflow", help="Validate an AANA workflow request JSON file.")
+    validate_workflow_parser.add_argument("--workflow", required=True, help="Path to workflow request JSON.")
+    validate_workflow_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_workflow_parser.set_defaults(func=command_validate_workflow)
+
     validate_event_parser = subparsers.add_parser("validate-event", help="Validate an AI-agent event contract.")
     validate_event_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
     validate_event_parser.add_argument("--json", action="store_true", help="Emit JSON.")
@@ -399,6 +451,16 @@ def build_parser():
         help="Schema to print.",
     )
     schema_parser.set_defaults(func=command_agent_schema)
+
+    workflow_schema_parser = subparsers.add_parser("workflow-schema", help="Print versioned workflow JSON schemas.")
+    workflow_schema_parser.add_argument(
+        "name",
+        nargs="?",
+        default="all",
+        choices=["all", "workflow_request", "workflow_result"],
+        help="Schema to print.",
+    )
+    workflow_schema_parser.set_defaults(func=command_workflow_schema)
 
     agent_examples_parser = subparsers.add_parser("run-agent-examples", help="Run executable agent event examples.")
     agent_examples_parser.add_argument("--events-dir", default=str(agent_api.DEFAULT_AGENT_EVENTS_DIR), help="Directory of agent event JSON files.")

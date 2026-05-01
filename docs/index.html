@@ -550,8 +550,8 @@
               To start from your own workflow, scaffold a domain adapter and validate it before
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
-              The installable <code>aana</code> command, command hub, and Python API wrap those pieces behind short calls, including an
-              agent-check contract, CLI and HTTP event validation, local HTTP bridge, OpenAPI route,
+              The installable <code>aana</code> command, command hub, Workflow Contract, and Python SDK wrap those pieces behind short calls, including an
+              agent-check contract, CLI and HTTP validation, local HTTP bridge, OpenAPI route,
               JSON schemas, and policy presets for OpenClaw-style agents.
             </p>
             <div class="section-actions">
@@ -563,6 +563,8 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run research_summary">Copy research command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json">Copy workflow validation</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-check --adapter research_summary --request &quot;Write a concise research brief. Use only Source A and Source B. Label uncertainty.&quot; --candidate &quot;AANA improves productivity by 40% for all teams [Source C].&quot; --evidence &quot;Source A: AANA makes constraints explicit.&quot; --evidence &quot;Source B: Source coverage can be incomplete.&quot; --constraint &quot;Do not invent citations.&quot; --constraint &quot;Do not add unsupported numbers.&quot;">Copy workflow check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run-agent-examples">Copy agent examples</button>
@@ -593,6 +595,8 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py run research_summary
+python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py run-agent-examples
@@ -637,6 +641,10 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/getting-started.md" target="_blank" rel="noopener">
               <h3>Getting Started</h3>
               <p>The shortest path from no-key demo to live model setup and a first domain adapter.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-workflow-contract.md" target="_blank" rel="noopener">
+              <h3>Workflow Contract</h3>
+              <p>The platform boundary for checking AI outputs and actions from apps, agents, notebooks, and tools.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/application-playbook.md" target="_blank" rel="noopener">
               <h3>Application Playbook</h3>
@@ -693,6 +701,10 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/research_summary_adapter.json" target="_blank" rel="noopener">
               <h3>Research Summary Adapter JSON</h3>
               <p>An executable knowledge-work adapter for allowed sources, citation boundaries, supported claims, and uncertainty labels.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/workflow_research_summary.json" target="_blank" rel="noopener">
+              <h3>Workflow Request Example</h3>
+              <p>A minimal request using the AANA Workflow Contract with request, candidate, evidence, constraints, and allowed actions.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>

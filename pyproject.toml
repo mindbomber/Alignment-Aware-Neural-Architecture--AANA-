@@ -37,7 +37,7 @@ aana = "scripts.aana_cli:main"
 aana-server = "eval_pipeline.agent_server:main"
 
 [tool.setuptools.packages.find]
-include = ["eval_pipeline*", "scripts*"]
+include = ["aana*", "eval_pipeline*", "scripts*"]
 
 [tool.unittest]
 start-dir = "tests"

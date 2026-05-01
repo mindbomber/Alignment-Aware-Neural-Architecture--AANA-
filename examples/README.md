@@ -13,6 +13,7 @@ These files show the input and output shapes without requiring live API calls.
 - `research_summary_adapter.json` is a filled executable adapter for grounded research and knowledge-work summaries.
 - `agent_event_support_reply.json` is a machine-readable event an agent can pass to AANA before sending a support reply.
 - `agent_events/` contains executable agent-event examples for support replies, travel booking/planning, meal planning, and research summaries.
+- `workflow_research_summary.json` is a general AANA Workflow Contract request for apps, notebooks, and agent tools.
 - `agent_api_usage.py` shows the same event check through the Python API instead of the CLI.
 
 Use the command hub first:
@@ -23,6 +24,7 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py run research_summary
+python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json

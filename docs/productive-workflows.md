@@ -4,6 +4,8 @@ AANA is becoming a plug-in pattern for everyday work where the answer is useful 
 
 The runnable starting point is [`examples/research_summary_adapter.json`](../examples/research_summary_adapter.json). It shows how to gate a draft before it becomes a brief, memo, report, or agent answer.
 
+The platform contract is [`aana-workflow-contract.md`](aana-workflow-contract.md). It gives apps and agents one small shape for sending a request, candidate, evidence, constraints, and allowed actions to AANA.
+
 ## What It Checks
 
 The research-summary adapter turns a common knowledge-work failure into an executable gate:
@@ -23,6 +25,20 @@ For agents:
 
 ```powershell
 python scripts/aana_cli.py agent-check --event examples/agent_events/research_summary.json
+```
+
+For apps and notebooks:
+
+```python
+import aana
+
+result = aana.check(
+    adapter="research_summary",
+    request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+    candidate="AANA improves productivity by 40% for all teams [Source C].",
+    evidence=["Source A: AANA makes constraints explicit.", "Source B: Source coverage can be incomplete."],
+    constraints=["Do not invent citations.", "Do not add unsupported numbers."],
+)
 ```
 
 ## Where This Applies

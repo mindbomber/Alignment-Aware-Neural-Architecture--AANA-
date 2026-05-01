@@ -12,10 +12,11 @@ if str(SCRIPTS) not in sys.path:
 
 import run_adapter
 import validate_adapter_gallery
-from eval_pipeline import agent_contract
+from eval_pipeline import agent_contract, workflow_contract
 
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
+WORKFLOW_CONTRACT_VERSION = workflow_contract.WORKFLOW_CONTRACT_VERSION
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
 DEFAULT_AGENT_EVENTS_DIR = ROOT / "examples" / "agent_events"
 
@@ -140,6 +141,52 @@ def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
     }
 
 
+def check_workflow(
+    adapter,
+    request,
+    candidate=None,
+    evidence=None,
+    constraints=None,
+    allowed_actions=None,
+    metadata=None,
+    workflow_id=None,
+    gallery_path=DEFAULT_GALLERY,
+):
+    workflow_request = workflow_contract.normalize_workflow_request(
+        adapter=adapter,
+        request=request,
+        candidate=candidate,
+        evidence=evidence,
+        constraints=constraints,
+        allowed_actions=allowed_actions,
+        metadata=metadata,
+        workflow_id=workflow_id,
+    )
+    return check_workflow_request(workflow_request, gallery_path=gallery_path)
+
+
+def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
+    contract_report = workflow_contract.validate_workflow_request(workflow_request)
+    if not contract_report["valid"]:
+        messages = "; ".join(issue["message"] for issue in contract_report["issues"] if issue["level"] == "error")
+        raise ValueError(messages)
+
+    event = workflow_contract.workflow_request_to_agent_event(workflow_request)
+    result = check_event(event, gallery_path=gallery_path)
+    return {
+        "contract_version": WORKFLOW_CONTRACT_VERSION,
+        "workflow_id": workflow_request.get("workflow_id"),
+        "adapter": result.get("adapter_id"),
+        "workflow": result.get("workflow"),
+        "gate_decision": result.get("gate_decision"),
+        "recommended_action": result.get("recommended_action"),
+        "candidate_gate": result.get("candidate_gate"),
+        "violations": result.get("violations", []),
+        "output": result.get("safe_response"),
+        "raw_result": result,
+    }
+
+
 def list_policy_presets():
     return POLICY_PRESETS
 
@@ -148,8 +195,15 @@ def validate_event(event):
     return agent_contract.validate_agent_event(event)
 
 
+def validate_workflow_request(workflow_request):
+    return workflow_contract.validate_workflow_request(workflow_request)
+
+
 def schema_catalog():
-    return agent_contract.schema_catalog()
+    return {
+        **agent_contract.schema_catalog(),
+        **workflow_contract.schema_catalog(),
+    }
 
 
 def discover_agent_events(events_dir=DEFAULT_AGENT_EVENTS_DIR):

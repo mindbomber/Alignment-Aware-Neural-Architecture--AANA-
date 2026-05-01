@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -88,6 +88,27 @@ python scripts/aana_cli.py run research_summary
 
 Those commands emit JSON gate results with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
 
+Call the Workflow Contract directly from Python:
+
+```python
+import aana
+
+result = aana.check(
+    adapter="research_summary",
+    request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+    candidate="AANA improves productivity by 40% for all teams [Source C].",
+    evidence=["Source A: AANA makes constraints explicit.", "Source B: Source coverage can be incomplete."],
+    constraints=["Do not invent citations.", "Do not add unsupported numbers."],
+)
+```
+
+Or run the same platform contract from the CLI:
+
+```powershell
+python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
+```
+
 Check an AI-agent event before the agent acts:
 
 ```powershell
@@ -130,6 +151,8 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765
 Then POST the same event JSON to `http://127.0.0.1:8765/validate-event` and `http://127.0.0.1:8765/agent-check`.
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
+
+Workflow Contract routes are available at `POST /validate-workflow` and `POST /workflow-check`.
 
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 
@@ -182,6 +205,7 @@ Paper-ready replacement text for the pilot-results section is available in [docs
 
 ## What is in this repo?
 
+- `aana/` - Minimal Python SDK surface for Workflow Contract checks.
 - `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
 - `assets/` - Public project images, including the GitHub social preview banner.
 - `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
@@ -210,6 +234,7 @@ For a fuller explanation, see:
 - `docs/getting-started.md`
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
+- `docs/aana-workflow-contract.md`
 - `docs/productive-workflows.md`
 - `docs/application-playbook.md`
 - `docs/domain-adapter-template.md`

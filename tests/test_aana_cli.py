@@ -127,6 +127,43 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("AANA Agent Event", output)
         self.assertIn("adapter_id", output)
 
+    def test_workflow_check_runs_contract_request(self):
+        code, output = self.run_cli(
+            [
+                "workflow-check",
+                "--adapter",
+                "research_summary",
+                "--request",
+                "Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+                "--candidate",
+                "AANA improves productivity by 40% for all teams [Source C].",
+                "--evidence",
+                "Source A: AANA makes constraints explicit.",
+                "--evidence",
+                "Source B: Source coverage can be incomplete.",
+                "--constraint",
+                "Do not invent citations.",
+            ]
+        )
+
+        self.assertEqual(code, 0)
+        self.assertIn('"contract_version": "0.1"', output)
+        self.assertIn('"adapter": "research_summary"', output)
+        self.assertIn('"recommended_action": "revise"', output)
+
+    def test_validate_workflow_accepts_example(self):
+        code, output = self.run_cli(["validate-workflow", "--workflow", "examples/workflow_research_summary.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("Workflow request is valid", output)
+
+    def test_workflow_schema_prints_request_schema(self):
+        code, output = self.run_cli(["workflow-schema", "workflow_request"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA Workflow Request", output)
+        self.assertIn("adapter", output)
+
     def test_run_agent_examples(self):
         code, output = self.run_cli(["run-agent-examples"])
 
