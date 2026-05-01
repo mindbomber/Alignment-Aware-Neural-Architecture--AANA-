@@ -26,7 +26,7 @@ class AdapterGalleryTests(unittest.TestCase):
 
         self.assertTrue(report["valid"], report)
         self.assertEqual(report["errors"], 0)
-        self.assertGreaterEqual(len(report["checked_examples"]), 2)
+        self.assertGreaterEqual(len(report["checked_examples"]), 3)
 
     def test_gallery_rejects_missing_adapter_path(self):
         gallery = validate_adapter_gallery.load_gallery(ROOT / "examples" / "adapter_gallery.json")

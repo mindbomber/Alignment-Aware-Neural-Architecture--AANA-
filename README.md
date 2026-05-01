@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json) and [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), both runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), and [examples/support_reply_adapter.json](examples/support_reply_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -75,6 +75,12 @@ Run the meal-planning adapter to see the same correction path in a different eve
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
+```
+
+Run the support-reply adapter to see AANA handle missing private facts instead of inventing account details:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
 ```
 
 That command emits a JSON gate result with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.

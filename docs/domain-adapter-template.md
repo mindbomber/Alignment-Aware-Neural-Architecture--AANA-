@@ -88,6 +88,7 @@ Machine-readable starter files:
 - [`examples/adapter_gallery.json`](../examples/adapter_gallery.json)
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
 - [`examples/meal_planning_adapter.json`](../examples/meal_planning_adapter.json)
+- [`examples/support_reply_adapter.json`](../examples/support_reply_adapter.json)
 
 You can also generate a starter adapter package:
 
@@ -98,7 +99,7 @@ python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
 
 ## Run Executable Adapters
 
-The travel and meal-planning adapters are executable. They use checked-in deterministic verifier and repair paths, so they can be tested without an API key.
+The travel, meal-planning, and support-reply adapters are executable. They use checked-in deterministic verifier and repair paths, so they can be tested without an API key.
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
@@ -106,6 +107,10 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
+```
+
+```powershell
+python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
 ```
 
 To test the gate, pass a candidate answer that violates the constraints:

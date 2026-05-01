@@ -29,6 +29,7 @@ That command checks that every referenced adapter is valid, runs executable exam
 |---|---|---|
 | Budgeted travel planning | [`examples/travel_adapter.json`](../examples/travel_adapter.json) | The gate can block a useful-looking itinerary that breaks budget, transport, ticket, and lunch constraints, then pass a repaired answer. |
 | Budgeted allergy-safe meal planning | [`examples/meal_planning_adapter.json`](../examples/meal_planning_adapter.json) | The same correction path transfers to groceries, dietary exclusions, explicit totals, and weekly coverage. |
+| Privacy-safe customer support | [`examples/support_reply_adapter.json`](../examples/support_reply_adapter.json) | The gate can block invented order details, unsupported refund promises, and private payment details, then pass a reply that asks/routes through secure verification. |
 
 ## Add A Domain To The Gallery
 

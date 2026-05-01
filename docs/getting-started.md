@@ -34,6 +34,12 @@ Then run the meal-planning adapter. This shows the same gate-and-repair pattern 
 python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
+Run the support-reply adapter to see a non-planning workflow: the candidate invents account facts and leaks private payment detail, while the gate rewrites toward secure verification.
+
+```powershell
+python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
+```
+
 Validate the adapter gallery when you want to check every published plug-in example at once:
 
 ```powershell

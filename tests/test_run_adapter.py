@@ -7,6 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
 TRAVEL_ADAPTER = ROOT / "examples" / "travel_adapter.json"
 MEAL_ADAPTER = ROOT / "examples" / "meal_planning_adapter.json"
+SUPPORT_ADAPTER = ROOT / "examples" / "support_reply_adapter.json"
 
 spec = importlib.util.spec_from_file_location("run_adapter", RUNNER_PATH)
 run_adapter_module = importlib.util.module_from_spec(spec)
@@ -79,6 +80,44 @@ class RunAdapterTests(unittest.TestCase):
         candidate = (
             "Buy regular pasta, wheat bread, cheese, and milk for $95 total. "
             "Monday: pasta. Tuesday: cheese sandwiches."
+        )
+
+        result = run_adapter_module.run_adapter(adapter, prompt, candidate)
+
+        self.assertEqual(result["candidate_gate"], "block")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "revise")
+        self.assertGreater(len(result["candidate_tool_report"]["violations"]), 0)
+        self.assertFalse(result["tool_report"]["violations"])
+
+    def test_support_adapter_generates_secure_ask_without_candidate(self):
+        adapter = run_adapter_module.load_adapter(SUPPORT_ADAPTER)
+        prompt = (
+            "Draft a customer-support reply for a refund request. Use only verified facts: "
+            "customer name is Maya Chen, order ID and refund eligibility are not available, "
+            "and do not include private account details or invent policy promises."
+        )
+
+        result = run_adapter_module.run_adapter(adapter, prompt)
+
+        self.assertEqual(result["adapter"]["name"], "support_reply_aana_adapter")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "ask")
+        self.assertIn("Maya", result["final_answer"])
+        self.assertIn("cannot confirm", result["final_answer"].lower())
+        self.assertIn("order ID", result["final_answer"])
+        self.assertFalse(result["tool_report"]["violations"])
+
+    def test_support_adapter_blocks_private_and_invented_candidate(self):
+        adapter = run_adapter_module.load_adapter(SUPPORT_ADAPTER)
+        prompt = (
+            "Draft a customer-support reply for a refund request. Use only verified facts: "
+            "customer name is Maya Chen, order ID and refund eligibility are not available, "
+            "and do not include private account details or invent policy promises."
+        )
+        candidate = (
+            "Hi Maya, order #A1842 is eligible for a full refund and your card "
+            "ending 4242 will be credited in 3 days."
         )
 
         result = run_adapter_module.run_adapter(adapter, prompt, candidate)

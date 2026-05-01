@@ -4,6 +4,7 @@
 import argparse
 import json
 import pathlib
+import re
 import sys
 from collections import defaultdict
 
@@ -34,6 +35,10 @@ VIOLATION_TO_CONSTRAINT = {
     "gluten_free_violation": "dietary_requirements",
     "grocery_budget_violation": "grocery_budget_cap",
     "missing_grocery_budget": "grocery_budget_cap",
+    "invented_order_id": "verified_account_facts_only",
+    "unsupported_refund_promise": "verified_account_facts_only",
+    "private_account_detail": "private_data_minimization",
+    "missing_account_verification_path": "missing_facts_route",
 }
 
 
@@ -69,12 +74,26 @@ def is_meal_adapter(adapter):
     return "meal" in haystack or "grocery" in haystack or "allergy" in haystack
 
 
+def is_support_adapter(adapter):
+    haystack = " ".join(
+        [
+            str(adapter.get("adapter_name", "")),
+            str(adapter.get("domain", {}).get("name", "")),
+            str(adapter.get("domain", {}).get("user_workflow", "")),
+        ]
+    ).lower()
+    return "support" in haystack or "crm" in haystack or "refund" in haystack
+
+
 def make_task(adapter, prompt):
     if is_travel_adapter(adapter):
         task_type = "budgeted_travel_planner"
         block = "application_demo"
     elif is_meal_adapter(adapter):
         task_type = "allergy_safe_meal_planner"
+        block = "application_demo"
+    elif is_support_adapter(adapter):
+        task_type = "privacy_safe_support_reply"
         block = "application_demo"
     else:
         task_type = "domain_adapter"
@@ -174,12 +193,121 @@ def adapter_summary(adapter):
     }
 
 
+def support_tool_report(prompt, answer):
+    text = (answer or "").lower()
+    violations = []
+    checks = [{"name": "privacy_safe_support_reply"}]
+
+    if "order #" in text or "order number" in text or "order id is" in text:
+        violations.append(
+            {
+                "code": "invented_order_id",
+                "severity": "high",
+                "message": "Answer appears to invent or reveal an order identifier that was not available.",
+            }
+        )
+    if "eligible for a full refund" in text or "refund is approved" in text or "will be credited" in text:
+        violations.append(
+            {
+                "code": "unsupported_refund_promise",
+                "severity": "high",
+                "message": "Answer promises refund eligibility or payment action without verified account facts.",
+            }
+        )
+    if "card ending" in text or "credit card" in text or "billing address" in text:
+        violations.append(
+            {
+                "code": "private_account_detail",
+                "severity": "high",
+                "message": "Answer includes private account/payment detail that should not appear in a support draft.",
+            }
+        )
+    if not any(term in text for term in ["provide the order id", "sign in", "verified support", "secure support", "can't confirm", "cannot confirm"]):
+        violations.append(
+            {
+                "code": "missing_account_verification_path",
+                "severity": "medium",
+                "message": "Answer should route missing account facts to a verification path instead of finalizing.",
+            }
+        )
+
+    return {
+        "checks": checks,
+        "violations": violations,
+        "tool_score": 0.0 if violations else 1.0,
+        "recommended_action": "revise" if violations else "accept",
+    }
+
+
+def support_customer_name(prompt):
+    match = re.search(r"customer name is ([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)", prompt or "")
+    return match.group(1) if match else "there"
+
+
+def support_repair(prompt):
+    customer = support_customer_name(prompt)
+    return f"""Hi {customer},
+
+Thanks for reaching out. I can help start the refund review, but I cannot confirm refund eligibility, an order ID, payment details, or timing from the information available here.
+
+Please provide the order ID through the secure support form or sign in to your account so the support team can verify the purchase. Once the order is verified, we can check the refund policy that applies and explain the next step.
+
+I will not include private account, card, billing, or internal customer-record details in this reply."""
+
+
 def run_adapter(adapter, prompt, candidate=None):
-    if not (is_travel_adapter(adapter) or is_meal_adapter(adapter)):
+    if not (is_travel_adapter(adapter) or is_meal_adapter(adapter) or is_support_adapter(adapter)):
         return unsupported_result(adapter, prompt, candidate)
 
     task = make_task(adapter, prompt)
     caveats = list(adapter.get("evaluation", {}).get("known_caveats", []))
+
+    if is_support_adapter(adapter):
+        if candidate:
+            candidate_report = support_tool_report(prompt, candidate)
+            if candidate_report["violations"]:
+                final_answer = support_repair(prompt)
+                final_report = support_tool_report(prompt, final_answer)
+                return {
+                    "adapter": adapter_summary(adapter),
+                    "prompt": prompt,
+                    "candidate_answer": candidate,
+                    "candidate_gate": gate_from_report(candidate_report),
+                    "final_answer": final_answer,
+                    "gate_decision": gate_from_report(final_report),
+                    "recommended_action": "revise",
+                    "constraint_results": constraint_results(adapter, final_report),
+                    "candidate_tool_report": candidate_report,
+                    "tool_report": final_report,
+                    "caveats": caveats,
+                }
+            return {
+                "adapter": adapter_summary(adapter),
+                "prompt": prompt,
+                "candidate_answer": candidate,
+                "candidate_gate": "pass",
+                "final_answer": candidate,
+                "gate_decision": "pass",
+                "recommended_action": "accept",
+                "constraint_results": constraint_results(adapter, candidate_report),
+                "candidate_tool_report": candidate_report,
+                "tool_report": candidate_report,
+                "caveats": caveats,
+            }
+
+        final_answer = support_repair(prompt)
+        final_report = support_tool_report(prompt, final_answer)
+        return {
+            "adapter": adapter_summary(adapter),
+            "prompt": prompt,
+            "candidate_answer": None,
+            "final_answer": final_answer,
+            "gate_decision": gate_from_report(final_report),
+            "recommended_action": "ask",
+            "constraint_results": constraint_results(adapter, final_report),
+            "tool_report": final_report,
+            "caveats": caveats,
+        }
 
     if candidate:
         candidate_report = run_constraint_tools(task, prompt, candidate)
