@@ -537,9 +537,9 @@
               and gap signals before running larger model experiments.
             </p>
             <p>
-              The travel adapter is the first plug-in path: a prompt enters with hard constraints,
-              deterministic checks catch budget and transport failures, and the gate returns either
-              an accepted answer, a repair, or an ask/defer action.
+              Two adapters are ready to run: travel planning and meal planning. Both show the same
+              pattern in different daily workflows: name the hard constraints, check the answer,
+              repair what can be repaired, and only pass the result after the gate is clean.
             </p>
             <p>
               Live model runs can use OpenAI-compatible Responses endpoints or Anthropic's native
@@ -552,6 +552,7 @@
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'">Copy adapter command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'">Copy meal command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/new_adapter.py --domain &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
             </div>
@@ -569,7 +570,9 @@
 # alignment_score  - preserves constraints
 # gap_score        - where capability and alignment diverge
 
-python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'</code></pre>
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'</code></pre>
           </div>
         </div>
       </section>
@@ -611,9 +614,13 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
               <h3>Travel Adapter JSON</h3>
               <p>A filled machine-readable adapter based on the travel-planner failure-to-tool case study.</p>
             </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/meal_planning_adapter.json" target="_blank" rel="noopener">
+              <h3>Meal Adapter JSON</h3>
+              <p>A second executable adapter for grocery budgets, dietary exclusions, meal coverage, and explicit totals.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>
-              <p>The first executable plug-in path: load adapter JSON, verify a prompt, repair failures, and emit a gate result.</p>
+              <p>The executable plug-in path: load adapter JSON, verify a prompt, repair failures, and emit a gate result.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>

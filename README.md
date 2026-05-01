@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The first filled adapter is [examples/travel_adapter.json](examples/travel_adapter.json), and the first executable runner is [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json) and [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), both runnable through [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -69,6 +69,12 @@ Run the first plug-in adapter without an API key:
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+Run the meal-planning adapter to see the same correction path in a different everyday domain:
+
+```powershell
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
 That command emits a JSON gate result with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.

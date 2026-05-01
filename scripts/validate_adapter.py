@@ -25,7 +25,7 @@ EVALUATION_KEYS = [
     "pass_condition",
     "known_caveats",
 ]
-PLACEHOLDER_MARKERS = ["replace_with", "describe ", "state the ", "constraint_id"]
+PLACEHOLDER_MARKERS = ["replace_with", "describe what", "describe exactly", "describe how", "describe the", "state the constraint", "constraint_id"]
 
 
 def load_adapter(path):
@@ -179,12 +179,16 @@ def validate_adapter(adapter):
 
     adapter_name = str(adapter.get("adapter_name", "")).lower()
     domain_name = str(domain.get("name", "")).lower()
-    if "travel" not in adapter_name and "travel" not in domain_name:
+    executable_adapters = {
+        ("travel_planner_aana_adapter", "budgeted_travel_planning"),
+        ("meal_planning_aana_adapter", "budgeted_allergy_safe_meal_planning"),
+    }
+    if (adapter_name, domain_name) not in executable_adapters:
         add_issue(
             issues,
             "warning",
             "runner",
-            "This adapter can be validated, but scripts/run_adapter.py only has deterministic execution for the travel adapter today.",
+            "This adapter can be validated, but scripts/run_adapter.py only has deterministic execution for the checked-in travel and meal-planning adapters today.",
         )
 
     errors = sum(1 for issue in issues if issue["level"] == "error")

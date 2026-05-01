@@ -375,6 +375,7 @@ def check_constraint_reasoning(prompt, answer, report):
     dietary_bans = {
         "no peanuts": ["peanut", "peanuts", "peanut butter"],
         "no dairy": ["milk", "cheese", "yogurt", "butter", "dairy"],
+        "dairy-free": ["milk", "cheese", "yogurt", "butter", "dairy"],
         "no tree nuts": ["almond", "cashew", "walnut", "pecan", "tree nut", "tree nuts"],
     }
     for trigger, banned_terms in dietary_bans.items():
@@ -605,6 +606,7 @@ def extract_constraint_schema(task, prompt):
     for trigger, label in [
         ("no peanuts", "peanuts"),
         ("no dairy", "dairy"),
+        ("dairy-free", "dairy"),
         ("no tree nuts", "tree nuts"),
         ("no shellfish", "shellfish"),
     ]:
@@ -753,6 +755,7 @@ def schema_meal_repair(schema):
     buffer = max(0, budget - total)
 
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    excluded_display = ["no dairy" if item == "dairy" else item for item in excluded]
     rows = []
     for idx in range(days):
         day = day_names[idx] if days == 7 else f"Day {idx + 1}"
@@ -773,7 +776,7 @@ Constraint schema:
 |---|---|
 | Grocery budget cap | {fmt_money(budget)} |
 | Required diet | {", ".join(required) if required else "none stated"} |
-| Excluded ingredients | {", ".join(excluded) if excluded else "none stated"} |
+| Excluded ingredients | {", ".join(excluded_display) if excluded_display else "none stated"} |
 | Required days | {days} |
 
 Groceries:
@@ -790,7 +793,7 @@ Groceries:
 Validation:
 - Grocery total is {fmt_money(total + buffer)}, at or below {fmt_money(budget)}.
 - Required diet is preserved: {", ".join(required) if required else "none stated"}.
-- Excluded ingredients are not used: {", ".join(excluded) if excluded else "none stated"}.
+- Excluded ingredients are not used: {", ".join(excluded_display) if excluded_display else "none stated"}.
 - All {days} days are included."""
 
 
@@ -1038,6 +1041,7 @@ def hybrid_meal_repair(schema):
     buffer = max(0, budget - total)
 
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    excluded_display = ["no dairy" if item == "dairy" else item for item in excluded]
     rows = []
     for idx in range(days):
         day = day_names[idx] if days == 7 else f"Day {idx + 1}"
@@ -1059,7 +1063,7 @@ Constraint schema:
 |---|---|
 | Grocery budget cap | {fmt_money(budget)} |
 | Required diet | {", ".join(required) if required else "none stated"} |
-| Excluded ingredients | {", ".join(excluded) if excluded else "none stated"} |
+| Excluded ingredients | {", ".join(excluded_display) if excluded_display else "none stated"} |
 | Required days | {days} |
 
 Groceries:
@@ -1080,7 +1084,7 @@ Prep notes:
 Validation:
 - Grocery total is {fmt_money(total + buffer)}, at or below {fmt_money(budget)}.
 - Required diet is preserved: {", ".join(required) if required else "none stated"}.
-- Excluded ingredients are not used: {", ".join(excluded) if excluded else "none stated"}.
+- Excluded ingredients are not used: {", ".join(excluded_display) if excluded_display else "none stated"}.
 - All {days} days are included."""
 
 
@@ -1376,7 +1380,7 @@ Constraint check:
 - Vegetarian: the plan uses tofu, lentils, beans, eggs, grains, fruit, and vegetables.
 - No peanuts: no peanut products are included."""
 
-    if "gluten-free" in p and "no dairy" in p:
+    if "gluten-free" in p and ("no dairy" in p or "dairy-free" in p):
         groceries = [
             ("Certified gluten-free oats", 6),
             ("Rice, 3 lb", 5),
@@ -1467,7 +1471,7 @@ Constraint check:
     exclusions = []
     if "no peanuts" in p:
         exclusions.append("peanuts")
-    if "no dairy" in p:
+    if "no dairy" in p or "dairy-free" in p:
         exclusions.append("dairy")
     if "no tree nuts" in p:
         exclusions.append("tree nuts")

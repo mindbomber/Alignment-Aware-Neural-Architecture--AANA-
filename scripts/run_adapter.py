@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-"""Run an AANA domain adapter against one prompt.
-
-The first executable adapter is the travel-planning adapter. Other adapter JSON
-files still load and produce a structured result, but they need a domain-specific
-runner before the CLI can verify and repair their constraints.
-"""
+"""Run an AANA domain adapter against one prompt."""
 
 import argparse
 import json
@@ -32,6 +27,13 @@ VIOLATION_TO_CONSTRAINT = {
     "car_constraint_violation": "public_transit_only",
     "missing_lunch": "required_lunch",
     "incomplete_day_plan": "required_day_count",
+    "incomplete_weekly_meal_plan": "requested_day_coverage",
+    "shellfish_violation": "dietary_exclusions",
+    "dietary_exclusion_violation": "dietary_exclusions",
+    "vegetarian_violation": "dietary_requirements",
+    "gluten_free_violation": "dietary_requirements",
+    "grocery_budget_violation": "grocery_budget_cap",
+    "missing_grocery_budget": "grocery_budget_cap",
 }
 
 
@@ -56,9 +58,23 @@ def is_travel_adapter(adapter):
     return "travel" in haystack or "itinerary" in haystack or "outing" in haystack
 
 
+def is_meal_adapter(adapter):
+    haystack = " ".join(
+        [
+            str(adapter.get("adapter_name", "")),
+            str(adapter.get("domain", {}).get("name", "")),
+            str(adapter.get("domain", {}).get("user_workflow", "")),
+        ]
+    ).lower()
+    return "meal" in haystack or "grocery" in haystack or "allergy" in haystack
+
+
 def make_task(adapter, prompt):
     if is_travel_adapter(adapter):
         task_type = "budgeted_travel_planner"
+        block = "application_demo"
+    elif is_meal_adapter(adapter):
+        task_type = "allergy_safe_meal_planner"
         block = "application_demo"
     else:
         task_type = "domain_adapter"
@@ -159,7 +175,7 @@ def adapter_summary(adapter):
 
 
 def run_adapter(adapter, prompt, candidate=None):
-    if not is_travel_adapter(adapter):
+    if not (is_travel_adapter(adapter) or is_meal_adapter(adapter)):
         return unsupported_result(adapter, prompt, candidate)
 
     task = make_task(adapter, prompt)

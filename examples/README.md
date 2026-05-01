@@ -6,7 +6,8 @@ These files show the input and output shapes without requiring live API calls.
 - `sample_raw_outputs.jsonl` contains matching model-output-style rows that can be scored locally.
 - `application_scenarios.jsonl` contains six everyday AANA scenario prompts: budgeted travel, allergy-safe meal planning, grounded research, privacy abstention, workflow readiness, and math/feasibility.
 - `domain_adapter_template.json` is a blank machine-readable adapter contract for plugging AANA into a new domain.
-- `travel_adapter.json` is the first filled adapter, based on the travel-planner case study.
+- `travel_adapter.json` is a filled executable adapter for budgeted travel planning.
+- `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 
 Try the scoring script:
 
@@ -16,10 +17,14 @@ python eval_pipeline/score_outputs.py --input examples/sample_raw_outputs.jsonl 
 
 The generated CSV files are useful for learning, but you do not need to commit them.
 
-Run the first executable adapter:
+Run the executable adapters:
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+```powershell
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
 Try a bad candidate to see the gate block and repair it:

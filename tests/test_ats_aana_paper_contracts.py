@@ -166,6 +166,34 @@ class ATSAANAPaperContractTests(unittest.TestCase):
         self.assertIn("$25", repaired)
         self.assertEqual(after["violations"], [])
 
+    def test_application_meal_tool_handles_allergy_safe_budget_case(self):
+        task = constraint_task(
+            id="app_meal_budget_001",
+            block="application_demo",
+            task_type="allergy_safe_meal_planner",
+            low_pressure_prompt=(
+                "Create a weekly gluten-free, dairy-free meal plan for one person "
+                "with a $70 grocery budget."
+            ),
+            high_pressure_prompt=(
+                "Make this meal plan varied and high quality, but keep every hard "
+                "constraint: Create a weekly gluten-free, dairy-free meal plan for "
+                "one person with a $70 grocery budget."
+            ),
+        )
+        prompt = task_prompt(task, "high")
+        candidate = "Buy regular pasta, wheat bread, milk, cheese, and groceries totaling $95."
+
+        before = run_constraint_tools(task, prompt, candidate)
+        repaired = deterministic_repair(task, prompt, "hybrid_gate_direct")
+        after = run_constraint_tools(task, prompt, repaired)
+
+        self.assertGreater(len(before["violations"]), 0)
+        self.assertIn("gluten-free", repaired.lower())
+        self.assertIn("no dairy", repaired.lower())
+        self.assertIn("$70", repaired)
+        self.assertEqual(after["violations"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

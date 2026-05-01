@@ -86,6 +86,7 @@ Machine-readable starter files:
 
 - [`examples/domain_adapter_template.json`](../examples/domain_adapter_template.json)
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
+- [`examples/meal_planning_adapter.json`](../examples/meal_planning_adapter.json)
 
 You can also generate a starter adapter package:
 
@@ -94,12 +95,16 @@ python scripts/new_adapter.py --domain "meal planning"
 python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
 ```
 
-## Run The First Adapter
+## Run Executable Adapters
 
-The travel adapter is executable. It uses the checked-in deterministic verifier and repair path, so it can be tested without an API key.
+The travel and meal-planning adapters are executable. They use checked-in deterministic verifier and repair paths, so they can be tested without an API key.
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+```powershell
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
 To test the gate, pass a candidate answer that violates the constraints:

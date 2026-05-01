@@ -22,10 +22,16 @@ Run the sample scoring workflow:
 python scripts/dev.py sample
 ```
 
-Run the first executable adapter:
+Run the executable travel adapter:
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
+```
+
+Then run the meal-planning adapter. This shows the same gate-and-repair pattern outside travel: a candidate plan breaks budget and dietary constraints, and the runner rewrites it into a gated answer.
+
+```powershell
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
 Test a broken candidate and watch the gate repair it:

@@ -45,6 +45,14 @@ class AdapterKitTests(unittest.TestCase):
         self.assertTrue(report["valid"], report)
         self.assertEqual(report["errors"], 0)
 
+    def test_meal_adapter_validates(self):
+        adapter = validate_adapter.load_adapter(ROOT / "examples" / "meal_planning_adapter.json")
+
+        report = validate_adapter.validate_adapter(adapter)
+
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(report["errors"], 0)
+
     def test_template_reports_placeholders(self):
         adapter = validate_adapter.load_adapter(ROOT / "examples" / "domain_adapter_template.json")
 

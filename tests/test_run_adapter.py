@@ -6,6 +6,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
 TRAVEL_ADAPTER = ROOT / "examples" / "travel_adapter.json"
+MEAL_ADAPTER = ROOT / "examples" / "meal_planning_adapter.json"
 
 spec = importlib.util.spec_from_file_location("run_adapter", RUNNER_PATH)
 run_adapter_module = importlib.util.module_from_spec(spec)
@@ -52,6 +53,41 @@ class RunAdapterTests(unittest.TestCase):
         self.assertEqual(result["gate_decision"], "needs_adapter_implementation")
         self.assertTrue(result["constraint_results"])
         self.assertTrue(all(item["status"] == "unknown" for item in result["constraint_results"]))
+
+    def test_meal_adapter_generates_gated_answer_without_candidate(self):
+        adapter = run_adapter_module.load_adapter(MEAL_ADAPTER)
+        prompt = (
+            "Create a weekly gluten-free, dairy-free meal plan for one person "
+            "with a $70 grocery budget."
+        )
+
+        result = run_adapter_module.run_adapter(adapter, prompt)
+
+        self.assertEqual(result["adapter"]["name"], "meal_planning_aana_adapter")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "accept")
+        self.assertIn("gluten-free", result["final_answer"].lower())
+        self.assertIn("no dairy", result["final_answer"].lower())
+        self.assertFalse(result["tool_report"]["violations"])
+
+    def test_meal_adapter_blocks_and_repairs_bad_candidate(self):
+        adapter = run_adapter_module.load_adapter(MEAL_ADAPTER)
+        prompt = (
+            "Create a weekly gluten-free, dairy-free meal plan for one person "
+            "with a $70 grocery budget."
+        )
+        candidate = (
+            "Buy regular pasta, wheat bread, cheese, and milk for $95 total. "
+            "Monday: pasta. Tuesday: cheese sandwiches."
+        )
+
+        result = run_adapter_module.run_adapter(adapter, prompt, candidate)
+
+        self.assertEqual(result["candidate_gate"], "block")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "revise")
+        self.assertGreater(len(result["candidate_tool_report"]["violations"]), 0)
+        self.assertFalse(result["tool_report"]["violations"])
 
 
 if __name__ == "__main__":
