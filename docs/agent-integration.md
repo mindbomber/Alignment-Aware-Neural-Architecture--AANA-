@@ -125,12 +125,14 @@ Available routes:
 - `GET /schemas`
 - `GET /schemas/agent-event.schema.json`
 - `GET /schemas/agent-check-result.schema.json`
+- `POST /validate-event`
 - `POST /agent-check`
 
 PowerShell example:
 
 ```powershell
 $event = Get-Content examples/agent_event_support_reply.json -Raw
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-event -Body $event -ContentType 'application/json'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $event -ContentType 'application/json'
 ```
 
@@ -179,12 +181,16 @@ Expose `aana_cli.py agent-check` as a local tool. The agent sends its planned ac
 Expose the local bridge as an agent tool:
 
 ```text
+POST http://127.0.0.1:8765/validate-event
+Content-Type: application/json
+Body: the AANA agent event
+
 POST http://127.0.0.1:8765/agent-check
 Content-Type: application/json
 Body: the AANA agent event
 ```
 
-The response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `violations`, `safe_response`, and the full adapter result.
+Use `/validate-event` to catch malformed events before execution. The `/agent-check` response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `violations`, `safe_response`, and the full adapter result.
 
 For tools that ingest OpenAPI, point them at:
 

@@ -23,6 +23,14 @@ python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examp
 
 Then replace `candidate_action` with the action your agent is about to take and replace `available_evidence` with the verified context the gate should use.
 
+HTTP bridge flow:
+
+```powershell
+$event = Get-Content examples/agent_events/support_reply.json -Raw
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-event -Body $event -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $event -ContentType 'application/json'
+```
+
 Current examples:
 
 - `support_reply.json`: support draft invents account facts and private payment detail.

@@ -50,7 +50,7 @@ Before an agent starts calling AANA, validate the event shape with `python scrip
 
 To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `travel_planning`, or `meal_planning`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
-If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py` and POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
+If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`.
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import machine-readable contracts. After `python -m pip install -e .`, you can start it with `aana-server`.
 

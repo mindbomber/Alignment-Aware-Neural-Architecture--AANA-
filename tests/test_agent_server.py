@@ -28,6 +28,7 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(payload["openapi"], "3.1.0")
         self.assertIn("/agent-check", payload["paths"])
+        self.assertIn("/validate-event", payload["paths"])
         self.assertIn("AgentEvent", payload["components"]["schemas"])
 
     def test_agent_event_schema_route(self):
@@ -46,6 +47,22 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(payload["agent"], "openclaw")
         self.assertEqual(payload["gate_decision"], "pass")
         self.assertEqual(payload["recommended_action"], "revise")
+
+    def test_validate_event_route(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+
+        status, payload = agent_server.route_request("POST", "/validate-event", json.dumps(event).encode("utf-8"))
+
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["valid"])
+        self.assertEqual(payload["errors"], 0)
+
+    def test_validate_event_route_reports_invalid_event(self):
+        status, payload = agent_server.route_request("POST", "/validate-event", b"{}")
+
+        self.assertEqual(status, 200)
+        self.assertFalse(payload["valid"])
+        self.assertGreater(payload["errors"], 0)
 
     def test_bad_json_returns_400(self):
         status, payload = agent_server.route_request("POST", "/agent-check", b"{")

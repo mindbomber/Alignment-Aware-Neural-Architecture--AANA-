@@ -551,8 +551,8 @@
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
               The command hub and Python API wrap those pieces behind short calls, including an
-              agent-check contract, event validation, local HTTP bridge, OpenAPI route, JSON schemas,
-              and policy presets for OpenClaw-style agents.
+              agent-check contract, CLI and HTTP event validation, local HTTP bridge, OpenAPI route,
+              JSON schemas, and policy presets for OpenClaw-style agents.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
@@ -656,7 +656,7 @@ python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_server.py" target="_blank" rel="noopener">
               <h3>Local HTTP Bridge</h3>
-              <p>Run AANA on localhost so non-Python agents can POST planned actions to the same gate and import the OpenAPI route.</p>
+              <p>Run AANA on localhost so non-Python agents can validate events, POST planned actions to the gate, and import the OpenAPI route.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/eval_pipeline/agent_contract.py" target="_blank" rel="noopener">
               <h3>Agent Contract</h3>

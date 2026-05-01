@@ -125,7 +125,7 @@ Run a local HTTP bridge for agent frameworks that prefer tools, webhooks, or HTT
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
-Then POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
+Then POST the same event JSON to `http://127.0.0.1:8765/validate-event` and `http://127.0.0.1:8765/agent-check`.
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
 

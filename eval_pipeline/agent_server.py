@@ -82,6 +82,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/validate-event": {
+                "post": {
+                    "operationId": "validateAgentEvent",
+                    "summary": "Validate an AANA agent event without running the gate.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgentEvent"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Validation report.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationReport"}}},
+                        },
+                        "400": {
+                            "description": "Request body is not valid JSON.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
             "/openapi.json": {
                 "get": {
                     "operationId": "getOpenApiSchema",
@@ -109,6 +129,16 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                 "Error": {
                     "type": "object",
                     "properties": {"error": {"type": "string"}},
+                },
+                "ValidationReport": {
+                    "type": "object",
+                    "required": ["valid", "errors", "warnings", "issues"],
+                    "properties": {
+                        "valid": {"type": "boolean"},
+                        "errors": {"type": "integer"},
+                        "warnings": {"type": "integer"},
+                        "issues": {"type": "array", "items": {"type": "object"}},
+                    },
                 },
             }
         },
@@ -155,6 +185,13 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             return 400, {"error": str(exc)}
 
+    if method == "POST" and parsed.path == "/validate-event":
+        try:
+            event = json.loads(body.decode("utf-8") if body else "{}")
+            return 200, agent_api.validate_event(event)
+        except json.JSONDecodeError as exc:
+            return 400, {"error": str(exc)}
+
     return 404, {
         "error": "Unknown route.",
         "routes": [
@@ -164,6 +201,7 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
             "GET /schemas",
             "GET /schemas/agent-event.schema.json",
             "GET /schemas/agent-check-result.schema.json",
+            "POST /validate-event",
             "POST /agent-check",
         ],
     }
@@ -203,7 +241,7 @@ def make_handler(gallery_path):
 def run_server(host=DEFAULT_HOST, port=DEFAULT_PORT, gallery_path=agent_api.DEFAULT_GALLERY):
     server = ThreadingHTTPServer((host, port), make_handler(gallery_path))
     print(f"AANA agent bridge listening on http://{host}:{port}")
-    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /agent-check")
+    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
