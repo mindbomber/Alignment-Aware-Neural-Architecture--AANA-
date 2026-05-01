@@ -61,18 +61,27 @@ Start with `--limit 1` because live calls can cost money.
 
 ## Can I Use A Non-OpenAI API Key?
 
-Today there are three tiers of support:
+Yes. The live-call layer now has a small provider interface. Today there are four tiers of support:
 
 | Path | Status | What it means |
 |---|---|---|
 | No-key local tools | Supported | Sample scoring and deterministic adapters run without any model provider. |
-| OpenAI Responses API | Supported | Live generator, verifier, corrector, and judge calls use `OPENAI_API_KEY`. |
-| Responses-compatible endpoint | Configurable | If another provider or proxy exposes the same `/responses` request and response shape, set `AANA_API_KEY` and `AANA_BASE_URL` or `AANA_RESPONSES_URL`. |
-| Native Anthropic, Gemini, local Ollama, etc. | Not implemented yet | These need provider-specific request/response adapters before they can run live model loops. |
+| OpenAI Responses API | Supported | Set `AANA_PROVIDER=openai` and `OPENAI_API_KEY`. This is the default. |
+| Responses-compatible endpoint | Configurable | Set `AANA_PROVIDER=openai`, then set `AANA_API_KEY` and `AANA_BASE_URL` or `AANA_RESPONSES_URL`. |
+| Anthropic Messages API | Supported | Set `AANA_PROVIDER=anthropic` and `ANTHROPIC_API_KEY`, then use an Anthropic model name. |
+| Native Gemini, local Ollama, etc. | Not implemented yet | These need provider-specific request/response adapters before they can run live model loops. |
+
+OpenAI setup:
+
+```text
+AANA_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
 Responses-compatible configuration:
 
 ```text
+AANA_PROVIDER=openai
 AANA_API_KEY=your_provider_or_proxy_key
 AANA_BASE_URL=https://your-provider.example/v1
 ```
@@ -80,11 +89,29 @@ AANA_BASE_URL=https://your-provider.example/v1
 Or set the exact endpoint:
 
 ```text
+AANA_PROVIDER=openai
 AANA_API_KEY=your_provider_or_proxy_key
 AANA_RESPONSES_URL=https://your-provider.example/v1/responses
 ```
 
 This is not a guarantee that every provider works. The endpoint must accept the Responses-style payload used by the scripts and return compatible output text.
+
+Anthropic setup:
+
+```text
+AANA_PROVIDER=anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+```
+
+Then use an Anthropic model name in the same scripts:
+
+```powershell
+python eval_pipeline/run_evals.py --limit 1 --models claude-opus-4-1-20250805
+```
+
+Replace the model name with the current Anthropic model you want to test.
+
+The Anthropic adapter uses the native Messages API shape: `system`, `messages`, `model`, and `max_tokens`.
 
 ## How To Apply AANA To A Daily Workflow
 

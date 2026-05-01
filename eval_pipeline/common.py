@@ -70,6 +70,10 @@ def extract_response_text(payload):
         return payload["output_text"]
 
     parts = []
+    for content in payload.get("content", []) if isinstance(payload, dict) else []:
+        if content.get("type") == "text" and "text" in content:
+            parts.append(content["text"])
+
     for item in payload.get("output", []) if isinstance(payload, dict) else []:
         for content in item.get("content", []):
             if content.get("type") in {"output_text", "text"} and "text" in content:
@@ -94,34 +98,88 @@ def responses_api_config():
     return "https://api.openai.com/v1/responses", api_key
 
 
-def call_responses_api(
-    *,
-    model,
-    system_prompt,
-    user_prompt,
-    max_output_tokens=450,
-    retries=3,
-    timeout=120,
-):
-    responses_url, api_key = responses_api_config()
-
-    body = {
-        "model": model,
-        "input": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "max_output_tokens": max_output_tokens,
+def model_provider():
+    load_dotenv()
+    provider = os.environ.get("AANA_PROVIDER", "openai").strip().lower()
+    aliases = {
+        "openai_responses": "openai",
+        "responses": "openai",
+        "openai-compatible": "openai",
+        "openai_compatible": "openai",
+        "claude": "anthropic",
     }
+    return aliases.get(provider, provider)
 
-    data = json.dumps(body).encode("utf-8")
+
+def anthropic_api_config():
+    load_dotenv()
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("AANA_API_KEY")
+    if not api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY or AANA_API_KEY is not set in the environment or .env.")
+
+    explicit_url = os.environ.get("ANTHROPIC_MESSAGES_URL")
+    if explicit_url:
+        url = explicit_url
+    else:
+        base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1")
+        url = base_url.rstrip("/") + "/messages"
+
+    version = os.environ.get("ANTHROPIC_VERSION", "2023-06-01")
+    return url, api_key, version
+
+
+def build_model_request(*, model, system_prompt, user_prompt, max_output_tokens=450):
+    provider = model_provider()
+    if provider == "openai":
+        responses_url, api_key = responses_api_config()
+        return {
+            "provider": provider,
+            "url": responses_url,
+            "headers": {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            "body": {
+                "model": model,
+                "input": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "max_output_tokens": max_output_tokens,
+            },
+        }
+
+    if provider == "anthropic":
+        messages_url, api_key, version = anthropic_api_config()
+        return {
+            "provider": provider,
+            "url": messages_url,
+            "headers": {
+                "x-api-key": api_key,
+                "anthropic-version": version,
+                "Content-Type": "application/json",
+            },
+            "body": {
+                "model": model,
+                "system": system_prompt,
+                "max_tokens": max_output_tokens,
+                "messages": [
+                    {"role": "user", "content": user_prompt},
+                ],
+            },
+        }
+
+    raise RuntimeError(
+        f"Unsupported AANA_PROVIDER {provider!r}. Supported providers: openai, anthropic."
+    )
+
+
+def post_json_with_retries(request_config, *, retries=3, timeout=120):
+    data = json.dumps(request_config["body"]).encode("utf-8")
     request = urllib.request.Request(
-        responses_url,
+        request_config["url"],
         data=data,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
+        headers=request_config["headers"],
         method="POST",
     )
 
@@ -138,4 +196,22 @@ def call_responses_api(
         except urllib.error.URLError as exc:
             last_error = str(exc)
         time.sleep(2**attempt)
-    raise RuntimeError(last_error or "OpenAI API request failed.")
+    raise RuntimeError(last_error or f"{request_config['provider']} API request failed.")
+
+
+def call_responses_api(
+    *,
+    model,
+    system_prompt,
+    user_prompt,
+    max_output_tokens=450,
+    retries=3,
+    timeout=120,
+):
+    request_config = build_model_request(
+        model=model,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        max_output_tokens=max_output_tokens,
+    )
+    return post_json_with_retries(request_config, retries=retries, timeout=timeout)

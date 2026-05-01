@@ -148,6 +148,7 @@ For a fuller explanation, see:
 - No API key is needed for sample scoring or deterministic adapter runs.
 - An OpenAI API key is needed for the checked-in live model loops by default.
 - Responses-compatible endpoints can be configured with `AANA_API_KEY` plus `AANA_BASE_URL` or `AANA_RESPONSES_URL`.
+- Anthropic can be used through the native Messages API with `AANA_PROVIDER=anthropic` and `ANTHROPIC_API_KEY`.
 
 The current pipeline only uses the Python standard library, so there is no required `pip install` step for the checked-in scripts.
 
@@ -171,11 +172,21 @@ Edit `.env` and replace `your_openai_api_key_here` with your real API key. Never
 If you use a Responses-compatible proxy or provider, set:
 
 ```text
+AANA_PROVIDER=openai
 AANA_API_KEY=your_provider_or_proxy_key
 AANA_BASE_URL=https://your-provider.example/v1
 ```
 
-Native non-Responses providers need provider adapters before the live model loops can use them.
+If you use Anthropic, set:
+
+```text
+AANA_PROVIDER=anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+```
+
+Then pass an Anthropic model name to the same live scripts.
+
+Native providers beyond OpenAI-compatible Responses and Anthropic need provider adapters before the live model loops can use them.
 
 3. Generate a local task file.
 
