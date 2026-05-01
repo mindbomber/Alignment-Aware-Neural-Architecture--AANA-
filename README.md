@@ -89,7 +89,14 @@ Those commands emit JSON gate results with per-constraint pass/fail status, the 
 Check an AI-agent event before the agent acts:
 
 ```powershell
+python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+```
+
+Print the versioned agent schemas:
+
+```powershell
+python scripts/aana_cli.py agent-schema
 ```
 
 Agents that can call Python directly can use `eval_pipeline.agent_api.check_event(event)` instead of shelling out. See [examples/agent_api_usage.py](examples/agent_api_usage.py).
@@ -108,7 +115,7 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765
 
 Then POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
 
-The bridge also exposes `http://127.0.0.1:8765/openapi.json` for tools that can import an HTTP contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
+The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
 
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 

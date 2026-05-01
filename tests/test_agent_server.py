@@ -30,6 +30,13 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("/agent-check", payload["paths"])
         self.assertIn("AgentEvent", payload["components"]["schemas"])
 
+    def test_agent_event_schema_route(self):
+        status, payload = agent_server.route_request("GET", "/schemas/agent-event.schema.json")
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["title"], "AANA Agent Event")
+        self.assertIn("adapter_id", payload["properties"])
+
     def test_agent_check_route(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
 

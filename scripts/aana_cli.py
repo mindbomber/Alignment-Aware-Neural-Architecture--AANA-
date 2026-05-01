@@ -97,6 +97,28 @@ def command_agent_check(args):
     return 0 if response["gate_decision"] == "pass" else 1
 
 
+def command_validate_event(args):
+    event = agent_api.load_json_file(args.event)
+    report = agent_api.validate_event(event)
+    if args.json:
+        print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Agent event is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+        for issue in report["issues"]:
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_agent_schema(args):
+    catalog = agent_api.schema_catalog()
+    if args.name == "all":
+        print_json(catalog)
+    else:
+        print_json(catalog[args.name])
+    return 0
+
+
 def command_policy_presets(args):
     presets = agent_api.list_policy_presets()
     if args.json:
@@ -181,6 +203,21 @@ def build_parser():
     agent_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
     agent_parser.add_argument("--adapter-id", default=None, help="Override adapter id from the event.")
     agent_parser.set_defaults(func=command_agent_check)
+
+    validate_event_parser = subparsers.add_parser("validate-event", help="Validate an AI-agent event contract.")
+    validate_event_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
+    validate_event_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_event_parser.set_defaults(func=command_validate_event)
+
+    schema_parser = subparsers.add_parser("agent-schema", help="Print versioned agent JSON schemas.")
+    schema_parser.add_argument(
+        "name",
+        nargs="?",
+        default="all",
+        choices=["all", "agent_event", "agent_check_result"],
+        help="Schema to print.",
+    )
+    schema_parser.set_defaults(func=command_agent_schema)
 
     policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
     policy_parser.add_argument("--json", action="store_true", help="Emit JSON.")

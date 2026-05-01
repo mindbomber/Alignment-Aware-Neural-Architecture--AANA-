@@ -30,6 +30,13 @@ class AgentApiTests(unittest.TestCase):
         self.assertIn("support_reply", presets)
         self.assertIn("private_data_use", presets)
 
+    def test_validate_event_reports_missing_adapter(self):
+        report = agent_api.validate_event({"user_request": "Draft a reply."})
+
+        self.assertFalse(report["valid"])
+        self.assertEqual(report["errors"], 1)
+        self.assertIn("adapter_id", report["issues"][0]["path"])
+
 
 if __name__ == "__main__":
     unittest.main()

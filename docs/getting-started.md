@@ -23,7 +23,9 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
+python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py scaffold "insurance claim triage"
@@ -42,9 +44,11 @@ For AI-agent integrations, see [`agent-integration.md`](agent-integration.md).
 
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
 
+Before an agent starts calling AANA, validate the event shape with `python scripts/aana_cli.py validate-event --event <event.json>`. This catches missing adapter IDs, missing prompts, malformed evidence lists, and unsupported actions before the workflow runs.
+
 If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py` and POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
 
-The bridge also exposes `http://127.0.0.1:8765/openapi.json` for tools that can import a machine-readable HTTP contract. After `python -m pip install -e .`, you can start it with `aana-server`.
+The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import machine-readable contracts. After `python -m pip install -e .`, you can start it with `aana-server`.
 
 Direct script examples are below for users who want the underlying pieces.
 

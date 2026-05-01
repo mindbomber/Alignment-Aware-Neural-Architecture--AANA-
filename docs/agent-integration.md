@@ -31,6 +31,7 @@ Agents can call AANA with one JSON object:
 Run the check:
 
 ```powershell
+python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
@@ -42,6 +43,14 @@ The output includes:
 - `violations`
 - `safe_response`
 - the full adapter result
+
+Print the versioned schemas when you need to wire another agent framework:
+
+```powershell
+python scripts/aana_cli.py agent-schema
+python scripts/aana_cli.py agent-schema agent_event
+python scripts/aana_cli.py agent-schema agent_check_result
+```
 
 ## Python API
 
@@ -97,6 +106,9 @@ Available routes:
 - `GET /health`
 - `GET /policy-presets`
 - `GET /openapi.json`
+- `GET /schemas`
+- `GET /schemas/agent-event.schema.json`
+- `GET /schemas/agent-check-result.schema.json`
 - `POST /agent-check`
 
 PowerShell example:
@@ -112,6 +124,13 @@ The OpenAPI route is useful for tools that can import an HTTP contract:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8765/openapi.json
+```
+
+The schema routes are useful for tools that want only the event or result shape:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-event.schema.json
+Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-check-result.schema.json
 ```
 
 ## Integration Patterns
@@ -131,6 +150,7 @@ Only proceed when gate_decision is pass. If recommended_action is revise, ask, d
 Have the agent write an event file and call:
 
 ```powershell
+python scripts/aana_cli.py validate-event --event .aana/agent_event.json
 python scripts/aana_cli.py agent-check --event .aana/agent_event.json
 ```
 
@@ -154,6 +174,13 @@ For tools that ingest OpenAPI, point them at:
 
 ```text
 http://127.0.0.1:8765/openapi.json
+```
+
+For tools that ingest JSON Schema directly, use:
+
+```text
+http://127.0.0.1:8765/schemas/agent-event.schema.json
+http://127.0.0.1:8765/schemas/agent-check-result.schema.json
 ```
 
 ## OpenClaw-Style Setup

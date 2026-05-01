@@ -12,9 +12,10 @@ if str(SCRIPTS) not in sys.path:
 
 import run_adapter
 import validate_adapter_gallery
+from eval_pipeline import agent_contract
 
 
-AGENT_EVENT_VERSION = "0.1"
+AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
 
 
@@ -104,6 +105,11 @@ def candidate_from_event(event):
 
 
 def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
+    contract_report = agent_contract.validate_agent_event(event)
+    if not contract_report["valid"]:
+        messages = "; ".join(issue["message"] for issue in contract_report["issues"] if issue["level"] == "error")
+        raise ValueError(messages)
+
     gallery = load_gallery(gallery_path)
     resolved_adapter_id = adapter_id or event.get("adapter_id") or event.get("workflow")
     if not resolved_adapter_id:
@@ -129,3 +135,11 @@ def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
 
 def list_policy_presets():
     return POLICY_PRESETS
+
+
+def validate_event(event):
+    return agent_contract.validate_agent_event(event)
+
+
+def schema_catalog():
+    return agent_contract.schema_catalog()

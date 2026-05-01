@@ -88,6 +88,19 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("code_commit", output)
         self.assertIn("private_data_use", output)
 
+    def test_validate_event_accepts_support_event(self):
+        code, output = self.run_cli(["validate-event", "--event", "examples/agent_event_support_reply.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("Agent event is valid", output)
+
+    def test_agent_schema_prints_event_schema(self):
+        code, output = self.run_cli(["agent-schema", "agent_event"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA Agent Event", output)
+        self.assertIn("adapter_id", output)
+
 
 if __name__ == "__main__":
     unittest.main()

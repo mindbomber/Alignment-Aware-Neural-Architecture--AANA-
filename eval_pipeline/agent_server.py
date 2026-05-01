@@ -12,7 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from eval_pipeline import agent_api
+from eval_pipeline import agent_api, agent_contract
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -92,46 +92,8 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
         },
         "components": {
             "schemas": {
-                "AgentEvent": {
-                    "type": "object",
-                    "required": ["user_request"],
-                    "properties": {
-                        "event_version": {"type": "string", "examples": [agent_api.AGENT_EVENT_VERSION]},
-                        "event_id": {"type": "string"},
-                        "agent": {"type": "string", "examples": ["openclaw"]},
-                        "adapter_id": {"type": "string", "examples": ["support_reply"]},
-                        "workflow": {"type": "string"},
-                        "user_request": {"type": "string"},
-                        "prompt": {"type": "string"},
-                        "candidate_action": {"type": "string"},
-                        "candidate_answer": {"type": "string"},
-                        "draft_response": {"type": "string"},
-                        "available_evidence": {"type": "array", "items": {"type": "string"}},
-                        "allowed_actions": {"type": "array", "items": {"type": "string"}},
-                    },
-                    "additionalProperties": True,
-                },
-                "AgentCheckResult": {
-                    "type": "object",
-                    "required": ["gate_decision", "recommended_action"],
-                    "properties": {
-                        "agent_check_version": {"type": "string"},
-                        "agent": {"type": "string"},
-                        "adapter_id": {"type": "string"},
-                        "workflow": {"type": "string"},
-                        "event_id": {"type": "string"},
-                        "gate_decision": {"type": "string", "enum": ["pass", "block", "fail"]},
-                        "recommended_action": {
-                            "type": "string",
-                            "enum": ["accept", "revise", "retrieve", "ask", "refuse", "defer"],
-                        },
-                        "candidate_gate": {"type": "string"},
-                        "violations": {"type": "array", "items": {"type": "object"}},
-                        "safe_response": {"type": "string"},
-                        "adapter_result": {"type": "object"},
-                    },
-                    "additionalProperties": True,
-                },
+                "AgentEvent": agent_contract.AGENT_EVENT_SCHEMA,
+                "AgentCheckResult": agent_contract.AGENT_CHECK_RESULT_SCHEMA,
                 "Health": {
                     "type": "object",
                     "properties": {
@@ -174,6 +136,15 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
     if method == "GET" and parsed.path == "/openapi.json":
         return 200, openapi_schema()
 
+    if method == "GET" and parsed.path == "/schemas/agent-event.schema.json":
+        return 200, agent_contract.AGENT_EVENT_SCHEMA
+
+    if method == "GET" and parsed.path == "/schemas/agent-check-result.schema.json":
+        return 200, agent_contract.AGENT_CHECK_RESULT_SCHEMA
+
+    if method == "GET" and parsed.path == "/schemas":
+        return 200, agent_contract.schema_catalog()
+
     if method == "POST" and parsed.path == "/agent-check":
         try:
             event = json.loads(body.decode("utf-8") if body else "{}")
@@ -186,7 +157,15 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
 
     return 404, {
         "error": "Unknown route.",
-        "routes": ["GET /health", "GET /policy-presets", "GET /openapi.json", "POST /agent-check"],
+        "routes": [
+            "GET /health",
+            "GET /policy-presets",
+            "GET /openapi.json",
+            "GET /schemas",
+            "GET /schemas/agent-event.schema.json",
+            "GET /schemas/agent-check-result.schema.json",
+            "POST /agent-check",
+        ],
     }
 
 
@@ -224,7 +203,7 @@ def make_handler(gallery_path):
 def run_server(host=DEFAULT_HOST, port=DEFAULT_PORT, gallery_path=agent_api.DEFAULT_GALLERY):
     server = ThreadingHTTPServer((host, port), make_handler(gallery_path))
     print(f"AANA agent bridge listening on http://{host}:{port}")
-    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, POST /agent-check")
+    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /agent-check")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

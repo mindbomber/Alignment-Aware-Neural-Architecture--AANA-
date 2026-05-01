@@ -551,15 +551,17 @@
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
               The command hub and Python API wrap those pieces behind short calls, including an
-              agent-check contract, local HTTP bridge, OpenAPI route, and policy presets for
-              OpenClaw-style agents.
+              agent-check contract, event validation, local HTTP bridge, OpenAPI route, JSON schemas,
+              and policy presets for OpenClaw-style agents.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-schema agent_event">Copy event schema</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py policy-presets">Copy policy presets</button>
               <button class="button ink" type="button" data-copy-command="python examples/agent_api_usage.py">Copy Python API demo</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_server.py --host 127.0.0.1 --port 8765">Copy HTTP bridge</button>
@@ -584,7 +586,9 @@
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
@@ -645,6 +649,10 @@ python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_server.py" target="_blank" rel="noopener">
               <h3>Local HTTP Bridge</h3>
               <p>Run AANA on localhost so non-Python agents can POST planned actions to the same gate and import the OpenAPI route.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/eval_pipeline/agent_contract.py" target="_blank" rel="noopener">
+              <h3>Agent Contract</h3>
+              <p>Versioned event and result schemas so agent integrations can validate the shape before execution.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/travel_adapter.json" target="_blank" rel="noopener">
               <h3>Travel Adapter JSON</h3>

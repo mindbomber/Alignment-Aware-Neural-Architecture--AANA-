@@ -21,13 +21,15 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
+python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
-When the HTTP bridge is running, tools can discover its contract at `http://127.0.0.1:8765/openapi.json`.
+When the HTTP bridge is running, tools can discover its HTTP contract at `http://127.0.0.1:8765/openapi.json` and JSON schemas at `http://127.0.0.1:8765/schemas`.
 
 Try the scoring script:
 
