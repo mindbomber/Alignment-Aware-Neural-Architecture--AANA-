@@ -101,6 +101,12 @@ def command_agent_check(args):
 
 
 def command_workflow_check(args):
+    if args.workflow:
+        workflow_request = agent_api.load_json_file(args.workflow)
+        result = agent_api.check_workflow_request(workflow_request, gallery_path=args.gallery)
+        print_json(result)
+        return 0 if result["gate_decision"] == "pass" else 1
+
     evidence = list(args.evidence or [])
     constraints = list(args.constraint or [])
     result = agent_api.check_workflow(
@@ -424,8 +430,9 @@ def build_parser():
     agent_parser.set_defaults(func=command_agent_check)
 
     workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
-    workflow_parser.add_argument("--adapter", required=True, help="Gallery adapter id, such as research_summary.")
-    workflow_parser.add_argument("--request", required=True, help="User request or workflow instruction.")
+    workflow_parser.add_argument("--workflow", default=None, help="Path to workflow request JSON. When provided, other workflow fields are ignored.")
+    workflow_parser.add_argument("--adapter", default=None, help="Gallery adapter id, such as research_summary.")
+    workflow_parser.add_argument("--request", default=None, help="User request or workflow instruction.")
     workflow_parser.add_argument("--candidate", default=None, help="Proposed output or action to check.")
     workflow_parser.add_argument("--evidence", action="append", default=[], help="Verified evidence item. Repeat as needed.")
     workflow_parser.add_argument("--constraint", action="append", default=[], help="Constraint to preserve. Repeat as needed.")

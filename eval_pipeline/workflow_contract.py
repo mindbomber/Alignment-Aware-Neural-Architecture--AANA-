@@ -1,11 +1,82 @@
 """Versioned AANA workflow request and result contracts."""
 
+from dataclasses import asdict, dataclass, field
+
 from eval_pipeline import agent_contract
 
 
 WORKFLOW_CONTRACT_VERSION = "0.1"
 ALLOWED_ACTIONS = agent_contract.ALLOWED_ACTIONS
 GATE_DECISIONS = agent_contract.GATE_DECISIONS
+DEFAULT_ALLOWED_ACTIONS = ["accept", "revise", "retrieve", "ask", "defer", "refuse"]
+
+
+@dataclass
+class WorkflowRequest:
+    adapter: str
+    request: str
+    candidate: str | None = None
+    evidence: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    allowed_actions: list[str] = field(default_factory=lambda: list(DEFAULT_ALLOWED_ACTIONS))
+    metadata: dict = field(default_factory=dict)
+    workflow_id: str | None = None
+    contract_version: str = WORKFLOW_CONTRACT_VERSION
+
+    @classmethod
+    def from_dict(cls, data):
+        normalized = normalize_workflow_request(
+            adapter=data.get("adapter"),
+            request=data.get("request"),
+            candidate=data.get("candidate"),
+            evidence=data.get("evidence"),
+            constraints=data.get("constraints"),
+            allowed_actions=data.get("allowed_actions"),
+            metadata=data.get("metadata"),
+            workflow_id=data.get("workflow_id"),
+        )
+        if data.get("contract_version"):
+            normalized["contract_version"] = data.get("contract_version")
+        return cls(**normalized)
+
+    def to_dict(self):
+        return {key: value for key, value in asdict(self).items() if value is not None}
+
+
+@dataclass
+class WorkflowResult:
+    adapter: str
+    gate_decision: str
+    recommended_action: str
+    output: str | None
+    workflow_id: str | None = None
+    workflow: str | None = None
+    candidate_gate: str | None = None
+    violations: list[dict] = field(default_factory=list)
+    raw_result: dict = field(default_factory=dict)
+    contract_version: str = WORKFLOW_CONTRACT_VERSION
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            contract_version=data.get("contract_version", WORKFLOW_CONTRACT_VERSION),
+            workflow_id=data.get("workflow_id"),
+            adapter=data.get("adapter"),
+            workflow=data.get("workflow"),
+            gate_decision=data.get("gate_decision"),
+            recommended_action=data.get("recommended_action"),
+            candidate_gate=data.get("candidate_gate"),
+            violations=data.get("violations", []),
+            output=data.get("output"),
+            raw_result=data.get("raw_result", {}),
+        )
+
+    @property
+    def passed(self):
+        return self.gate_decision == "pass"
+
+    def to_dict(self):
+        return {key: value for key, value in asdict(self).items() if value is not None}
 
 
 WORKFLOW_REQUEST_SCHEMA = {
@@ -21,8 +92,18 @@ WORKFLOW_REQUEST_SCHEMA = {
         "adapter": {"type": "string", "examples": ["research_summary"]},
         "request": {"type": "string", "minLength": 1},
         "candidate": {"type": ["string", "null"]},
-        "evidence": {"type": "array", "items": {"type": "string"}},
-        "constraints": {"type": "array", "items": {"type": "string"}},
+        "evidence": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}},
+            ]
+        },
+        "constraints": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}},
+            ]
+        },
         "allowed_actions": {"type": "array", "items": {"type": "string", "enum": ALLOWED_ACTIONS}},
         "metadata": {"type": "object"},
     },
@@ -67,6 +148,30 @@ def _string_list(value):
     return None
 
 
+def allowed_actions_or_default(value):
+    if value is None:
+        return list(DEFAULT_ALLOWED_ACTIONS)
+    if isinstance(value, list) and all(isinstance(item, str) for item in value):
+        return value
+    return value
+
+
+def action_within_allowed(action, allowed_actions):
+    allowed = allowed_actions_or_default(allowed_actions)
+    if not isinstance(allowed, list) or not allowed:
+        return action, None
+    if action in allowed:
+        return action, None
+    for fallback in ("defer", "ask", "refuse", "revise", "accept", "retrieve"):
+        if fallback in allowed:
+            return fallback, {
+                "code": "recommended_action_not_allowed",
+                "severity": "medium",
+                "message": f"Adapter recommended {action!r}, but the workflow allows only: {', '.join(allowed)}. Using {fallback!r}.",
+            }
+    return action, None
+
+
 def validate_workflow_request(request):
     issues = []
     if not isinstance(request, dict):
@@ -98,6 +203,33 @@ def validate_workflow_request(request):
                 "level": "error",
                 "path": "$.request",
                 "message": "Workflow request must include a non-empty request.",
+            }
+        )
+
+    if request.get("candidate") is not None and not isinstance(request.get("candidate"), str):
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.candidate",
+                "message": "candidate must be a string or null when provided.",
+            }
+        )
+
+    if request.get("workflow_id") is not None and not isinstance(request.get("workflow_id"), str):
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.workflow_id",
+                "message": "workflow_id must be a string when provided.",
+            }
+        )
+
+    if request.get("metadata") is not None and not isinstance(request.get("metadata"), dict):
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.metadata",
+                "message": "metadata must be an object when provided.",
             }
         )
 
@@ -169,7 +301,7 @@ def normalize_workflow_request(
         "candidate": candidate,
         "evidence": evidence_items if evidence_items is not None else evidence,
         "constraints": constraints_items if constraints_items is not None else constraints,
-        "allowed_actions": allowed_actions or ["accept", "revise", "retrieve", "ask", "defer", "refuse"],
+        "allowed_actions": allowed_actions_or_default(allowed_actions),
         "metadata": metadata or {},
     }
     return {key: value for key, value in payload.items() if value is not None}
@@ -195,7 +327,7 @@ def workflow_request_to_agent_event(request, agent="workflow"):
         "user_request": request.get("request"),
         "candidate_action": request.get("candidate"),
         "available_evidence": evidence,
-        "allowed_actions": request.get("allowed_actions", ["accept", "revise", "ask", "defer", "refuse"]),
+        "allowed_actions": request.get("allowed_actions", list(DEFAULT_ALLOWED_ACTIONS)),
         "metadata": metadata,
     }
 

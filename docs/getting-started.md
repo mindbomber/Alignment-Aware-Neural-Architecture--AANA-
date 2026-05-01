@@ -25,6 +25,7 @@ python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
@@ -73,6 +74,8 @@ result = aana.check(
     evidence=["Source A: AANA makes constraints explicit.", "Source B: Source coverage can be incomplete."],
     constraints=["Do not invent citations.", "Do not add unsupported numbers."],
 )
+
+result_from_file = aana.check_file("examples/workflow_research_summary.json")
 ```
 
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).

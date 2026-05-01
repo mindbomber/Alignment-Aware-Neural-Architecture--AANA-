@@ -173,15 +173,22 @@ def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
 
     event = workflow_contract.workflow_request_to_agent_event(workflow_request)
     result = check_event(event, gallery_path=gallery_path)
+    recommended_action, action_violation = workflow_contract.action_within_allowed(
+        result.get("recommended_action"),
+        workflow_request.get("allowed_actions"),
+    )
+    violations = list(result.get("violations", []))
+    if action_violation:
+        violations.append(action_violation)
     return {
         "contract_version": WORKFLOW_CONTRACT_VERSION,
         "workflow_id": workflow_request.get("workflow_id"),
         "adapter": result.get("adapter_id"),
         "workflow": result.get("workflow"),
         "gate_decision": result.get("gate_decision"),
-        "recommended_action": result.get("recommended_action"),
+        "recommended_action": recommended_action,
         "candidate_gate": result.get("candidate_gate"),
-        "violations": result.get("violations", []),
+        "violations": violations,
         "output": result.get("safe_response"),
         "raw_result": result,
     }

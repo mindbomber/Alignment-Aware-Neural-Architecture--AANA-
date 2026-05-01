@@ -29,7 +29,10 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(payload["openapi"], "3.1.0")
         self.assertIn("/agent-check", payload["paths"])
         self.assertIn("/validate-event", payload["paths"])
+        self.assertIn("/workflow-check", payload["paths"])
+        self.assertIn("/validate-workflow", payload["paths"])
         self.assertIn("AgentEvent", payload["components"]["schemas"])
+        self.assertIn("WorkflowRequest", payload["components"]["schemas"])
 
     def test_agent_event_schema_route(self):
         status, payload = agent_server.route_request("GET", "/schemas/agent-event.schema.json")

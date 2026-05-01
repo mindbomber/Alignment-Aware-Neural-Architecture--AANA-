@@ -564,6 +564,7 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run research_summary">Copy research command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json">Copy workflow validation</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json">Copy workflow file check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-check --adapter research_summary --request &quot;Write a concise research brief. Use only Source A and Source B. Label uncertainty.&quot; --candidate &quot;AANA improves productivity by 40% for all teams [Source C].&quot; --evidence &quot;Source A: AANA makes constraints explicit.&quot; --evidence &quot;Source B: Source coverage can be incomplete.&quot; --constraint &quot;Do not invent citations.&quot; --constraint &quot;Do not add unsupported numbers.&quot;">Copy workflow check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
@@ -596,6 +597,7 @@ python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json

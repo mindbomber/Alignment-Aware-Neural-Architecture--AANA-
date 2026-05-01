@@ -151,6 +151,14 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn('"adapter": "research_summary"', output)
         self.assertIn('"recommended_action": "revise"', output)
 
+    def test_workflow_check_accepts_file_request(self):
+        code, output = self.run_cli(["workflow-check", "--workflow", "examples/workflow_research_summary.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"workflow_id": "demo-workflow-research-summary-001"', output)
+        self.assertIn('"adapter": "research_summary"', output)
+        self.assertIn('"recommended_action": "revise"', output)
+
     def test_validate_workflow_accepts_example(self):
         code, output = self.run_cli(["validate-workflow", "--workflow", "examples/workflow_research_summary.json"])
 

@@ -102,10 +102,17 @@ result = aana.check(
 )
 ```
 
+For JSON request files:
+
+```python
+result = aana.check_file("examples/workflow_research_summary.json")
+```
+
 Or run the same platform contract from the CLI:
 
 ```powershell
 python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 ```
 

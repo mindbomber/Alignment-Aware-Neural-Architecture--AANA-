@@ -50,6 +50,45 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(result["recommended_action"], "revise")
         self.assertEqual(result["adapter"], "research_summary")
 
+    def test_sdk_check_file_and_result_object(self):
+        result = aana.check_file(ROOT / "examples" / "workflow_research_summary.json")
+        result_object = aana.result_object(result)
+
+        self.assertTrue(result_object.passed)
+        self.assertEqual(result_object.adapter, "research_summary")
+        self.assertEqual(result_object.recommended_action, "revise")
+
+    def test_sdk_check_request_accepts_typed_request(self):
+        request = aana.WorkflowRequest(
+            adapter="research_summary",
+            request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+            candidate="AANA improves productivity by 40% for all teams [Source C].",
+            evidence=[
+                "Source A: AANA makes constraints explicit.",
+                "Source B: Source coverage can be incomplete.",
+            ],
+            constraints=["Do not invent citations."],
+            workflow_id="typed-workflow-001",
+        )
+
+        result = aana.check_request(request)
+
+        self.assertEqual(result["workflow_id"], "typed-workflow-001")
+        self.assertEqual(result["recommended_action"], "revise")
+
+    def test_allowed_actions_are_enforced(self):
+        result = aana.check(
+            adapter="research_summary",
+            request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+            candidate="AANA improves productivity by 40% for all teams [Source C].",
+            evidence=["Source A: AANA makes constraints explicit."],
+            constraints=["Do not invent citations."],
+            allowed_actions=["accept", "defer"],
+        )
+
+        self.assertEqual(result["recommended_action"], "defer")
+        self.assertTrue(any(item["code"] == "recommended_action_not_allowed" for item in result["violations"]))
+
     def test_schema_catalog_includes_workflow_schemas(self):
         schemas = aana.schema_catalog()
 

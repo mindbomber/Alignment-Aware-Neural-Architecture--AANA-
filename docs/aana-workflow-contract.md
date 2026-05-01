@@ -47,6 +47,25 @@ else:
     print(result["recommended_action"])
 ```
 
+You can also pass a full contract request or load one from disk:
+
+```python
+request = aana.WorkflowRequest(
+    adapter="research_summary",
+    request="Write a concise research brief. Use only Source A and Source B.",
+    candidate="AANA improves productivity by 40% for all teams [Source C].",
+    evidence=["Source A: AANA makes constraints explicit."],
+    constraints=["Do not invent citations."],
+)
+
+result = aana.check_request(request)
+same_result = aana.check_file("examples/workflow_research_summary.json")
+result_object = aana.result_object(result)
+
+if result_object.passed:
+    print(result_object.output)
+```
+
 The result includes:
 
 - `gate_decision`: `pass`, `block`, `fail`, or `needs_adapter_implementation`
@@ -55,6 +74,8 @@ The result includes:
 - `violations`: verifier findings against the candidate
 - `output`: the accepted or repaired output
 - `raw_result`: the underlying adapter and agent-check result
+
+`allowed_actions` is enforced. If an adapter recommends an action that the caller did not allow, AANA selects the safest available fallback action from the caller's list and adds a `recommended_action_not_allowed` violation.
 
 ## Request Shape
 
@@ -90,6 +111,12 @@ python scripts/aana_cli.py validate-workflow --workflow examples/workflow_resear
 ```
 
 Run the gate:
+
+```powershell
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
+```
+
+Or pass the fields directly:
 
 ```powershell
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
