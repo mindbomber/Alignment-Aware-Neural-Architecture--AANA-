@@ -9,15 +9,16 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT))
 
 import new_adapter
 import run_adapter
 import validate_adapter
 import validate_adapter_gallery
+from eval_pipeline import agent_api
 
 
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
-AGENT_EVENT_VERSION = "0.1"
 
 
 def load_gallery(path=DEFAULT_GALLERY):
@@ -38,14 +39,6 @@ def find_entry(gallery, adapter_id):
 
 def print_json(data):
     print(json.dumps(data, indent=2, ensure_ascii=False))
-
-
-def load_json_file(path):
-    with pathlib.Path(path).open(encoding="utf-8") as handle:
-        data = json.load(handle)
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} must contain a JSON object.")
-    return data
 
 
 def command_list(args):
@@ -97,54 +90,24 @@ def command_run_file(args):
     return 0 if result.get("gate_decision") in {"pass", "needs_adapter_implementation"} else 1
 
 
-def prompt_from_agent_event(event):
-    user_request = event.get("user_request") or event.get("prompt")
-    if not isinstance(user_request, str) or not user_request.strip():
-        raise ValueError("Agent event must include a non-empty user_request.")
-
-    evidence = event.get("available_evidence", [])
-    if isinstance(evidence, list) and evidence:
-        evidence_lines = "\n".join(f"- {item}" for item in evidence)
-        return f"{user_request}\n\nAvailable verified evidence:\n{evidence_lines}"
-    return user_request
-
-
-def candidate_from_agent_event(event):
-    candidate = event.get("candidate_action")
-    if candidate is None:
-        candidate = event.get("candidate_answer")
-    if candidate is None:
-        candidate = event.get("draft_response")
-    return candidate
-
-
 def command_agent_check(args):
-    event = load_json_file(args.event)
-    gallery = load_gallery(args.gallery)
-    adapter_id = args.adapter_id or event.get("adapter_id") or event.get("workflow")
-    if not adapter_id:
-        raise ValueError("Agent event must include adapter_id or workflow, or pass --adapter-id.")
-
-    entry = find_entry(gallery, adapter_id)
-    adapter = run_adapter.load_adapter(ROOT / entry["adapter_path"])
-    prompt = prompt_from_agent_event(event)
-    candidate = candidate_from_agent_event(event)
-    result = run_adapter.run_adapter(adapter, prompt, candidate)
-    response = {
-        "agent_check_version": AGENT_EVENT_VERSION,
-        "agent": event.get("agent", "unknown"),
-        "adapter_id": adapter_id,
-        "workflow": entry.get("title"),
-        "event_id": event.get("event_id"),
-        "gate_decision": result.get("gate_decision"),
-        "recommended_action": result.get("recommended_action"),
-        "candidate_gate": result.get("candidate_gate"),
-        "violations": result.get("candidate_tool_report", result.get("tool_report", {})).get("violations", []),
-        "safe_response": result.get("final_answer"),
-        "adapter_result": result,
-    }
+    event = agent_api.load_json_file(args.event)
+    response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
     print_json(response)
     return 0 if response["gate_decision"] == "pass" else 1
+
+
+def command_policy_presets(args):
+    presets = agent_api.list_policy_presets()
+    if args.json:
+        print_json({"policy_presets": presets})
+        return 0
+    print("AANA agent policy presets:")
+    for name, preset in presets.items():
+        adapters = ", ".join(preset["recommended_adapters"]) or "custom adapter needed"
+        print(f"- {name}: {preset['description']}")
+        print(f"  Recommended adapters: {adapters}")
+    return 0
 
 
 def command_validate_adapter(args):
@@ -218,6 +181,10 @@ def build_parser():
     agent_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
     agent_parser.add_argument("--adapter-id", default=None, help="Override adapter id from the event.")
     agent_parser.set_defaults(func=command_agent_check)
+
+    policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
+    policy_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    policy_parser.set_defaults(func=command_policy_presets)
 
     validate_adapter_parser = subparsers.add_parser("validate-adapter", help="Validate one adapter JSON file.")
     validate_adapter_parser.add_argument("adapter", help="Path to adapter JSON.")

@@ -80,6 +80,14 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn('"recommended_action": "revise"', output)
         self.assertIn('"safe_response"', output)
 
+    def test_policy_presets_lists_agent_workflows(self):
+        code, output = self.run_cli(["policy-presets"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("message_send", output)
+        self.assertIn("code_commit", output)
+        self.assertIn("private_data_use", output)
+
 
 if __name__ == "__main__":
     unittest.main()

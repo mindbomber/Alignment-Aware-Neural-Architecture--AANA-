@@ -43,6 +43,41 @@ The output includes:
 - `safe_response`
 - the full adapter result
 
+## Python API
+
+Agents that can call Python directly do not need to shell out to the CLI. Import the small API shim and pass the same event object:
+
+```python
+from eval_pipeline.agent_api import check_event
+
+result = check_event(event)
+if result["gate_decision"] == "pass":
+    send(result["safe_response"])
+else:
+    follow(result["recommended_action"])
+```
+
+A runnable example is included at:
+
+- [`examples/agent_api_usage.py`](../examples/agent_api_usage.py)
+
+Run it with:
+
+```powershell
+python examples/agent_api_usage.py
+```
+
+## Policy Presets
+
+Policy presets name common places where an agent should call AANA before acting. They are not a full permission system; they are a starter map for deciding which workflows need a gate.
+
+```powershell
+python scripts/aana_cli.py policy-presets
+python scripts/aana_cli.py policy-presets --json
+```
+
+Included presets cover message sending, file writes, code commits, support replies, bookings or purchases, and private-data use.
+
 ## Integration Patterns
 
 ### Prompt-Level

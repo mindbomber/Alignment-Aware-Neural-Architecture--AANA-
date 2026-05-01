@@ -32,8 +32,8 @@ Homepage = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--A
 Repository = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
 Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/issues"
 
-[tool.setuptools]
-py-modules = []
+[tool.setuptools.packages.find]
+include = ["eval_pipeline*"]
 
 [tool.unittest]
 start-dir = "tests"

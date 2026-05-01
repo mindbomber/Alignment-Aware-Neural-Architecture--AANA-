@@ -10,6 +10,8 @@ These files show the input and output shapes without requiring live API calls.
 - `travel_adapter.json` is a filled executable adapter for budgeted travel planning.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 - `support_reply_adapter.json` is a filled executable adapter for privacy-safe customer-support replies.
+- `agent_event_support_reply.json` is a machine-readable event an agent can pass to AANA before sending a support reply.
+- `agent_api_usage.py` shows the same event check through the Python API instead of the CLI.
 
 Use the command hub first:
 
@@ -20,6 +22,8 @@ python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py policy-presets
+python examples/agent_api_usage.py
 ```
 
 Try the scoring script:

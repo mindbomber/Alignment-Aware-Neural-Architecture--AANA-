@@ -24,6 +24,7 @@ python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py policy-presets
 python scripts/aana_cli.py scaffold "insurance claim triage"
 ```
 
@@ -37,6 +38,8 @@ The command hub wraps:
 - `scripts/new_adapter.py`
 
 For AI-agent integrations, see [`agent-integration.md`](agent-integration.md).
+
+If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
 
 Direct script examples are below for users who want the underlying pieces.
 

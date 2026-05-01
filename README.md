@@ -92,6 +92,14 @@ Check an AI-agent event before the agent acts:
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
+Agents that can call Python directly can use `eval_pipeline.agent_api.check_event(event)` instead of shelling out. See [examples/agent_api_usage.py](examples/agent_api_usage.py).
+
+List the starter policy presets for deciding where an agent should call AANA:
+
+```powershell
+python scripts/aana_cli.py policy-presets
+```
+
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 
 Create and validate a starter adapter for your own domain:
