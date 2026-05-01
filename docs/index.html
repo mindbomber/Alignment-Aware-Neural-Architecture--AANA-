@@ -550,11 +550,13 @@
               To start from your own workflow, scaffold a domain adapter and validate it before
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
-              The command hub and Python API wrap those pieces behind short calls, including an
+              The installable <code>aana</code> command, command hub, and Python API wrap those pieces behind short calls, including an
               agent-check contract, CLI and HTTP event validation, local HTTP bridge, OpenAPI route,
               JSON schemas, and policy presets for OpenClaw-style agents.
             </p>
             <div class="section-actions">
+              <button class="button ink" type="button" data-copy-command="python -m pip install -e .">Copy install command</button>
+              <button class="button ink" type="button" data-copy-command="aana run-agent-examples">Copy aana examples</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
@@ -597,6 +599,12 @@ python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
+            <pre><code># Optional installable command form:
+python -m pip install -e .
+aana list
+aana run-agent-examples
+aana agent-check --event examples/agent_event_support_reply.json
+aana-server --host 127.0.0.1 --port 8765</code></pre>
           </div>
         </div>
       </section>

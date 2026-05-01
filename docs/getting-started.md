@@ -33,6 +33,16 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py scaffold "insurance claim triage"
 ```
 
+After local install, use the shorter command form:
+
+```powershell
+python -m pip install -e .
+aana list
+aana run-agent-examples
+aana scaffold-agent-event support_reply --output-dir examples/agent_events
+aana-server --host 127.0.0.1 --port 8765
+```
+
 The older scripts still work directly, but the command hub is the easiest starting point.
 
 The command hub wraps:

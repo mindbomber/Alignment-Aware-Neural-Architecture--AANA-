@@ -33,10 +33,11 @@ Repository = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture-
 Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/issues"
 
 [project.scripts]
+aana = "scripts.aana_cli:main"
 aana-server = "eval_pipeline.agent_server:main"
 
 [tool.setuptools.packages.find]
-include = ["eval_pipeline*"]
+include = ["eval_pipeline*", "scripts*"]
 
 [tool.unittest]
 start-dir = "tests"

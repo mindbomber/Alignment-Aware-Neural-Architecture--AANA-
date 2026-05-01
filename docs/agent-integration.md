@@ -35,6 +35,13 @@ python scripts/aana_cli.py validate-event --event examples/agent_event_support_r
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
+If the repo is installed with `python -m pip install -e .`, the same flow is:
+
+```powershell
+aana validate-event --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
+```
+
 The output includes:
 
 - `gate_decision`

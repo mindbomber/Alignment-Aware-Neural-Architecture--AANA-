@@ -225,6 +225,21 @@ For a fuller explanation, see:
 
 The current pipeline only uses the Python standard library, so there is no required `pip install` step for the checked-in scripts.
 
+For the lowest-friction command names, install the repo locally:
+
+```powershell
+python -m pip install -e .
+```
+
+Then use `aana` instead of `python scripts/aana_cli.py`:
+
+```powershell
+aana list
+aana run-agent-examples
+aana agent-check --event examples/agent_event_support_reply.json
+aana-server --host 127.0.0.1 --port 8765
+```
+
 ## Quick start
 
 1. Clone the repository.
@@ -232,6 +247,12 @@ The current pipeline only uses the Python standard library, so there is no requi
 ```powershell
 git clone https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-.git
 cd Alignment-Aware-Neural-Architecture--AANA-
+```
+
+Optional, but recommended if agents or shell tools will call AANA often:
+
+```powershell
+python -m pip install -e .
 ```
 
 2. Create a local environment file.
