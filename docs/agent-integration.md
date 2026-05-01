@@ -78,6 +78,29 @@ python scripts/aana_cli.py policy-presets --json
 
 Included presets cover message sending, file writes, code commits, support replies, bookings or purchases, and private-data use.
 
+## Local HTTP Bridge
+
+Agents that work best with HTTP tools can run AANA as a local bridge:
+
+```powershell
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
+```
+
+Available routes:
+
+- `GET /health`
+- `GET /policy-presets`
+- `POST /agent-check`
+
+PowerShell example:
+
+```powershell
+$event = Get-Content examples/agent_event_support_reply.json -Raw
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $event -ContentType 'application/json'
+```
+
+This is the easiest integration path for agent frameworks that expose local tools, webhooks, or HTTP request actions. Keep the bridge bound to `127.0.0.1` unless you have a real deployment boundary, authentication, logging, and network controls.
+
 ## Integration Patterns
 
 ### Prompt-Level
@@ -101,6 +124,18 @@ python scripts/aana_cli.py agent-check --event .aana/agent_event.json
 ### Tool-Level
 
 Expose `aana_cli.py agent-check` as a local tool. The agent sends its planned action as `candidate_action` and receives a gate result before execution.
+
+### HTTP-Level
+
+Expose the local bridge as an agent tool:
+
+```text
+POST http://127.0.0.1:8765/agent-check
+Content-Type: application/json
+Body: the AANA agent event
+```
+
+The response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `violations`, `safe_response`, and the full adapter result.
 
 ## OpenClaw-Style Setup
 

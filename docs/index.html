@@ -551,7 +551,7 @@
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
               The command hub and Python API wrap those pieces behind short calls, including an
-              agent-check contract and policy presets for OpenClaw-style agents.
+              agent-check contract, local HTTP bridge, and policy presets for OpenClaw-style agents.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
@@ -561,6 +561,7 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py policy-presets">Copy policy presets</button>
               <button class="button ink" type="button" data-copy-command="python examples/agent_api_usage.py">Copy Python API demo</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_server.py --host 127.0.0.1 --port 8765">Copy HTTP bridge</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-gallery --run-examples">Copy gallery check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py scaffold &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
@@ -585,6 +586,7 @@ python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
           </div>
         </div>
@@ -638,6 +640,10 @@ python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/agent_api_usage.py" target="_blank" rel="noopener">
               <h3>Agent API Example</h3>
               <p>A minimal OpenClaw-style event check that calls AANA from Python and returns the safe response.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_server.py" target="_blank" rel="noopener">
+              <h3>Local HTTP Bridge</h3>
+              <p>Run AANA on localhost so non-Python agents can POST planned actions to the same gate.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/travel_adapter.json" target="_blank" rel="noopener">
               <h3>Travel Adapter JSON</h3>

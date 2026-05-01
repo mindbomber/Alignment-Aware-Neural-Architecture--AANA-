@@ -100,6 +100,14 @@ List the starter policy presets for deciding where an agent should call AANA:
 python scripts/aana_cli.py policy-presets
 ```
 
+Run a local HTTP bridge for agent frameworks that prefer tools, webhooks, or HTTP calls:
+
+```powershell
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
+```
+
+Then POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
+
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 
 Create and validate a starter adapter for your own domain:

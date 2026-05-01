@@ -24,6 +24,7 @@ python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
 Try the scoring script:
