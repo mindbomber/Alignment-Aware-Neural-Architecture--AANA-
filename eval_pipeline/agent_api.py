@@ -17,6 +17,7 @@ from eval_pipeline import agent_contract
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
+DEFAULT_AGENT_EVENTS_DIR = ROOT / "examples" / "agent_events"
 
 
 POLICY_PRESETS = {
@@ -143,3 +144,63 @@ def validate_event(event):
 
 def schema_catalog():
     return agent_contract.schema_catalog()
+
+
+def discover_agent_events(events_dir=DEFAULT_AGENT_EVENTS_DIR):
+    path = pathlib.Path(events_dir)
+    if not path.exists():
+        raise ValueError(f"Agent events directory does not exist: {path}")
+    return sorted(item for item in path.glob("*.json") if item.is_file())
+
+
+def run_agent_event_examples(events_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=DEFAULT_GALLERY):
+    rows = []
+    for path in discover_agent_events(events_dir):
+        event = load_json_file(path)
+        validation = validate_event(event)
+        if not validation["valid"]:
+            rows.append(
+                {
+                    "event_file": str(path),
+                    "event_id": event.get("event_id"),
+                    "adapter_id": event.get("adapter_id"),
+                    "valid": False,
+                    "gate_decision": None,
+                    "recommended_action": None,
+                    "candidate_gate": None,
+                    "passed_expectations": False,
+                    "validation": validation,
+                }
+            )
+            continue
+
+        result = check_event(event, gallery_path=gallery_path)
+        metadata = event.get("metadata", {}) if isinstance(event.get("metadata"), dict) else {}
+        expected_candidate_gate = metadata.get("expected_candidate_gate")
+        expected_gate_decision = metadata.get("expected_gate_decision")
+        expected_recommended_action = metadata.get("expected_recommended_action")
+        expectation_checks = [
+            expected_candidate_gate is None or result.get("candidate_gate") == expected_candidate_gate,
+            expected_gate_decision is None or result.get("gate_decision") == expected_gate_decision,
+            expected_recommended_action is None or result.get("recommended_action") == expected_recommended_action,
+        ]
+        rows.append(
+            {
+                "event_file": str(path),
+                "event_id": event.get("event_id"),
+                "adapter_id": result.get("adapter_id"),
+                "valid": True,
+                "gate_decision": result.get("gate_decision"),
+                "recommended_action": result.get("recommended_action"),
+                "candidate_gate": result.get("candidate_gate"),
+                "passed_expectations": all(expectation_checks),
+                "validation": validation,
+            }
+        )
+
+    return {
+        "valid": all(row["valid"] and row["passed_expectations"] for row in rows),
+        "events_dir": str(pathlib.Path(events_dir)),
+        "count": len(rows),
+        "checked_examples": rows,
+    }

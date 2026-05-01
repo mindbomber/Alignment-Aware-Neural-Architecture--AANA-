@@ -11,6 +11,7 @@ These files show the input and output shapes without requiring live API calls.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 - `support_reply_adapter.json` is a filled executable adapter for privacy-safe customer-support replies.
 - `agent_event_support_reply.json` is a machine-readable event an agent can pass to AANA before sending a support reply.
+- `agent_events/` contains executable agent-event examples for support replies, travel booking/planning, and meal planning.
 - `agent_api_usage.py` shows the same event check through the Python API instead of the CLI.
 
 Use the command hub first:
@@ -23,6 +24,7 @@ python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py run-agent-examples
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py

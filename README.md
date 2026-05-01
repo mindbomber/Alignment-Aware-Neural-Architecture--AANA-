@@ -93,6 +93,12 @@ python scripts/aana_cli.py validate-event --event examples/agent_event_support_r
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
+Run the executable agent-event examples across support, travel, and meal-planning workflows:
+
+```powershell
+python scripts/aana_cli.py run-agent-examples
+```
+
 Print the versioned agent schemas:
 
 ```powershell

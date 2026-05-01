@@ -37,6 +37,16 @@ class AgentApiTests(unittest.TestCase):
         self.assertEqual(report["errors"], 1)
         self.assertIn("adapter_id", report["issues"][0]["path"])
 
+    def test_run_agent_event_examples(self):
+        report = agent_api.run_agent_event_examples()
+
+        self.assertTrue(report["valid"])
+        self.assertGreaterEqual(report["count"], 3)
+        event_ids = {item["event_id"] for item in report["checked_examples"]}
+        self.assertIn("demo-support-refund-001", event_ids)
+        self.assertIn("demo-travel-booking-001", event_ids)
+        self.assertIn("demo-meal-planning-001", event_ids)
+
 
 if __name__ == "__main__":
     unittest.main()

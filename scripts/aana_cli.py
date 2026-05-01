@@ -119,6 +119,23 @@ def command_agent_schema(args):
     return 0
 
 
+def command_run_agent_examples(args):
+    report = agent_api.run_agent_event_examples(events_dir=args.events_dir, gallery_path=args.gallery)
+    if args.json:
+        print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Agent event examples are {status}: {report['count']} checked.")
+        for item in report["checked_examples"]:
+            expectation = "ok" if item["passed_expectations"] else "unexpected"
+            print(
+                f"- {item['event_id']}: adapter={item['adapter_id']} "
+                f"candidate_gate={item['candidate_gate']} gate={item['gate_decision']} "
+                f"action={item['recommended_action']} expectations={expectation}"
+            )
+    return 0 if report["valid"] else 1
+
+
 def command_policy_presets(args):
     presets = agent_api.list_policy_presets()
     if args.json:
@@ -218,6 +235,11 @@ def build_parser():
         help="Schema to print.",
     )
     schema_parser.set_defaults(func=command_agent_schema)
+
+    agent_examples_parser = subparsers.add_parser("run-agent-examples", help="Run executable agent event examples.")
+    agent_examples_parser.add_argument("--events-dir", default=str(agent_api.DEFAULT_AGENT_EVENTS_DIR), help="Directory of agent event JSON files.")
+    agent_examples_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    agent_examples_parser.set_defaults(func=command_run_agent_examples)
 
     policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
     policy_parser.add_argument("--json", action="store_true", help="Emit JSON.")

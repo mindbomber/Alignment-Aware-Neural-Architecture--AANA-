@@ -101,6 +101,14 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("AANA Agent Event", output)
         self.assertIn("adapter_id", output)
 
+    def test_run_agent_examples(self):
+        code, output = self.run_cli(["run-agent-examples"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("demo-support-refund-001", output)
+        self.assertIn("demo-travel-booking-001", output)
+        self.assertIn("demo-meal-planning-001", output)
+
 
 if __name__ == "__main__":
     unittest.main()

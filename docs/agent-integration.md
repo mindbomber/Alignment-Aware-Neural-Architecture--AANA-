@@ -52,6 +52,14 @@ python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py agent-schema agent_check_result
 ```
 
+Run the executable agent-event pack:
+
+```powershell
+python scripts/aana_cli.py run-agent-examples
+```
+
+The pack lives in [`examples/agent_events/`](../examples/agent_events/) and currently covers support replies, travel booking/planning, and meal planning.
+
 ## Python API
 
 Agents that can call Python directly do not need to shell out to the CLI. Import the small API shim and pass the same event object:
