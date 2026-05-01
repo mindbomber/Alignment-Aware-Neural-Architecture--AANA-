@@ -93,8 +93,8 @@ Machine-readable starter files:
 You can also generate a starter adapter package:
 
 ```powershell
-python scripts/new_adapter.py --domain "meal planning"
-python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+python scripts/aana_cli.py scaffold "meal planning"
+python scripts/aana_cli.py validate-adapter examples/meal_planning_adapter.json
 ```
 
 ## Run Executable Adapters
@@ -126,7 +126,7 @@ The JSON output shows the adapter name, prompt, candidate gate, final gate, reco
 The gallery is the repeatable publication pattern for new domains. Each entry names the adapter, prompt, bad candidate, expected gate behavior, expected failing constraints, copy command, and caveats.
 
 ```powershell
-python scripts/validate_adapter_gallery.py --run-examples
+python scripts/aana_cli.py validate-gallery --run-examples
 ```
 
 Use it before sharing a new domain adapter. It prevents the docs from drifting away from the code path that actually runs.

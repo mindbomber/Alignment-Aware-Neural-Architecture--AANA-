@@ -18,10 +18,17 @@ Machine-readable gallery:
 Validate the gallery:
 
 ```powershell
-python scripts/validate_adapter_gallery.py --run-examples
+python scripts/aana_cli.py validate-gallery --run-examples
 ```
 
 That command checks that every referenced adapter is valid, runs executable examples, and confirms the expected gate result still holds.
+
+Run an example by id:
+
+```powershell
+python scripts/aana_cli.py list
+python scripts/aana_cli.py run support_reply
+```
 
 ## Current Executable Examples
 
@@ -38,6 +45,6 @@ That command checks that every referenced adapter is valid, runs executable exam
 3. Add one bad candidate that sounds useful but breaks a named constraint.
 4. Run the adapter and record expected `candidate_gate`, `gate_decision`, and `recommended_action`.
 5. Add the entry to `examples/adapter_gallery.json`.
-6. Run `python scripts/validate_adapter_gallery.py --run-examples`.
+6. Run `python scripts/aana_cli.py validate-gallery --run-examples`.
 
 Keep the claim narrow: a gallery entry proves that this adapter contract, this verifier path, and this example gate behavior work. It does not prove broad safety for the domain.

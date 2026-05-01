@@ -11,6 +11,16 @@ These files show the input and output shapes without requiring live API calls.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 - `support_reply_adapter.json` is a filled executable adapter for privacy-safe customer-support replies.
 
+Use the command hub first:
+
+```powershell
+python scripts/aana_cli.py list
+python scripts/aana_cli.py run travel_planning
+python scripts/aana_cli.py run meal_planning
+python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py validate-gallery --run-examples
+```
+
 Try the scoring script:
 
 ```powershell
@@ -42,14 +52,14 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
 Validate every published gallery example:
 
 ```powershell
-python scripts/validate_adapter_gallery.py --run-examples
+python scripts/aana_cli.py validate-gallery --run-examples
 ```
 
 Create and validate a starter adapter package for a new domain:
 
 ```powershell
-python scripts/new_adapter.py --domain "meal planning"
-python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+python scripts/aana_cli.py scaffold "meal planning"
+python scripts/aana_cli.py validate-adapter examples/meal_planning_adapter.json
 ```
 
 The application scenarios are starter prompts, not benchmark evidence. Use them to design domain-specific AANA experiments where each scenario names:

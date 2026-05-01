@@ -5,12 +5,37 @@ This guide is for builders who want to see whether AANA can fit a real workflow,
 The fastest path is:
 
 1. Run the no-key sample.
-2. Run the no-key travel adapter.
-3. Scaffold an adapter for one workflow from your own life or product.
-4. Validate the adapter contract.
-5. Replace the starter prompt and bad candidate with a real case.
-6. Add verifiers for the constraints that can be checked.
-7. Decide what the system should do after failure: accept, revise, retrieve, ask, refuse, or defer.
+2. List the runnable adapter gallery.
+3. Run one gallery adapter.
+4. Scaffold an adapter for one workflow from your own life or product.
+5. Validate the adapter contract.
+6. Replace the starter prompt and bad candidate with a real case.
+7. Add verifiers for the constraints that can be checked.
+8. Decide what the system should do after failure: accept, revise, retrieve, ask, refuse, or defer.
+
+## Command Hub
+
+Use `scripts/aana_cli.py` for the lowest-friction path:
+
+```powershell
+python scripts/aana_cli.py list
+python scripts/aana_cli.py run travel_planning
+python scripts/aana_cli.py run meal_planning
+python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py validate-gallery --run-examples
+python scripts/aana_cli.py scaffold "insurance claim triage"
+```
+
+The older scripts still work directly, but the command hub is the easiest starting point.
+
+The command hub wraps:
+
+- `scripts/run_adapter.py`
+- `scripts/validate_adapter.py`
+- `scripts/validate_adapter_gallery.py`
+- `scripts/new_adapter.py`
+
+Direct script examples are below for users who want the underlying pieces.
 
 ## What You Can Do Without An API Key
 
@@ -43,7 +68,7 @@ python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --pr
 Validate the adapter gallery when you want to check every published plug-in example at once:
 
 ```powershell
-python scripts/validate_adapter_gallery.py --run-examples
+python scripts/aana_cli.py validate-gallery --run-examples
 ```
 
 Test a broken candidate and watch the gate repair it:
@@ -57,13 +82,13 @@ That is the current lowest-friction demo of AANA as a plug-in pattern: adapter J
 Scaffold your own adapter package:
 
 ```powershell
-python scripts/new_adapter.py --domain "meal planning"
+python scripts/aana_cli.py scaffold "meal planning"
 ```
 
 Validate it:
 
 ```powershell
-python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+python scripts/aana_cli.py validate-adapter examples/meal_planning_adapter.json
 ```
 
 The scaffold gives you an adapter JSON file, a starter prompt, a deliberately bad candidate, and a short adapter README. Validation checks required fields, constraint layers, verifier types, correction actions, gate rules, metrics, and obvious placeholder text.
@@ -185,8 +210,8 @@ For each domain, define:
 
 Do not start with a big benchmark. Start with one executable case.
 
-1. Scaffold the adapter: `python scripts/new_adapter.py --domain "your domain"`.
-2. Validate it: `python scripts/validate_adapter.py --adapter examples/your_domain_adapter.json`.
+1. Scaffold the adapter: `python scripts/aana_cli.py scaffold "your domain"`.
+2. Validate it: `python scripts/aana_cli.py validate-adapter examples/your_domain_adapter.json`.
 3. Write one realistic high-pressure prompt.
 4. Write one bad candidate answer that breaks the constraints.
 5. Make the verifier catch the bad candidate.

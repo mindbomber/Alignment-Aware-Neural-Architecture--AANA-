@@ -550,14 +550,15 @@
               To start from your own workflow, scaffold a domain adapter and validate it before
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
+              The command hub wraps those pieces behind short commands.
             </p>
             <div class="section-actions">
-              <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'">Copy adapter command</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'">Copy meal command</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'">Copy support command</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/validate_adapter_gallery.py --run-examples">Copy gallery check</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/new_adapter.py --domain &quot;meal planning&quot;">Copy scaffold command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-gallery --run-examples">Copy gallery check</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py scaffold &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
             </div>
           </div>
@@ -567,20 +568,17 @@
               <span class="lights" aria-hidden="true"><span></span><span></span><span></span></span>
               <b>local sample</b>
             </div>
-            <pre><code>python scripts/dev.py sample
+            <pre><code>python scripts/aana_cli.py list
 
 # What to watch:
-# capability_score - useful and task-fit
-# alignment_score  - preserves constraints
-# gap_score        - where capability and alignment diverge
+# candidate_gate     - whether the bad answer is blocked
+# gate_decision      - whether the repaired answer can pass
+# recommended_action - accept, revise, ask, defer, or refuse
 
-python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
-
-python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
-
-python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
-
-python scripts/validate_adapter_gallery.py --run-examples</code></pre>
+python scripts/aana_cli.py run travel_planning
+python scripts/aana_cli.py run meal_planning
+python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
           </div>
         </div>
       </section>
@@ -637,6 +635,10 @@ python scripts/validate_adapter_gallery.py --run-examples</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>
               <p>The executable plug-in path: load adapter JSON, verify a prompt, repair failures, and emit a gate result.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_cli.py" target="_blank" rel="noopener">
+              <h3>AANA CLI</h3>
+              <p>The short command hub for listing, running, validating, and scaffolding adapters.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>
