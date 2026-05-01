@@ -66,7 +66,7 @@ Run the executable agent-event pack:
 python scripts/aana_cli.py run-agent-examples
 ```
 
-The pack lives in [`examples/agent_events/`](../examples/agent_events/) and currently covers support replies, travel booking/planning, and meal planning.
+The pack lives in [`examples/agent_events/`](../examples/agent_events/) and currently covers support replies, travel booking/planning, meal planning, and research summaries.
 
 Scaffold a new event from a gallery adapter:
 
@@ -109,7 +109,7 @@ python scripts/aana_cli.py policy-presets
 python scripts/aana_cli.py policy-presets --json
 ```
 
-Included presets cover message sending, file writes, code commits, support replies, bookings or purchases, and private-data use.
+Included presets cover message sending, file writes, code commits, support replies, research summaries, bookings or purchases, and private-data use.
 
 ## Local HTTP Bridge
 
@@ -236,6 +236,7 @@ Current runnable adapters:
 - `travel_planning`: budget, transport, lunch, ticket caps.
 - `meal_planning`: grocery budget, dietary exclusions, day coverage.
 - `support_reply`: verified account facts, private data minimization, secure routing.
+- `research_summary`: allowed sources, citation boundaries, supported claims, uncertainty labels.
 
 For a new agent workflow:
 

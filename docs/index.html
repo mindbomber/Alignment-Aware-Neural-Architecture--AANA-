@@ -537,8 +537,8 @@
               and gap signals before running larger model experiments.
             </p>
             <p>
-              Three adapters are ready to run: travel planning, meal planning, and privacy-safe
-              support replies. They show the same pattern across different workflows: name the hard
+              Four adapters are ready to run: travel planning, meal planning, privacy-safe
+              support replies, and grounded research summaries. They show the same pattern across different workflows: name the hard
               constraints, check the answer, repair what can be repaired, and only pass the result
               after the gate is clean.
             </p>
@@ -562,6 +562,7 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run research_summary">Copy research command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run-agent-examples">Copy agent examples</button>
@@ -591,6 +592,7 @@
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py run-agent-examples
@@ -640,6 +642,10 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Application Playbook</h3>
               <p>How to move AANA from lab evidence into travel, meals, research, privacy, workflow, and feasibility checks.</p>
             </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/productive-workflows.md" target="_blank" rel="noopener">
+              <h3>Productive Workflows</h3>
+              <p>How to apply AANA to research, analysis, writing, and knowledge-work outputs.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/domain-adapter-template.md" target="_blank" rel="noopener">
               <h3>Domain Adapter Template</h3>
               <p>The plug-in contract: constraints, verifiers, grounding, correction actions, gate rules, and metrics.</p>
@@ -662,7 +668,7 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/agent_events" target="_blank" rel="noopener">
               <h3>Agent Event Examples</h3>
-              <p>Executable support, travel, and meal-planning events that agents can validate and run before acting.</p>
+              <p>Executable support, travel, meal-planning, and research-summary events that agents can validate and run before acting.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_server.py" target="_blank" rel="noopener">
               <h3>Local HTTP Bridge</h3>
@@ -683,6 +689,10 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/support_reply_adapter.json" target="_blank" rel="noopener">
               <h3>Support Reply Adapter JSON</h3>
               <p>A third executable adapter for verified account facts, private data minimization, and secure routing.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/research_summary_adapter.json" target="_blank" rel="noopener">
+              <h3>Research Summary Adapter JSON</h3>
+              <p>An executable knowledge-work adapter for allowed sources, citation boundaries, supported claims, and uncertainty labels.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>

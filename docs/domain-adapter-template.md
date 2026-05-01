@@ -89,6 +89,7 @@ Machine-readable starter files:
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
 - [`examples/meal_planning_adapter.json`](../examples/meal_planning_adapter.json)
 - [`examples/support_reply_adapter.json`](../examples/support_reply_adapter.json)
+- [`examples/research_summary_adapter.json`](../examples/research_summary_adapter.json)
 
 You can also generate a starter adapter package:
 
@@ -99,7 +100,7 @@ python scripts/aana_cli.py validate-adapter examples/meal_planning_adapter.json
 
 ## Run Executable Adapters
 
-The travel, meal-planning, and support-reply adapters are executable. They use checked-in deterministic verifier and repair paths, so they can be tested without an API key.
+The travel, meal-planning, support-reply, and research-summary adapters are executable. They use checked-in deterministic verifier and repair paths, so they can be tested without an API key.
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
@@ -111,6 +112,10 @@ python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --pr
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
+```
+
+```powershell
+python scripts/run_adapter.py --adapter examples/research_summary_adapter.json --prompt 'Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.' --candidate 'AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.'
 ```
 
 To test the gate, pass a candidate answer that violates the constraints:

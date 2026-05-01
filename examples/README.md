@@ -10,8 +10,9 @@ These files show the input and output shapes without requiring live API calls.
 - `travel_adapter.json` is a filled executable adapter for budgeted travel planning.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 - `support_reply_adapter.json` is a filled executable adapter for privacy-safe customer-support replies.
+- `research_summary_adapter.json` is a filled executable adapter for grounded research and knowledge-work summaries.
 - `agent_event_support_reply.json` is a machine-readable event an agent can pass to AANA before sending a support reply.
-- `agent_events/` contains executable agent-event examples for support replies, travel booking/planning, and meal planning.
+- `agent_events/` contains executable agent-event examples for support replies, travel booking/planning, meal planning, and research summaries.
 - `agent_api_usage.py` shows the same event check through the Python API instead of the CLI.
 
 Use the command hub first:
@@ -21,6 +22,7 @@ python scripts/aana_cli.py list
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
@@ -54,6 +56,10 @@ python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --pr
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
+```
+
+```powershell
+python scripts/run_adapter.py --adapter examples/research_summary_adapter.json --prompt 'Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.' --candidate 'AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.'
 ```
 
 Try a bad candidate to see the gate block and repair it:

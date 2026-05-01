@@ -8,6 +8,7 @@ RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
 TRAVEL_ADAPTER = ROOT / "examples" / "travel_adapter.json"
 MEAL_ADAPTER = ROOT / "examples" / "meal_planning_adapter.json"
 SUPPORT_ADAPTER = ROOT / "examples" / "support_reply_adapter.json"
+RESEARCH_ADAPTER = ROOT / "examples" / "research_summary_adapter.json"
 
 spec = importlib.util.spec_from_file_location("run_adapter", RUNNER_PATH)
 run_adapter_module = importlib.util.module_from_spec(spec)
@@ -125,6 +126,28 @@ class RunAdapterTests(unittest.TestCase):
         self.assertEqual(result["candidate_gate"], "block")
         self.assertEqual(result["gate_decision"], "pass")
         self.assertEqual(result["recommended_action"], "revise")
+        self.assertGreater(len(result["candidate_tool_report"]["violations"]), 0)
+        self.assertFalse(result["tool_report"]["violations"])
+
+    def test_research_adapter_blocks_invented_sources_and_repairs(self):
+        adapter = run_adapter_module.load_adapter(RESEARCH_ADAPTER)
+        prompt = (
+            "Write a concise research brief about whether AANA-style verifier loops help "
+            "knowledge workers produce more reliable summaries. Use only Source A and Source B. "
+            "Do not invent citations. Label uncertainty where evidence is incomplete."
+        )
+        candidate = (
+            "AANA verifier loops are proven to improve productivity by 40% for all teams "
+            "[Source C]. Wikipedia and unnamed experts say this is guaranteed."
+        )
+
+        result = run_adapter_module.run_adapter(adapter, prompt, candidate)
+
+        self.assertEqual(result["adapter"]["name"], "research_summary_aana_adapter")
+        self.assertEqual(result["candidate_gate"], "block")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "revise")
+        self.assertIn("Grounded research summary", result["final_answer"])
         self.assertGreater(len(result["candidate_tool_report"]["violations"]), 0)
         self.assertFalse(result["tool_report"]["violations"])
 

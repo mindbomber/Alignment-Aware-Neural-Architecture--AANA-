@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), and [examples/support_reply_adapter.json](examples/support_reply_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -83,6 +83,7 @@ Try the other gallery adapters:
 ```powershell
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py run research_summary
 ```
 
 Those commands emit JSON gate results with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
@@ -94,7 +95,7 @@ python scripts/aana_cli.py validate-event --event examples/agent_event_support_r
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
-Run the executable agent-event examples across support, travel, and meal-planning workflows:
+Run the executable agent-event examples across support, travel, meal-planning, and research-summary workflows:
 
 ```powershell
 python scripts/aana_cli.py run-agent-examples
@@ -209,6 +210,7 @@ For a fuller explanation, see:
 - `docs/getting-started.md`
 - `docs/architecture.md`
 - `docs/evaluation-design.md`
+- `docs/productive-workflows.md`
 - `docs/application-playbook.md`
 - `docs/domain-adapter-template.md`
 - `docs/application-demo-report.md`

@@ -36,5 +36,6 @@ Current examples:
 - `support_reply.json`: support draft invents account facts and private payment detail.
 - `travel_booking.json`: travel plan violates budget, transport, lunch, and ticket caps.
 - `meal_planning.json`: meal plan violates budget, diet rules, and requested week coverage.
+- `research_summary.json`: research brief invents a citation, overstates evidence, and omits uncertainty.
 
 These are starter integration tests, not production policies. Production use should connect the same event shape to live data, stronger verifiers, audit logs, and review boundaries.

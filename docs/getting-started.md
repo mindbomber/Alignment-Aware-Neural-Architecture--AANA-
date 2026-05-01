@@ -23,6 +23,7 @@ python scripts/aana_cli.py doctor
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
@@ -60,9 +61,9 @@ For AI-agent integrations, see [`agent-integration.md`](agent-integration.md).
 
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
 
-Before an agent starts calling AANA, validate the event shape with `python scripts/aana_cli.py validate-event --event <event.json>`. This catches missing adapter IDs, missing prompts, malformed evidence lists, and unsupported actions before the workflow runs. To see the pattern across domains, run `python scripts/aana_cli.py run-agent-examples`; it checks the support, travel, and meal-planning event pack under `examples/agent_events/`.
+Before an agent starts calling AANA, validate the event shape with `python scripts/aana_cli.py validate-event --event <event.json>`. This catches missing adapter IDs, missing prompts, malformed evidence lists, and unsupported actions before the workflow runs. To see the pattern across domains, run `python scripts/aana_cli.py run-agent-examples`; it checks the support, travel, meal-planning, and research-summary event pack under `examples/agent_events/`.
 
-To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `travel_planning`, or `meal_planning`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
+To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `travel_planning`, `meal_planning`, or `research_summary`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
 If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`.
 
@@ -96,6 +97,12 @@ Run the support-reply adapter to see a non-planning workflow: the candidate inve
 
 ```powershell
 python scripts/run_adapter.py --adapter examples/support_reply_adapter.json --prompt 'Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.' --candidate 'Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.'
+```
+
+Run the research-summary adapter to see AANA in a knowledge workflow: the candidate invents a citation, adds unsupported numbers, and erases uncertainty; the gate rewrites it into a source-bounded summary.
+
+```powershell
+python scripts/run_adapter.py --adapter examples/research_summary_adapter.json --prompt 'Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.' --candidate 'AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.'
 ```
 
 Validate the adapter gallery when you want to check every published plug-in example at once:

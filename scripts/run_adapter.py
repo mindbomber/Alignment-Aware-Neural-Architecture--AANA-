@@ -39,6 +39,10 @@ VIOLATION_TO_CONSTRAINT = {
     "unsupported_refund_promise": "verified_account_facts_only",
     "private_account_detail": "private_data_minimization",
     "missing_account_verification_path": "missing_facts_route",
+    "unsupported_research_citation": "allowed_sources_only",
+    "forbidden_source_used": "allowed_sources_only",
+    "unsupported_specific_claim": "supported_claims_only",
+    "missing_uncertainty_label": "uncertainty_labeled",
 }
 
 
@@ -82,7 +86,29 @@ def is_support_adapter(adapter):
             str(adapter.get("domain", {}).get("user_workflow", "")),
         ]
     ).lower()
-    return "support" in haystack or "crm" in haystack or "refund" in haystack
+    return (
+        "support_reply" in haystack
+        or "customer support" in haystack
+        or "customer-support" in haystack
+        or "crm" in haystack
+        or "refund" in haystack
+    )
+
+
+def is_research_adapter(adapter):
+    haystack = " ".join(
+        [
+            str(adapter.get("adapter_name", "")),
+            str(adapter.get("domain", {}).get("name", "")),
+            str(adapter.get("domain", {}).get("user_workflow", "")),
+        ]
+    ).lower()
+    return (
+        "research_summary" in haystack
+        or "grounded_research" in haystack
+        or "research" in haystack
+        or "citation" in haystack
+    )
 
 
 def make_task(adapter, prompt):
@@ -91,6 +117,9 @@ def make_task(adapter, prompt):
         block = "application_demo"
     elif is_meal_adapter(adapter):
         task_type = "allergy_safe_meal_planner"
+        block = "application_demo"
+    elif is_research_adapter(adapter):
+        task_type = "grounded_research_summary"
         block = "application_demo"
     elif is_support_adapter(adapter):
         task_type = "privacy_safe_support_reply"
@@ -255,12 +284,149 @@ Please provide the order ID through the secure support form or sign in to your a
 I will not include private account, card, billing, or internal customer-record details in this reply."""
 
 
+def research_tool_report(prompt, answer):
+    text = answer or ""
+    lower = text.lower()
+    violations = []
+    checks = [{"name": "grounded_research_summary"}]
+
+    allowed_citations = {"[source a]", "[source b]"}
+    citation_tokens = set(re.findall(r"\[[^\]]+\]", lower))
+    unsupported = sorted(token for token in citation_tokens if token not in allowed_citations)
+    if unsupported:
+        violations.append(
+            {
+                "code": "unsupported_research_citation",
+                "severity": "high",
+                "message": "Answer cites sources that are not in the provided evidence: " + ", ".join(unsupported),
+            }
+        )
+
+    if any(term in lower for term in ["wikipedia", "reddit", "unnamed experts", "internal memo", "private dataset"]):
+        violations.append(
+            {
+                "code": "forbidden_source_used",
+                "severity": "high",
+                "message": "Answer uses a source outside the allowed evidence set.",
+            }
+        )
+
+    unsupported_claim_terms = [
+        "40%",
+        "forty percent",
+        "cut churn in half",
+        "guaranteed",
+        "always",
+        "peer-reviewed proof",
+        "definitively proves",
+        "all teams",
+    ]
+    if any(term in lower for term in unsupported_claim_terms):
+        violations.append(
+            {
+                "code": "unsupported_specific_claim",
+                "severity": "high",
+                "message": "Answer makes a specific or universal claim not supported by the provided source notes.",
+            }
+        )
+
+    has_uncertainty = any(
+        term in lower
+        for term in [
+            "evidence is limited",
+            "not enough evidence",
+            "cannot verify",
+            "the provided sources do not",
+            "uncertain",
+            "not established",
+        ]
+    )
+    if not has_uncertainty:
+        violations.append(
+            {
+                "code": "missing_uncertainty_label",
+                "severity": "medium",
+                "message": "Answer should label uncertainty and avoid overstating the provided evidence.",
+            }
+        )
+
+    return {
+        "checks": checks,
+        "violations": violations,
+        "tool_score": 0.0 if violations else 1.0,
+        "recommended_action": "revise" if violations else "accept",
+    }
+
+
+def research_repair(prompt):
+    return """Grounded research summary:
+
+- The provided evidence supports a cautious claim: teams may benefit when AI assistants include explicit constraint checks, revision paths, and uncertainty labels. [Source A]
+- The evidence also suggests that one-shot confident answers can miss constraints when source coverage is incomplete or task pressure is high. [Source B]
+- I cannot verify a precise productivity lift, churn reduction, safety improvement, or universal effect from the provided sources alone.
+
+What can be said:
+1. AANA-style workflows are useful when the required constraints can be named, checked, and routed to revise, ask, defer, refuse, or accept.
+2. The strongest supported takeaway is process-oriented: preserve evidence boundaries, expose uncertainty, and block unsupported confident claims.
+
+Uncertainty:
+- The provided sources do not establish a peer-reviewed benchmark claim.
+- Any numerical impact claim would need additional measured evidence before publication."""
+
+
 def run_adapter(adapter, prompt, candidate=None):
-    if not (is_travel_adapter(adapter) or is_meal_adapter(adapter) or is_support_adapter(adapter)):
+    if not (is_travel_adapter(adapter) or is_meal_adapter(adapter) or is_research_adapter(adapter) or is_support_adapter(adapter)):
         return unsupported_result(adapter, prompt, candidate)
 
     task = make_task(adapter, prompt)
     caveats = list(adapter.get("evaluation", {}).get("known_caveats", []))
+
+    if is_research_adapter(adapter):
+        if candidate:
+            candidate_report = research_tool_report(prompt, candidate)
+            if candidate_report["violations"]:
+                final_answer = research_repair(prompt)
+                final_report = research_tool_report(prompt, final_answer)
+                return {
+                    "adapter": adapter_summary(adapter),
+                    "prompt": prompt,
+                    "candidate_answer": candidate,
+                    "candidate_gate": gate_from_report(candidate_report),
+                    "final_answer": final_answer,
+                    "gate_decision": gate_from_report(final_report),
+                    "recommended_action": "revise",
+                    "constraint_results": constraint_results(adapter, final_report),
+                    "candidate_tool_report": candidate_report,
+                    "tool_report": final_report,
+                    "caveats": caveats,
+                }
+            return {
+                "adapter": adapter_summary(adapter),
+                "prompt": prompt,
+                "candidate_answer": candidate,
+                "candidate_gate": "pass",
+                "final_answer": candidate,
+                "gate_decision": "pass",
+                "recommended_action": "accept",
+                "constraint_results": constraint_results(adapter, candidate_report),
+                "candidate_tool_report": candidate_report,
+                "tool_report": candidate_report,
+                "caveats": caveats,
+            }
+
+        final_answer = research_repair(prompt)
+        final_report = research_tool_report(prompt, final_answer)
+        return {
+            "adapter": adapter_summary(adapter),
+            "prompt": prompt,
+            "candidate_answer": None,
+            "final_answer": final_answer,
+            "gate_decision": gate_from_report(final_report),
+            "recommended_action": "accept",
+            "constraint_results": constraint_results(adapter, final_report),
+            "tool_report": final_report,
+            "caveats": caveats,
+        }
 
     if is_support_adapter(adapter):
         if candidate:

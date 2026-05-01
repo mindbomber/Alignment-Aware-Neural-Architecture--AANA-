@@ -33,6 +33,7 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("travel_planning", output)
         self.assertIn("meal_planning", output)
         self.assertIn("support_reply", output)
+        self.assertIn("research_summary", output)
 
     def test_doctor_reports_platform_readiness(self):
         code, output = self.run_cli(["doctor"])
@@ -55,6 +56,15 @@ class AanaCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn('"gate_decision": "pass"', output)
         self.assertIn('"recommended_action": "revise"', output)
+
+    def test_run_research_summary_adapter(self):
+        code, output = self.run_cli(["run", "research_summary"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"candidate_gate": "block"', output)
+        self.assertIn('"gate_decision": "pass"', output)
+        self.assertIn('"recommended_action": "revise"', output)
+        self.assertIn("Grounded research summary", output)
 
     def test_validate_gallery_runs_examples(self):
         code, output = self.run_cli(["validate-gallery", "--run-examples"])
@@ -102,6 +112,7 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("message_send", output)
         self.assertIn("code_commit", output)
         self.assertIn("private_data_use", output)
+        self.assertIn("research_summary", output)
 
     def test_validate_event_accepts_support_event(self):
         code, output = self.run_cli(["validate-event", "--event", "examples/agent_event_support_reply.json"])
@@ -123,6 +134,7 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("demo-support-refund-001", output)
         self.assertIn("demo-travel-booking-001", output)
         self.assertIn("demo-meal-planning-001", output)
+        self.assertIn("demo-research-summary-001", output)
 
     def test_scaffold_agent_event_creates_event(self):
         with tempfile.TemporaryDirectory() as tmp:

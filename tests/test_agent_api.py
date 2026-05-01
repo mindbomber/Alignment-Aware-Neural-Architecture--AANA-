@@ -29,6 +29,7 @@ class AgentApiTests(unittest.TestCase):
         self.assertIn("file_write", presets)
         self.assertIn("code_commit", presets)
         self.assertIn("support_reply", presets)
+        self.assertIn("research_summary", presets)
         self.assertIn("private_data_use", presets)
 
     def test_validate_event_reports_missing_adapter(self):
@@ -47,6 +48,19 @@ class AgentApiTests(unittest.TestCase):
         self.assertIn("demo-support-refund-001", event_ids)
         self.assertIn("demo-travel-booking-001", event_ids)
         self.assertIn("demo-meal-planning-001", event_ids)
+        self.assertIn("demo-research-summary-001", event_ids)
+
+    def test_check_research_event_returns_grounded_revision(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_events" / "research_summary.json")
+
+        result = agent_api.check_event(event)
+
+        self.assertEqual(result["adapter_id"], "research_summary")
+        self.assertEqual(result["candidate_gate"], "block")
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "revise")
+        self.assertTrue(result["violations"])
+        self.assertIn("Grounded research summary", result["safe_response"])
 
     def test_scaffold_agent_event_from_gallery(self):
         with tempfile.TemporaryDirectory() as tmp:

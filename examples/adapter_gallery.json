@@ -90,6 +90,35 @@
         "Uses string-based checks and no real customer records.",
         "Production use needs authenticated support systems, policy records, audit logs, and privacy review."
       ]
+    },
+    {
+      "id": "research_summary",
+      "title": "Grounded Research Summary",
+      "status": "executable",
+      "adapter_path": "examples/research_summary_adapter.json",
+      "workflow": "Draft a research brief while preserving allowed sources, citation boundaries, supported claims, and uncertainty labels.",
+      "best_for": [
+        "research briefs",
+        "knowledge-work summaries",
+        "citation-grounded analysis with incomplete evidence"
+      ],
+      "prompt": "Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.",
+      "bad_candidate": "AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.",
+      "expected": {
+        "candidate_gate": "block",
+        "gate_decision": "pass",
+        "recommended_action": "revise",
+        "failing_constraints": [
+          "allowed_sources_only",
+          "supported_claims_only",
+          "uncertainty_labeled"
+        ]
+      },
+      "copy_command": "python scripts/run_adapter.py --adapter examples/research_summary_adapter.json --prompt 'Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.' --candidate 'AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.'",
+      "caveats": [
+        "Uses string-based checks and fixed source labels.",
+        "Production use needs citation parsing, retrieval, source provenance, and stronger factual verification."
+      ]
     }
   ]
 }

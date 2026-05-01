@@ -57,6 +57,12 @@ POLICY_PRESETS = {
         "call_before": ["read_private_data", "share_private_data", "summarize_account"],
         "watch_for": ["data minimization", "verified need", "secure routing", "missing consent"],
     },
+    "research_summary": {
+        "description": "Use before an agent publishes or shares a research summary, brief, synthesis, or cited answer.",
+        "recommended_adapters": ["research_summary"],
+        "call_before": ["draft_research_summary", "publish_brief", "answer_with_citations"],
+        "watch_for": ["invented citations", "unsupported claims", "forbidden sources", "missing uncertainty"],
+    },
 }
 
 

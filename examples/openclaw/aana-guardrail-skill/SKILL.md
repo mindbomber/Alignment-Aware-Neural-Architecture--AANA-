@@ -11,7 +11,7 @@ Call AANA before:
 - making refund, eligibility, booking, purchase, or policy promises,
 - editing, deleting, moving, or publishing user files,
 - committing or publishing code,
-- answering from incomplete evidence,
+- answering from incomplete evidence, citations, or source notes,
 - doing anything the user cannot easily undo.
 
 ## Command
@@ -50,6 +50,7 @@ python scripts/aana_cli.py agent-check --event path/to/agent_event.json
 - Customer support, refunds, private account details: `support_reply`
 - Travel or booking plans: `travel_planning`
 - Food, grocery, allergy, dietary plans: `meal_planning`
+- Research briefs, cited summaries, knowledge synthesis: `research_summary`
 
 If no adapter fits, scaffold one:
 

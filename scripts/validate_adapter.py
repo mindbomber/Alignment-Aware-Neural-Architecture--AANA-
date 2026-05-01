@@ -183,13 +183,14 @@ def validate_adapter(adapter):
         ("travel_planner_aana_adapter", "budgeted_travel_planning"),
         ("meal_planning_aana_adapter", "budgeted_allergy_safe_meal_planning"),
         ("support_reply_aana_adapter", "privacy_safe_customer_support"),
+        ("research_summary_aana_adapter", "grounded_research_summary"),
     }
     if (adapter_name, domain_name) not in executable_adapters:
         add_issue(
             issues,
             "warning",
             "runner",
-            "This adapter can be validated, but scripts/run_adapter.py only has deterministic execution for the checked-in travel, meal-planning, and support-reply adapters today.",
+            "This adapter can be validated, but scripts/run_adapter.py only has deterministic execution for the checked-in travel, meal-planning, support-reply, and research-summary adapters today.",
         )
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
