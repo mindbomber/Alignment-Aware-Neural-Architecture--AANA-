@@ -86,10 +86,17 @@ Agents that work best with HTTP tools can run AANA as a local bridge:
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
+If the package is installed locally, the same bridge is available as:
+
+```powershell
+aana-server --host 127.0.0.1 --port 8765
+```
+
 Available routes:
 
 - `GET /health`
 - `GET /policy-presets`
+- `GET /openapi.json`
 - `POST /agent-check`
 
 PowerShell example:
@@ -100,6 +107,12 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $eve
 ```
 
 This is the easiest integration path for agent frameworks that expose local tools, webhooks, or HTTP request actions. Keep the bridge bound to `127.0.0.1` unless you have a real deployment boundary, authentication, logging, and network controls.
+
+The OpenAPI route is useful for tools that can import an HTTP contract:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8765/openapi.json
+```
 
 ## Integration Patterns
 
@@ -136,6 +149,12 @@ Body: the AANA agent event
 ```
 
 The response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `violations`, `safe_response`, and the full adapter result.
+
+For tools that ingest OpenAPI, point them at:
+
+```text
+http://127.0.0.1:8765/openapi.json
+```
 
 ## OpenClaw-Style Setup
 

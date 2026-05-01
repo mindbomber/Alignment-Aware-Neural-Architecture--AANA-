@@ -44,6 +44,8 @@ If your agent can call Python directly, use `eval_pipeline.agent_api.check_event
 
 If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py` and POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
 
+The bridge also exposes `http://127.0.0.1:8765/openapi.json` for tools that can import a machine-readable HTTP contract. After `python -m pip install -e .`, you can start it with `aana-server`.
+
 Direct script examples are below for users who want the underlying pieces.
 
 ## What You Can Do Without An API Key

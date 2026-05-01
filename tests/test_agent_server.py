@@ -22,6 +22,14 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("message_send", payload["policy_presets"])
 
+    def test_openapi_route_documents_agent_check(self):
+        status, payload = agent_server.route_request("GET", "/openapi.json")
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["openapi"], "3.1.0")
+        self.assertIn("/agent-check", payload["paths"])
+        self.assertIn("AgentEvent", payload["components"]["schemas"])
+
     def test_agent_check_route(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
 

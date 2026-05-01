@@ -27,6 +27,8 @@ python examples/agent_api_usage.py
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
+When the HTTP bridge is running, tools can discover its contract at `http://127.0.0.1:8765/openapi.json`.
+
 Try the scoring script:
 
 ```powershell

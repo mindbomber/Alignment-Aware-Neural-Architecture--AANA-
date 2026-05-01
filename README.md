@@ -108,6 +108,8 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765
 
 Then POST the same event JSON to `http://127.0.0.1:8765/agent-check`.
 
+The bridge also exposes `http://127.0.0.1:8765/openapi.json` for tools that can import an HTTP contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
+
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 
 Create and validate a starter adapter for your own domain:
