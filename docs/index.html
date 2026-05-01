@@ -547,12 +547,14 @@
             </p>
             <p>
               To start from your own workflow, scaffold a domain adapter and validate it before
-              adding verifier logic.
+              adding verifier logic. The adapter gallery keeps published examples honest by pairing
+              each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'">Copy adapter command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'">Copy meal command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/validate_adapter_gallery.py --run-examples">Copy gallery check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/new_adapter.py --domain &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
             </div>
@@ -572,7 +574,9 @@
 
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'
 
-python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'</code></pre>
+python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
+
+python scripts/validate_adapter_gallery.py --run-examples</code></pre>
           </div>
         </div>
       </section>
@@ -609,6 +613,10 @@ python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --pr
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/domain-adapter-template.md" target="_blank" rel="noopener">
               <h3>Domain Adapter Template</h3>
               <p>The plug-in contract: constraints, verifiers, grounding, correction actions, gate rules, and metrics.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/adapter-gallery.md" target="_blank" rel="noopener">
+              <h3>Adapter Gallery</h3>
+              <p>A runnable catalog of domains, prompts, bad candidates, expected gates, and caveats.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/travel_adapter.json" target="_blank" rel="noopener">
               <h3>Travel Adapter JSON</h3>

@@ -34,10 +34,16 @@ Then run the meal-planning adapter. This shows the same gate-and-repair pattern 
 python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'
 ```
 
+Validate the adapter gallery when you want to check every published plug-in example at once:
+
+```powershell
+python scripts/validate_adapter_gallery.py --run-examples
+```
+
 Test a broken candidate and watch the gate repair it:
 
 ```powershell
-python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, buy a $40 ticket, and spend $150 total.'
 ```
 
 That is the current lowest-friction demo of AANA as a plug-in pattern: adapter JSON, deterministic checks, correction action, and a final gate result.

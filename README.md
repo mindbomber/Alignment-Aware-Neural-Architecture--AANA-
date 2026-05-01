@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json) and [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), both runnable through [scripts/run_adapter.py](scripts/run_adapter.py). Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json) and [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), both runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -87,6 +87,12 @@ python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
 ```
 
 The scaffold writes an adapter JSON file, starter prompt, bad candidate, and short adapter README so users can turn one workflow into an AANA test case without starting from a blank page.
+
+Validate the adapter gallery and its expected gate behavior:
+
+```powershell
+python scripts/validate_adapter_gallery.py --run-examples
+```
 
 Latest evidence package: [Constraint-Reasoning AANA Evidence Package v0.1](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1).
 

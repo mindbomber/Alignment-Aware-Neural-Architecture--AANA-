@@ -1,0 +1,66 @@
+{
+  "version": "0.1",
+  "description": "Runnable AANA adapter examples that show how one domain workflow maps into constraints, verifiers, correction actions, and gate results.",
+  "adapters": [
+    {
+      "id": "travel_planning",
+      "title": "Budgeted Travel Planning",
+      "status": "executable",
+      "adapter_path": "examples/travel_adapter.json",
+      "workflow": "Plan an outing while preserving budget, transport, lunch, day-count, and destination constraints.",
+      "best_for": [
+        "itineraries",
+        "budgeted outings",
+        "plans with forbidden transport or required inclusions"
+      ],
+      "prompt": "Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.",
+      "bad_candidate": "Use rideshare, buy a $40 ticket, and spend $150 total.",
+      "expected": {
+        "candidate_gate": "block",
+        "gate_decision": "pass",
+        "recommended_action": "revise",
+        "failing_constraints": [
+          "total_budget_cap",
+          "paid_ticket_cap",
+          "public_transit_only",
+          "required_lunch"
+        ]
+      },
+      "copy_command": "python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, buy a $40 ticket, and spend $150 total.'",
+      "caveats": [
+        "Uses conservative placeholder costs.",
+        "Production use needs live prices, hours, route feasibility, and accessibility data."
+      ]
+    },
+    {
+      "id": "meal_planning",
+      "title": "Budgeted Allergy-Safe Meal Planning",
+      "status": "executable",
+      "adapter_path": "examples/meal_planning_adapter.json",
+      "workflow": "Create a meal plan while preserving grocery budget, dietary exclusions, diet requirements, and requested day coverage.",
+      "best_for": [
+        "grocery planning",
+        "dietary exclusions",
+        "weekly meal plans with explicit budget accounting"
+      ],
+      "prompt": "Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.",
+      "bad_candidate": "Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.",
+      "expected": {
+        "candidate_gate": "block",
+        "gate_decision": "pass",
+        "recommended_action": "revise",
+        "failing_constraints": [
+          "grocery_budget_cap",
+          "dietary_exclusions",
+          "dietary_requirements",
+          "requested_day_coverage"
+        ]
+      },
+      "copy_command": "python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --prompt 'Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.' --candidate 'Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.'",
+      "caveats": [
+        "Uses conservative placeholder grocery costs.",
+        "Production use needs current prices, package labels, availability, and user-specific allergy guidance."
+      ]
+    }
+  ]
+}

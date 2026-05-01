@@ -6,6 +6,7 @@ These files show the input and output shapes without requiring live API calls.
 - `sample_raw_outputs.jsonl` contains matching model-output-style rows that can be scored locally.
 - `application_scenarios.jsonl` contains six everyday AANA scenario prompts: budgeted travel, allergy-safe meal planning, grounded research, privacy abstention, workflow readiness, and math/feasibility.
 - `domain_adapter_template.json` is a blank machine-readable adapter contract for plugging AANA into a new domain.
+- `adapter_gallery.json` is the runnable catalog of adapter examples, prompts, bad candidates, expected gate behavior, and copy commands.
 - `travel_adapter.json` is a filled executable adapter for budgeted travel planning.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 
@@ -30,7 +31,13 @@ python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --pr
 Try a bad candidate to see the gate block and repair it:
 
 ```powershell
-python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, buy a $40 ticket, and spend $150 total.'
+```
+
+Validate every published gallery example:
+
+```powershell
+python scripts/validate_adapter_gallery.py --run-examples
 ```
 
 Create and validate a starter adapter package for a new domain:

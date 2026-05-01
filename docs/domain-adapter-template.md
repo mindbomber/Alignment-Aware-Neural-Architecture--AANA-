@@ -85,6 +85,7 @@ Evaluation:
 Machine-readable starter files:
 
 - [`examples/domain_adapter_template.json`](../examples/domain_adapter_template.json)
+- [`examples/adapter_gallery.json`](../examples/adapter_gallery.json)
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
 - [`examples/meal_planning_adapter.json`](../examples/meal_planning_adapter.json)
 
@@ -110,10 +111,20 @@ python scripts/run_adapter.py --adapter examples/meal_planning_adapter.json --pr
 To test the gate, pass a candidate answer that violates the constraints:
 
 ```powershell
-python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
+python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, buy a $40 ticket, and spend $150 total.'
 ```
 
 The JSON output shows the adapter name, prompt, candidate gate, final gate, recommended action, per-constraint results, deterministic tool report, repaired answer, and caveats.
+
+## Adapter Gallery
+
+The gallery is the repeatable publication pattern for new domains. Each entry names the adapter, prompt, bad candidate, expected gate behavior, expected failing constraints, copy command, and caveats.
+
+```powershell
+python scripts/validate_adapter_gallery.py --run-examples
+```
+
+Use it before sharing a new domain adapter. It prevents the docs from drifting away from the code path that actually runs.
 
 ## Worked Example: Travel Planning
 
