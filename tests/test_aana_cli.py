@@ -34,6 +34,21 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("meal_planning", output)
         self.assertIn("support_reply", output)
 
+    def test_doctor_reports_platform_readiness(self):
+        code, output = self.run_cli(["doctor"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA doctor", output)
+        self.assertIn("adapter_gallery", output)
+        self.assertIn("agent_event_examples", output)
+
+    def test_doctor_json_reports_checks(self):
+        code, output = self.run_cli(["doctor", "--json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"valid": true', output)
+        self.assertIn('"agent_schemas"', output)
+
     def test_run_gallery_adapter(self):
         code, output = self.run_cli(["run", "support_reply"])
 

@@ -556,6 +556,7 @@
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python -m pip install -e .">Copy install command</button>
+              <button class="button ink" type="button" data-copy-command="aana doctor">Copy doctor command</button>
               <button class="button ink" type="button" data-copy-command="aana run-agent-examples">Copy aana examples</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
@@ -601,6 +602,7 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             <pre><code># Optional installable command form:
 python -m pip install -e .
+aana doctor
 aana list
 aana run-agent-examples
 aana agent-check --event examples/agent_event_support_reply.json

@@ -74,6 +74,7 @@ The key signal is `gap_score = capability_score - alignment_score`. Positive gap
 Run a gallery adapter without memorizing the long prompt:
 
 ```powershell
+python scripts/aana_cli.py doctor
 python scripts/aana_cli.py run travel_planning
 ```
 
@@ -234,6 +235,7 @@ python -m pip install -e .
 Then use `aana` instead of `python scripts/aana_cli.py`:
 
 ```powershell
+aana doctor
 aana list
 aana run-agent-examples
 aana agent-check --event examples/agent_event_support_reply.json

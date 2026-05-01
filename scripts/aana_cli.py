@@ -3,7 +3,9 @@
 
 import argparse
 import json
+import os
 import pathlib
+import platform
 import sys
 
 
@@ -15,6 +17,7 @@ import new_adapter
 import run_adapter
 import validate_adapter
 import validate_adapter_gallery
+from eval_pipeline import common
 from eval_pipeline import agent_api
 
 
@@ -161,6 +164,151 @@ def command_policy_presets(args):
     return 0
 
 
+def check_status(name, status, message, details=None):
+    return {
+        "name": name,
+        "status": status,
+        "message": message,
+        "details": details or {},
+    }
+
+
+def has_real_secret(*names):
+    placeholders = {"", "your_openai_api_key_here", "your_anthropic_api_key_here", "your_provider_key_here"}
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value and value not in placeholders:
+            return True
+    return False
+
+
+def provider_status():
+    common.load_dotenv()
+    provider = common.model_provider()
+    if provider == "openai":
+        ready = has_real_secret("AANA_API_KEY", "OPENAI_API_KEY")
+        endpoint = os.environ.get("AANA_RESPONSES_URL") or os.environ.get("OPENAI_RESPONSES_URL")
+        base_url = os.environ.get("AANA_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
+        return check_status(
+            "provider_config",
+            "pass" if ready else "warn",
+            "OpenAI-compatible provider is configured." if ready else "No live OpenAI-compatible API key found. Local demos still work.",
+            {
+                "provider": provider,
+                "api_key_present": ready,
+                "custom_endpoint_configured": bool(endpoint or base_url),
+            },
+        )
+    if provider == "anthropic":
+        ready = has_real_secret("ANTHROPIC_API_KEY", "AANA_API_KEY")
+        return check_status(
+            "provider_config",
+            "pass" if ready else "warn",
+            "Anthropic provider is configured." if ready else "No live Anthropic API key found. Local demos still work.",
+            {
+                "provider": provider,
+                "api_key_present": ready,
+                "custom_endpoint_configured": bool(os.environ.get("ANTHROPIC_MESSAGES_URL") or os.environ.get("ANTHROPIC_BASE_URL")),
+            },
+        )
+    return check_status(
+        "provider_config",
+        "fail",
+        f"Unsupported AANA_PROVIDER {provider!r}. Supported providers: openai, anthropic.",
+        {"provider": provider},
+    )
+
+
+def doctor_report(gallery_path=DEFAULT_GALLERY):
+    checks = []
+    python_ok = sys.version_info >= (3, 10)
+    checks.append(
+        check_status(
+            "python",
+            "pass" if python_ok else "fail",
+            f"Python {platform.python_version()} detected.",
+            {"executable": sys.executable, "requires": ">=3.10"},
+        )
+    )
+
+    checks.append(
+        check_status(
+            "command_hub",
+            "pass",
+            "AANA command hub is importable.",
+            {"root": str(ROOT), "script": str(pathlib.Path(__file__).resolve())},
+        )
+    )
+
+    try:
+        gallery = load_gallery(gallery_path)
+        gallery_report = validate_adapter_gallery.validate_gallery(gallery, run_examples=True)
+        checks.append(
+            check_status(
+                "adapter_gallery",
+                "pass" if gallery_report["valid"] else "fail",
+                f"Adapter gallery checked with {len(gallery_report.get('checked_examples', []))} executable examples.",
+                {
+                    "errors": gallery_report["errors"],
+                    "warnings": gallery_report["warnings"],
+                    "checked_examples": gallery_report.get("checked_examples", []),
+                },
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        checks.append(check_status("adapter_gallery", "fail", str(exc)))
+
+    try:
+        agent_examples = agent_api.run_agent_event_examples(gallery_path=gallery_path)
+        checks.append(
+            check_status(
+                "agent_event_examples",
+                "pass" if agent_examples["valid"] else "fail",
+                f"{agent_examples['count']} agent event examples checked.",
+                {"checked_examples": agent_examples["checked_examples"]},
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        checks.append(check_status("agent_event_examples", "fail", str(exc)))
+
+    schemas = agent_api.schema_catalog()
+    schema_ok = "agent_event" in schemas and "agent_check_result" in schemas
+    checks.append(
+        check_status(
+            "agent_schemas",
+            "pass" if schema_ok else "fail",
+            "Agent event and result schemas are available." if schema_ok else "Agent schemas are incomplete.",
+            {"schemas": sorted(schemas.keys())},
+        )
+    )
+
+    checks.append(provider_status())
+    failed = [item for item in checks if item["status"] == "fail"]
+    warnings = [item for item in checks if item["status"] == "warn"]
+    return {
+        "valid": not failed,
+        "summary": {
+            "status": "pass" if not failed else "fail",
+            "checks": len(checks),
+            "failures": len(failed),
+            "warnings": len(warnings),
+        },
+        "checks": checks,
+    }
+
+
+def command_doctor(args):
+    report = doctor_report(gallery_path=args.gallery)
+    if args.json:
+        print_json(report)
+    else:
+        summary = report["summary"]
+        print(f"AANA doctor: {summary['status']} ({summary['failures']} failure(s), {summary['warnings']} warning(s)).")
+        for check in report["checks"]:
+            print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
+    return 0 if report["valid"] else 1
+
+
 def command_validate_adapter(args):
     adapter = validate_adapter.load_adapter(args.adapter)
     report = validate_adapter.validate_adapter(adapter)
@@ -216,6 +364,10 @@ def build_parser():
     list_parser = subparsers.add_parser("list", help="List gallery adapters.")
     list_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     list_parser.set_defaults(func=command_list)
+
+    doctor_parser = subparsers.add_parser("doctor", help="Check local AANA platform readiness.")
+    doctor_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    doctor_parser.set_defaults(func=command_doctor)
 
     run_parser = subparsers.add_parser("run", help="Run a gallery adapter by id.")
     run_parser.add_argument("adapter_id", help="Gallery adapter id, such as travel_planning.")

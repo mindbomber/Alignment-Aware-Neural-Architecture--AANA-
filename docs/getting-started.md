@@ -19,6 +19,7 @@ Use `scripts/aana_cli.py` for the lowest-friction path:
 
 ```powershell
 python scripts/aana_cli.py list
+python scripts/aana_cli.py doctor
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
@@ -37,11 +38,14 @@ After local install, use the shorter command form:
 
 ```powershell
 python -m pip install -e .
+aana doctor
 aana list
 aana run-agent-examples
 aana scaffold-agent-event support_reply --output-dir examples/agent_events
 aana-server --host 127.0.0.1 --port 8765
 ```
+
+The `doctor` command checks Python version, gallery health, executable adapter examples, agent event examples, schemas, and optional live provider configuration. Missing API keys are warnings because local demos do not need a provider account.
 
 The older scripts still work directly, but the command hub is the easiest starting point.
 
