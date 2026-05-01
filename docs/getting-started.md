@@ -23,6 +23,7 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py scaffold "insurance claim triage"
 ```
 
@@ -34,6 +35,8 @@ The command hub wraps:
 - `scripts/validate_adapter.py`
 - `scripts/validate_adapter_gallery.py`
 - `scripts/new_adapter.py`
+
+For AI-agent integrations, see [`agent-integration.md`](agent-integration.md).
 
 Direct script examples are below for users who want the underlying pieces.
 

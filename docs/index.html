@@ -550,13 +550,15 @@
               To start from your own workflow, scaffold a domain adapter and validate it before
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
               each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
-              The command hub wraps those pieces behind short commands.
+              The command hub wraps those pieces behind short commands, including an agent-check
+              event contract for OpenClaw-style agents.
             </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py list">Copy list command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run travel_planning">Copy travel command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run meal_planning">Copy meal command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run support_reply">Copy support command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-gallery --run-examples">Copy gallery check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py scaffold &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
@@ -578,6 +580,7 @@
 python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
           </div>
         </div>
@@ -620,6 +623,10 @@ python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
               <h3>Adapter Gallery</h3>
               <p>A runnable catalog of domains, prompts, bad candidates, expected gates, and caveats.</p>
             </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-integration.md" target="_blank" rel="noopener">
+              <h3>Agent Integration Kit</h3>
+              <p>How agents can call AANA before risky messages, tool use, private-data handling, or irreversible actions.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/travel_adapter.json" target="_blank" rel="noopener">
               <h3>Travel Adapter JSON</h3>
               <p>A filled machine-readable adapter based on the travel-planner failure-to-tool case study.</p>
@@ -639,6 +646,10 @@ python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_cli.py" target="_blank" rel="noopener">
               <h3>AANA CLI</h3>
               <p>The short command hub for listing, running, validating, and scaffolding adapters.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/openclaw/aana-guardrail-skill/SKILL.md" target="_blank" rel="noopener">
+              <h3>OpenClaw Guardrail Skill</h3>
+              <p>A starter skill that tells an OpenClaw-style agent when and how to call AANA.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>

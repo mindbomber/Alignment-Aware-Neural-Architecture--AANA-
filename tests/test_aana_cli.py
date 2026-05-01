@@ -71,6 +71,15 @@ class AanaCliTests(unittest.TestCase):
             self.assertIn("insurance_claim_triage_adapter.json", output)
             self.assertTrue((pathlib.Path(tmp) / "insurance_claim_triage_adapter.json").exists())
 
+    def test_agent_check_support_event(self):
+        code, output = self.run_cli(["agent-check", "--event", "examples/agent_event_support_reply.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"agent": "openclaw"', output)
+        self.assertIn('"gate_decision": "pass"', output)
+        self.assertIn('"recommended_action": "revise"', output)
+        self.assertIn('"safe_response"', output)
+
 
 if __name__ == "__main__":
     unittest.main()

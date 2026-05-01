@@ -19,6 +19,7 @@ python scripts/aana_cli.py run travel_planning
 python scripts/aana_cli.py run meal_planning
 python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py validate-gallery --run-examples
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
 ```
 
 Try the scoring script:

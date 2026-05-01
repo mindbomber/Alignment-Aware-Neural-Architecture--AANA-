@@ -30,6 +30,12 @@ python scripts/aana_cli.py list
 python scripts/aana_cli.py run support_reply
 ```
 
+Check an agent event:
+
+```powershell
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+```
+
 ## Current Executable Examples
 
 | Domain | Adapter | What It Proves |

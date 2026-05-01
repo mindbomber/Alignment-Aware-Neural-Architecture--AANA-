@@ -86,6 +86,14 @@ python scripts/aana_cli.py run support_reply
 
 Those commands emit JSON gate results with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
 
+Check an AI-agent event before the agent acts:
+
+```powershell
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+```
+
+For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
+
 Create and validate a starter adapter for your own domain:
 
 ```powershell
