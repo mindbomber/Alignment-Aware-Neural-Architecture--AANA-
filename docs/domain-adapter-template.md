@@ -87,6 +87,13 @@ Machine-readable starter files:
 - [`examples/domain_adapter_template.json`](../examples/domain_adapter_template.json)
 - [`examples/travel_adapter.json`](../examples/travel_adapter.json)
 
+You can also generate a starter adapter package:
+
+```powershell
+python scripts/new_adapter.py --domain "meal planning"
+python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+```
+
 ## Run The First Adapter
 
 The travel adapter is executable. It uses the checked-in deterministic verifier and repair path, so it can be tested without an API key.

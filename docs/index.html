@@ -545,9 +545,14 @@
               Live model runs can use OpenAI-compatible Responses endpoints or Anthropic's native
               Messages API. The no-key adapter demo still works without any provider account.
             </p>
+            <p>
+              To start from your own workflow, scaffold a domain adapter and validate it before
+              adding verifier logic.
+            </p>
             <div class="section-actions">
               <button class="button ink" type="button" data-copy-command="python scripts/dev.py sample">Copy command</button>
               <button class="button ink" type="button" data-copy-command="python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.'">Copy adapter command</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/new_adapter.py --domain &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
             </div>
           </div>
@@ -609,6 +614,14 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>
               <p>The first executable plug-in path: load adapter JSON, verify a prompt, repair failures, and emit a gate result.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
+              <h3>Adapter Scaffold</h3>
+              <p>Generate a starter adapter, prompt, bad candidate, and README for a new domain.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/validate_adapter.py" target="_blank" rel="noopener">
+              <h3>Adapter Validator</h3>
+              <p>Check constraint layers, verifier types, correction actions, gate rules, metrics, and placeholders before sharing.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/application-demo-report.md" target="_blank" rel="noopener">
               <h3>Application Demo</h3>

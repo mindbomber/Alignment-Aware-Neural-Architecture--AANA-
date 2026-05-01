@@ -28,6 +28,13 @@ Try a bad candidate to see the gate block and repair it:
 python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'Plan a one-day San Diego museum outing for two adults with a hard $110 total budget, public transit only, lunch included, and no single ticket above $25.' --candidate 'Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total.'
 ```
 
+Create and validate a starter adapter package for a new domain:
+
+```powershell
+python scripts/new_adapter.py --domain "meal planning"
+python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+```
+
 The application scenarios are starter prompts, not benchmark evidence. Use them to design domain-specific AANA experiments where each scenario names:
 
 - The constraint to preserve.

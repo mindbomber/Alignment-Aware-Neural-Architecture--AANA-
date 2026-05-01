@@ -73,6 +73,15 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
 
 That command emits a JSON gate result with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
 
+Create a starter adapter for your own domain:
+
+```powershell
+python scripts/new_adapter.py --domain "meal planning"
+python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+```
+
+The scaffold writes an adapter JSON file, starter prompt, bad candidate, and short adapter README so users can turn one workflow into an AANA test case without starting from a blank page.
+
 Latest evidence package: [Constraint-Reasoning AANA Evidence Package v0.1](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1).
 
 ## Related concepts

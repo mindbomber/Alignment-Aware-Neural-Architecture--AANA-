@@ -6,10 +6,11 @@ The fastest path is:
 
 1. Run the no-key sample.
 2. Run the no-key travel adapter.
-3. Pick one workflow from your own life or product.
-4. Write its hard constraints as an adapter.
-5. Add verifiers for the constraints that can be checked.
-6. Decide what the system should do after failure: accept, revise, retrieve, ask, refuse, or defer.
+3. Scaffold an adapter for one workflow from your own life or product.
+4. Validate the adapter contract.
+5. Replace the starter prompt and bad candidate with a real case.
+6. Add verifiers for the constraints that can be checked.
+7. Decide what the system should do after failure: accept, revise, retrieve, ask, refuse, or defer.
 
 ## What You Can Do Without An API Key
 
@@ -34,6 +35,20 @@ python scripts/run_adapter.py --adapter examples/travel_adapter.json --prompt 'P
 ```
 
 That is the current lowest-friction demo of AANA as a plug-in pattern: adapter JSON, deterministic checks, correction action, and a final gate result.
+
+Scaffold your own adapter package:
+
+```powershell
+python scripts/new_adapter.py --domain "meal planning"
+```
+
+Validate it:
+
+```powershell
+python scripts/validate_adapter.py --adapter examples/meal_planning_adapter.json
+```
+
+The scaffold gives you an adapter JSON file, a starter prompt, a deliberately bad candidate, and a short adapter README. Validation checks required fields, constraint layers, verifier types, correction actions, gate rules, metrics, and obvious placeholder text.
 
 ## What Requires An API Key
 
@@ -152,12 +167,14 @@ For each domain, define:
 
 Do not start with a big benchmark. Start with one executable case.
 
-1. Write one realistic high-pressure prompt.
-2. Write one bad candidate answer that breaks the constraints.
-3. Make the verifier catch the bad candidate.
-4. Make the repair path produce a passing answer.
-5. Save the prompt, candidate, verifier result, final answer, and caveats.
-6. Only then expand to 5-10 prompts.
+1. Scaffold the adapter: `python scripts/new_adapter.py --domain "your domain"`.
+2. Validate it: `python scripts/validate_adapter.py --adapter examples/your_domain_adapter.json`.
+3. Write one realistic high-pressure prompt.
+4. Write one bad candidate answer that breaks the constraints.
+5. Make the verifier catch the bad candidate.
+6. Make the repair path produce a passing answer.
+7. Save the prompt, candidate, verifier result, final answer, and caveats.
+8. Only then expand to 5-10 prompts.
 
 This is how AANA moves from a lab result to something users can plug into their own workflow.
 
