@@ -88,6 +88,12 @@ A separate instruction-only financial safety router skill is available at `examp
 
 That skill is designed to route investment, tax, budgeting, debt, credit, insurance, retirement, and purchase advice into safer boundaries before agents make unsupported claims or omit material risk disclosure. It does not bundle code, install dependencies, persist memory, write files, inspect accounts, or call services. It asks agents to separate general education from personalized advice, avoid guaranteed returns or tax outcomes, disclose material risks and uncertainty, minimize private financial data, and refer high-impact tax, legal, investment, or debt cases to qualified professionals.
 
+## Legal Safety Router Skill
+
+A separate instruction-only legal safety router skill is available at `examples/openclaw/aana-legal-safety-router-skill/`.
+
+That skill is designed to route legal, regulatory, compliance, contract, immigration, criminal, family, employment, housing, court, dispute, and rights-related questions into safer boundaries before agents provide unauthorized legal advice, omit jurisdiction caveats, or make unsupported legal claims. It does not bundle code, install dependencies, persist memory, write files, inspect records, or call services. It asks agents to separate general legal information from legal advice, ask or caveat when jurisdiction is missing, avoid invented laws, deadlines, rights, or outcomes, minimize private legal data, and refer high-impact or deadline-sensitive matters to qualified legal help.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
