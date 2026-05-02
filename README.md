@@ -166,7 +166,7 @@ The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema rou
 
 Workflow Contract routes are available at `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch`.
 
-For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md), the standalone install boundaries in [docs/openclaw-skill-review-notes.md](docs/openclaw-skill-review-notes.md), the instruction-only guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md), the inspectable bundled-helper variant in [examples/openclaw/aana-guardrail-skill-bundled](examples/openclaw/aana-guardrail-skill-bundled), and the continuous self-improvement skill in [examples/openclaw/aana-continuous-improvement-skill](examples/openclaw/aana-continuous-improvement-skill).
+For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md), the standalone install boundaries in [docs/openclaw-skill-review-notes.md](docs/openclaw-skill-review-notes.md), the instruction-only guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md), the inspectable bundled-helper variant in [examples/openclaw/aana-guardrail-skill-bundled](examples/openclaw/aana-guardrail-skill-bundled), the continuous self-improvement skill in [examples/openclaw/aana-continuous-improvement-skill](examples/openclaw/aana-continuous-improvement-skill), and the research-grounding skill in [examples/openclaw/aana-research-grounding-skill](examples/openclaw/aana-research-grounding-skill).
 
 Create and validate a starter adapter for your own domain:
 
