@@ -13,6 +13,14 @@ It exists separately from `examples/openclaw/aana-guardrail-skill/`, which remai
 - `examples/redacted-review-payload.json`: safe example payload.
 - `requirements.txt`: intentionally empty; the helper uses only Python standard library.
 
+## Upload Checklist
+
+Upload only the text/source files in this folder. Do not include generated Python bytecode or cache folders:
+
+- exclude `__pycache__/`
+- exclude `*.pyc`
+- exclude local logs or temporary payload files
+
 ## Security Model
 
 The helper is not the AANA engine. It is a tiny bridge client.
