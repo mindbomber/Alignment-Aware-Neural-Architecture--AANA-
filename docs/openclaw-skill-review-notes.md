@@ -18,6 +18,22 @@ For standalone skill installation, do not rely on a relative script path or a he
 
 If no trusted interface is configured, the skill should use manual review instead of trying to call AANA.
 
+## Bundled Helper Variant
+
+A separate package is available at `examples/openclaw/aana-guardrail-skill-bundled/` for users or reviewers who want an inspectable helper bundled with the skill package.
+
+That variant includes:
+
+- `manifest.json`,
+- `README.md`,
+- `SKILL.md`,
+- `bin/aana_guardrail_check.py`,
+- `schemas/review-payload.schema.json`,
+- `examples/redacted-review-payload.json`,
+- `requirements.txt`.
+
+The bundled helper has no third-party dependencies and is limited to posting a redacted review payload to a separately reviewed AANA bridge on `127.0.0.1` or `localhost`. It blocks remote URLs and obvious secret-like payload keys. It still requires a trusted AANA bridge to be running; the helper is not the AANA policy engine.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
