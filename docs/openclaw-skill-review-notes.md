@@ -2,6 +2,7 @@
 
 The OpenClaw guardrail skill in this repository is an instruction-only integration guide:
 
+- Its package includes `SKILL.md`, `README.md`, and `manifest.json`.
 - It does not bundle a Python helper, CLI, installer, dependency lockfile, or executable checker.
 - It must not run shell commands, install packages, execute local scripts, infer checker paths, or write event files on its own.
 - AANA checks should run only through a separately reviewed interface configured by the user or administrator.
