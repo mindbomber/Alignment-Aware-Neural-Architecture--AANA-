@@ -34,6 +34,12 @@ That variant includes:
 
 The bundled helper has no third-party dependencies and is limited to posting a redacted review payload to a separately reviewed AANA bridge on `localhost`. It blocks remote URLs and obvious secret-like payload keys. It still requires a trusted AANA bridge to be running; the helper is not the AANA policy engine.
 
+## Continuous Improvement Skill
+
+A separate instruction-only continuous improvement skill is available at `examples/openclaw/aana-continuous-improvement-skill/`.
+
+That skill is designed for agent reflection and workflow improvement without autonomous self-modification. It does not bundle code, install dependencies, persist memory, write files, or call services. It requires explicit approval before improvements affect future behavior, memory, files, tools, policies, or permissions.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
