@@ -64,6 +64,12 @@ A separate instruction-only support reply guardrail skill is available at `examp
 
 That skill is designed to review customer support replies before agents send invented facts, refund or credit promises, policy overclaims, or unnecessary private data. It does not bundle code, install dependencies, persist memory, write files, inspect accounts, or call services. It asks agents to separate customer-provided facts from verified records, avoid unapproved refunds or policy exceptions, minimize private data, and ask or defer when account evidence or authorization is missing.
 
+## Medical Safety Router Skill
+
+A separate instruction-only medical safety router skill is available at `examples/openclaw/aana-medical-safety-router-skill/`.
+
+That skill is designed to route medical and wellness questions into safer answer boundaries before agents overdiagnose, overtreat, miss emergencies, or expose private health data. It does not bundle code, install dependencies, persist memory, write files, inspect health records, or call services. It asks agents to state uncertainty, avoid diagnosis and treatment overclaims, route urgent warning signs to emergency care, refer higher-risk medication or symptom questions to qualified clinicians or pharmacists, and minimize private health information.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
