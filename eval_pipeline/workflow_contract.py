@@ -79,6 +79,71 @@ class WorkflowResult:
         return {key: value for key, value in asdict(self).items() if value is not None}
 
 
+@dataclass
+class WorkflowBatchRequest:
+    requests: list[WorkflowRequest | dict]
+    batch_id: str | None = None
+    contract_version: str = WORKFLOW_CONTRACT_VERSION
+
+    @classmethod
+    def from_dict(cls, data):
+        requests = []
+        for item in data.get("requests", []):
+            if isinstance(item, WorkflowRequest):
+                requests.append(item)
+            else:
+                requests.append(WorkflowRequest.from_dict(item))
+        return cls(
+            contract_version=data.get("contract_version", WORKFLOW_CONTRACT_VERSION),
+            batch_id=data.get("batch_id"),
+            requests=requests,
+        )
+
+    def to_dict(self):
+        payload = {
+            "contract_version": self.contract_version,
+            "batch_id": self.batch_id,
+            "requests": [item.to_dict() if isinstance(item, WorkflowRequest) else item for item in self.requests],
+        }
+        return {key: value for key, value in payload.items() if value is not None}
+
+
+@dataclass
+class WorkflowBatchResult:
+    results: list[WorkflowResult | dict]
+    batch_id: str | None = None
+    summary: dict = field(default_factory=dict)
+    contract_version: str = WORKFLOW_CONTRACT_VERSION
+
+    @classmethod
+    def from_dict(cls, data):
+        results = []
+        for item in data.get("results", []):
+            if isinstance(item, WorkflowResult):
+                results.append(item)
+            else:
+                results.append(WorkflowResult.from_dict(item))
+        return cls(
+            contract_version=data.get("contract_version", WORKFLOW_CONTRACT_VERSION),
+            batch_id=data.get("batch_id"),
+            summary=data.get("summary", {}),
+            results=results,
+        )
+
+    @property
+    def passed(self):
+        return self.summary.get("failed", 0) == 0
+
+    def to_dict(self):
+        payload = {
+            "contract_version": self.contract_version,
+            "batch_id": self.batch_id,
+            "summary": self.summary,
+            "results": [item.to_dict() if isinstance(item, WorkflowResult) else item for item in self.results],
+        }
+        return {key: value for key, value in payload.items() if value is not None}
+
+
 WORKFLOW_REQUEST_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/workflow-request.schema.json",
@@ -111,6 +176,22 @@ WORKFLOW_REQUEST_SCHEMA = {
 }
 
 
+WORKFLOW_BATCH_REQUEST_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/workflow-batch-request.schema.json",
+    "title": "AANA Workflow Batch Request",
+    "description": "A batch of proposed AI outputs or actions that AANA should verify.",
+    "type": "object",
+    "required": ["requests"],
+    "properties": {
+        "contract_version": {"type": "string", "examples": [WORKFLOW_CONTRACT_VERSION]},
+        "batch_id": {"type": "string"},
+        "requests": {"type": "array", "minItems": 1, "items": WORKFLOW_REQUEST_SCHEMA},
+    },
+    "additionalProperties": True,
+}
+
+
 WORKFLOW_RESULT_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/workflow-result.schema.json",
@@ -129,6 +210,33 @@ WORKFLOW_RESULT_SCHEMA = {
         "violations": {"type": "array", "items": {"type": "object"}},
         "output": {"type": ["string", "null"]},
         "raw_result": {"type": "object"},
+    },
+    "additionalProperties": True,
+}
+
+
+WORKFLOW_BATCH_RESULT_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/workflow-batch-result.schema.json",
+    "title": "AANA Workflow Batch Result",
+    "description": "A summary and per-item AANA gate results for a workflow batch.",
+    "type": "object",
+    "required": ["contract_version", "summary", "results"],
+    "properties": {
+        "contract_version": {"type": "string"},
+        "batch_id": {"type": ["string", "null"]},
+        "summary": {
+            "type": "object",
+            "required": ["total", "passed", "failed"],
+            "properties": {
+                "total": {"type": "integer"},
+                "passed": {"type": "integer"},
+                "failed": {"type": "integer"},
+                "recommended_actions": {"type": "object"},
+                "gate_decisions": {"type": "object"},
+            },
+        },
+        "results": {"type": "array", "items": WORKFLOW_RESULT_SCHEMA},
     },
     "additionalProperties": True,
 }
@@ -281,6 +389,71 @@ def validate_workflow_request(request):
     }
 
 
+def validate_workflow_batch_request(batch_request):
+    issues = []
+    if not isinstance(batch_request, dict):
+        return {
+            "valid": False,
+            "errors": 1,
+            "warnings": 0,
+            "issues": [
+                {
+                    "level": "error",
+                    "path": "$",
+                    "message": "Workflow batch request must be a JSON object.",
+                }
+            ],
+        }
+
+    if batch_request.get("batch_id") is not None and not isinstance(batch_request.get("batch_id"), str):
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.batch_id",
+                "message": "batch_id must be a string when provided.",
+            }
+        )
+
+    requests = batch_request.get("requests")
+    if not isinstance(requests, list) or not requests:
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.requests",
+                "message": "Workflow batch request must include a non-empty requests array.",
+            }
+        )
+    elif not all(isinstance(item, dict) for item in requests):
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.requests",
+                "message": "Every workflow batch request item must be a JSON object.",
+            }
+        )
+    else:
+        for index, request in enumerate(requests):
+            report = validate_workflow_request(request)
+            for issue in report["issues"]:
+                issues.append({**issue, "path": f"$.requests[{index}]{issue['path'][1:]}"})
+
+    if batch_request.get("contract_version") and batch_request.get("contract_version") != WORKFLOW_CONTRACT_VERSION:
+        issues.append(
+            {
+                "level": "warning",
+                "path": "$.contract_version",
+                "message": f"Expected contract_version {WORKFLOW_CONTRACT_VERSION}; got {batch_request.get('contract_version')}.",
+            }
+        )
+
+    return {
+        "valid": not any(issue["level"] == "error" for issue in issues),
+        "errors": sum(1 for issue in issues if issue["level"] == "error"),
+        "warnings": sum(1 for issue in issues if issue["level"] == "warning"),
+        "issues": issues,
+    }
+
+
 def normalize_workflow_request(
     adapter,
     request,
@@ -335,5 +508,7 @@ def workflow_request_to_agent_event(request, agent="workflow"):
 def schema_catalog():
     return {
         "workflow_request": WORKFLOW_REQUEST_SCHEMA,
+        "workflow_batch_request": WORKFLOW_BATCH_REQUEST_SCHEMA,
         "workflow_result": WORKFLOW_RESULT_SCHEMA,
+        "workflow_batch_result": WORKFLOW_BATCH_RESULT_SCHEMA,
     }

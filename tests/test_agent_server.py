@@ -30,9 +30,12 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("/agent-check", payload["paths"])
         self.assertIn("/validate-event", payload["paths"])
         self.assertIn("/workflow-check", payload["paths"])
+        self.assertIn("/workflow-batch", payload["paths"])
         self.assertIn("/validate-workflow", payload["paths"])
+        self.assertIn("/validate-workflow-batch", payload["paths"])
         self.assertIn("AgentEvent", payload["components"]["schemas"])
         self.assertIn("WorkflowRequest", payload["components"]["schemas"])
+        self.assertIn("WorkflowBatchRequest", payload["components"]["schemas"])
 
     def test_agent_event_schema_route(self):
         status, payload = agent_server.route_request("GET", "/schemas/agent-event.schema.json")
@@ -66,6 +69,15 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertFalse(payload["valid"])
         self.assertGreater(payload["errors"], 0)
+
+    def test_validate_workflow_batch_route(self):
+        batch_request = agent_api.load_json_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+
+        status, payload = agent_server.route_request("POST", "/validate-workflow-batch", json.dumps(batch_request).encode("utf-8"))
+
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["valid"])
+        self.assertEqual(payload["errors"], 0)
 
     def test_bad_json_returns_400(self):
         status, payload = agent_server.route_request("POST", "/agent-check", b"{")

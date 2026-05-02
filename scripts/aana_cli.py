@@ -122,6 +122,13 @@ def command_workflow_check(args):
     return 0 if result["gate_decision"] == "pass" else 1
 
 
+def command_workflow_batch(args):
+    batch_request = agent_api.load_json_file(args.batch)
+    result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
+    print_json(result)
+    return 0 if result["summary"]["failed"] == 0 else 1
+
+
 def command_validate_workflow(args):
     workflow_request = agent_api.load_json_file(args.workflow)
     report = agent_api.validate_workflow_request(workflow_request)
@@ -130,6 +137,19 @@ def command_validate_workflow(args):
     else:
         status = "valid" if report["valid"] else "invalid"
         print(f"Workflow request is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+        for issue in report["issues"]:
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_workflow_batch(args):
+    batch_request = agent_api.load_json_file(args.batch)
+    report = agent_api.validate_workflow_batch_request(batch_request)
+    if args.json:
+        print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Workflow batch request is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
         for issue in report["issues"]:
             print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
     return 0 if report["valid"] else 1
@@ -316,7 +336,14 @@ def doctor_report(gallery_path=DEFAULT_GALLERY):
         checks.append(check_status("agent_event_examples", "fail", str(exc)))
 
     schemas = agent_api.schema_catalog()
-    schema_ok = {"agent_event", "agent_check_result", "workflow_request", "workflow_result"}.issubset(schemas)
+    schema_ok = {
+        "agent_event",
+        "agent_check_result",
+        "workflow_request",
+        "workflow_batch_request",
+        "workflow_result",
+        "workflow_batch_result",
+    }.issubset(schemas)
     checks.append(
         check_status(
             "agent_schemas",
@@ -439,10 +466,19 @@ def build_parser():
     workflow_parser.add_argument("--workflow-id", default=None, help="Optional workflow id for logs/results.")
     workflow_parser.set_defaults(func=command_workflow_check)
 
+    workflow_batch_parser = subparsers.add_parser("workflow-batch", help="Check a workflow batch request JSON file.")
+    workflow_batch_parser.add_argument("--batch", required=True, help="Path to workflow batch request JSON.")
+    workflow_batch_parser.set_defaults(func=command_workflow_batch)
+
     validate_workflow_parser = subparsers.add_parser("validate-workflow", help="Validate an AANA workflow request JSON file.")
     validate_workflow_parser.add_argument("--workflow", required=True, help="Path to workflow request JSON.")
     validate_workflow_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     validate_workflow_parser.set_defaults(func=command_validate_workflow)
+
+    validate_workflow_batch_parser = subparsers.add_parser("validate-workflow-batch", help="Validate an AANA workflow batch request JSON file.")
+    validate_workflow_batch_parser.add_argument("--batch", required=True, help="Path to workflow batch request JSON.")
+    validate_workflow_batch_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_workflow_batch_parser.set_defaults(func=command_validate_workflow_batch)
 
     validate_event_parser = subparsers.add_parser("validate-event", help="Validate an AI-agent event contract.")
     validate_event_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
@@ -464,7 +500,7 @@ def build_parser():
         "name",
         nargs="?",
         default="all",
-        choices=["all", "workflow_request", "workflow_result"],
+        choices=["all", "workflow_request", "workflow_batch_request", "workflow_result", "workflow_batch_result"],
         help="Schema to print.",
     )
     workflow_schema_parser.set_defaults(func=command_workflow_schema)

@@ -194,6 +194,45 @@ def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
     }
 
 
+def workflow_batch_summary(results):
+    gate_decisions = {}
+    recommended_actions = {}
+    for result in results:
+        gate_decision = result.get("gate_decision")
+        recommended_action = result.get("recommended_action")
+        gate_decisions[gate_decision] = gate_decisions.get(gate_decision, 0) + 1
+        recommended_actions[recommended_action] = recommended_actions.get(recommended_action, 0) + 1
+    failed = sum(1 for result in results if result.get("gate_decision") != "pass")
+    return {
+        "total": len(results),
+        "passed": len(results) - failed,
+        "failed": failed,
+        "gate_decisions": gate_decisions,
+        "recommended_actions": recommended_actions,
+    }
+
+
+def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
+    contract_report = workflow_contract.validate_workflow_batch_request(batch_request)
+    if not contract_report["valid"]:
+        messages = "; ".join(issue["message"] for issue in contract_report["issues"] if issue["level"] == "error")
+        raise ValueError(messages)
+
+    results = []
+    for index, workflow_request in enumerate(batch_request["requests"]):
+        item = dict(workflow_request)
+        if not item.get("workflow_id"):
+            item["workflow_id"] = f"{batch_request.get('batch_id') or 'workflow-batch'}-{index + 1}"
+        results.append(check_workflow_request(item, gallery_path=gallery_path))
+
+    return {
+        "contract_version": WORKFLOW_CONTRACT_VERSION,
+        "batch_id": batch_request.get("batch_id"),
+        "summary": workflow_batch_summary(results),
+        "results": results,
+    }
+
+
 def list_policy_presets():
     return POLICY_PRESETS
 
@@ -204,6 +243,10 @@ def validate_event(event):
 
 def validate_workflow_request(workflow_request):
     return workflow_contract.validate_workflow_request(workflow_request)
+
+
+def validate_workflow_batch_request(batch_request):
+    return workflow_contract.validate_workflow_batch_request(batch_request)
 
 
 def schema_catalog():

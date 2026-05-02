@@ -1,0 +1,69 @@
+{
+  "contract_version": "0.1",
+  "batch_id": "demo-batch-productive-work-001",
+  "requests": [
+    {
+      "workflow_id": "demo-workflow-research-summary-001",
+      "adapter": "research_summary",
+      "request": "Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.",
+      "candidate": "AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.",
+      "evidence": [
+        "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+        "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+        "Allowed citations: [Source A], [Source B]",
+        "No measured productivity percentage is provided."
+      ],
+      "constraints": [
+        "Use only Source A and Source B.",
+        "Do not invent citations.",
+        "Do not state unsupported numerical effects."
+      ],
+      "metadata": {
+        "scenario": "research_summary",
+        "policy_preset": "research_summary"
+      }
+    },
+    {
+      "workflow_id": "demo-workflow-support-reply-001",
+      "adapter": "support_reply",
+      "request": "Draft a customer-support reply for a refund request. Use only verified facts: customer name is Maya Chen, order ID and refund eligibility are not available, and do not include private account details or invent policy promises.",
+      "candidate": "Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.",
+      "evidence": [
+        "Customer name: Maya Chen",
+        "Order ID: unavailable",
+        "Refund eligibility: unavailable",
+        "Private account details must not be included"
+      ],
+      "constraints": [
+        "Use only verified account facts.",
+        "Do not expose private account details.",
+        "Do not promise a refund when eligibility is unknown."
+      ],
+      "metadata": {
+        "scenario": "support_reply",
+        "policy_preset": "message_send"
+      }
+    },
+    {
+      "workflow_id": "demo-workflow-meal-planning-001",
+      "adapter": "meal_planning",
+      "request": "Create a weekly gluten-free, dairy-free meal plan for one person with a $70 grocery budget.",
+      "candidate": "Buy regular pasta, wheat bread, cheese, and milk for $95 total. Monday: pasta. Tuesday: cheese sandwiches.",
+      "evidence": [
+        "Budget cap: $70",
+        "Must be gluten-free",
+        "Must be dairy-free",
+        "Requested coverage: weekly meal plan"
+      ],
+      "constraints": [
+        "Stay within the $70 budget.",
+        "Avoid gluten.",
+        "Avoid dairy."
+      ],
+      "metadata": {
+        "scenario": "meal_planning",
+        "policy_preset": "message_send"
+      }
+    }
+  ]
+}

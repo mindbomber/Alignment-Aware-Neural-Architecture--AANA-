@@ -58,6 +58,34 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(result_object.adapter, "research_summary")
         self.assertEqual(result_object.recommended_action, "revise")
 
+    def test_sdk_check_batch_file_and_result_object(self):
+        result = aana.check_batch_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+        result_object = aana.batch_result_object(result)
+
+        self.assertTrue(result_object.passed)
+        self.assertEqual(result_object.batch_id, "demo-batch-productive-work-001")
+        self.assertEqual(result_object.summary["total"], 3)
+        self.assertEqual(result_object.summary["recommended_actions"]["revise"], 3)
+
+    def test_sdk_check_batch_accepts_typed_batch(self):
+        batch = aana.WorkflowBatchRequest(
+            requests=[
+                aana.WorkflowRequest(
+                    adapter="research_summary",
+                    request="Write a concise research brief. Use only Source A and Source B.",
+                    candidate="AANA improves productivity by 40% for all teams [Source C].",
+                    evidence=["Source A: AANA makes constraints explicit."],
+                    constraints=["Do not invent citations."],
+                )
+            ]
+        )
+
+        result = aana.check_batch(batch)
+
+        self.assertEqual(result["summary"]["total"], 1)
+        self.assertEqual(result["summary"]["failed"], 0)
+        self.assertEqual(result["results"][0]["adapter"], "research_summary")
+
     def test_sdk_check_request_accepts_typed_request(self):
         request = aana.WorkflowRequest(
             adapter="research_summary",
@@ -93,7 +121,9 @@ class WorkflowSdkTests(unittest.TestCase):
         schemas = aana.schema_catalog()
 
         self.assertIn("workflow_request", schemas)
+        self.assertIn("workflow_batch_request", schemas)
         self.assertIn("workflow_result", schemas)
+        self.assertIn("workflow_batch_result", schemas)
         self.assertEqual(schemas["workflow_request"]["title"], "AANA Workflow Request")
 
     def test_workflow_contract_converts_to_agent_event(self):
@@ -125,6 +155,20 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(payload["gate_decision"], "pass")
         self.assertEqual(payload["recommended_action"], "revise")
+
+    def test_http_workflow_batch_route(self):
+        batch_request = agent_api.load_json_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+
+        status, payload = agent_server.route_request(
+            "POST",
+            "/workflow-batch",
+            json.dumps(batch_request).encode("utf-8"),
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["summary"]["total"], 3)
+        self.assertEqual(payload["summary"]["failed"], 0)
+        self.assertEqual(payload["summary"]["recommended_actions"]["revise"], 3)
 
     def test_http_workflow_schema_route(self):
         status, payload = agent_server.route_request("GET", "/schemas/workflow-request.schema.json")

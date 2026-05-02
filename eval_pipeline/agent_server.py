@@ -102,6 +102,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/workflow-batch": {
+                "post": {
+                    "operationId": "checkWorkflowBatch",
+                    "summary": "Check multiple proposed AI outputs or actions with the AANA Workflow Batch Contract.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowBatchRequest"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "AANA workflow batch gate results.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowBatchResult"}}},
+                        },
+                        "400": {
+                            "description": "Invalid workflow batch request or unknown adapter.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
             "/validate-event": {
                 "post": {
                     "operationId": "validateAgentEvent",
@@ -142,6 +162,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/validate-workflow-batch": {
+                "post": {
+                    "operationId": "validateWorkflowBatch",
+                    "summary": "Validate an AANA workflow batch request without running the gate.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkflowBatchRequest"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Validation report.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationReport"}}},
+                        },
+                        "400": {
+                            "description": "Request body is not valid JSON.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
             "/openapi.json": {
                 "get": {
                     "operationId": "getOpenApiSchema",
@@ -155,7 +195,9 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                 "AgentEvent": agent_contract.AGENT_EVENT_SCHEMA,
                 "AgentCheckResult": agent_contract.AGENT_CHECK_RESULT_SCHEMA,
                 "WorkflowRequest": workflow_contract.WORKFLOW_REQUEST_SCHEMA,
+                "WorkflowBatchRequest": workflow_contract.WORKFLOW_BATCH_REQUEST_SCHEMA,
                 "WorkflowResult": workflow_contract.WORKFLOW_RESULT_SCHEMA,
+                "WorkflowBatchResult": workflow_contract.WORKFLOW_BATCH_RESULT_SCHEMA,
                 "Health": {
                     "type": "object",
                     "properties": {
@@ -217,8 +259,14 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
     if method == "GET" and parsed.path == "/schemas/workflow-request.schema.json":
         return 200, workflow_contract.WORKFLOW_REQUEST_SCHEMA
 
+    if method == "GET" and parsed.path == "/schemas/workflow-batch-request.schema.json":
+        return 200, workflow_contract.WORKFLOW_BATCH_REQUEST_SCHEMA
+
     if method == "GET" and parsed.path == "/schemas/workflow-result.schema.json":
         return 200, workflow_contract.WORKFLOW_RESULT_SCHEMA
+
+    if method == "GET" and parsed.path == "/schemas/workflow-batch-result.schema.json":
+        return 200, workflow_contract.WORKFLOW_BATCH_RESULT_SCHEMA
 
     if method == "GET" and parsed.path == "/schemas":
         return 200, agent_api.schema_catalog()
@@ -249,10 +297,26 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             return 400, {"error": str(exc)}
 
+    if method == "POST" and parsed.path == "/workflow-batch":
+        try:
+            batch_request = json.loads(body.decode("utf-8") if body else "{}")
+            if not isinstance(batch_request, dict):
+                raise ValueError("Request body must be a JSON object.")
+            return 200, agent_api.check_workflow_batch(batch_request, gallery_path=gallery_path)
+        except (json.JSONDecodeError, OSError, ValueError) as exc:
+            return 400, {"error": str(exc)}
+
     if method == "POST" and parsed.path == "/validate-workflow":
         try:
             workflow_request = json.loads(body.decode("utf-8") if body else "{}")
             return 200, agent_api.validate_workflow_request(workflow_request)
+        except json.JSONDecodeError as exc:
+            return 400, {"error": str(exc)}
+
+    if method == "POST" and parsed.path == "/validate-workflow-batch":
+        try:
+            batch_request = json.loads(body.decode("utf-8") if body else "{}")
+            return 200, agent_api.validate_workflow_batch_request(batch_request)
         except json.JSONDecodeError as exc:
             return 400, {"error": str(exc)}
 
@@ -266,11 +330,15 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
             "GET /schemas/agent-event.schema.json",
             "GET /schemas/agent-check-result.schema.json",
             "GET /schemas/workflow-request.schema.json",
+            "GET /schemas/workflow-batch-request.schema.json",
             "GET /schemas/workflow-result.schema.json",
+            "GET /schemas/workflow-batch-result.schema.json",
             "POST /validate-event",
             "POST /agent-check",
             "POST /validate-workflow",
+            "POST /validate-workflow-batch",
             "POST /workflow-check",
+            "POST /workflow-batch",
         ],
     }
 
@@ -309,7 +377,7 @@ def make_handler(gallery_path):
 def run_server(host=DEFAULT_HOST, port=DEFAULT_PORT, gallery_path=agent_api.DEFAULT_GALLERY):
     server = ThreadingHTTPServer((host, port), make_handler(gallery_path))
     print(f"AANA agent bridge listening on http://{host}:{port}")
-    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check")
+    print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /validate-workflow-batch, POST /workflow-batch")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -106,6 +106,7 @@ For JSON request files:
 
 ```python
 result = aana.check_file("examples/workflow_research_summary.json")
+batch = aana.check_batch_file("examples/workflow_batch_productive_work.json")
 ```
 
 Or run the same platform contract from the CLI:
@@ -113,6 +114,8 @@ Or run the same platform contract from the CLI:
 ```powershell
 python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_batch_productive_work.json
+python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 ```
 
@@ -159,7 +162,7 @@ Then POST the same event JSON to `http://127.0.0.1:8765/validate-event` and `htt
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
 
-Workflow Contract routes are available at `POST /validate-workflow` and `POST /workflow-check`.
+Workflow Contract routes are available at `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch`.
 
 For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 

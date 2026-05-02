@@ -26,6 +26,8 @@ python scripts/aana_cli.py run support_reply
 python scripts/aana_cli.py run research_summary
 python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
+python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_batch_productive_work.json
+python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
@@ -76,6 +78,7 @@ result = aana.check(
 )
 
 result_from_file = aana.check_file("examples/workflow_research_summary.json")
+batch_result = aana.check_batch_file("examples/workflow_batch_productive_work.json")
 ```
 
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
@@ -84,7 +87,7 @@ Before an agent starts calling AANA, validate the event shape with `python scrip
 
 To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `travel_planning`, `meal_planning`, or `research_summary`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
-If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`. General app workflows can use `POST /validate-workflow` and `POST /workflow-check` with the workflow request shape.
+If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`. General app workflows can use `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch` with the workflow request shape.
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import machine-readable contracts. After `python -m pip install -e .`, you can start it with `aana-server`.
 

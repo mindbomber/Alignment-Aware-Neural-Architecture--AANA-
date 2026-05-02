@@ -159,11 +159,25 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn('"adapter": "research_summary"', output)
         self.assertIn('"recommended_action": "revise"', output)
 
+    def test_workflow_batch_runs_contract_requests(self):
+        code, output = self.run_cli(["workflow-batch", "--batch", "examples/workflow_batch_productive_work.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"batch_id": "demo-batch-productive-work-001"', output)
+        self.assertIn('"total": 3', output)
+        self.assertIn('"failed": 0', output)
+
     def test_validate_workflow_accepts_example(self):
         code, output = self.run_cli(["validate-workflow", "--workflow", "examples/workflow_research_summary.json"])
 
         self.assertEqual(code, 0)
         self.assertIn("Workflow request is valid", output)
+
+    def test_validate_workflow_batch_accepts_example(self):
+        code, output = self.run_cli(["validate-workflow-batch", "--batch", "examples/workflow_batch_productive_work.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("Workflow batch request is valid", output)
 
     def test_workflow_schema_prints_request_schema(self):
         code, output = self.run_cli(["workflow-schema", "workflow_request"])
@@ -171,6 +185,13 @@ class AanaCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("AANA Workflow Request", output)
         self.assertIn("adapter", output)
+
+    def test_workflow_schema_prints_batch_schema(self):
+        code, output = self.run_cli(["workflow-schema", "workflow_batch_request"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA Workflow Batch Request", output)
+        self.assertIn("requests", output)
 
     def test_run_agent_examples(self):
         code, output = self.run_cli(["run-agent-examples"])

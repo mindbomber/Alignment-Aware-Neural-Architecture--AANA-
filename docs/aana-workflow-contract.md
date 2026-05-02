@@ -66,6 +66,17 @@ if result_object.passed:
     print(result_object.output)
 ```
 
+For productive apps and agents, batch checks are often the better integration point. A research workspace, CRM, or coding agent may need to check several proposed outputs before it publishes, sends, writes, or commits:
+
+```python
+batch = aana.check_batch_file("examples/workflow_batch_productive_work.json")
+batch_result = aana.batch_result_object(batch)
+
+print(batch_result.summary)
+for item in batch_result.results:
+    print(item.workflow_id, item.recommended_action)
+```
+
 The result includes:
 
 - `gate_decision`: `pass`, `block`, `fail`, or `needs_adapter_implementation`
@@ -82,6 +93,7 @@ The result includes:
 Machine-readable example:
 
 - [`examples/workflow_research_summary.json`](../examples/workflow_research_summary.json)
+- [`examples/workflow_batch_productive_work.json`](../examples/workflow_batch_productive_work.json)
 
 ```json
 {
@@ -102,6 +114,25 @@ Machine-readable example:
 }
 ```
 
+Batch request shape:
+
+```json
+{
+  "contract_version": "0.1",
+  "batch_id": "demo-batch-productive-work-001",
+  "requests": [
+    {
+      "workflow_id": "demo-workflow-research-summary-001",
+      "adapter": "research_summary",
+      "request": "Write a concise research brief. Use only Source A and Source B.",
+      "candidate": "AANA improves productivity by 40% for all teams [Source C].",
+      "evidence": ["Source A: AANA makes constraints explicit."],
+      "constraints": ["Do not invent citations."]
+    }
+  ]
+}
+```
+
 ## CLI
 
 Validate a workflow request:
@@ -116,6 +147,13 @@ Run the gate:
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
 ```
 
+Run a batch of workflow checks:
+
+```powershell
+python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_batch_productive_work.json
+python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
+```
+
 Or pass the fields directly:
 
 ```powershell
@@ -127,7 +165,9 @@ Print schemas:
 ```powershell
 python scripts/aana_cli.py workflow-schema
 python scripts/aana_cli.py workflow-schema workflow_request
+python scripts/aana_cli.py workflow-schema workflow_batch_request
 python scripts/aana_cli.py workflow-schema workflow_result
+python scripts/aana_cli.py workflow-schema workflow_batch_result
 ```
 
 ## HTTP Bridge
@@ -142,8 +182,12 @@ Workflow routes:
 
 - `POST /validate-workflow`
 - `POST /workflow-check`
+- `POST /validate-workflow-batch`
+- `POST /workflow-batch`
 - `GET /schemas/workflow-request.schema.json`
+- `GET /schemas/workflow-batch-request.schema.json`
 - `GET /schemas/workflow-result.schema.json`
+- `GET /schemas/workflow-batch-result.schema.json`
 
 PowerShell example:
 
@@ -151,6 +195,9 @@ PowerShell example:
 $workflow = Get-Content examples/workflow_research_summary.json -Raw
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-workflow -Body $workflow -ContentType 'application/json'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Body $workflow -ContentType 'application/json'
+
+$batch = Get-Content examples/workflow_batch_productive_work.json -Raw
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-batch -Body $batch -ContentType 'application/json'
 ```
 
 ## Adapter Boundary
