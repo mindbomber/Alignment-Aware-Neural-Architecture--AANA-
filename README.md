@@ -122,9 +122,11 @@ python scripts/aana_cli.py workflow-check --adapter research_summary --request "
 Check an AI-agent event before the agent acts:
 
 ```powershell
-python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+aana validate-event --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
 ```
+
+Use event-file checks only from a trusted local AANA install or reviewed repository checkout. For standalone agent skills, prefer an approved in-memory tool/API connector, keep review payloads redacted, and do not ask the agent to infer or execute local script paths.
 
 Run the executable agent-event examples across support, travel, meal-planning, and research-summary workflows:
 
@@ -164,7 +166,7 @@ The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema rou
 
 Workflow Contract routes are available at `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch`.
 
-For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md) and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
+For OpenClaw-style agents, see [docs/agent-integration.md](docs/agent-integration.md), the standalone install boundaries in [docs/openclaw-skill-review-notes.md](docs/openclaw-skill-review-notes.md), and the starter guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md).
 
 Create and validate a starter adapter for your own domain:
 

@@ -2,6 +2,10 @@
 
 AANA can sit around an AI agent as a verification and correction layer. The agent still plans and acts; AANA checks whether the next answer or action should pass, be revised, ask for missing information, defer to a stronger workflow, or be blocked.
 
+Security boundary: an agent integration should call AANA only through a trusted interface that the user or administrator has configured and reviewed. Do not let an agent infer a local script path, run an unreviewed helper, or treat an untrusted checker as authoritative.
+
+Decision boundary: AANA recommendations can delay, revise, or refuse a planned action. That is intentional for high-risk work, but production integrations should log the decision, explain it to the user, and route important refusals or deferrals to human review.
+
 Use this when an agent is about to:
 
 - send a message or email,
@@ -13,7 +17,7 @@ Use this when an agent is about to:
 
 ## Agent Event Contract
 
-Agents can call AANA with one JSON object:
+Agents can call AANA with one small review object. Keep it redacted and specific to the planned action:
 
 ```json
 {
@@ -21,27 +25,26 @@ Agents can call AANA with one JSON object:
   "event_id": "demo-support-refund-001",
   "agent": "openclaw",
   "adapter_id": "support_reply",
-  "user_request": "Draft a customer-support reply...",
-  "candidate_action": "Hi Maya, order #A1842 is eligible...",
-  "available_evidence": ["Customer name: Maya Chen"],
+  "request_summary": "draft a refund support reply",
+  "candidate_summary": "reply would promise refund eligibility",
+  "evidence_summary": ["refund eligibility is unknown"],
   "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"]
 }
 ```
 
-Run the check:
+The exact local event schema is available from the checked-in schemas and HTTP bridge, but standalone skills should avoid copying raw request text, private records, or full candidate content when a redacted summary is enough.
 
-```powershell
-python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
-```
-
-If the repo is installed with `python -m pip install -e .`, the same flow is:
+For local repository development, validate the checked-in examples with the command hub:
 
 ```powershell
 aana doctor
 aana validate-event --event examples/agent_event_support_reply.json
 aana agent-check --event examples/agent_event_support_reply.json
 ```
+
+Only use those commands after the AANA package or repository has been installed from a trusted, inspectable source. For marketplace skills or OpenClaw-style agents, prefer an approved host tool or in-memory API connector instead of asking the agent to run shell commands.
+
+If you are developing inside this repository before local installation, use the maintainer scripts only from the reviewed repository root. Do not copy maintainer-only relative script patterns into a standalone skill package.
 
 The output includes:
 
@@ -68,13 +71,25 @@ python scripts/aana_cli.py run-agent-examples
 
 The pack lives in [`examples/agent_events/`](../examples/agent_events/) and currently covers support replies, travel booking/planning, meal planning, and research summaries.
 
-Scaffold a new event from a gallery adapter:
+Scaffold a new event from a gallery adapter during local development:
 
 ```powershell
-python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+aana scaffold-agent-event support_reply --output-dir examples/agent_events
 ```
 
-Then edit the generated `candidate_action` and `available_evidence` fields to match the real action your agent is about to take.
+Then edit the generated planned-action and evidence fields to match the real action your agent is about to take. Keep those fields minimal and redacted; do not place secrets, full payment details, access tokens, or unnecessary account records in event files.
+
+## Data Handling
+
+Prefer in-memory tool or API calls. If you must use event files, store them in a controlled temporary location, keep only the minimum redacted data needed for the check, and delete them after the check unless the user explicitly asks for an audit record.
+
+Use summaries such as:
+
+- `refund_eligibility: unknown`
+- `payment_detail: redacted`
+- `candidate_summary: reply would promise a refund`
+
+Avoid raw secrets, full card numbers, bearer tokens, passwords, unrelated private messages, or full internal records when a yes/no or redacted summary is enough.
 
 ## Python API
 
@@ -178,23 +193,26 @@ Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-check-result.schema.json
 Add an instruction to the agent:
 
 ```text
-Before high-risk actions, create an AANA agent event and run:
-python scripts/aana_cli.py agent-check --event <event.json>
-Only proceed when gate_decision is pass. If recommended_action is revise, ask, defer, or refuse, follow that action instead of executing the original candidate.
+Before high-risk actions, call the configured AANA review tool or API with a minimal redacted payload.
+Use only the AANA interface approved by the user or administrator.
+If recommended_action is revise, ask, defer, or refuse, treat that as an advisory gate and ask for review when the decision affects important work.
+If no trusted AANA interface is configured, use manual review instead.
 ```
 
 ### CLI-Level
 
-Have the agent write an event file and call:
+Use CLI checks for local development and CI only, after the package has been installed from a trusted source:
 
 ```powershell
-python scripts/aana_cli.py validate-event --event .aana/agent_event.json
-python scripts/aana_cli.py agent-check --event .aana/agent_event.json
+aana validate-event --event .aana/agent_event.json
+aana agent-check --event .aana/agent_event.json
 ```
+
+Do not embed this CLI flow in a standalone marketplace skill unless the CLI, dependencies, install metadata, and file-handling policy are bundled and reviewed with that package.
 
 ### Tool-Level
 
-Expose `aana_cli.py agent-check` as a local tool. The agent sends its planned action as `candidate_action` and receives a gate result before execution.
+Expose an approved AANA checker as a named local tool. The tool should accept a minimal redacted review payload in memory and return `gate_decision`, `recommended_action`, `violations`, and `safe_response`.
 
 ### HTTP-Level
 
@@ -230,6 +248,10 @@ http://127.0.0.1:8765/schemas/agent-check-result.schema.json
 For OpenClaw-style agents, place an AANA guardrail skill in the agent workspace and tell the agent when to call AANA. A starter skill is included at:
 
 - [`examples/openclaw/aana-guardrail-skill/SKILL.md`](../examples/openclaw/aana-guardrail-skill/SKILL.md)
+
+For marketplace review and install boundaries, see:
+
+- [`openclaw-skill-review-notes.md`](openclaw-skill-review-notes.md)
 
 The practical rule is:
 

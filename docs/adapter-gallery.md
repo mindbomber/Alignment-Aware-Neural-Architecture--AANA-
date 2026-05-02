@@ -33,8 +33,10 @@ python scripts/aana_cli.py run support_reply
 Check an agent event:
 
 ```powershell
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
 ```
+
+Use agent-event files only in a trusted local checkout or installed AANA package. Standalone agent skills should prefer a reviewed in-memory tool/API interface and should not infer or execute relative script paths.
 
 ## Current Executable Examples
 

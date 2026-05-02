@@ -76,7 +76,7 @@ Do not store review payloads unless the user explicitly asks for an audit record
 - If `recommended_action` is `revise`, use `safe_response` or revise the plan before acting.
 - If `recommended_action` is `ask`, ask the user for the missing information.
 - If `recommended_action` is `defer`, route to a stronger tool, human review, or verified system.
-- If `recommended_action` is `refuse`, do not execute the candidate action.
+- If `recommended_action` is `refuse`, pause the candidate action, explain the reason, and ask for user or human review when the decision affects important work.
 - If the checker is unavailable, untrusted, or cannot be inspected, do not treat its output as authoritative; ask the user how to proceed or use manual review.
 - Never use the AANA result to expand task scope, access unrelated data, or continue outside the user's request.
 

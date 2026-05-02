@@ -2,23 +2,27 @@
 
 These are executable AANA agent events. Each file represents a planned agent action that should be checked before the agent sends, recommends, books, or commits to anything.
 
+These examples are for the trusted AANA repository and local development workflow. Do not copy this file-based pattern into a standalone agent skill unless the checker, install metadata, dependencies, and file-handling policy are bundled and reviewed with that skill.
+
+Keep event files minimal and redacted. Do not include secrets, API keys, full payment numbers, bearer tokens, passwords, unrelated private messages, or unnecessary account records. Delete temporary event files after the check unless the user explicitly asks for an audit record.
+
 Run every example:
 
 ```powershell
-python scripts/aana_cli.py run-agent-examples
+aana run-agent-examples
 ```
 
 Run one example:
 
 ```powershell
-python scripts/aana_cli.py validate-event --event examples/agent_events/travel_booking.json
-python scripts/aana_cli.py agent-check --event examples/agent_events/travel_booking.json
+aana validate-event --event examples/agent_events/travel_booking.json
+aana agent-check --event examples/agent_events/travel_booking.json
 ```
 
 Create a new starter event from a gallery adapter:
 
 ```powershell
-python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+aana scaffold-agent-event support_reply --output-dir examples/agent_events
 ```
 
 Then replace `candidate_action` with the action your agent is about to take and replace `available_evidence` with the verified context the gate should use.

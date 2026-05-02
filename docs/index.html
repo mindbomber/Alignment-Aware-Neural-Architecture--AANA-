@@ -567,10 +567,10 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json">Copy workflow file check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json">Copy workflow batch</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py workflow-check --adapter research_summary --request &quot;Write a concise research brief. Use only Source A and Source B. Label uncertainty.&quot; --candidate &quot;AANA improves productivity by 40% for all teams [Source C].&quot; --evidence &quot;Source A: AANA makes constraints explicit.&quot; --evidence &quot;Source B: Source coverage can be incomplete.&quot; --constraint &quot;Do not invent citations.&quot; --constraint &quot;Do not add unsupported numbers.&quot;">Copy workflow check</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py run-agent-examples">Copy agent examples</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events">Copy event scaffold</button>
+              <button class="button ink" type="button" data-copy-command="aana validate-event --event examples/agent_event_support_reply.json">Copy event validation</button>
+              <button class="button ink" type="button" data-copy-command="aana agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
+              <button class="button ink" type="button" data-copy-command="aana run-agent-examples">Copy agent examples</button>
+              <button class="button ink" type="button" data-copy-command="aana scaffold-agent-event support_reply --output-dir examples/agent_events">Copy event scaffold</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-schema agent_event">Copy event schema</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py policy-presets">Copy policy presets</button>
               <button class="button ink" type="button" data-copy-command="python examples/agent_api_usage.py">Copy Python API demo</button>
@@ -601,15 +601,18 @@ python scripts/aana_cli.py validate-workflow --workflow examples/workflow_resear
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
 python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
-python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py run-agent-examples
-python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
+aana validate-event --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
+aana run-agent-examples
+aana scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
+            <p class="demo-note">
+              Agent-event files are local development fixtures. Standalone skills should use a reviewed tool/API connector, keep review payloads redacted, and avoid executing inferred local script paths.
+            </p>
             <pre><code># Optional installable command form:
 python -m pip install -e .
 aana doctor
@@ -670,6 +673,10 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Agent Integration Kit</h3>
               <p>How agents can call AANA before risky messages, tool use, private-data handling, or irreversible actions.</p>
             </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/openclaw-skill-review-notes.md" target="_blank" rel="noopener">
+              <h3>OpenClaw Review Notes</h3>
+              <p>Provenance, execution, decision, and data-handling boundaries for standalone skill installs.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/eval_pipeline/agent_api.py" target="_blank" rel="noopener">
               <h3>Python Agent API</h3>
               <p>A small importable shim for checking agent events without launching a separate CLI process.</p>
@@ -724,7 +731,7 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/openclaw/aana-guardrail-skill/SKILL.md" target="_blank" rel="noopener">
               <h3>OpenClaw Guardrail Skill</h3>
-              <p>A starter skill that tells an OpenClaw-style agent when and how to call AANA.</p>
+              <p>An instruction-only starter skill for calling a separately reviewed AANA interface.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>

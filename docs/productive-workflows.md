@@ -24,8 +24,10 @@ python scripts/aana_cli.py run research_summary
 For agents:
 
 ```powershell
-python scripts/aana_cli.py agent-check --event examples/agent_events/research_summary.json
+aana agent-check --event examples/agent_events/research_summary.json
 ```
+
+Use that command only in a trusted local AANA install. For marketplace or OpenClaw-style skills, call a reviewed host tool/API with a minimal redacted payload instead of writing event files or running local scripts from the skill.
 
 For apps and notebooks:
 

@@ -2,6 +2,8 @@
 
 These files show the input and output shapes without requiring live API calls.
 
+Agent-event files are local development fixtures. For standalone agent skills or marketplace packages, prefer a reviewed in-memory tool/API interface and avoid writing sensitive action data to local files.
+
 - `sample_tasks.jsonl` contains two hand-written evaluation tasks.
 - `sample_raw_outputs.jsonl` contains matching model-output-style rows that can be scored locally.
 - `application_scenarios.jsonl` contains six everyday AANA scenario prompts: budgeted travel, allergy-safe meal planning, grounded research, privacy abstention, workflow readiness, and math/feasibility.
@@ -30,7 +32,7 @@ python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_bat
 python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py run-agent-examples
 python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event

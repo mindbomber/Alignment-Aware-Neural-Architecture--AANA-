@@ -31,7 +31,7 @@ python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_produc
 python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json
+aana agent-check --event examples/agent_event_support_reply.json
 python scripts/aana_cli.py run-agent-examples
 python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event
@@ -82,6 +82,8 @@ batch_result = aana.check_batch_file("examples/workflow_batch_productive_work.js
 ```
 
 If your agent can call Python directly, use `eval_pipeline.agent_api.check_event(event)` instead of spawning a process. The runnable example is [`../examples/agent_api_usage.py`](../examples/agent_api_usage.py).
+
+For standalone agent skills, do not rely on relative script paths or unreviewed local helpers. Use a trusted installed `aana` command, a reviewed Python/API integration, or manual review. Keep event files temporary and redacted, and prefer in-memory checks when the host supports them.
 
 Before an agent starts calling AANA, validate the event shape with `python scripts/aana_cli.py validate-event --event <event.json>`. This catches missing adapter IDs, missing prompts, malformed evidence lists, and unsupported actions before the workflow runs. To see the pattern across domains, run `python scripts/aana_cli.py run-agent-examples`; it checks the support, travel, meal-planning, and research-summary event pack under `examples/agent_events/`.
 
