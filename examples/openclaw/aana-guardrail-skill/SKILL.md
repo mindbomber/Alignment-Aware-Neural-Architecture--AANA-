@@ -2,18 +2,19 @@
 
 Use this skill when a user asks the agent to produce or execute an action that may violate hard constraints, depend on missing evidence, expose private information, or require a safe correction path.
 
-This skill is an integration guide. It does not include the AANA checker implementation by itself. Treat AANA decisions as advisory unless the user has installed AANA from a trusted source and the checker path has been inspected.
+This skill is an integration guide. It does not include the AANA checker implementation by itself. Treat AANA decisions as advisory unless the user has configured a trusted, inspectable AANA checker outside this skill.
 
-## External Dependency
+## Dependency Boundary
 
-The checker is the AANA Python package, not this skill file. Install it separately from a pinned, trusted source before use:
+The checker is an external AANA package, service, or approved local tool. This skill must not install packages, run shell commands, or execute local scripts on its own.
 
-```powershell
-python -m pip install "git+https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-.git@<trusted-commit-or-release>"
-aana doctor
-```
+Before use, the user or administrator should configure one trusted AANA interface and make it explicit to the agent. Acceptable interfaces are:
 
-If the user cannot provide a trusted commit, release, or local checkout for inspection, do not run the checker.
+- an approved tool named by the user, such as `aana_agent_check`,
+- a local HTTP endpoint bound to `127.0.0.1` with an inspected OpenAPI/schema contract,
+- an installed AANA command from a pinned release or reviewed local checkout.
+
+If the user cannot identify the trusted interface, release, commit, or local checkout for inspection, do not run the checker. Use manual review instead.
 
 ## When To Call AANA
 
@@ -27,29 +28,43 @@ Call AANA before:
 - answering from incomplete evidence, citations, or source notes,
 - doing anything the user cannot easily undo.
 
-## Before Running Local Code
+## Before Calling AANA
 
-Do not run a local AANA command automatically.
+Do not run local code automatically. Do not infer a checker path from the workspace. Do not execute a Python script by filename.
 
 Before invoking AANA, confirm all of the following:
 
-- The user explicitly approves running the local checker for this task.
-- AANA is installed from a trusted, inspectable source, preferably this repository: `https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-`.
-- The command resolves to the reviewed AANA package, not an unrelated local script elsewhere in the workspace.
-- `aana doctor` or the equivalent checked command reports a healthy local installation.
-- The event file contains only the minimum information needed for the check.
+- The user explicitly approves using the configured AANA interface for this task.
+- The interface is trusted and inspectable.
+- The checker implementation and policy are appropriate for the selected adapter.
+- The event payload contains only the minimum information needed for the check.
+- The user understands that the result can redirect the action to accept, revise, ask, defer, or refuse.
 
-Prefer the installed console command:
+If the trusted interface is unavailable, stop and ask the user how to proceed.
 
-```powershell
-aana agent-check --event .aana/agent_event.json
-```
+## Preferred Call Pattern
 
-If the package is not installed, stop and ask the user to install or inspect the full AANA repository first. Do not execute a Python checker script from this skill package.
+Prefer an approved tool or API call that accepts the event object directly and returns an AANA result object. Avoid writing event files when the tool can receive JSON in memory.
+
+If file-based exchange is the only approved path, write the event to a controlled temporary location, run only the user-approved checker interface, then delete the temporary file after the result is processed.
 
 ## Event Shape
 
-Store temporary event files under a controlled local folder such as `.aana/`. Do not include secrets, API keys, full payment numbers, access tokens, unnecessary account records, or private data that is not required to evaluate the candidate action.
+Do not include secrets, API keys, full payment numbers, access tokens, unnecessary account records, or private data that is not required to evaluate the candidate action. Prefer summaries and redacted identifiers over raw sensitive values.
+
+Use:
+
+- "customer_id_present": true
+- "refund_eligibility": "unknown"
+- "payment_detail": "redacted"
+
+Do not use:
+
+- full card numbers,
+- API keys or bearer tokens,
+- account passwords,
+- private messages unrelated to the candidate action,
+- full internal records when a yes/no or redacted summary is enough.
 
 ```json
 {
@@ -64,11 +79,7 @@ Store temporary event files under a controlled local folder such as `.aana/`. Do
 }
 ```
 
-After the check, delete temporary event files unless the user asks to keep them for audit or debugging:
-
-```powershell
-Remove-Item -LiteralPath .aana\agent_event.json
-```
+Delete temporary event files unless the user asks to keep them for audit or debugging. If files are kept, tell the user where they are stored and what sensitive fields they contain.
 
 ## Decision Rule
 
@@ -78,6 +89,7 @@ Remove-Item -LiteralPath .aana\agent_event.json
 - If `recommended_action` is `defer`, route to a stronger tool, human review, or verified system.
 - If `recommended_action` is `refuse`, do not execute the candidate action.
 - If the checker is unavailable, untrusted, or cannot be inspected, do not treat its output as authoritative; ask the user how to proceed or use manual review.
+- Never use the AANA result to expand task scope, access unrelated data, or continue outside the user's request.
 
 ## Default Adapter Mapping
 
@@ -86,10 +98,4 @@ Remove-Item -LiteralPath .aana\agent_event.json
 - Food, grocery, allergy, dietary plans: `meal_planning`
 - Research briefs, cited summaries, knowledge synthesis: `research_summary`
 
-If no adapter fits, scaffold one:
-
-```powershell
-aana scaffold "new workflow name"
-```
-
-Only run scaffolding after user approval, because it writes local files.
+If no adapter fits, ask the user whether they want to create a new adapter. Adapter creation writes local files and should happen only after explicit approval.
