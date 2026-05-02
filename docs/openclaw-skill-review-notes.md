@@ -52,6 +52,12 @@ A separate instruction-only file operation guardrail skill is available at `exam
 
 That skill is designed to check before agents delete, move, rename, overwrite, publish, upload, export, or bulk-edit user files. It does not bundle code, install dependencies, persist memory, write files, inspect the filesystem, or call services. It asks agents to verify exact target paths, keep operations inside the approved scope, prefer dry-runs, diffs, backups, and copy-before-move workflows, and require explicit approval for destructive, recursive, cross-folder, publishing, uploading, or broad edit actions.
 
+## Code Change Review Skill
+
+A separate instruction-only code change review skill is available at `examples/openclaw/aana-code-change-review-skill/`.
+
+That skill is designed to gate code edits, commits, pull requests, test claims, scope creep, secret leakage, and destructive commands. It does not bundle code, install dependencies, persist memory, write files, inspect repositories, or call services. It asks agents to keep diffs scoped to the user request, report only checks that actually ran, block secrets and private data in code or logs, require approval before commits and pull requests, and defer high-risk security, migration, release, or deployment changes to a verified review path.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
