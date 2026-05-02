@@ -94,6 +94,12 @@ A separate instruction-only legal safety router skill is available at `examples/
 
 That skill is designed to route legal, regulatory, compliance, contract, immigration, criminal, family, employment, housing, court, dispute, and rights-related questions into safer boundaries before agents provide unauthorized legal advice, omit jurisdiction caveats, or make unsupported legal claims. It does not bundle code, install dependencies, persist memory, write files, inspect records, or call services. It asks agents to separate general legal information from legal advice, ask or caveat when jurisdiction is missing, avoid invented laws, deadlines, rights, or outcomes, minimize private legal data, and refer high-impact or deadline-sensitive matters to qualified legal help.
 
+## Evidence First Answering Skill
+
+A separate instruction-only evidence first answering skill is available at `examples/openclaw/aana-evidence-first-answering-skill/`.
+
+That skill is designed to force answer drafts to separate known facts, assumptions, missing evidence, and next retrieval steps before agents produce confident answers. It does not bundle code, install dependencies, persist memory, write files, retrieve evidence, or call services. It asks agents to classify important claims by evidence status, mark missing evidence explicitly, revise unsupported claims, ask or retrieve when evidence gaps block the answer, and defer high-risk conclusions that depend on unavailable evidence.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
