@@ -40,6 +40,12 @@ A separate instruction-only continuous improvement skill is available at `exampl
 
 That skill is designed for agent reflection and workflow improvement without autonomous self-modification. It does not bundle code, install dependencies, persist memory, write files, or call services. It requires explicit approval before improvements affect future behavior, memory, files, tools, policies, or permissions.
 
+## Private Data Guardrail Skill
+
+A separate instruction-only private data guardrail skill is available at `examples/openclaw/aana-private-data-guardrail-skill/`.
+
+That skill is designed to stop agents from exposing unnecessary or unauthorized account, billing, payment, health, legal, personal, or sensitive business data. It does not bundle code, install dependencies, persist memory, write files, or call services. It asks agents to minimize private details, redact raw identifiers and secrets, avoid invented account facts, ask when authorization is unclear, and defer high-impact or irreversible privacy-sensitive actions to a verified system or human review.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
