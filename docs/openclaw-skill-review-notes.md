@@ -70,6 +70,12 @@ A separate instruction-only medical safety router skill is available at `example
 
 That skill is designed to route medical and wellness questions into safer answer boundaries before agents overdiagnose, overtreat, miss emergencies, or expose private health data. It does not bundle code, install dependencies, persist memory, write files, inspect health records, or call services. It asks agents to state uncertainty, avoid diagnosis and treatment overclaims, route urgent warning signs to emergency care, refer higher-risk medication or symptom questions to qualified clinicians or pharmacists, and minimize private health information.
 
+## Purchase Booking Guardrail Skill
+
+A separate instruction-only purchase booking guardrail skill is available at `examples/openclaw/aana-purchase-booking-guardrail-skill/`.
+
+That skill is designed to gate purchases, bookings, reservations, subscriptions, renewals, and irreversible financial actions before agents create charges, deposits, recurring commitments, cancellation penalties, or hard-to-undo reservations. It does not bundle code, install dependencies, persist memory, write files, inspect accounts, or call services. It asks agents to verify exact item, vendor, dates, quantities, total cost, fees, refundability, cancellation and renewal terms, payment privacy, and explicit user approval before final submission.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
