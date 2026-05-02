@@ -19,12 +19,13 @@ helper = load_helper()
 
 class OpenClawBundledHelperTests(unittest.TestCase):
     def test_validate_url_allows_localhost(self):
-        self.assertEqual(helper.validate_url("http://127.0.0.1:8765/agent-check"), "http://127.0.0.1:8765/agent-check")
         self.assertEqual(helper.validate_url("http://localhost:8765/agent-check"), "http://localhost:8765/agent-check")
 
-    def test_validate_url_blocks_remote_hosts(self):
+    def test_validate_url_blocks_remote_hosts_and_raw_ips(self):
         with self.assertRaises(ValueError):
             helper.validate_url("https://example.com/agent-check")
+        with self.assertRaises(ValueError):
+            helper.validate_url("http://127.0.0.1:8765/agent-check")
 
     def test_secret_like_keys_are_detected(self):
         found = helper.find_secret_like_keys({"metadata": {"api_key": "redacted"}})

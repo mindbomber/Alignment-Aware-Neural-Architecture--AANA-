@@ -20,8 +20,8 @@ import urllib.parse
 import urllib.request
 
 
-DEFAULT_URL = "http://127.0.0.1:8765/agent-check"
-ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
+DEFAULT_URL = "http://localhost:8765/agent-check"
+ALLOWED_HOSTS = {"localhost"}
 SECRET_KEY_TERMS = {
     "api_key",
     "apikey",
@@ -47,7 +47,7 @@ def validate_url(url: str) -> str:
     if parsed.scheme not in {"http", "https"}:
         raise ValueError("AANA bridge URL must use http or https.")
     if parsed.hostname not in ALLOWED_HOSTS:
-        raise ValueError("AANA bridge URL must target localhost or 127.0.0.1.")
+        raise ValueError("AANA bridge URL must target localhost.")
     return url
 
 
@@ -130,7 +130,7 @@ def post_json(url: str, payload: dict, timeout: float) -> dict:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Call a reviewed localhost AANA bridge with a redacted review payload.")
     parser.add_argument("--payload", required=True, help="Path to redacted review payload JSON.")
-    parser.add_argument("--url", default=DEFAULT_URL, help="Local AANA bridge URL. Defaults to http://127.0.0.1:8765/agent-check.")
+    parser.add_argument("--url", default=DEFAULT_URL, help="Local AANA bridge URL. Defaults to http://localhost:8765/agent-check.")
     parser.add_argument("--timeout", type=float, default=10.0, help="HTTP timeout in seconds.")
     return parser
 

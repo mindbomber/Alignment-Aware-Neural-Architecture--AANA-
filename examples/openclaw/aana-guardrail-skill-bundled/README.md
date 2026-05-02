@@ -25,7 +25,7 @@ Upload only the text/source files in this folder. Do not include generated Pytho
 
 The helper is not the AANA engine. It is a tiny bridge client.
 
-It will only call `localhost` or `127.0.0.1`, defaults to `http://127.0.0.1:8765/agent-check`, blocks obvious secret-like payload keys, and refuses non-object JSON.
+It will only call `localhost`, defaults to `http://localhost:8765/agent-check`, blocks obvious secret-like payload keys, and refuses non-object JSON.
 
 Do not use this package unless a trusted AANA bridge is already running and has been reviewed by the user or administrator.
 

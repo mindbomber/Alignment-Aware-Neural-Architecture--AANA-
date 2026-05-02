@@ -2,7 +2,7 @@
 
 Use this variant only when the user or administrator wants a bundled, inspectable helper inside the skill package.
 
-This package includes a small Python helper at `bin/aana_guardrail_check.py`. The helper does not implement AANA policy itself. It only sends a minimal review payload to a separately running AANA HTTP bridge on `127.0.0.1` or `localhost`.
+This package includes a small Python helper at `bin/aana_guardrail_check.py`. The helper does not implement AANA policy itself. It only sends a minimal review payload to a separately running AANA HTTP bridge on `localhost`.
 
 ## Safety Boundary
 

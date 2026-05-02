@@ -25,9 +25,8 @@
   "external_checker": {
     "bundled": false,
     "required_for_live_checks": true,
-    "default_url": "http://127.0.0.1:8765/agent-check",
+    "default_url": "http://localhost:8765/agent-check",
     "allowed_hosts": [
-      "127.0.0.1",
       "localhost"
     ],
     "disallowed_interfaces": [
