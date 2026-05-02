@@ -58,6 +58,12 @@ A separate instruction-only code change review skill is available at `examples/o
 
 That skill is designed to gate code edits, commits, pull requests, test claims, scope creep, secret leakage, and destructive commands. It does not bundle code, install dependencies, persist memory, write files, inspect repositories, or call services. It asks agents to keep diffs scoped to the user request, report only checks that actually ran, block secrets and private data in code or logs, require approval before commits and pull requests, and defer high-risk security, migration, release, or deployment changes to a verified review path.
 
+## Support Reply Guardrail Skill
+
+A separate instruction-only support reply guardrail skill is available at `examples/openclaw/aana-support-reply-guardrail-skill/`.
+
+That skill is designed to review customer support replies before agents send invented facts, refund or credit promises, policy overclaims, or unnecessary private data. It does not bundle code, install dependencies, persist memory, write files, inspect accounts, or call services. It asks agents to separate customer-provided facts from verified records, avoid unapproved refunds or policy exceptions, minimize private data, and ask or defer when account evidence or authorization is missing.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
