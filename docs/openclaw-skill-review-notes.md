@@ -82,6 +82,12 @@ A separate instruction-only decision log skill is available at `examples/opencla
 
 That skill is designed to produce compact audit records for important agent decisions: what was checked, what failed, what changed, and what risk remains. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to log only checks that actually happened, mark failed or unclear checks, record corrections made after review, minimize sensitive data, and avoid implying compliance or validation that was not observed.
 
+## Financial Safety Router Skill
+
+A separate instruction-only financial safety router skill is available at `examples/openclaw/aana-financial-safety-router-skill/`.
+
+That skill is designed to route investment, tax, budgeting, debt, credit, insurance, retirement, and purchase advice into safer boundaries before agents make unsupported claims or omit material risk disclosure. It does not bundle code, install dependencies, persist memory, write files, inspect accounts, or call services. It asks agents to separate general education from personalized advice, avoid guaranteed returns or tax outcomes, disclose material risks and uncertainty, minimize private financial data, and refer high-impact tax, legal, investment, or debt cases to qualified professionals.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
