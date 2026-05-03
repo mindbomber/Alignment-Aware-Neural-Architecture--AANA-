@@ -136,6 +136,12 @@ A separate instruction-only publication check skill is available at `examples/op
 
 That skill is designed to check posts, blogs, reports, docs, website updates, release notes, marketplace listings, and other public-facing content before publication. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to check approval, material claim evidence, privacy redaction, third-party asset permissions, links, downloads, audience risk, and review needs before publishing.
 
+## Email Send Guardrail Skill
+
+A separate instruction-only email send guardrail skill is available at `examples/openclaw/aana-email-send-guardrail-skill/`.
+
+That skill is designed to verify exact recipients, CC/BCC exposure, tone, private data, attachments, claims, promises, and explicit send approval before email is sent. It does not bundle code, install dependencies, persist memory, write files, inspect systems, send email, or call services. It asks agents to treat drafting as separate from sending, redact sensitive content, verify attachments, check unsupported commitments, and block unsafe or unauthorized email sends.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
