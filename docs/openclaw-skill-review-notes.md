@@ -142,6 +142,12 @@ A separate instruction-only email send guardrail skill is available at `examples
 
 That skill is designed to verify exact recipients, CC/BCC exposure, tone, private data, attachments, claims, promises, and explicit send approval before email is sent. It does not bundle code, install dependencies, persist memory, write files, inspect systems, send email, or call services. It asks agents to treat drafting as separate from sending, redact sensitive content, verify attachments, check unsupported commitments, and block unsafe or unauthorized email sends.
 
+## Meeting Summary Checker Skill
+
+A separate instruction-only meeting summary checker skill is available at `examples/openclaw/aana-meeting-summary-checker-skill/`.
+
+That skill is designed to check meeting summaries, notes, action items, owners, dates, decisions, and attributed claims against transcript, notes, chat, agenda, calendar, or other available evidence. It does not bundle code, install dependencies, persist memory, write files, inspect systems, access transcripts, or call services. It asks agents to mark inferred or uncertain items, avoid invented commitments, redact private meeting content, and route high-impact notes to review before sharing.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
