@@ -106,6 +106,12 @@ A separate instruction-only tool use gate skill is available at `examples/opencl
 
 That skill is designed to check whether tool calls are necessary, scoped, authorized, and safe before agents use capabilities that read, write, send, publish, delete, buy, book, deploy, or affect external state. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to define exact target scope, verify user authorization, minimize tool inputs and outputs, prefer read-only or preview steps before state changes, and defer or refuse unauthorized, destructive, financial, privileged, external-send, or high-impact tool use.
 
+## Human Review Router Skill
+
+A separate instruction-only human review router skill is available at `examples/openclaw/aana-human-review-router-skill/`.
+
+That skill is designed to route uncertain, high-impact, irreversible, low-evidence, private, external, financial, legal, medical, production, and policy-sensitive actions to user, human, professional, or admin review before agents proceed. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to classify impact, evidence, authorization, and reversibility, define the reviewer decision needed, minimize sensitive review context, and not proceed until required review is complete.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
