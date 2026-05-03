@@ -112,6 +112,12 @@ A separate instruction-only human review router skill is available at `examples/
 
 That skill is designed to route uncertain, high-impact, irreversible, low-evidence, private, external, financial, legal, medical, production, and policy-sensitive actions to user, human, professional, or admin review before agents proceed. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to classify impact, evidence, authorization, and reversibility, define the reviewer decision needed, minimize sensitive review context, and not proceed until required review is complete.
 
+## Task Scope Guardrail Skill
+
+A separate instruction-only task scope guardrail skill is available at `examples/openclaw/aana-task-scope-guardrail-skill/`.
+
+That skill is designed to keep agents inside the current user request, use only task-relevant data, ask before expanding scope, treat optional work as a suggestion, and stop once the request is complete. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to identify the current request, define the smallest useful completion target, classify the next action, check data relevance, verify authorization, and avoid continuing background work after completion.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
