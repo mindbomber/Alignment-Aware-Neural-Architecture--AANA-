@@ -124,6 +124,12 @@ A separate instruction-only agent memory gate skill is available at `examples/op
 
 That skill is designed to require approval before storing, reusing, editing, importing, exporting, or deleting user memory. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to classify the memory operation, source, relevance, sensitivity, approval status, and lifecycle; avoid storing secrets or unnecessary sensitive data; use temporary context when memory is not needed; and never treat silence as approval for memory changes.
 
+## Workflow Readiness Check Skill
+
+A separate instruction-only workflow readiness check skill is available at `examples/openclaw/aana-workflow-readiness-check-skill/`.
+
+That skill is designed to check whether an agent has enough information, permission, tools, evidence, and safe boundaries before starting a workflow. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to identify the workflow, intended outcome, completion criteria, required information, authorization, tool access, evidence state, risk level, and first safe step before starting.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
