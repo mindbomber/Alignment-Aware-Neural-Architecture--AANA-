@@ -100,6 +100,12 @@ A separate instruction-only evidence first answering skill is available at `exam
 
 That skill is designed to force answer drafts to separate known facts, assumptions, missing evidence, and next retrieval steps before agents produce confident answers. It does not bundle code, install dependencies, persist memory, write files, retrieve evidence, or call services. It asks agents to classify important claims by evidence status, mark missing evidence explicitly, revise unsupported claims, ask or retrieve when evidence gaps block the answer, and defer high-risk conclusions that depend on unavailable evidence.
 
+## Tool Use Gate Skill
+
+A separate instruction-only tool use gate skill is available at `examples/openclaw/aana-tool-use-gate-skill/`.
+
+That skill is designed to check whether tool calls are necessary, scoped, authorized, and safe before agents use capabilities that read, write, send, publish, delete, buy, book, deploy, or affect external state. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to define exact target scope, verify user authorization, minimize tool inputs and outputs, prefer read-only or preview steps before state changes, and defer or refuse unauthorized, destructive, financial, privileged, external-send, or high-impact tool use.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
