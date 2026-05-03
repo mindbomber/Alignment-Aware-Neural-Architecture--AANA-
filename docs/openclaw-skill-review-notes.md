@@ -118,6 +118,12 @@ A separate instruction-only task scope guardrail skill is available at `examples
 
 That skill is designed to keep agents inside the current user request, use only task-relevant data, ask before expanding scope, treat optional work as a suggestion, and stop once the request is complete. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to identify the current request, define the smallest useful completion target, classify the next action, check data relevance, verify authorization, and avoid continuing background work after completion.
 
+## Agent Memory Gate Skill
+
+A separate instruction-only agent memory gate skill is available at `examples/openclaw/aana-agent-memory-gate-skill/`.
+
+That skill is designed to require approval before storing, reusing, editing, importing, exporting, or deleting user memory. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to classify the memory operation, source, relevance, sensitivity, approval status, and lifecycle; avoid storing secrets or unnecessary sensitive data; use temporary context when memory is not needed; and never treat silence as approval for memory changes.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
