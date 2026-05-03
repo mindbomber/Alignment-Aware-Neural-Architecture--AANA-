@@ -130,6 +130,12 @@ A separate instruction-only workflow readiness check skill is available at `exam
 
 That skill is designed to check whether an agent has enough information, permission, tools, evidence, and safe boundaries before starting a workflow. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to identify the workflow, intended outcome, completion criteria, required information, authorization, tool access, evidence state, risk level, and first safe step before starting.
 
+## Publication Check Skill
+
+A separate instruction-only publication check skill is available at `examples/openclaw/aana-publication-check-skill/`.
+
+That skill is designed to check posts, blogs, reports, docs, website updates, release notes, marketplace listings, and other public-facing content before publication. It does not bundle code, install dependencies, persist memory, write files, inspect systems, or call services. It asks agents to check approval, material claim evidence, privacy redaction, third-party asset permissions, links, downloads, audience risk, and review needs before publishing.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
