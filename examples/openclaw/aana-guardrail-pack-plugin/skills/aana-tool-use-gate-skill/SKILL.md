@@ -148,6 +148,8 @@ Do not include raw secrets, credentials, full private records, full logs, full t
 
 ## Decision Rule
 
+- When a configured AANA checker returns `aix`, use it as the score-derived route for the checked tool action. `aix.decision=accept` is usable only when no hard blockers are present and the checker's `recommended_action` also permits the action.
+- When `candidate_aix` is present, treat it as the risk score for the proposed tool call before correction; a failed `candidate_aix` should be revised, narrowed, or escalated before acting.
 - If the tool is necessary, narrow, authorized, data-minimized, and reversible or low-risk, accept.
 - If the tool is useful but too broad, revise to a narrower read-only or preview step.
 - If authorization, target scope, or data exposure is unclear, ask.

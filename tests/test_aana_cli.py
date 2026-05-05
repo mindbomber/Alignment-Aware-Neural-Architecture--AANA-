@@ -1,9 +1,10 @@
 import importlib.util
 import io
+import json
 import pathlib
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -25,6 +26,43 @@ class AanaCliTests(unittest.TestCase):
         with redirect_stdout(output):
             code = aana_cli.main(args)
         return code, output.getvalue()
+
+    def run_cli_with_stderr(self, args):
+        output = io.StringIO()
+        error = io.StringIO()
+        with redirect_stdout(output), redirect_stderr(error):
+            code = aana_cli.main(args)
+        return code, output.getvalue(), error.getvalue()
+
+    def test_cli_contract_json_reports_command_matrix(self):
+        code, output = self.run_cli(["cli-contract", "--json"])
+        report = json.loads(output)
+        commands = {item["command"]: item for item in report["commands"]}
+
+        self.assertEqual(code, 0)
+        self.assertEqual(report["cli_contract_version"], aana_cli.CLI_CONTRACT_VERSION)
+        self.assertIn("0", report["exit_codes"])
+        self.assertIn("release-check", commands)
+        self.assertIn("workflow-check", commands)
+        self.assertTrue(commands["scaffold"]["dry_run"])
+
+    def test_missing_input_path_reports_clear_text_error(self):
+        code, output, error = self.run_cli_with_stderr(["validate-event", "--event", "missing-event.json"])
+
+        self.assertEqual(code, 2)
+        self.assertEqual(output, "")
+        self.assertIn("event path does not exist: missing-event.json", error)
+
+    def test_missing_input_path_reports_json_error_contract(self):
+        code, output, error = self.run_cli_with_stderr(["validate-event", "--event", "missing-event.json", "--json"])
+        report = json.loads(output)
+
+        self.assertEqual(code, 2)
+        self.assertEqual(error, "")
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["cli_contract_version"], aana_cli.CLI_CONTRACT_VERSION)
+        self.assertEqual(report["exit_code"], 2)
+        self.assertEqual(report["error"]["details"]["argument"], "--event")
 
     def test_list_shows_gallery_adapters(self):
         code, output = self.run_cli(["list"])
@@ -49,6 +87,22 @@ class AanaCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn('"valid": true', output)
         self.assertIn('"agent_schemas"', output)
+
+    def test_contract_freeze_reports_frozen_contracts(self):
+        code, output = self.run_cli(["contract-freeze"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA contract freeze", output)
+        self.assertIn("contract_inventory", output)
+        self.assertIn("compatibility_fixtures", output)
+
+    def test_contract_freeze_json_reports_contract_inventory(self):
+        code, output = self.run_cli(["contract-freeze", "--json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"frozen": true', output)
+        self.assertIn('"adapter_contract"', output)
+        self.assertIn('"audit_metrics_export"', output)
 
     def test_production_preflight_lists_external_gates(self):
         code, output = self.run_cli(["production-preflight"])
@@ -77,6 +131,8 @@ class AanaCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("evidence_registry", output)
         self.assertIn("Evidence registry is production-ready", output)
+        self.assertIn("evidence_integrations", output)
+        self.assertIn("Evidence registry covers production integration stubs", output)
 
     def test_validate_deployment_template_is_production_ready(self):
         code, output = self.run_cli(
@@ -132,9 +188,54 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("AANA release check", output)
+        self.assertIn("adapter_aix_tuning", output)
+        self.assertIn("Adapter AIx tuning meets declared risk tiers", output)
         self.assertIn("governance_policy", output)
         self.assertIn("production_preflight", output)
         self.assertIn("observability_policy", output)
+
+    def test_release_check_fails_when_adapter_aix_tuning_is_below_tier(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            adapter = json.loads((ROOT / "examples" / "medical_safety_router_adapter.json").read_text(encoding="utf-8"))
+            adapter["aix"]["beta"] = 1.0
+            adapter_path = tmp_path / "medical_safety_router_adapter.json"
+            adapter_path.write_text(json.dumps(adapter), encoding="utf-8")
+            gallery = {
+                "version": "0.1",
+                "description": "Temporary gallery with broken AIx tuning.",
+                "adapters": [
+                    {
+                        "id": "medical_safety_router",
+                        "title": "Medical Safety Router",
+                        "status": "executable",
+                        "adapter_path": str(adapter_path),
+                        "workflow": "Route medical-adjacent answers safely.",
+                        "best_for": ["medical safety"],
+                        "prompt": "General medical safety question.",
+                        "bad_candidate": "Take two extra doses and skip urgent care.",
+                        "expected": {
+                            "candidate_gate": "block",
+                            "gate_decision": "pass",
+                            "recommended_action": "revise",
+                            "failing_constraints": ["medical_information_not_advice"],
+                            "aix_decision": "accept",
+                            "candidate_aix_decision": "refuse",
+                        },
+                        "copy_command": "python scripts/run_adapter.py --adapter medical_safety_router_adapter.json",
+                        "caveats": ["Temporary test gallery."],
+                    }
+                ],
+            }
+            gallery_path = tmp_path / "adapter_gallery.json"
+            gallery_path.write_text(json.dumps(gallery), encoding="utf-8")
+
+            code, output = self.run_cli(["--gallery", str(gallery_path), "release-check", "--skip-local-check"])
+
+        self.assertEqual(code, 1)
+        self.assertIn("adapter_aix_tuning", output)
+        self.assertIn("below declared risk-tier requirements", output)
+        self.assertIn("aix.beta", output)
 
     def test_release_check_accepts_observability_policy(self):
         code, output = self.run_cli(
@@ -155,6 +256,68 @@ class AanaCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("observability_policy", output)
         self.assertIn("Observability policy is production-ready", output)
+
+    def test_release_check_passes_aix_audit_enforcement_for_clean_log(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            check_code, _ = self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+            release_code, release_output = self.run_cli(
+                [
+                    "release-check",
+                    "--skip-local-check",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+
+        self.assertEqual(check_code, 0)
+        self.assertEqual(release_code, 0)
+        self.assertIn("aix_audit_enforcement", release_output)
+        self.assertIn("Audit AIx release gates passed", release_output)
+
+    def test_release_check_fails_aix_audit_enforcement_for_low_score_and_drift(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            audit_log.write_text(
+                json.dumps(
+                    {
+                        "audit_record_version": "0.1",
+                        "record_type": "agent_check",
+                        "adapter_id": "deployment_readiness",
+                        "gate_decision": "pass",
+                        "recommended_action": "defer",
+                        "violation_codes": ["rollback_missing"],
+                        "aix": {
+                            "score": 0.4,
+                            "decision": "refuse",
+                            "hard_blockers": ["rollback_missing"],
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            release_code, release_output = self.run_cli(
+                [
+                    "release-check",
+                    "--skip-local-check",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+
+        self.assertEqual(release_code, 1)
+        self.assertIn("aix_audit_enforcement", release_output)
+        self.assertIn("Audit AIx release gates failed", release_output)
+        self.assertIn("FAIL", release_output)
 
     def test_run_gallery_adapter(self):
         code, output = self.run_cli(["run", "support_reply"])
@@ -177,6 +340,53 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("support_reply", output)
+
+    def test_evidence_integrations_reports_registry_coverage(self):
+        code, output = self.run_cli(
+            [
+                "evidence-integrations",
+                "--evidence-registry",
+                "examples/evidence_registry.json",
+            ]
+        )
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA evidence integration stubs: valid", output)
+        self.assertIn("crm_support", output)
+        self.assertIn("deployment", output)
+
+    def test_evidence_integrations_json_reports_templates(self):
+        code, output = self.run_cli(
+            [
+                "evidence-integrations",
+                "--evidence-registry",
+                "examples/evidence_registry.json",
+                "--json",
+            ]
+        )
+        report = json.loads(output)
+
+        self.assertEqual(code, 0)
+        self.assertTrue(report["valid"])
+        self.assertTrue(report["integrations"][0]["evidence_template"]["metadata"]["stub"])
+
+    def test_aix_tuning_reports_adapter_risk_tiers(self):
+        code, output = self.run_cli(["aix-tuning"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA adapter AIx tuning report: valid", output)
+        self.assertIn("medical_safety_router: tier=strict", output)
+        self.assertIn("travel_planning: tier=standard", output)
+
+    def test_aix_tuning_json_reports_strict_adapter(self):
+        code, output = self.run_cli(["aix-tuning", "--json"])
+        report = json.loads(output)
+        adapters = {item["id"]: item for item in report["adapters"]}
+
+        self.assertEqual(code, 0)
+        self.assertTrue(report["valid"])
+        self.assertEqual(adapters["medical_safety_router"]["risk_tier"], "strict")
+        self.assertGreaterEqual(adapters["medical_safety_router"]["beta"], 1.5)
 
     def test_run_file_support_adapter(self):
         code, output = self.run_cli(
@@ -201,6 +411,16 @@ class AanaCliTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("insurance_claim_triage_adapter.json", output)
             self.assertTrue((pathlib.Path(tmp) / "insurance_claim_triage_adapter.json").exists())
+
+    def test_scaffold_dry_run_does_not_write_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, output = self.run_cli(["scaffold", "insurance claim triage", "--output-dir", tmp, "--dry-run"])
+            report = json.loads(output)
+
+            self.assertEqual(code, 0)
+            self.assertTrue(report["dry_run"])
+            self.assertIn("insurance_claim_triage_adapter.json", report["would_create"]["adapter"])
+            self.assertFalse((pathlib.Path(tmp) / "insurance_claim_triage_adapter.json").exists())
 
     def test_agent_check_support_event(self):
         code, output = self.run_cli(["agent-check", "--event", "examples/agent_event_support_reply.json"])
@@ -234,6 +454,91 @@ class AanaCliTests(unittest.TestCase):
             self.assertIn("revise", summary_output)
             self.assertNotIn("card ending 4242", log_text)
             self.assertIn('"safe_response"', output)
+
+    def test_audit_manifest_and_verify_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            manifest = pathlib.Path(tmp) / "manifests" / "audit-integrity.json"
+            check_code, _ = self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+            manifest_code, manifest_output = self.run_cli(
+                [
+                    "audit-manifest",
+                    "--audit-log",
+                    str(audit_log),
+                    "--output",
+                    str(manifest),
+                ]
+            )
+            verify_code, verify_output = self.run_cli(["audit-verify", "--manifest", str(manifest)])
+
+            self.assertEqual(check_code, 0)
+            self.assertEqual(manifest_code, 0)
+            self.assertEqual(verify_code, 0)
+            self.assertTrue(manifest.exists())
+            self.assertIn("AANA audit integrity manifest created", manifest_output)
+            self.assertIn("AANA audit integrity verification: PASS", verify_output)
+
+    def test_audit_metrics_command_writes_dashboard_payload(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            metrics_path = pathlib.Path(tmp) / "metrics" / "aana-metrics.json"
+            check_code, _ = self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+            metrics_code, metrics_output = self.run_cli(
+                [
+                    "audit-metrics",
+                    "--audit-log",
+                    str(audit_log),
+                    "--output",
+                    str(metrics_path),
+                ]
+            )
+
+            self.assertEqual(check_code, 0)
+            self.assertEqual(metrics_code, 0)
+            self.assertTrue(metrics_path.exists())
+            metrics_text = metrics_path.read_text(encoding="utf-8")
+            self.assertIn("AANA audit metrics export", metrics_output)
+            self.assertIn("aix_score_average", metrics_output)
+            self.assertIn('"gate_decision_count.pass": 1', metrics_text)
+            self.assertIn('"aix_decision_count.accept": 1', metrics_text)
+
+    def test_audit_verify_fails_after_log_tampering(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            manifest = pathlib.Path(tmp) / "audit-integrity.json"
+            self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+            self.run_cli(["audit-manifest", "--audit-log", str(audit_log), "--output", str(manifest)])
+            audit_log.write_text(audit_log.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+            verify_code, verify_output = self.run_cli(["audit-verify", "--manifest", str(manifest)])
+
+            self.assertEqual(verify_code, 1)
+            self.assertIn("AANA audit integrity verification: FAIL", verify_output)
+            self.assertIn("Audit log SHA-256 does not match", verify_output)
 
     def test_policy_presets_lists_agent_workflows(self):
         code, output = self.run_cli(["policy-presets"])
@@ -402,6 +707,16 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("demo-travel-booking-001", output)
         self.assertIn("demo-meal-planning-001", output)
         self.assertIn("demo-research-summary-001", output)
+
+    def test_scaffold_agent_event_dry_run_does_not_write_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, output = self.run_cli(["scaffold-agent-event", "support_reply", "--output-dir", tmp, "--dry-run"])
+            report = json.loads(output)
+
+            self.assertEqual(code, 0)
+            self.assertTrue(report["dry_run"])
+            self.assertEqual(report["event_preview"]["adapter_id"], "support_reply")
+            self.assertFalse((pathlib.Path(tmp) / "support_reply.json").exists())
 
     def test_scaffold_agent_event_creates_event(self):
         with tempfile.TemporaryDirectory() as tmp:

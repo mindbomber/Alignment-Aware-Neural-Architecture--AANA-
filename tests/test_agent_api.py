@@ -21,6 +21,9 @@ class AgentApiTests(unittest.TestCase):
         self.assertEqual(result["recommended_action"], "revise")
         self.assertTrue(result["violations"])
         self.assertIn("safe_response", result)
+        self.assertIn("aix", result)
+        self.assertIn("candidate_aix", result)
+        self.assertEqual(result["aix"]["decision"], "accept")
 
     def test_policy_presets_include_agent_workflows(self):
         presets = agent_api.list_policy_presets()
@@ -86,6 +89,7 @@ class AgentApiTests(unittest.TestCase):
         self.assertEqual(record["adapter_id"], "support_reply")
         self.assertEqual(record["gate_decision"], "pass")
         self.assertEqual(record["recommended_action"], "revise")
+        self.assertEqual(record["aix"]["decision"], "accept")
         self.assertGreater(record["violation_count"], 0)
         self.assertIn("private_account_detail", record["violation_codes"])
         self.assertIn("sha256", record["input_fingerprints"]["candidate"])
@@ -109,6 +113,42 @@ class AgentApiTests(unittest.TestCase):
         self.assertEqual(summary["gate_decisions"]["pass"], 1)
         self.assertEqual(summary["recommended_actions"]["revise"], 1)
         self.assertIn("invented_order_id", summary["violation_codes"])
+        self.assertEqual(summary["aix"]["decisions"]["accept"], 1)
+        self.assertEqual(summary["aix"]["hard_blockers"], {})
+
+    def test_export_audit_metrics_flattens_summary_for_dashboards(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        result = agent_api.check_event(event)
+        record = agent_api.audit_event_check(event, result, created_at="2026-05-05T00:00:00+00:00")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            metrics_path = pathlib.Path(tmp) / "metrics" / "aana-metrics.json"
+            agent_api.append_audit_record(audit_log, record)
+            payload = agent_api.export_audit_metrics_file(
+                audit_log,
+                output_path=metrics_path,
+                created_at="2026-05-05T00:01:00+00:00",
+            )
+
+            metrics = payload["metrics"]
+            self.assertTrue(metrics_path.exists())
+            self.assertEqual(payload["audit_metrics_export_version"], "0.1")
+            self.assertEqual(payload["record_count"], 1)
+            self.assertEqual(metrics["audit_records_total"], 1)
+            self.assertEqual(metrics["audit_record_type_count.agent_check"], 1)
+            self.assertEqual(metrics["gate_decision_count"], 1)
+            self.assertEqual(metrics["gate_decision_count.pass"], 1)
+            self.assertEqual(metrics["recommended_action_count"], 1)
+            self.assertEqual(metrics["recommended_action_count.revise"], 1)
+            self.assertGreater(metrics["violation_code_count"], 0)
+            self.assertEqual(metrics["violation_code_count.invented_order_id"], 1)
+            self.assertEqual(metrics["adapter_check_count.support_reply"], 1)
+            self.assertEqual(metrics["aix_score_average"], 1.0)
+            self.assertEqual(metrics["aix_decision_count"], 1)
+            self.assertEqual(metrics["aix_decision_count.accept"], 1)
+            self.assertEqual(metrics["aix_hard_blocker_count"], 0)
+            self.assertIn("latency", payload["unavailable_metrics"])
 
 
 if __name__ == "__main__":

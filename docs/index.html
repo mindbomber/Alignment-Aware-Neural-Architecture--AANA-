@@ -39,6 +39,7 @@
           <a href="#plain-language">Plain English</a>
           <a href="#videos">Videos</a>
           <a href="#applications">Uses</a>
+          <a href="#aana-vs-sota">Why Different</a>
           <a href="#how-it-works">How It Works</a>
           <a href="#evidence">Evidence</a>
           <a href="#infographic">Infographic</a>
@@ -262,6 +263,85 @@
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/domain-adapter-template.md" target="_blank" rel="noopener">Use adapter template</a>
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/application_scenarios.jsonl" target="_blank" rel="noopener">View scenario pack</a>
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/application-demo-report.md" target="_blank" rel="noopener">Read demo results</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="aana-vs-sota">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Why this is different</p>
+              <h2>AANA is not just a stronger model. It is a runtime correction architecture around the model.</h2>
+            </div>
+            <p>
+              Frontier LLMs and multimodal models already use alignment training, safety policies,
+              tool use, retrieval, and hidden refusal behavior. AANA makes the verification loop
+              explicit so teams can inspect what evidence was checked, what failed, and why an
+              answer or action was accepted, revised, refused, or deferred.
+            </p>
+          </div>
+
+          <div class="architecture-contrast" aria-label="Comparison between SOTA model behavior and AANA architecture">
+            <div class="contrast-lane sota-lane">
+              <div class="lane-head">
+                <strong>SOTA LLM or multimodal model</strong>
+                <span>Powerful generator with mostly internal alignment behavior</span>
+              </div>
+              <div class="lane-flow">
+                <span>Prompt</span>
+                <span>Model weights, policies, tools, and hidden checks</span>
+                <span>Answer or refusal</span>
+              </div>
+              <ul class="contrast-list">
+                <li>Strong average behavior from training and product guardrails.</li>
+                <li>Domain constraints often live in prompts, hidden policies, or middleware.</li>
+                <li>Downstream teams may not see which evidence or verifier changed the decision.</li>
+              </ul>
+            </div>
+
+            <div class="contrast-lane aana-lane">
+              <div class="lane-head">
+                <strong>AANA-style architecture</strong>
+                <span>Generator plus explicit verifiers, evidence, correction policy, and gate</span>
+              </div>
+              <div class="lane-flow aana-flow">
+                <span>Request</span>
+                <span>Generator</span>
+                <span>Evidence</span>
+                <span>Verifier stack</span>
+                <span>Revise, retrieve, ask, refuse, defer, or accept</span>
+                <span>Audited gate</span>
+              </div>
+              <ul class="contrast-list">
+                <li>Environment-specific facts and policies become runtime evidence.</li>
+                <li>Verifier calibration, escalation, and audit records are first-class concerns.</li>
+                <li>The system can correct or route uncertainty instead of silently trusting a polished answer.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="difference-grid">
+            <article class="info-card">
+              <strong>Local facts</strong>
+              <h3>Base models do not know your environment.</h3>
+              <p>Refund eligibility, file scope, CI status, jurisdiction, calendar state, and access rights need deployment-specific evidence.</p>
+            </article>
+            <article class="info-card">
+              <strong>Visible gates</strong>
+              <h3>Hidden alignment is hard to govern.</h3>
+              <p>AANA exposes adapter, verifier, action, violation, and audit metadata so teams can review what happened.</p>
+            </article>
+            <article class="info-card">
+              <strong>Consequence-aware</strong>
+              <h3>More checking is worth it when false accepts are costly.</h3>
+              <p>The loop adds latency and infrastructure, so it fits consequential actions better than casual low-stakes chat.</p>
+            </article>
+          </div>
+
+          <div class="section-actions">
+            <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-vs-sota-llms.md" target="_blank" rel="noopener">Read the full explainer</a>
+            <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/architecture.md" target="_blank" rel="noopener">Architecture notes</a>
           </div>
         </div>
       </section>
@@ -575,7 +655,7 @@
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py agent-schema agent_event">Copy event schema</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py policy-presets">Copy policy presets</button>
               <button class="button ink" type="button" data-copy-command="python examples/agent_api_usage.py">Copy Python API demo</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_server.py --host 127.0.0.1 --port 8765">Copy HTTP bridge</button>
+              <button class="button ink" type="button" data-copy-command="python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl">Copy HTTP bridge</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py validate-gallery --run-examples">Copy gallery check</button>
               <button class="button ink" type="button" data-copy-command="python scripts/aana_cli.py scaffold &quot;meal planning&quot;">Copy scaffold command</button>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
@@ -609,7 +689,7 @@ aana scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 python scripts/aana_cli.py validate-gallery --run-examples</code></pre>
             <p class="demo-note">
               Agent-event files are local development fixtures. Standalone skills should use a reviewed tool/API connector, keep review payloads redacted, and avoid executing inferred local script paths.

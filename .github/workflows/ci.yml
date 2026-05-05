@@ -21,3 +21,19 @@ jobs:
 
       - name: Run tests
         run: python scripts/dev.py test
+
+      - name: Validate production profiles
+        run: >
+          python scripts/dev.py production-profiles
+          --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl
+          --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
+
+      - name: Upload production profile audit metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aana-production-profile-audit-metrics
+          path: |
+            eval_outputs/audit/ci/aana-ci-audit.jsonl
+            eval_outputs/audit/ci/aana-ci-metrics.json
+          if-no-files-found: warn

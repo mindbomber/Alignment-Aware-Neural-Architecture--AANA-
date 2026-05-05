@@ -27,6 +27,8 @@
     "expected_candidate_gate": "block",
     "expected_gate_decision": "pass",
     "expected_recommended_action": "revise",
-    "notes": "Replace starter values with a real planned agent action before production use."
+    "notes": "Replace starter values with a real planned agent action before production use.",
+    "expected_aix_decision": "accept",
+    "expected_candidate_aix_decision": "refuse"
   }
 }

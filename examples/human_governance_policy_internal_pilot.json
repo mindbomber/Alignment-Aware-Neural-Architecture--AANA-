@@ -1,0 +1,53 @@
+{
+  "policy_name": "AANA Internal Pilot Governance",
+  "owner": "AANA Platform Governance Owner",
+  "review_cadence": "weekly during pilot; monthly after two consecutive clean reviews",
+  "escalation_classes": [
+    {
+      "name": "high-impact safety or regulated decision",
+      "trigger": "medical, legal, financial, insurance, hiring, performance, access, security, grant, billing, or procurement output with missing evidence, unsafe action, or user-impacting decision",
+      "route": "AANA Internal Pilot Human Review Queue",
+      "allowed_actions": ["retrieve", "ask", "defer", "refuse"]
+    },
+    {
+      "name": "irreversible external action",
+      "trigger": "send, publish, delete, move, deploy, migrate, grant access, schedule invite, purchase, export, disclose, or notify action without explicit approval and validated evidence",
+      "route": "AANA Internal Pilot Human Review Queue",
+      "allowed_actions": ["ask", "defer", "refuse"]
+    },
+    {
+      "name": "evidence integrity failure",
+      "trigger": "missing source, stale source, unauthorized source, unredacted private data, conflicting evidence, or unmapped verifier violation",
+      "route": "AANA Evidence Review Queue",
+      "allowed_actions": ["retrieve", "ask", "defer"]
+    },
+    {
+      "name": "gate quality incident",
+      "trigger": "confirmed false accept, repeated false block, over-refusal spike, adapter error spike, or repeated correction failure",
+      "route": "AANA Internal Pilot Incident Log",
+      "allowed_actions": ["defer", "refuse"]
+    }
+  ],
+  "decision_explanations": {
+    "ask": "I need specific verified evidence or confirmation before AANA can check this action safely.",
+    "defer": "AANA cannot verify the required evidence for this workflow, so the action is held for human review before it proceeds.",
+    "refuse": "AANA cannot approve this request because it would bypass a required safety, evidence, privacy, or governance boundary."
+  },
+  "review_metrics": [
+    "false_accept_rate",
+    "false_block_rate",
+    "over_refusal_rate",
+    "human_review_turnaround_time",
+    "repeat_violation_codes",
+    "unmapped_violation_count",
+    "correction_success_rate",
+    "evidence_integrity_failure_count",
+    "adapter_error_count"
+  ],
+  "incident_response": {
+    "owner": "AANA Platform Governance Owner",
+    "severity_levels": ["low", "medium", "high", "critical"],
+    "rollback_trigger": "critical false accept, verified private-data leak, unauthorized irreversible action, or repeated high-impact false accepts in one review period",
+    "notification_path": "AANA Internal Pilot Incident Log"
+  }
+}

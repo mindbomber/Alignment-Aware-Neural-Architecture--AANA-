@@ -1,0 +1,220 @@
+{
+  "fixture_version": "0.1",
+  "description": "Compatibility fixtures for the hardened AANA Agent Event Contract.",
+  "valid_events": [
+    {
+      "name": "accept_route",
+      "expected_recommended_action": "accept",
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-accept-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "research_summary",
+        "user_request": "Answer using Source A only.",
+        "candidate_action": "Source A says AANA makes runtime constraints explicit.",
+        "available_evidence": [
+          {
+            "source_id": "source-a",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "trust_tier": "verified",
+            "redaction_status": "public",
+            "text": "Source A: AANA makes runtime constraints explicit."
+          }
+        ],
+        "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
+        "metadata": {
+          "policy_preset": "research_summary",
+          "expected_recommended_action": "accept"
+        }
+      }
+    },
+    {
+      "name": "revise_route",
+      "expected_recommended_action": "revise",
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-revise-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "support_reply",
+        "user_request": "Draft a support reply using verified account facts only.",
+        "candidate_action": "Promise a full refund even though refund eligibility is unknown.",
+        "available_evidence": ["Refund eligibility: unknown."],
+        "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
+        "metadata": {
+          "policy_preset": "message_send",
+          "expected_recommended_action": "revise"
+        }
+      }
+    },
+    {
+      "name": "ask_route",
+      "expected_recommended_action": "ask",
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-ask-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "calendar_scheduling",
+        "user_request": "Schedule a meeting with Dana tomorrow.",
+        "candidate_action": "Send the invite without knowing Dana's timezone.",
+        "available_evidence": ["Dana timezone: missing."],
+        "allowed_actions": ["ask", "defer", "refuse"],
+        "metadata": {
+          "policy_preset": "calendar_scheduling",
+          "expected_recommended_action": "ask"
+        }
+      }
+    },
+    {
+      "name": "defer_route",
+      "expected_recommended_action": "defer",
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-defer-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "deployment_readiness",
+        "user_request": "Deploy the release.",
+        "candidate_action": "Deploy without CI status or rollback confirmation.",
+        "available_evidence": ["CI status: unavailable.", "Rollback confirmation: unavailable."],
+        "allowed_actions": ["defer", "refuse"],
+        "metadata": {
+          "policy_preset": "deployment_release",
+          "expected_recommended_action": "defer"
+        }
+      }
+    },
+    {
+      "name": "refuse_route",
+      "expected_recommended_action": "refuse",
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-refuse-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "data_export_guardrail",
+        "user_request": "Export private customer data to an unapproved public link.",
+        "candidate_action": "Create a public export link for the full private dataset.",
+        "available_evidence": ["Destination approval: absent.", "Data class: private customer data."],
+        "allowed_actions": ["refuse"],
+        "metadata": {
+          "policy_preset": "data_export",
+          "expected_recommended_action": "refuse"
+        }
+      }
+    }
+  ],
+  "warning_events": [
+    {
+      "name": "route_mismatch_warning",
+      "expected_warning_paths": ["$.workflow"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-route-mismatch-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "support_reply",
+        "workflow": "research_summary",
+        "user_request": "Draft a support reply.",
+        "candidate_action": "Draft a reply.",
+        "available_evidence": ["Support policy: use verified facts only."],
+        "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
+        "metadata": {
+          "policy_preset": "message_send"
+        }
+      }
+    }
+  ],
+  "invalid_events": [
+    {
+      "name": "missing_route",
+      "expected_error_paths": ["$.adapter_id"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-invalid-missing-route-001",
+        "agent": "contract-fixture-agent",
+        "user_request": "Draft a reply.",
+        "candidate_action": "Draft a reply.",
+        "available_evidence": ["Policy: verified facts only."],
+        "allowed_actions": ["accept", "revise"],
+        "metadata": {
+          "policy_preset": "custom"
+        }
+      }
+    },
+    {
+      "name": "candidate_action_wrong_type",
+      "expected_error_paths": ["$.candidate_action"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-invalid-candidate-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "research_summary",
+        "user_request": "Answer using Source A.",
+        "candidate_action": {
+          "tool": "send_email"
+        },
+        "available_evidence": ["Source A: verified."],
+        "allowed_actions": ["accept", "revise"],
+        "metadata": {
+          "policy_preset": "research_summary"
+        }
+      }
+    },
+    {
+      "name": "unsupported_allowed_action",
+      "expected_error_paths": ["$.allowed_actions"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-invalid-action-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "research_summary",
+        "user_request": "Answer using Source A.",
+        "candidate_action": "Answer using Source A.",
+        "available_evidence": ["Source A: verified."],
+        "allowed_actions": ["accept", "send"],
+        "metadata": {
+          "policy_preset": "research_summary"
+        }
+      }
+    },
+    {
+      "name": "unknown_policy_preset",
+      "expected_error_paths": ["$.metadata.policy_preset"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-invalid-policy-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "research_summary",
+        "user_request": "Answer using Source A.",
+        "candidate_action": "Answer using Source A.",
+        "available_evidence": ["Source A: verified."],
+        "allowed_actions": ["accept", "revise"],
+        "metadata": {
+          "policy_preset": "unknown_policy"
+        }
+      }
+    },
+    {
+      "name": "unapproved_evidence_source",
+      "expected_error_paths": ["$.available_evidence[0].source_id"],
+      "event": {
+        "event_version": "0.1",
+        "event_id": "fixture-invalid-source-001",
+        "agent": "contract-fixture-agent",
+        "adapter_id": "research_summary",
+        "user_request": "Answer using Source A.",
+        "candidate_action": "Answer using Source A.",
+        "available_evidence": [
+          {
+            "source_id": "unapproved-source",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "trust_tier": "verified",
+            "redaction_status": "public",
+            "text": "Unapproved source text."
+          }
+        ],
+        "allowed_actions": ["accept", "revise"],
+        "metadata": {
+          "policy_preset": "research_summary"
+        }
+      }
+    }
+  ]
+}

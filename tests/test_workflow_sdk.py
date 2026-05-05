@@ -31,6 +31,8 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(result["recommended_action"], "revise")
         self.assertTrue(result["violations"])
         self.assertIn("Grounded research summary", result["output"])
+        self.assertEqual(result["aix"]["decision"], "accept")
+        self.assertIn("candidate_aix", result)
 
     def test_validate_workflow_request_reports_missing_adapter(self):
         report = aana.validate_workflow_request({"request": "Draft a summary."})
@@ -57,6 +59,7 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertTrue(result_object.passed)
         self.assertEqual(result_object.adapter, "research_summary")
         self.assertEqual(result_object.recommended_action, "revise")
+        self.assertEqual(result_object.aix["decision"], "accept")
 
     def test_sdk_check_batch_file_and_result_object(self):
         result = aana.check_batch_file(ROOT / "examples" / "workflow_batch_productive_work.json")
@@ -116,6 +119,8 @@ class WorkflowSdkTests(unittest.TestCase):
 
         self.assertEqual(result["recommended_action"], "defer")
         self.assertTrue(any(item["code"] == "recommended_action_not_allowed" for item in result["violations"]))
+        self.assertEqual(result["aix"]["decision"], "revise")
+        self.assertIn("recommended_action_not_allowed", result["aix"]["hard_blockers"])
 
     def test_schema_catalog_includes_workflow_schemas(self):
         schemas = aana.schema_catalog()
@@ -217,6 +222,13 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(payload["title"], "AANA Workflow Request")
         self.assertIn("adapter", payload["properties"])
 
+    def test_http_aix_schema_route(self):
+        status, payload = agent_server.route_request("GET", "/schemas/aix.schema.json")
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["title"], "AANA AIx Score")
+        self.assertIn("score", payload["properties"])
+
     def test_sdk_workflow_audit_record_excludes_raw_text(self):
         workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
         result = aana.check_request(workflow_request)
@@ -232,6 +244,7 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(record["adapter"], "research_summary")
         self.assertEqual(record["gate_decision"], "pass")
         self.assertEqual(record["recommended_action"], "revise")
+        self.assertEqual(record["aix"]["decision"], "accept")
         self.assertGreater(record["violation_count"], 0)
         self.assertGreater(record["evidence_count"], 0)
         self.assertIn("sha256", record["input_fingerprints"]["request"])

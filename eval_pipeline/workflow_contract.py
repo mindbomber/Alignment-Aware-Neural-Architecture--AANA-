@@ -2,7 +2,7 @@
 
 from dataclasses import asdict, dataclass, field
 
-from eval_pipeline import agent_contract
+from eval_pipeline import agent_contract, aix
 
 
 WORKFLOW_CONTRACT_VERSION = "0.1"
@@ -52,6 +52,8 @@ class WorkflowResult:
     workflow_id: str | None = None
     workflow: str | None = None
     candidate_gate: str | None = None
+    aix: dict | None = None
+    candidate_aix: dict | None = None
     violations: list[dict] = field(default_factory=list)
     raw_result: dict = field(default_factory=dict)
     contract_version: str = WORKFLOW_CONTRACT_VERSION
@@ -66,6 +68,8 @@ class WorkflowResult:
             gate_decision=data.get("gate_decision"),
             recommended_action=data.get("recommended_action"),
             candidate_gate=data.get("candidate_gate"),
+            aix=data.get("aix"),
+            candidate_aix=data.get("candidate_aix"),
             violations=data.get("violations", []),
             output=data.get("output"),
             raw_result=data.get("raw_result", {}),
@@ -226,6 +230,8 @@ WORKFLOW_RESULT_SCHEMA = {
         "gate_decision": {"type": "string", "enum": GATE_DECISIONS},
         "recommended_action": {"type": "string", "enum": ALLOWED_ACTIONS},
         "candidate_gate": {"type": ["string", "null"]},
+        "aix": aix.AIX_SCHEMA,
+        "candidate_aix": aix.AIX_SCHEMA,
         "violations": {"type": "array", "items": {"type": "object"}},
         "output": {"type": ["string", "null"]},
         "raw_result": {"type": "object"},
@@ -352,6 +358,23 @@ def action_within_allowed(action, allowed_actions):
                 "message": f"Adapter recommended {action!r}, but the workflow allows only: {', '.join(allowed)}. Using {fallback!r}.",
             }
     return action, None
+
+
+def safe_failure_action(allowed_actions):
+    """Return the safest action to recommend when a workflow item cannot run."""
+
+    allowed = allowed_actions_or_default(allowed_actions)
+    if isinstance(allowed, list) and allowed:
+        for fallback in ("defer", "ask", "refuse", "revise", "retrieve"):
+            if fallback in allowed:
+                return fallback, None
+        if "accept" in allowed:
+            return "defer", {
+                "code": "no_safe_allowed_action",
+                "severity": "high",
+                "message": "The workflow item failed, and the only allowed action was accept. Direct accept is blocked; using defer.",
+            }
+    return "defer", None
 
 
 def validate_workflow_request(request):
@@ -589,6 +612,7 @@ def workflow_request_to_agent_event(request, agent="workflow"):
 
 def schema_catalog():
     return {
+        "aix": aix.AIX_SCHEMA,
         "workflow_request": WORKFLOW_REQUEST_SCHEMA,
         "workflow_batch_request": WORKFLOW_BATCH_REQUEST_SCHEMA,
         "workflow_result": WORKFLOW_RESULT_SCHEMA,

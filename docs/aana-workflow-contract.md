@@ -22,7 +22,25 @@ Install the repo locally:
 python -m pip install -e .
 ```
 
-Then call AANA from Python:
+For new programmatic integrations, use the typed runtime API:
+
+```python
+import eval_pipeline
+
+result = eval_pipeline.check(
+    adapter="research_summary",
+    request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
+    candidate="AANA improves productivity by 40% for all teams [Source C].",
+    evidence=["Source A: AANA makes constraints explicit."],
+    constraints=["Do not invent citations."],
+)
+
+print(result.api_version, result.contract_version, result.recommended_action)
+```
+
+See [`python-runtime-api.md`](python-runtime-api.md) for typed result objects, public exceptions, and version rules.
+
+The compatibility `aana` package keeps the original dictionary-returning helper functions:
 
 ```python
 import aana
@@ -41,7 +59,11 @@ result = aana.check(
     ],
 )
 
-if result["gate_decision"] == "pass":
+if (
+    result["gate_decision"] == "pass"
+    and result["recommended_action"] == "accept"
+    and result["aix"]["decision"] == "accept"
+):
     print(result["output"])
 else:
     print(result["recommended_action"])
@@ -82,9 +104,13 @@ The result includes:
 - `gate_decision`: `pass`, `block`, `fail`, or `needs_adapter_implementation`
 - `recommended_action`: `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`
 - `candidate_gate`: whether the candidate was blocked
+- `aix`: final output Alignment Index with `score`, `components`, `beta`, `thresholds`, `decision`, and `hard_blockers`
+- `candidate_aix`: candidate Alignment Index when a candidate was supplied
 - `violations`: verifier findings against the candidate
 - `output`: the accepted or repaired output
 - `raw_result`: the underlying adapter and agent-check result
+
+AIx is an additional decision surface, not a gate replacement. Do not proceed when `aix.hard_blockers` is non-empty. In correction flows, `candidate_aix` may be low while final `aix` is acceptable after the adapter repairs or routes the answer.
 
 `allowed_actions` is enforced. If an adapter recommends an action that the caller did not allow, AANA selects the safest available fallback action from the caller's list and adds a `recommended_action_not_allowed` violation.
 
@@ -102,10 +128,13 @@ Evidence can be passed as simple strings or as structured objects when provenanc
 
 Production integrations should prefer structured evidence objects, keep raw private records out of request files when a redacted summary is enough, and treat missing or stale evidence as a reason to `retrieve`, `ask`, or `defer`.
 
+Production evidence connector stubs are available for CRM/support, ticketing, email, calendar, IAM, CI/code review, deployment/release, billing/payment, data export, workspace files, and security systems. They define required source IDs, auth boundaries, redaction expectations, freshness behavior, and structured evidence templates without performing external calls.
+
 Evidence can be validated against an approved source registry:
 
 ```powershell
 python scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json
+python scripts/aana_cli.py evidence-integrations --evidence-registry examples/evidence_registry.json
 python scripts/aana_cli.py validate-workflow-evidence --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured-evidence
 ```
@@ -197,19 +226,19 @@ python scripts/aana_cli.py workflow-schema workflow_batch_result
 Start the local bridge:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 ```
 
 For production-like local runs, require POST authentication:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 ```
 
-Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`.
+Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`. With `--audit-log`, successful `/workflow-check` and `/workflow-batch` calls append redacted audit records from the bridge process.
 
-For audit trails, use `aana.audit_workflow_check(workflow_request, result)` or `aana.audit_workflow_batch(batch_request, result)`. These helpers produce redacted records with IDs, gate decisions, recommended actions, violation codes, counts, and SHA-256 fingerprints for checked text. They do not include raw requests, candidates, evidence, constraints, or outputs.
+For audit trails, use `aana.audit_workflow_check(workflow_request, result)` or `aana.audit_workflow_batch(batch_request, result)`. These helpers produce redacted records with IDs, gate decisions, recommended actions, AIx score summaries, violation codes, counts, and SHA-256 fingerprints for checked text. They do not include raw requests, candidates, evidence, constraints, or outputs.
 
 The CLI can append redacted workflow audit records to JSONL:
 
@@ -229,6 +258,7 @@ Workflow routes:
 - `GET /schemas/workflow-batch-request.schema.json`
 - `GET /schemas/workflow-result.schema.json`
 - `GET /schemas/workflow-batch-result.schema.json`
+- `GET /schemas/aix.schema.json`
 
 PowerShell example:
 
@@ -258,7 +288,7 @@ The contract is intentionally small. A production integration should add:
 
 - authenticated evidence and source IDs,
 - retrieval provenance,
-- audit logs for candidate, violations, repair, and final output,
+- audit logs for candidate, AIx summaries, violations, repair, and final output,
 - stricter domain verifiers,
 - human review for high-impact or low-confidence decisions,
 - deployment controls around the HTTP bridge.

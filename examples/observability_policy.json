@@ -3,6 +3,9 @@
   "owner": "AANA Maintainers",
   "dashboard_url": "https://observability.local/aana",
   "tracked_metrics": [
+    "aix_decision_count",
+    "aix_hard_blocker_count",
+    "aix_score_average",
     "gate_decision_count",
     "recommended_action_count",
     "violation_code_count",
@@ -20,6 +23,22 @@
       "threshold": 0.01,
       "severity": "critical",
       "route": "AANA Local Incident Log"
+    },
+    {
+      "name": "low average AIx score",
+      "metric": "aix_score_average",
+      "condition": "less_than",
+      "threshold": 0.85,
+      "severity": "high",
+      "route": "AANA Local Human Review Queue"
+    },
+    {
+      "name": "AIx hard blocker present",
+      "metric": "aix_hard_blocker_count",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "high",
+      "route": "AANA Local Human Review Queue"
     },
     {
       "name": "high block rate",
@@ -44,6 +63,9 @@
     "required_reports": [
       "pass_block_fail_trend",
       "recommended_action_distribution",
+      "aix_score_trend",
+      "aix_decision_distribution",
+      "aix_hard_blocker_review",
       "top_violation_codes",
       "latency_trend",
       "false_accept_false_block_review"

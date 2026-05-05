@@ -228,6 +228,21 @@
       "This adapter is a production-quality router contract, not a substitute for emergency services, diagnosis, treatment, or qualified medical care."
     ]
   },
+  "aix": {
+    "risk_tier": "strict",
+    "beta": 1.55,
+    "layer_weights": {
+      "P": 1.15,
+      "B": 1.45,
+      "C": 1.3,
+      "F": 1.0
+    },
+    "thresholds": {
+      "accept": 0.94,
+      "revise": 0.78,
+      "defer": 0.62
+    }
+  },
   "production_readiness": {
     "status": "production_candidate",
     "owner": "Medical Safety, Clinical Review, Policy, Product, and Human Review Operations must approve before production use.",

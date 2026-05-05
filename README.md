@@ -39,7 +39,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For the architecture distinction between AANA and frontier base models, see [docs/aana-vs-sota-llms.md](docs/aana-vs-sota-llms.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For frozen public interfaces, see [docs/contract-freeze.md](docs/contract-freeze.md). For pilot evaluation before real data, see [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -401,7 +401,17 @@ Or use the helper script:
 
 ```powershell
 python scripts/dev.py check
+python scripts/dev.py contract-freeze
+python scripts/dev.py production-profiles
+python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
+python scripts/dev.py pilot-bundle
+python scripts/dev.py pilot-eval
 ```
+
+`contract-freeze` validates frozen public contracts, schemas, compatibility fixtures, and docs for adapter JSON, Agent Event, Workflow, AIx, evidence, audit, and metrics surfaces.
+`production-profiles` is the CI-facing guard for the internal pilot profile: it validates the adapter gallery, contract freeze, AIx tuning, deployment manifest, governance policy, observability policy, evidence registry, evidence integration stubs, exports audit metrics, and runs release-check with a generated redacted audit log. In CI, the audit JSONL and metrics JSON are uploaded as the `aana-production-profile-audit-metrics` artifact.
+`pilot-bundle` runs the broader local pilot: multiple agent events, redacted audit logging, metrics export, audit integrity manifest generation, release-check, and production-profile validation.
+`pilot-eval` runs the AANA Pilot Evaluation Kit: synthetic and public-data-rehearsal packs for enterprise, personal, civic/government, and public-data pilot planning, with redacted audit logs, audit metrics, and Markdown/JSON reports.
 
 ## Important safety notes
 

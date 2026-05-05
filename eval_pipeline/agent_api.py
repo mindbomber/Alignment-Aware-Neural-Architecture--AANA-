@@ -12,7 +12,7 @@ if str(SCRIPTS) not in sys.path:
 
 import run_adapter
 import validate_adapter_gallery
-from eval_pipeline import agent_contract, audit, evidence as evidence_registry, workflow_contract
+from eval_pipeline import agent_contract, audit, aix, evidence as evidence_registry, evidence_integrations, workflow_contract
 
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
@@ -271,6 +271,24 @@ def find_entry(gallery, adapter_id):
     raise ValueError(f"Unknown adapter id: {adapter_id}. Available adapters: {available}.")
 
 
+def evidence_item_to_text(item):
+    if isinstance(item, str):
+        return item
+    if not isinstance(item, dict):
+        return str(item)
+    parts = []
+    if item.get("source_id"):
+        parts.append(f"source_id={item['source_id']}")
+    if item.get("trust_tier"):
+        parts.append(f"trust_tier={item['trust_tier']}")
+    if item.get("redaction_status"):
+        parts.append(f"redaction_status={item['redaction_status']}")
+    prefix = " ".join(parts)
+    if prefix:
+        return f"[{prefix}] {item.get('text', '')}"
+    return item.get("text", "")
+
+
 def prompt_from_event(event):
     user_request = event.get("user_request") or event.get("prompt")
     if not isinstance(user_request, str) or not user_request.strip():
@@ -278,7 +296,7 @@ def prompt_from_event(event):
 
     evidence = event.get("available_evidence", [])
     if isinstance(evidence, list) and evidence:
-        evidence_lines = "\n".join(f"- {item}" for item in evidence)
+        evidence_lines = "\n".join(f"- {evidence_item_to_text(item)}" for item in evidence)
         return f"{user_request}\n\nAvailable verified evidence:\n{evidence_lines}"
     return user_request
 
@@ -293,7 +311,9 @@ def candidate_from_event(event):
 
 
 def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
-    contract_report = agent_contract.validate_agent_event(event)
+    if isinstance(event, dict) and adapter_id and event.get("adapter_id") and adapter_id != event.get("adapter_id"):
+        raise ValueError(f"Route mismatch: adapter_id override {adapter_id!r} does not match event adapter_id {event.get('adapter_id')!r}.")
+    contract_report = agent_contract.validate_agent_event(event, policy_presets=POLICY_PRESETS)
     if not contract_report["valid"]:
         messages = "; ".join(issue["message"] for issue in contract_report["issues"] if issue["level"] == "error")
         raise ValueError(messages)
@@ -315,6 +335,8 @@ def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
         "gate_decision": result.get("gate_decision"),
         "recommended_action": result.get("recommended_action"),
         "candidate_gate": result.get("candidate_gate"),
+        "aix": result.get("aix"),
+        "candidate_aix": result.get("candidate_aix"),
         "violations": result.get("candidate_tool_report", result.get("tool_report", {})).get("violations", []),
         "safe_response": result.get("final_answer"),
         "adapter_result": result,
@@ -360,6 +382,26 @@ def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
     violations = list(result.get("violations", []))
     if action_violation:
         violations.append(action_violation)
+    workflow_aix = result.get("aix")
+    if action_violation and isinstance(workflow_aix, dict):
+        workflow_aix = dict(workflow_aix)
+        hard_blockers = list(workflow_aix.get("hard_blockers", []))
+        hard_blockers.append(action_violation["code"])
+        workflow_aix["hard_blockers"] = sorted(set(hard_blockers))
+        thresholds = {
+            **aix.DEFAULT_THRESHOLDS,
+            **(workflow_aix.get("thresholds", {}) if isinstance(workflow_aix.get("thresholds"), dict) else {}),
+        }
+        score = min(float(workflow_aix.get("score", 0.0)), float(thresholds.get("accept", 0.85)) - 0.01)
+        workflow_aix["score"] = round(max(0.0, score), 4)
+        workflow_aix["decision"] = aix.decision_from_score(
+            workflow_aix["score"],
+            hard_blockers=workflow_aix["hard_blockers"],
+            thresholds=thresholds,
+        )
+        notes = list(workflow_aix.get("notes", []))
+        notes.append("Workflow allowed_actions changed the recommended action; direct accept is blocked.")
+        workflow_aix["notes"] = notes
     return {
         "contract_version": WORKFLOW_CONTRACT_VERSION,
         "workflow_id": workflow_request.get("workflow_id"),
@@ -368,6 +410,8 @@ def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
         "gate_decision": result.get("gate_decision"),
         "recommended_action": recommended_action,
         "candidate_gate": result.get("candidate_gate"),
+        "aix": workflow_aix,
+        "candidate_aix": result.get("candidate_aix"),
         "violations": violations,
         "output": result.get("safe_response"),
         "raw_result": result,
@@ -392,6 +436,54 @@ def workflow_batch_summary(results):
     }
 
 
+def workflow_item_failure_result(workflow_request, error, index=None, batch_id=None):
+    item = workflow_request if isinstance(workflow_request, dict) else {}
+    workflow_id = item.get("workflow_id")
+    if not workflow_id and index is not None:
+        workflow_id = f"{batch_id or 'workflow-batch'}-{index + 1}"
+    recommended_action, action_violation = workflow_contract.safe_failure_action(item.get("allowed_actions"))
+    violation = {
+        "code": "workflow_item_error",
+        "severity": "high",
+        "message": str(error),
+    }
+    violations = [violation]
+    hard_blockers = [violation["code"]]
+    if action_violation:
+        violations.append(action_violation)
+        hard_blockers.append(action_violation["code"])
+    return {
+        "contract_version": WORKFLOW_CONTRACT_VERSION,
+        "workflow_id": workflow_id,
+        "adapter": item.get("adapter"),
+        "workflow": None,
+        "gate_decision": "fail",
+        "recommended_action": recommended_action,
+        "candidate_gate": "block",
+        "aix": {
+            "aix_version": aix.AIX_VERSION,
+            "score": 0.0,
+            "components": {},
+            "base_score": 0.0,
+            "penalty": 1.0,
+            "beta": 1.0,
+            "thresholds": dict(aix.DEFAULT_THRESHOLDS),
+            "decision": "refuse",
+            "hard_blockers": sorted(set(hard_blockers)),
+            "notes": ["Workflow batch item failed before adapter completion; direct accept is blocked."],
+        },
+        "candidate_aix": None,
+        "violations": violations,
+        "output": None,
+        "raw_result": {
+            "error": {
+                "type": error.__class__.__name__,
+                "message": str(error),
+            }
+        },
+    }
+
+
 def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
     contract_report = workflow_contract.validate_workflow_batch_request(batch_request)
     if not contract_report["valid"]:
@@ -403,7 +495,17 @@ def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
         item = dict(workflow_request)
         if not item.get("workflow_id"):
             item["workflow_id"] = f"{batch_request.get('batch_id') or 'workflow-batch'}-{index + 1}"
-        results.append(check_workflow_request(item, gallery_path=gallery_path))
+        try:
+            results.append(check_workflow_request(item, gallery_path=gallery_path))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            results.append(
+                workflow_item_failure_result(
+                    item,
+                    exc,
+                    index=index,
+                    batch_id=batch_request.get("batch_id"),
+                )
+            )
 
     return {
         "contract_version": WORKFLOW_CONTRACT_VERSION,
@@ -459,12 +561,39 @@ def summarize_audit_file(path):
     return audit.summarize_jsonl(path)
 
 
+def export_audit_metrics(records, audit_log_path=None, created_at=None):
+    return audit.export_metrics(records, audit_log_path=audit_log_path, created_at=created_at)
+
+
+def export_audit_metrics_file(audit_log_path, output_path=None, created_at=None):
+    return audit.export_metrics_jsonl(audit_log_path, output_path=output_path, created_at=created_at)
+
+
+def create_audit_integrity_manifest(audit_log_path, manifest_path=None, previous_manifest_path=None, created_at=None):
+    return audit.create_integrity_manifest(
+        audit_log_path,
+        manifest_path=manifest_path,
+        previous_manifest_path=previous_manifest_path,
+        created_at=created_at,
+    )
+
+
+def verify_audit_integrity_manifest(manifest_path):
+    return audit.verify_integrity_manifest(manifest_path)
+
+
 def list_policy_presets():
     return POLICY_PRESETS
 
 
-def validate_event(event):
-    return agent_contract.validate_agent_event(event)
+def validate_event(event, evidence_registry=None, require_structured_evidence=False, now=None):
+    return agent_contract.validate_agent_event(
+        event,
+        policy_presets=POLICY_PRESETS,
+        source_registry=evidence_registry,
+        require_structured_evidence=require_structured_evidence,
+        now=now,
+    )
 
 
 def validate_workflow_request(workflow_request):
@@ -483,9 +612,26 @@ def validate_evidence_registry(registry):
     return evidence_registry.validate_registry(registry)
 
 
+def evidence_integration_stubs():
+    return [stub.to_dict() for stub in evidence_integrations.all_integration_stubs()]
+
+
+def evidence_integration_coverage(registry=None):
+    return evidence_integrations.integration_coverage_report(registry=registry)
+
+
 def validate_workflow_evidence(workflow_request, registry, require_structured=False, now=None):
     return evidence_registry.validate_workflow_evidence(
         workflow_request,
+        registry,
+        require_structured=require_structured,
+        now=now,
+    )
+
+
+def validate_workflow_batch_evidence(batch_request, registry, require_structured=False, now=None):
+    return evidence_registry.validate_workflow_batch_evidence(
+        batch_request,
         registry,
         require_structured=require_structured,
         now=now,
@@ -521,6 +667,8 @@ def run_agent_event_examples(events_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=D
                     "gate_decision": None,
                     "recommended_action": None,
                     "candidate_gate": None,
+                    "aix_decision": None,
+                    "candidate_aix_decision": None,
                     "passed_expectations": False,
                     "validation": validation,
                 }
@@ -532,10 +680,15 @@ def run_agent_event_examples(events_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=D
         expected_candidate_gate = metadata.get("expected_candidate_gate")
         expected_gate_decision = metadata.get("expected_gate_decision")
         expected_recommended_action = metadata.get("expected_recommended_action")
+        expected_aix_decision = metadata.get("expected_aix_decision")
+        expected_candidate_aix_decision = metadata.get("expected_candidate_aix_decision")
         expectation_checks = [
             expected_candidate_gate is None or result.get("candidate_gate") == expected_candidate_gate,
             expected_gate_decision is None or result.get("gate_decision") == expected_gate_decision,
             expected_recommended_action is None or result.get("recommended_action") == expected_recommended_action,
+            expected_aix_decision is None or result.get("aix", {}).get("decision") == expected_aix_decision,
+            expected_candidate_aix_decision is None
+            or result.get("candidate_aix", {}).get("decision") == expected_candidate_aix_decision,
         ]
         rows.append(
             {
@@ -546,6 +699,8 @@ def run_agent_event_examples(events_dir=DEFAULT_AGENT_EVENTS_DIR, gallery_path=D
                 "gate_decision": result.get("gate_decision"),
                 "recommended_action": result.get("recommended_action"),
                 "candidate_gate": result.get("candidate_gate"),
+                "aix_decision": result.get("aix", {}).get("decision"),
+                "candidate_aix_decision": result.get("candidate_aix", {}).get("decision"),
                 "passed_expectations": all(expectation_checks),
                 "validation": validation,
             }
@@ -586,6 +741,8 @@ def build_agent_event_from_gallery(adapter_id, gallery_path=DEFAULT_GALLERY, age
             "expected_candidate_gate": expected.get("candidate_gate"),
             "expected_gate_decision": expected.get("gate_decision"),
             "expected_recommended_action": expected.get("recommended_action"),
+            "expected_aix_decision": expected.get("aix_decision"),
+            "expected_candidate_aix_decision": expected.get("candidate_aix_decision"),
             "notes": "Replace starter values with a real planned agent action before production use.",
         },
     }

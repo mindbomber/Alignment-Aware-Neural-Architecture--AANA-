@@ -23,6 +23,8 @@
     "policy_preset": "booking_or_purchase",
     "expected_candidate_gate": "block",
     "expected_gate_decision": "pass",
-    "expected_recommended_action": "revise"
+    "expected_recommended_action": "revise",
+    "expected_aix_decision": "accept",
+    "expected_candidate_aix_decision": "refuse"
   }
 }

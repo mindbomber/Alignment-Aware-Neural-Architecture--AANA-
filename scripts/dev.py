@@ -5,11 +5,18 @@ Usage:
     python scripts/dev.py sample
     python scripts/dev.py dry-run
     python scripts/dev.py check
+    python scripts/dev.py production-profiles
+    python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
+    python scripts/dev.py contract-freeze
+    python scripts/dev.py pilot-bundle
+    python scripts/dev.py pilot-eval
 """
 
 import argparse
+import pathlib
 import subprocess
 import sys
+import tempfile
 
 
 PYTHON = sys.executable
@@ -84,19 +91,100 @@ def check():
     sample()
 
 
+def contract_freeze():
+    run([PYTHON, "scripts/aana_cli.py", "contract-freeze"])
+
+
+def production_profiles(audit_log=None, metrics_output=None):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = pathlib.Path(temp_dir)
+        audit_log_path = pathlib.Path(audit_log) if audit_log else temp_path / "aana-ci-audit.jsonl"
+        metrics_output_path = pathlib.Path(metrics_output) if metrics_output else temp_path / "aana-ci-metrics.json"
+        audit_log_path.parent.mkdir(parents=True, exist_ok=True)
+        metrics_output_path.parent.mkdir(parents=True, exist_ok=True)
+        audit_log_path.write_text("", encoding="utf-8")
+        run([PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"])
+        run([PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"])
+        run([PYTHON, "scripts/aana_cli.py", "aix-tuning"])
+        run([PYTHON, "scripts/aana_cli.py", "validate-deployment", "--deployment-manifest", "examples/production_deployment_internal_pilot.json"])
+        run([PYTHON, "scripts/aana_cli.py", "validate-governance", "--governance-policy", "examples/human_governance_policy_internal_pilot.json"])
+        run([PYTHON, "scripts/aana_cli.py", "validate-observability", "--observability-policy", "examples/observability_policy_internal_pilot.json"])
+        run([PYTHON, "scripts/aana_cli.py", "validate-evidence-registry", "--evidence-registry", "examples/evidence_registry.json"])
+        run([PYTHON, "scripts/aana_cli.py", "evidence-integrations", "--evidence-registry", "examples/evidence_registry.json"])
+        run(
+            [
+                PYTHON,
+                "scripts/aana_cli.py",
+                "agent-check",
+                "--event",
+                "examples/agent_event_support_reply.json",
+                "--audit-log",
+                str(audit_log_path),
+            ]
+        )
+        run(
+            [
+                PYTHON,
+                "scripts/aana_cli.py",
+                "audit-metrics",
+                "--audit-log",
+                str(audit_log_path),
+                "--output",
+                str(metrics_output_path),
+            ]
+        )
+        run(
+            [
+                PYTHON,
+                "scripts/aana_cli.py",
+                "release-check",
+                "--skip-local-check",
+                "--deployment-manifest",
+                "examples/production_deployment_internal_pilot.json",
+                "--governance-policy",
+                "examples/human_governance_policy_internal_pilot.json",
+                "--evidence-registry",
+                "examples/evidence_registry.json",
+                "--observability-policy",
+                "examples/observability_policy_internal_pilot.json",
+                "--audit-log",
+                str(audit_log_path),
+            ]
+        )
+
+
+def pilot_bundle():
+    run([PYTHON, "scripts/run_e2e_pilot_bundle.py"])
+
+
+def pilot_eval():
+    run([PYTHON, "scripts/run_pilot_evaluation_kit.py"])
+
+
 COMMANDS = {
     "compile": compile_python,
     "test": test,
     "sample": sample,
     "dry-run": dry_run,
     "check": check,
+    "contract-freeze": contract_freeze,
+    "pilot-bundle": pilot_bundle,
+    "pilot-eval": pilot_eval,
+    "production-profiles": production_profiles,
 }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Run common local development commands.")
     parser.add_argument("command", choices=sorted(COMMANDS))
+    parser.add_argument("--audit-log", default=None, help="Production-profiles audit JSONL artifact path.")
+    parser.add_argument("--metrics-output", default=None, help="Production-profiles audit metrics JSON artifact path.")
     args = parser.parse_args()
+    if args.command == "production-profiles":
+        production_profiles(audit_log=args.audit_log, metrics_output=args.metrics_output)
+        return
+    if args.audit_log or args.metrics_output:
+        parser.error("--audit-log and --metrics-output are only supported for production-profiles.")
     COMMANDS[args.command]()
 
 

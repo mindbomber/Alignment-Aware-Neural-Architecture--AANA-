@@ -1,5 +1,6 @@
 import json
 import pathlib
+import tempfile
 import unittest
 
 from eval_pipeline import agent_api, agent_server
@@ -54,6 +55,58 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(payload["gate_decision"], "pass")
         self.assertEqual(payload["recommended_action"], "revise")
 
+    def test_agent_check_route_appends_redacted_audit_record(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_log = pathlib.Path(temp_dir) / "audit.jsonl"
+
+            status, payload = agent_server.route_request(
+                "POST",
+                "/agent-check",
+                json.dumps(event).encode("utf-8"),
+                headers={"Authorization": "Bearer secret-token"},
+                auth_token="secret-token",
+                audit_log_path=audit_log,
+            )
+
+            self.assertEqual(status, 200)
+            self.assertEqual(payload["gate_decision"], "pass")
+            records = agent_api.load_audit_records(audit_log)
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0]["record_type"], "agent_check")
+            self.assertEqual(records[0]["adapter_id"], "support_reply")
+            self.assertNotIn("Hi Maya", audit_log.read_text(encoding="utf-8"))
+
+    def test_unauthorized_agent_check_does_not_append_audit_record(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_log = pathlib.Path(temp_dir) / "audit.jsonl"
+
+            status, payload = agent_server.route_request(
+                "POST",
+                "/agent-check",
+                json.dumps(event).encode("utf-8"),
+                auth_token="secret-token",
+                audit_log_path=audit_log,
+            )
+
+            self.assertEqual(status, 401)
+            self.assertEqual(payload["error"], "Unauthorized.")
+            self.assertFalse(audit_log.exists())
+
+    def test_agent_check_audit_append_failure_returns_500(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            status, payload = agent_server.route_request(
+                "POST",
+                "/agent-check",
+                json.dumps(event).encode("utf-8"),
+                audit_log_path=pathlib.Path(temp_dir),
+            )
+
+            self.assertEqual(status, 500)
+            self.assertIn("Audit append failed", payload["error"])
+
     def test_validate_event_route(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
 
@@ -78,6 +131,41 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertTrue(payload["valid"])
         self.assertEqual(payload["errors"], 0)
+
+    def test_workflow_check_route_appends_redacted_audit_record(self):
+        workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_log = pathlib.Path(temp_dir) / "audit.jsonl"
+
+            status, payload = agent_server.route_request(
+                "POST",
+                "/workflow-check",
+                json.dumps(workflow_request).encode("utf-8"),
+                audit_log_path=audit_log,
+            )
+
+            self.assertEqual(status, 200)
+            records = agent_api.load_audit_records(audit_log)
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0]["record_type"], "workflow_check")
+            self.assertEqual(records[0]["adapter"], payload["adapter"])
+
+    def test_workflow_batch_route_appends_per_item_audit_records(self):
+        batch_request = agent_api.load_json_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_log = pathlib.Path(temp_dir) / "audit.jsonl"
+
+            status, payload = agent_server.route_request(
+                "POST",
+                "/workflow-batch",
+                json.dumps(batch_request).encode("utf-8"),
+                audit_log_path=audit_log,
+            )
+
+            self.assertEqual(status, 200)
+            records = agent_api.load_audit_records(audit_log)
+            self.assertEqual(len(records), len(payload["results"]))
+            self.assertTrue(all(record["record_type"] == "workflow_check" for record in records))
 
     def test_bad_json_returns_400(self):
         status, payload = agent_server.route_request("POST", "/agent-check", b"{")

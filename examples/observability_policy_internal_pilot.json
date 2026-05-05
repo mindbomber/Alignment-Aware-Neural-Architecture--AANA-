@@ -1,0 +1,100 @@
+{
+  "policy_name": "AANA Internal Pilot Observability",
+  "owner": "AANA Platform Operations Owner",
+  "dashboard_url": "https://aana.internal.example/observability",
+  "tracked_metrics": [
+    "aix_decision_count",
+    "aix_hard_blocker_count",
+    "aix_score_average",
+    "candidate_aix_score_average",
+    "gate_decision_count",
+    "recommended_action_count",
+    "violation_code_count",
+    "adapter_error_count",
+    "latency",
+    "false_accept_rate",
+    "false_block_rate",
+    "over_refusal_rate",
+    "correction_success_rate",
+    "human_review_turnaround_time",
+    "evidence_integrity_failure_count"
+  ],
+  "alerts": [
+    {
+      "name": "critical false accept",
+      "metric": "false_accept_rate",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "critical",
+      "route": "AANA Internal Pilot Incident Log"
+    },
+    {
+      "name": "low final AIx score",
+      "metric": "aix_score_average",
+      "condition": "less_than",
+      "threshold": 0.85,
+      "severity": "high",
+      "route": "AANA Internal Pilot Human Review Queue"
+    },
+    {
+      "name": "AIx hard blocker present",
+      "metric": "aix_hard_blocker_count",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "high",
+      "route": "AANA Internal Pilot Incident Log"
+    },
+    {
+      "name": "private data or irreversible action violation",
+      "metric": "violation_code_count.private_data_or_irreversible_action",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "critical",
+      "route": "AANA Internal Pilot Incident Log"
+    },
+    {
+      "name": "block rate drift",
+      "metric": "gate_decision_count.block",
+      "condition": "greater_than_baseline_ratio",
+      "threshold": 1.5,
+      "severity": "high",
+      "route": "AANA Internal Pilot Human Review Queue"
+    },
+    {
+      "name": "unmapped violation",
+      "metric": "violation_code_count.unmapped_constraint",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "medium",
+      "route": "AANA Evidence Review Queue"
+    },
+    {
+      "name": "p95 latency breach",
+      "metric": "latency.p95_ms",
+      "condition": "greater_than",
+      "threshold": 2000,
+      "severity": "medium",
+      "route": "AANA Platform Operations Queue"
+    }
+  ],
+  "drift_review": {
+    "cadence": "weekly",
+    "owner": "AANA Platform Operations Owner",
+    "required_reports": [
+      "pass_block_fail_trend",
+      "recommended_action_distribution",
+      "aix_score_trend",
+      "aix_decision_distribution",
+      "aix_hard_blocker_review",
+      "top_violation_codes",
+      "adapter_error_trend",
+      "latency_trend",
+      "false_accept_false_block_review",
+      "human_review_turnaround"
+    ]
+  },
+  "latency_slo": {
+    "p95_ms": 2000,
+    "route": "AANA Platform Operations Queue"
+  }
+}

@@ -16,6 +16,8 @@ Use this plugin when you want OpenClaw-style agents to perform live AANA checks 
 
 All tools are optional. Users or administrators must explicitly allow them in OpenClaw tool configuration.
 
+Check responses may include an `aix` block. Agents should treat it as the score-derived Alignment Index for the final gated output, with `candidate_aix` representing the original proposed action when available. `aix.decision=accept` is actionable only when the gate and `recommended_action` also allow proceeding and `aix.hard_blockers` is empty.
+
 ## Configuration
 
 Set `bridgeBaseUrl` to a trusted loopback AANA bridge endpoint in your OpenClaw plugin configuration.

@@ -87,7 +87,7 @@ Use agent-event files only in a trusted local checkout or installed AANA package
 1. Create or scaffold an adapter.
 2. Add one realistic prompt.
 3. Add one bad candidate that sounds useful but breaks a named constraint.
-4. Run the adapter and record expected `candidate_gate`, `gate_decision`, and `recommended_action`.
+4. Run the adapter and record expected `candidate_gate`, `gate_decision`, `recommended_action`, `aix_decision`, and `candidate_aix_decision`.
 5. Add the entry to `examples/adapter_gallery.json`.
 6. Run `python scripts/aana_cli.py validate-gallery --run-examples`.
 

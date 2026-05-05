@@ -49,6 +49,8 @@ The helper does not:
 
 ## Decision Rule
 
+- Read `aix` when present. Treat `aix.decision` as the score-derived route for the final gated output and `candidate_aix.decision` as the route for the proposed candidate.
+- Never proceed when `aix.hard_blockers` is non-empty, even if the numeric score is high.
 - If `recommended_action` is `accept`, proceed.
 - If `recommended_action` is `revise`, revise before acting.
 - If `recommended_action` is `ask`, ask the user for missing information.

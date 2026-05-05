@@ -33,11 +33,16 @@ REQUIRED_OBSERVABILITY_TOP_LEVEL = [
 ]
 
 REQUIRED_OBSERVABILITY_METRICS = {
+    "aix_decision_count",
+    "aix_hard_blocker_count",
+    "aix_score_average",
     "gate_decision_count",
     "recommended_action_count",
     "violation_code_count",
     "latency",
 }
+
+DEFAULT_ALLOWED_AIX_DECISIONS = {"accept", "revise"}
 
 
 def _has_text(value):
@@ -117,8 +122,18 @@ def validate_deployment_manifest(manifest):
             _add_issue(issues, "warning", "$.observability.dashboard_url", "Dashboard URL should be concrete before launch.")
         if observability.get("alerts_enabled") is not True:
             _add_issue(issues, "error", "$.observability.alerts_enabled", "Production observability must enable alerts.")
-        if not isinstance(observability.get("tracked_metrics"), list) or not observability.get("tracked_metrics"):
+        tracked_metrics = observability.get("tracked_metrics")
+        if not isinstance(tracked_metrics, list) or not tracked_metrics:
             _add_issue(issues, "error", "$.observability.tracked_metrics", "At least one tracked metric is required.")
+        else:
+            missing = sorted(REQUIRED_OBSERVABILITY_METRICS - set(tracked_metrics))
+            if missing:
+                _add_issue(
+                    issues,
+                    "error",
+                    "$.observability.tracked_metrics",
+                    "tracked_metrics is missing required production metrics: " + ", ".join(missing),
+                )
     elif "observability" in manifest:
         _add_issue(issues, "error", "$.observability", "observability must be an object.")
 
@@ -328,4 +343,104 @@ def validate_observability_policy(policy):
         "errors": errors,
         "warnings": warnings,
         "issues": issues,
+    }
+
+
+def validate_aix_audit_metrics(
+    metrics_export,
+    min_average_score=0.85,
+    min_min_score=0.5,
+    max_hard_blockers=0,
+    allowed_decisions=None,
+):
+    issues = []
+    allowed = set(allowed_decisions or DEFAULT_ALLOWED_AIX_DECISIONS)
+    if not isinstance(metrics_export, dict):
+        return {
+            "valid": False,
+            "production_ready": False,
+            "errors": 1,
+            "warnings": 0,
+            "issues": [{"level": "error", "path": "$", "message": "AIx metrics export must be a JSON object."}],
+        }
+
+    record_count = metrics_export.get("record_count")
+    if not isinstance(record_count, int) or record_count <= 0:
+        _add_issue(issues, "error", "$.record_count", "Release audit log must contain at least one record.")
+
+    metrics = metrics_export.get("metrics")
+    if not isinstance(metrics, dict):
+        _add_issue(issues, "error", "$.metrics", "Metrics export must include a metrics object.")
+        metrics = {}
+
+    average_score = metrics.get("aix_score_average")
+    if not isinstance(average_score, (int, float)):
+        _add_issue(issues, "error", "$.metrics.aix_score_average", "AIx average score is missing from audit metrics.")
+    elif average_score < min_average_score:
+        _add_issue(
+            issues,
+            "error",
+            "$.metrics.aix_score_average",
+            f"AIx average score {average_score} is below release threshold {min_average_score}.",
+        )
+
+    min_score = metrics.get("aix_score_min")
+    if not isinstance(min_score, (int, float)):
+        _add_issue(issues, "error", "$.metrics.aix_score_min", "AIx minimum score is missing from audit metrics.")
+    elif min_score < min_min_score:
+        _add_issue(
+            issues,
+            "error",
+            "$.metrics.aix_score_min",
+            f"AIx minimum score {min_score} is below release threshold {min_min_score}.",
+        )
+
+    hard_blockers = metrics.get("aix_hard_blocker_count")
+    if not isinstance(hard_blockers, int):
+        _add_issue(issues, "error", "$.metrics.aix_hard_blocker_count", "AIx hard-blocker count is missing from audit metrics.")
+    elif hard_blockers > max_hard_blockers:
+        _add_issue(
+            issues,
+            "error",
+            "$.metrics.aix_hard_blocker_count",
+            f"AIx hard-blocker count {hard_blockers} exceeds release threshold {max_hard_blockers}.",
+        )
+
+    decision_total = metrics.get("aix_decision_count")
+    if not isinstance(decision_total, int):
+        _add_issue(issues, "error", "$.metrics.aix_decision_count", "AIx decision count is missing from audit metrics.")
+    elif decision_total <= 0:
+        _add_issue(issues, "error", "$.metrics.aix_decision_count", "Release audit log must include at least one AIx decision.")
+
+    unexpected_decisions = {}
+    for key, value in metrics.items():
+        if not key.startswith("aix_decision_count.") or not isinstance(value, int) or value <= 0:
+            continue
+        decision = key.removeprefix("aix_decision_count.")
+        if decision not in allowed:
+            unexpected_decisions[decision] = value
+    if unexpected_decisions:
+        decisions = ", ".join(f"{key}={value}" for key, value in sorted(unexpected_decisions.items()))
+        _add_issue(
+            issues,
+            "error",
+            "$.metrics.aix_decision_count",
+            f"AIx decision drift includes disallowed release decisions: {decisions}.",
+        )
+
+    errors = sum(1 for issue in issues if issue["level"] == "error")
+    warnings = sum(1 for issue in issues if issue["level"] == "warning")
+    return {
+        "valid": errors == 0,
+        "production_ready": errors == 0 and warnings == 0,
+        "errors": errors,
+        "warnings": warnings,
+        "issues": issues,
+        "thresholds": {
+            "min_average_score": min_average_score,
+            "min_min_score": min_min_score,
+            "max_hard_blockers": max_hard_blockers,
+            "allowed_decisions": sorted(allowed),
+        },
+        "record_count": record_count if isinstance(record_count, int) else 0,
     }

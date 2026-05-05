@@ -31,6 +31,9 @@
     "dashboard_url": "https://observability.local/aana",
     "alerts_enabled": true,
     "tracked_metrics": [
+      "aix_decision_count",
+      "aix_hard_blocker_count",
+      "aix_score_average",
       "gate_decision_count",
       "recommended_action_count",
       "violation_code_count",

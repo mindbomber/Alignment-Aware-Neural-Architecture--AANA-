@@ -419,6 +419,107 @@ p {
   margin-top: 0.75rem;
 }
 
+.architecture-contrast {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  margin-top: 2rem;
+}
+
+.contrast-lane {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sota-lane {
+  background: #f8fbfb;
+}
+
+.aana-lane {
+  background: #10202c;
+  color: var(--white);
+}
+
+.lane-head {
+  border-bottom: 1px solid var(--line);
+  padding: 1.25rem;
+}
+
+.aana-lane .lane-head {
+  border-bottom-color: rgba(255, 255, 255, 0.16);
+}
+
+.lane-head strong {
+  display: block;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1.1;
+}
+
+.lane-head span {
+  color: var(--muted);
+  display: block;
+  font-weight: 750;
+  margin-top: 0.55rem;
+}
+
+.aana-lane .lane-head span,
+.aana-lane .contrast-list {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.lane-flow {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.25rem;
+}
+
+.lane-flow span {
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  font-weight: 850;
+  min-height: 48px;
+  padding: 0.75rem 0.85rem;
+  position: relative;
+}
+
+.lane-flow span:not(:last-child)::after {
+  background: var(--coral);
+  bottom: -0.65rem;
+  content: "";
+  height: 0.65rem;
+  left: 1.4rem;
+  position: absolute;
+  width: 3px;
+}
+
+.aana-flow span {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.aana-flow span:not(:last-child)::after {
+  background: var(--yellow);
+}
+
+.contrast-list {
+  color: var(--muted);
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0 1.25rem 1.25rem 2.4rem;
+}
+
+.difference-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
 .story-grid,
 .evidence-grid {
   align-items: center;
@@ -935,6 +1036,7 @@ pre {
   .section-head,
   .story-grid,
   .evidence-grid,
+  .architecture-contrast,
   .infographic-panel,
   .featured-infographic,
   .slides-grid {
@@ -946,6 +1048,7 @@ pre {
   .metrics,
   .plot-strip,
   .resource-grid,
+  .difference-grid,
   .infographic-grid,
   .paper-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -994,6 +1097,7 @@ pre {
   .metrics,
   .plot-strip,
   .resource-grid,
+  .difference-grid,
   .infographic-grid,
   .paper-grid {
     grid-template-columns: 1fr;

@@ -1,3 +1,4 @@
+import json
 import importlib.util
 import pathlib
 import tempfile
@@ -16,6 +17,24 @@ def load_script(name, path):
 
 new_adapter = load_script("new_adapter", ROOT / "scripts" / "new_adapter.py")
 validate_adapter = load_script("validate_adapter", ROOT / "scripts" / "validate_adapter.py")
+
+
+STRICT_AIX_ADAPTERS = {
+    "booking_purchase_guardrail",
+    "data_export_guardrail",
+    "deployment_readiness",
+    "email_send_guardrail",
+    "file_operation_guardrail",
+    "financial_advice_router",
+    "legal_safety_router",
+    "medical_safety_router",
+}
+
+
+def gallery_adapters():
+    gallery = json.loads((ROOT / "examples" / "adapter_gallery.json").read_text(encoding="utf-8"))
+    for entry in gallery["adapters"]:
+        yield entry["id"], validate_adapter.load_adapter(ROOT / entry["adapter_path"])
 
 
 class AdapterKitTests(unittest.TestCase):
@@ -349,6 +368,36 @@ class AdapterKitTests(unittest.TestCase):
         self.assertTrue(report["valid"], report)
         self.assertEqual(report["errors"], 0)
 
+    def test_gallery_adapters_declare_complete_aix_tuning(self):
+        for adapter_id, adapter in gallery_adapters():
+            with self.subTest(adapter_id=adapter_id):
+                config = adapter.get("aix")
+
+                self.assertIsInstance(config, dict)
+                self.assertIn(config.get("risk_tier"), {"standard", "elevated", "high", "strict"})
+                self.assertIsInstance(config.get("beta"), (int, float))
+                self.assertEqual(set(config.get("layer_weights", {})), {"P", "B", "C", "F"})
+                self.assertEqual(set(config.get("thresholds", {})), {"accept", "revise", "defer"})
+                self.assertGreaterEqual(config["beta"], 1.0)
+                self.assertGreater(config["thresholds"]["accept"], config["thresholds"]["revise"])
+                self.assertGreater(config["thresholds"]["revise"], config["thresholds"]["defer"])
+
+    def test_high_risk_gallery_adapters_use_strict_aix_tuning(self):
+        adapters = dict(gallery_adapters())
+        missing = STRICT_AIX_ADAPTERS - set(adapters)
+        self.assertFalse(missing, missing)
+
+        for adapter_id in STRICT_AIX_ADAPTERS:
+            with self.subTest(adapter_id=adapter_id):
+                config = adapters[adapter_id]["aix"]
+
+                self.assertEqual(config["risk_tier"], "strict")
+                self.assertGreaterEqual(config["beta"], 1.5)
+                self.assertGreaterEqual(config["layer_weights"]["B"], 1.4)
+                self.assertGreaterEqual(config["thresholds"]["accept"], 0.94)
+                self.assertGreaterEqual(config["thresholds"]["revise"], 0.78)
+                self.assertGreaterEqual(config["thresholds"]["defer"], 0.62)
+
     def test_template_reports_placeholders(self):
         adapter = validate_adapter.load_adapter(ROOT / "examples" / "domain_adapter_template.json")
 
@@ -377,6 +426,24 @@ class AdapterKitTests(unittest.TestCase):
 
         self.assertTrue(report["valid"], report)
         self.assertTrue(any(issue["path"] == "production_readiness" for issue in report["issues"]))
+
+    def test_missing_aix_tuning_reports_warning_for_production_adapter(self):
+        adapter = validate_adapter.load_adapter(ROOT / "examples" / "travel_adapter.json")
+        adapter.pop("aix", None)
+
+        report = validate_adapter.validate_adapter(adapter)
+
+        self.assertTrue(report["valid"], report)
+        self.assertTrue(any(issue["path"] == "aix" for issue in report["issues"]))
+
+    def test_risk_tier_below_minimum_reports_warning(self):
+        adapter = validate_adapter.load_adapter(ROOT / "examples" / "medical_safety_router_adapter.json")
+        adapter["aix"]["beta"] = 1.0
+
+        report = validate_adapter.validate_adapter(adapter)
+
+        self.assertTrue(report["valid"], report)
+        self.assertTrue(any(issue["path"] == "aix.beta" for issue in report["issues"]))
 
     def test_malformed_production_readiness_fails_validation(self):
         adapter = validate_adapter.load_adapter(ROOT / "examples" / "travel_adapter.json")

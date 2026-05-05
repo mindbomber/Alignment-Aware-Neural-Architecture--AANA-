@@ -10,6 +10,7 @@ import sys
 ALLOWED_LAYERS = {"P", "B", "C", "F"}
 ALLOWED_VERIFIERS = {"deterministic", "retrieval", "model_judge", "human_review"}
 ALLOWED_ACTIONS = {"accept", "revise", "retrieve", "ask", "refuse", "defer"}
+ALLOWED_AIX_RISK_TIERS = {"standard", "elevated", "high", "strict"}
 POLICY_KEYS = [
     "accept_when",
     "revise_when",
@@ -37,6 +38,13 @@ PRODUCTION_READINESS_KEYS = [
     "human_review_escalation",
     "production_caveats",
 ]
+AIX_KEYS = ["risk_tier", "beta", "layer_weights", "thresholds"]
+AIX_TIER_REQUIREMENTS = {
+    "standard": {"beta": 1.0, "B": 1.0, "accept": 0.85, "revise": 0.65, "defer": 0.5},
+    "elevated": {"beta": 1.15, "B": 1.1, "accept": 0.88, "revise": 0.68, "defer": 0.52},
+    "high": {"beta": 1.3, "B": 1.25, "accept": 0.91, "revise": 0.72, "defer": 0.56},
+    "strict": {"beta": 1.5, "B": 1.4, "accept": 0.94, "revise": 0.78, "defer": 0.62},
+}
 PLACEHOLDER_MARKERS = ["replace_with", "describe what", "describe exactly", "describe how", "describe the", "state the constraint", "constraint_id"]
 
 
@@ -69,6 +77,48 @@ def contains_placeholder(value):
 
 def add_issue(issues, level, path, message):
     issues.append({"level": level, "path": path, "message": message})
+
+
+def aix_tier_issues(aix, base_path="aix"):
+    issues = []
+    if not isinstance(aix, dict):
+        return issues
+
+    tier = aix.get("risk_tier")
+    if tier is None:
+        return issues
+    if tier not in ALLOWED_AIX_RISK_TIERS:
+        add_issue(
+            issues,
+            "error",
+            f"{base_path}.risk_tier",
+            "AIx risk_tier must be one of standard, elevated, high, or strict.",
+        )
+        return issues
+
+    requirements = AIX_TIER_REQUIREMENTS[tier]
+    beta = aix.get("beta")
+    if isinstance(beta, (int, float)) and beta < requirements["beta"]:
+        add_issue(issues, "warning", f"{base_path}.beta", f"AIx beta is below the {tier} tier minimum of {requirements['beta']}.")
+
+    layer_weights = aix.get("layer_weights", {})
+    if isinstance(layer_weights, dict):
+        b_weight = layer_weights.get("B")
+        if isinstance(b_weight, (int, float)) and b_weight < requirements["B"]:
+            add_issue(issues, "warning", f"{base_path}.layer_weights.B", f"AIx B-layer weight is below the {tier} tier minimum of {requirements['B']}.")
+
+    thresholds = aix.get("thresholds", {})
+    if isinstance(thresholds, dict):
+        for action in ("accept", "revise", "defer"):
+            value = thresholds.get(action)
+            if isinstance(value, (int, float)) and value < requirements[action]:
+                add_issue(
+                    issues,
+                    "warning",
+                    f"{base_path}.thresholds.{action}",
+                    f"AIx {action} threshold is below the {tier} tier minimum of {requirements[action]}.",
+                )
+    return issues
 
 
 def validate_adapter(adapter):
@@ -189,7 +239,44 @@ def validate_adapter(adapter):
     if contains_placeholder(adapter):
         add_issue(issues, "warning", "adapter", "Adapter still appears to contain placeholder text.")
 
+    aix = adapter.get("aix")
+    if aix is not None:
+        if not isinstance(aix, dict):
+            add_issue(issues, "error", "aix", "AIx config must be an object when provided.")
+        else:
+            for key in AIX_KEYS:
+                if key not in aix:
+                    add_issue(issues, "warning", f"aix.{key}", "AIx config field is missing; runtime defaults will be used.")
+            beta = aix.get("beta")
+            if beta is not None and not isinstance(beta, (int, float)):
+                add_issue(issues, "error", "aix.beta", "AIx beta must be numeric.")
+            layer_weights = aix.get("layer_weights")
+            if layer_weights is not None:
+                if not isinstance(layer_weights, dict):
+                    add_issue(issues, "error", "aix.layer_weights", "AIx layer_weights must be an object.")
+                else:
+                    for layer, value in layer_weights.items():
+                        if layer not in ALLOWED_LAYERS or not isinstance(value, (int, float)):
+                            add_issue(issues, "error", f"aix.layer_weights.{layer}", "AIx layer weights must be numeric values for P, B, C, or F.")
+            thresholds = aix.get("thresholds")
+            if thresholds is not None:
+                if not isinstance(thresholds, dict):
+                    add_issue(issues, "error", "aix.thresholds", "AIx thresholds must be an object.")
+                else:
+                    for action in ("accept", "revise", "defer"):
+                        value = thresholds.get(action)
+                        if not isinstance(value, (int, float)) or value < 0 or value > 1:
+                            add_issue(issues, "error", f"aix.thresholds.{action}", "AIx thresholds must include numeric accept, revise, and defer values between 0 and 1.")
+            issues.extend(aix_tier_issues(aix))
+
     production = adapter.get("production_readiness")
+    if production is not None and aix is None:
+        add_issue(
+            issues,
+            "warning",
+            "aix",
+            "Production adapters should declare explicit AIx risk_tier, beta, layer_weights, and thresholds.",
+        )
     if production is None:
         add_issue(
             issues,

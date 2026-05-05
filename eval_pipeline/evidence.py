@@ -149,3 +149,61 @@ def validate_workflow_evidence(workflow_request, registry, require_structured=Fa
         "structured_evidence": structured,
         "issues": issues,
     }
+
+
+def validate_workflow_batch_evidence(batch_request, registry, require_structured=False, now=None):
+    issues = []
+    reports = []
+    if not isinstance(batch_request, dict):
+        _add_issue(issues, "error", "$", "Workflow batch request must be a JSON object.")
+        return {
+            "valid": False,
+            "production_ready": False,
+            "errors": 1,
+            "warnings": 0,
+            "reports": reports,
+            "issues": issues,
+        }
+
+    requests = batch_request.get("requests", [])
+    if not isinstance(requests, list):
+        _add_issue(issues, "error", "$.requests", "Workflow batch request must include a requests array.")
+        requests = []
+
+    for index, workflow_request in enumerate(requests):
+        report = validate_workflow_evidence(
+            workflow_request,
+            registry,
+            require_structured=require_structured,
+            now=now,
+        )
+        item_issues = [
+            {**issue, "path": f"$.requests[{index}]{issue['path'][1:]}"}
+            for issue in report.get("issues", [])
+        ]
+        reports.append(
+            {
+                "index": index,
+                "workflow_id": workflow_request.get("workflow_id") if isinstance(workflow_request, dict) else None,
+                "adapter": workflow_request.get("adapter") if isinstance(workflow_request, dict) else None,
+                "valid": report["valid"],
+                "production_ready": report["production_ready"],
+                "errors": report["errors"],
+                "warnings": report["warnings"],
+                "checked_evidence": report["checked_evidence"],
+                "structured_evidence": report["structured_evidence"],
+                "issues": item_issues,
+            }
+        )
+        issues.extend(item_issues)
+
+    errors = sum(1 for issue in issues if issue["level"] == "error")
+    warnings = sum(1 for issue in issues if issue["level"] == "warning")
+    return {
+        "valid": errors == 0,
+        "production_ready": errors == 0 and warnings == 0,
+        "errors": errors,
+        "warnings": warnings,
+        "reports": reports,
+        "issues": issues,
+    }

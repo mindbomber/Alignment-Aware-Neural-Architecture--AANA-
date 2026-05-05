@@ -13,6 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "eval_pipeline"))
 
 from constraint_tools import is_clarification_request, run_constraint_tools
+from aix import attach_aix
 from run_aana_evals import deterministic_repair
 
 
@@ -5565,7 +5566,7 @@ Uncertainty:
 - Any numerical impact claim would need additional measured evidence before publication."""
 
 
-def run_adapter(adapter, prompt, candidate=None):
+def _run_adapter_core(adapter, prompt, candidate=None):
     if not (
         is_travel_adapter(adapter)
         or is_meal_adapter(adapter)
@@ -7349,6 +7350,15 @@ def run_adapter(adapter, prompt, candidate=None):
         "tool_report": final_report,
         "caveats": caveats,
     }
+
+
+def run_adapter(adapter, prompt, candidate=None):
+    result = _run_adapter_core(adapter, prompt, candidate)
+    candidate_constraints = None
+    candidate_report = result.get("candidate_tool_report") if isinstance(result, dict) else None
+    if isinstance(candidate_report, dict):
+        candidate_constraints = constraint_results(adapter, candidate_report)
+    return attach_aix(result, adapter=adapter, candidate_constraint_results=candidate_constraints)
 
 
 def parse_args():

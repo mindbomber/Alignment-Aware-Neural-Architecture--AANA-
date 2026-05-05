@@ -27,7 +27,14 @@ REQUIRED_ENTRY_FIELDS = [
     "copy_command",
     "caveats",
 ]
-EXPECTED_FIELDS = ["candidate_gate", "gate_decision", "recommended_action", "failing_constraints"]
+EXPECTED_FIELDS = [
+    "candidate_gate",
+    "gate_decision",
+    "recommended_action",
+    "failing_constraints",
+    "aix_decision",
+    "candidate_aix_decision",
+]
 
 
 def add_issue(issues, level, path, message):
@@ -77,7 +84,7 @@ def validate_entry_shape(entry, index, issues):
         if field not in expected:
             add_issue(issues, "error", f"{base}.expected.{field}", "Required expected field is missing.")
 
-    for field in ["candidate_gate", "gate_decision", "recommended_action"]:
+    for field in ["candidate_gate", "gate_decision", "recommended_action", "aix_decision", "candidate_aix_decision"]:
         if field in expected and not has_text(expected.get(field)):
             add_issue(issues, "error", f"{base}.expected.{field}", "Expected field must be a non-empty string.")
 
@@ -137,6 +144,24 @@ def validate_gallery(gallery, run_examples=False):
                         f"Expected {expected.get(key)!r}, got {result.get(key)!r}.",
                     )
 
+            aix_decision = result.get("aix", {}).get("decision")
+            if aix_decision != expected.get("aix_decision"):
+                add_issue(
+                    issues,
+                    "error",
+                    f"adapters[{index}].expected.aix_decision",
+                    f"Expected {expected.get('aix_decision')!r}, got {aix_decision!r}.",
+                )
+
+            candidate_aix_decision = result.get("candidate_aix", {}).get("decision")
+            if candidate_aix_decision != expected.get("candidate_aix_decision"):
+                add_issue(
+                    issues,
+                    "error",
+                    f"adapters[{index}].expected.candidate_aix_decision",
+                    f"Expected {expected.get('candidate_aix_decision')!r}, got {candidate_aix_decision!r}.",
+                )
+
             failed_constraints = {
                 item.get("id")
                 for item in result.get("constraint_results", [])
@@ -165,7 +190,14 @@ def validate_gallery(gallery, run_examples=False):
                     f"Bad candidate did not trigger expected constraints: {sorted(missing_failures)}.",
                 )
 
-            checked.append({"id": entry_id, "gate_decision": result.get("gate_decision"), "recommended_action": result.get("recommended_action")})
+            checked.append(
+                {
+                    "id": entry_id,
+                    "gate_decision": result.get("gate_decision"),
+                    "recommended_action": result.get("recommended_action"),
+                    "aix_decision": aix_decision,
+                }
+            )
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")
@@ -200,7 +232,7 @@ def main():
         if report["checked_examples"]:
             print("Checked examples:")
             for item in report["checked_examples"]:
-                print(f"- {item['id']}: gate={item['gate_decision']} action={item['recommended_action']}")
+                print(f"- {item['id']}: gate={item['gate_decision']} action={item['recommended_action']} aix={item.get('aix_decision')}")
     return 0 if report["valid"] else 1
 
 

@@ -18,11 +18,59 @@ import new_adapter
 import run_adapter
 import validate_adapter
 import validate_adapter_gallery
-from eval_pipeline import common, production
+from eval_pipeline import common, contract_freeze, evidence_integrations, production
 from eval_pipeline import agent_api
 
 
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
+CLI_CONTRACT_VERSION = "0.1"
+EXIT_OK = 0
+EXIT_VALIDATION = 1
+EXIT_USAGE = 2
+EXIT_CODE_CONTRACT = {
+    str(EXIT_OK): "Command completed successfully.",
+    str(EXIT_VALIDATION): "The command ran and found validation, gate, release, or policy failures.",
+    str(EXIT_USAGE): "The command could not run because inputs, paths, JSON, or arguments were invalid.",
+}
+READ_FILE_ARGS_BY_COMMAND = {
+    "run-file": ["adapter", "candidate_file"],
+    "agent-check": ["event", "evidence_registry"],
+    "workflow-check": ["workflow", "evidence_registry"],
+    "workflow-batch": ["batch", "evidence_registry"],
+    "validate-workflow": ["workflow"],
+    "validate-workflow-batch": ["batch"],
+    "validate-evidence-registry": ["evidence_registry"],
+    "evidence-integrations": ["evidence_registry"],
+    "validate-workflow-evidence": ["workflow", "evidence_registry"],
+    "validate-event": ["event", "evidence_registry"],
+    "audit-summary": ["audit_log"],
+    "audit-metrics": ["audit_log"],
+    "audit-manifest": ["audit_log", "previous_manifest"],
+    "audit-verify": ["manifest"],
+    "production-preflight": ["deployment_manifest", "evidence_registry", "observability_policy"],
+    "contract-freeze": ["gallery", "evidence_registry"],
+    "validate-deployment": ["deployment_manifest"],
+    "validate-governance": ["governance_policy"],
+    "validate-observability": ["observability_policy"],
+    "release-check": [
+        "deployment_manifest",
+        "governance_policy",
+        "evidence_registry",
+        "observability_policy",
+        "audit_log",
+    ],
+    "validate-adapter": ["adapter"],
+}
+READ_DIR_ARGS_BY_COMMAND = {
+    "run-agent-examples": ["events_dir"],
+}
+
+
+class CliError(RuntimeError):
+    def __init__(self, message, exit_code=EXIT_USAGE, details=None):
+        super().__init__(message)
+        self.exit_code = exit_code
+        self.details = details or {}
 
 
 def load_gallery(path=DEFAULT_GALLERY):
@@ -43,6 +91,402 @@ def find_entry(gallery, adapter_id):
 
 def print_json(data):
     print(json.dumps(data, indent=2, ensure_ascii=False))
+
+
+def cli_command_matrix():
+    return [
+        {
+            "command": "list",
+            "category": "discovery",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py list --json",
+        },
+        {
+            "command": "aix-tuning",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py aix-tuning --json",
+        },
+        {
+            "command": "run",
+            "category": "adapter",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py run support_reply",
+        },
+        {
+            "command": "run-file",
+            "category": "adapter",
+            "json_output": True,
+            "reads": ["--adapter", "--candidate-file"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py run-file --adapter examples/support_reply_adapter.json --prompt \"...\" --candidate \"...\"",
+        },
+        {
+            "command": "agent-check",
+            "category": "agent",
+            "json_output": True,
+            "reads": ["--event", "--evidence-registry", "--gallery"],
+            "writes": ["--audit-log"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/aana-audit.jsonl",
+        },
+        {
+            "command": "workflow-check",
+            "category": "workflow",
+            "json_output": True,
+            "reads": ["--workflow", "--evidence-registry", "--gallery"],
+            "writes": ["--audit-log"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json",
+        },
+        {
+            "command": "workflow-batch",
+            "category": "workflow",
+            "json_output": True,
+            "reads": ["--batch", "--evidence-registry", "--gallery"],
+            "writes": ["--audit-log"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json --audit-log eval_outputs/audit/aana-audit.jsonl",
+        },
+        {
+            "command": "validate-workflow",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--workflow"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json --json",
+        },
+        {
+            "command": "validate-workflow-batch",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--batch"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_batch_productive_work.json --json",
+        },
+        {
+            "command": "validate-evidence-registry",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--evidence-registry"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json --json",
+        },
+        {
+            "command": "evidence-integrations",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--evidence-registry"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py evidence-integrations --evidence-registry examples/evidence_registry.json --json",
+        },
+        {
+            "command": "validate-workflow-evidence",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--workflow", "--evidence-registry"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-workflow-evidence --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured --json",
+        },
+        {
+            "command": "validate-event",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--event", "--evidence-registry"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json --json",
+        },
+        {
+            "command": "agent-schema",
+            "category": "contract",
+            "json_output": True,
+            "reads": [],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py agent-schema all",
+        },
+        {
+            "command": "workflow-schema",
+            "category": "contract",
+            "json_output": True,
+            "reads": [],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py workflow-schema all",
+        },
+        {
+            "command": "run-agent-examples",
+            "category": "agent",
+            "json_output": True,
+            "reads": ["--events-dir", "--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py run-agent-examples --json",
+        },
+        {
+            "command": "scaffold-agent-event",
+            "category": "scaffold",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": ["--output-dir"],
+            "dry_run": True,
+            "example": "python scripts/aana_cli.py scaffold-agent-event support_reply --dry-run",
+        },
+        {
+            "command": "policy-presets",
+            "category": "agent",
+            "json_output": True,
+            "reads": [],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py policy-presets --json",
+        },
+        {
+            "command": "audit-summary",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--audit-log"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py audit-summary --audit-log eval_outputs/audit/aana-audit.jsonl --json",
+        },
+        {
+            "command": "audit-metrics",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--audit-log"],
+            "writes": ["--output"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/aana-metrics.json",
+        },
+        {
+            "command": "audit-manifest",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--audit-log", "--previous-manifest"],
+            "writes": ["--output"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py audit-manifest --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/manifests/aana-audit-integrity.json",
+        },
+        {
+            "command": "audit-verify",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--manifest"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py audit-verify --manifest eval_outputs/audit/manifests/aana-audit-integrity.json",
+        },
+        {
+            "command": "production-preflight",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--deployment-manifest", "--evidence-registry", "--observability-policy", "--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py production-preflight --deployment-manifest examples/production_deployment_template.json --evidence-registry examples/evidence_registry.json --json",
+        },
+        {
+            "command": "contract-freeze",
+            "category": "contract",
+            "json_output": True,
+            "reads": ["--gallery", "--evidence-registry"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py contract-freeze --json",
+        },
+        {
+            "command": "validate-deployment",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--deployment-manifest"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-deployment --deployment-manifest examples/production_deployment_template.json --json",
+        },
+        {
+            "command": "validate-governance",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--governance-policy"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-governance --governance-policy examples/human_governance_policy_template.json --json",
+        },
+        {
+            "command": "validate-observability",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--observability-policy"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-observability --observability-policy examples/observability_policy.json --json",
+        },
+        {
+            "command": "release-check",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--deployment-manifest", "--governance-policy", "--evidence-registry", "--observability-policy", "--audit-log", "--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py release-check --skip-local-check --deployment-manifest examples/production_deployment_template.json --governance-policy examples/human_governance_policy_template.json --evidence-registry examples/evidence_registry.json --observability-policy examples/observability_policy.json --json",
+        },
+        {
+            "command": "doctor",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py doctor --json",
+        },
+        {
+            "command": "validate-adapter",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["adapter"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-adapter examples/support_reply_adapter.json --json",
+        },
+        {
+            "command": "validate-gallery",
+            "category": "validation",
+            "json_output": True,
+            "reads": ["--gallery"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py validate-gallery --run-examples --json",
+        },
+        {
+            "command": "scaffold",
+            "category": "scaffold",
+            "json_output": True,
+            "reads": [],
+            "writes": ["--output-dir"],
+            "dry_run": True,
+            "example": "python scripts/aana_cli.py scaffold \"insurance claim triage\" --output-dir examples --dry-run",
+        },
+        {
+            "command": "cli-contract",
+            "category": "contract",
+            "json_output": True,
+            "reads": [],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py cli-contract --json",
+        },
+    ]
+
+
+def command_cli_contract(args):
+    contract = {
+        "cli_contract_version": CLI_CONTRACT_VERSION,
+        "exit_codes": EXIT_CODE_CONTRACT,
+        "error_contract": {
+            "ok": False,
+            "error": {
+                "type": "CliError",
+                "message": "Human-readable error.",
+                "details": {"argument": "--event", "path": "missing.json"},
+            },
+            "exit_code": EXIT_USAGE,
+        },
+        "commands": cli_command_matrix(),
+    }
+    if args.json:
+        print_json(contract)
+        return EXIT_OK
+
+    print(f"AANA CLI contract v{CLI_CONTRACT_VERSION}")
+    print("Exit codes:")
+    for code, description in EXIT_CODE_CONTRACT.items():
+        print(f"- {code}: {description}")
+    print("Commands:")
+    for command in contract["commands"]:
+        print(
+            f"- {command['command']}: category={command['category']} "
+            f"json={command['json_output']} dry_run={command['dry_run']}"
+        )
+    return EXIT_OK
+
+
+def print_cli_error(error, json_output=False):
+    if json_output:
+        print_json(
+            {
+                "cli_contract_version": CLI_CONTRACT_VERSION,
+                "ok": False,
+                "error": {
+                    "type": error.__class__.__name__,
+                    "message": str(error),
+                    "details": error.details,
+                },
+                "exit_code": error.exit_code,
+            }
+        )
+        return
+    print(f"aana_cli failed: {error}", file=sys.stderr)
+
+
+def option_name(argument_name):
+    return argument_name if argument_name == "adapter" else f"--{argument_name.replace('_', '-')}"
+
+
+def validate_existing_file(argument_name, value):
+    path = pathlib.Path(value)
+    if not path.exists():
+        raise CliError(
+            f"{argument_name.replace('_', '-')} path does not exist: {value}",
+            details={"argument": option_name(argument_name), "path": str(value)},
+        )
+    if not path.is_file():
+        raise CliError(
+            f"{argument_name.replace('_', '-')} path is not a file: {value}",
+            details={"argument": option_name(argument_name), "path": str(value)},
+        )
+
+
+def validate_existing_dir(argument_name, value):
+    path = pathlib.Path(value)
+    if not path.exists():
+        raise CliError(
+            f"{argument_name.replace('_', '-')} directory does not exist: {value}",
+            details={"argument": option_name(argument_name), "path": str(value)},
+        )
+    if not path.is_dir():
+        raise CliError(
+            f"{argument_name.replace('_', '-')} path is not a directory: {value}",
+            details={"argument": option_name(argument_name), "path": str(value)},
+        )
+
+
+def validate_cli_paths(args):
+    command = getattr(args, "command", None)
+    for argument_name in READ_FILE_ARGS_BY_COMMAND.get(command, []):
+        value = getattr(args, argument_name, None)
+        if value:
+            validate_existing_file(argument_name, value)
+    for argument_name in READ_DIR_ARGS_BY_COMMAND.get(command, []):
+        value = getattr(args, argument_name, None)
+        if value:
+            validate_existing_dir(argument_name, value)
 
 
 def command_list(args):
@@ -71,6 +515,83 @@ def command_list(args):
     return 0
 
 
+def adapter_aix_tuning_report(gallery):
+    adapters = []
+    all_issues = []
+    tier_counts = {}
+    failing = 0
+    for entry in gallery_entries(gallery):
+        adapter_path = ROOT / str(entry.get("adapter_path", ""))
+        adapter = validate_adapter.load_adapter(adapter_path)
+        config = adapter.get("aix", {}) if isinstance(adapter.get("aix"), dict) else {}
+        tier = config.get("risk_tier", "unspecified")
+        tier_counts[tier] = tier_counts.get(tier, 0) + 1
+        issues = [
+            issue
+            for issue in validate_adapter.validate_adapter(adapter)["issues"]
+            if issue.get("path", "").startswith("aix")
+        ]
+        issues.extend(validate_adapter.aix_tier_issues(config))
+        if tier == "unspecified":
+            validate_adapter.add_issue(
+                issues,
+                "warning",
+                "aix.risk_tier",
+                "AIx risk_tier is missing; tuning cannot be audited against a declared tier.",
+            )
+        meets_tier = not issues
+        if not meets_tier:
+            failing += 1
+        for issue in issues:
+            all_issues.append({"adapter_id": entry.get("id"), "adapter_path": entry.get("adapter_path"), **issue})
+        adapters.append(
+            {
+                "id": entry.get("id"),
+                "title": entry.get("title"),
+                "adapter_path": entry.get("adapter_path"),
+                "risk_tier": tier,
+                "beta": config.get("beta"),
+                "layer_weights": config.get("layer_weights", {}),
+                "thresholds": config.get("thresholds", {}),
+                "meets_tier": meets_tier,
+                "issues": issues,
+            }
+        )
+    return {
+        "valid": failing == 0,
+        "adapter_count": len(adapters),
+        "failing_count": failing,
+        "risk_tier_counts": tier_counts,
+        "issues": all_issues,
+        "adapters": adapters,
+    }
+
+
+def command_aix_tuning(args):
+    gallery = load_gallery(args.gallery)
+    report = adapter_aix_tuning_report(gallery)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+
+    status = "valid" if report["valid"] else "invalid"
+    print(f"AANA adapter AIx tuning report: {status} ({report['adapter_count']} adapter(s)).")
+    print("Risk tiers:")
+    for tier, count in sorted(report["risk_tier_counts"].items()):
+        print(f"- {tier}: {count}")
+    print("Adapters:")
+    for item in report["adapters"]:
+        thresholds = item["thresholds"]
+        print(
+            f"- {item['id']}: tier={item['risk_tier']} beta={item['beta']} "
+            f"accept={thresholds.get('accept')} revise={thresholds.get('revise')} "
+            f"defer={thresholds.get('defer')} meets_tier={item['meets_tier']}"
+        )
+        for issue in item["issues"]:
+            print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
 def run_entry(entry):
     adapter = run_adapter.load_adapter(ROOT / entry["adapter_path"])
     return run_adapter.run_adapter(adapter, entry["prompt"], entry.get("bad_candidate"))
@@ -96,6 +617,16 @@ def command_run_file(args):
 
 def command_agent_check(args):
     event = agent_api.load_json_file(args.event)
+    if args.evidence_registry or args.require_structured_evidence:
+        registry = agent_api.load_evidence_registry(args.evidence_registry) if args.evidence_registry else None
+        report = agent_api.validate_event(
+            event,
+            evidence_registry=registry,
+            require_structured_evidence=args.require_structured_evidence,
+        )
+        if not report["valid"]:
+            print_json({"event_validation": report})
+            return 1
     response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
     if args.audit_log:
         record = agent_api.audit_event_check(event, response)
@@ -165,16 +696,13 @@ def command_workflow_batch(args):
     batch_request = agent_api.load_json_file(args.batch)
     if args.evidence_registry:
         registry = agent_api.load_evidence_registry(args.evidence_registry)
-        reports = []
-        for index, workflow_request in enumerate(batch_request.get("requests", [])):
-            report = agent_api.validate_workflow_evidence(
-                workflow_request,
-                registry,
-                require_structured=args.require_structured_evidence,
-            )
-            reports.append({"index": index, **report})
-        if any(not report["valid"] for report in reports):
-            print_json({"evidence_validation": reports})
+        evidence_report = agent_api.validate_workflow_batch_evidence(
+            batch_request,
+            registry,
+            require_structured=args.require_structured_evidence,
+        )
+        if not evidence_report["valid"]:
+            print_json({"evidence_validation": evidence_report})
             return 1
     result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
     if args.audit_log:
@@ -224,6 +752,29 @@ def command_validate_evidence_registry(args):
     return 0 if report["valid"] else 1
 
 
+def command_evidence_integrations(args):
+    registry = agent_api.load_evidence_registry(args.evidence_registry) if args.evidence_registry else None
+    report = evidence_integrations.integration_coverage_report(registry=registry)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+
+    status = "valid" if report["valid"] else "missing registry coverage"
+    print(f"AANA evidence integration stubs: {status} ({report['integration_count']} integration(s)).")
+    if not report["registry_checked"]:
+        print("- Registry coverage was not checked. Pass --evidence-registry to verify required source IDs.")
+    for item in report["integrations"]:
+        source_ids = ", ".join(item["required_source_ids"])
+        adapters = ", ".join(item["adapter_ids"])
+        coverage = "covered" if item["registry_covered"] else "not checked" if not report["registry_checked"] else "missing"
+        print(f"- {item['integration_id']}: {item['title']} [{coverage}]")
+        print(f"  Adapters: {adapters}")
+        print(f"  Required sources: {source_ids}")
+        if item["missing_source_ids"]:
+            print(f"  Missing sources: {', '.join(item['missing_source_ids'])}")
+    return 0 if report["valid"] else 1
+
+
 def command_validate_workflow_evidence(args):
     workflow_request = agent_api.load_json_file(args.workflow)
     registry = agent_api.load_evidence_registry(args.evidence_registry)
@@ -253,7 +804,12 @@ def command_workflow_schema(args):
 
 def command_validate_event(args):
     event = agent_api.load_json_file(args.event)
-    report = agent_api.validate_event(event)
+    registry = agent_api.load_evidence_registry(args.evidence_registry) if args.evidence_registry else None
+    report = agent_api.validate_event(
+        event,
+        evidence_registry=registry,
+        require_structured_evidence=args.require_structured_evidence,
+    )
     if args.json:
         print_json(report)
     else:
@@ -285,12 +841,30 @@ def command_run_agent_examples(args):
             print(
                 f"- {item['event_id']}: adapter={item['adapter_id']} "
                 f"candidate_gate={item['candidate_gate']} gate={item['gate_decision']} "
-                f"action={item['recommended_action']} expectations={expectation}"
+                f"action={item['recommended_action']} aix={item.get('aix_decision')} "
+                f"expectations={expectation}"
             )
     return 0 if report["valid"] else 1
 
 
 def command_scaffold_agent_event(args):
+    if args.dry_run:
+        event = agent_api.build_agent_event_from_gallery(args.adapter_id, gallery_path=args.gallery, agent=args.agent)
+        path = pathlib.Path(args.output_dir) / f"{args.adapter_id}.json"
+        print_json(
+            {
+                "dry_run": True,
+                "would_create": {"event": str(path)},
+                "event_preview": event,
+                "next_steps": [
+                    f"python scripts/aana_cli.py scaffold-agent-event {args.adapter_id} --output-dir {args.output_dir}",
+                    f"python scripts/aana_cli.py validate-event --event {path}",
+                    f"python scripts/aana_cli.py agent-check --event {path}",
+                ],
+            }
+        )
+        return 0
+
     created = agent_api.scaffold_agent_event(
         args.adapter_id,
         output_dir=args.output_dir,
@@ -333,6 +907,70 @@ def command_audit_summary(args):
     return 0
 
 
+def command_audit_metrics(args):
+    metrics = agent_api.export_audit_metrics_file(args.audit_log, output_path=args.output)
+    if args.json:
+        print_json(metrics)
+        return 0
+    print(f"AANA audit metrics export: {metrics['record_count']} record(s).")
+    if args.output:
+        print(f"- Metrics file: {args.output}")
+    print("Core metrics:")
+    for key in [
+        "audit_records_total",
+        "gate_decision_count",
+        "recommended_action_count",
+        "violation_code_count",
+        "adapter_check_count",
+        "aix_score_average",
+        "aix_decision_count",
+        "aix_hard_blocker_count",
+    ]:
+        if key in metrics["metrics"]:
+            print(f"- {key}: {metrics['metrics'][key]}")
+    if metrics["unavailable_metrics"]:
+        print("Unavailable from audit JSONL:")
+        for key in metrics["unavailable_metrics"]:
+            print(f"- {key}")
+    return 0
+
+
+def command_audit_manifest(args):
+    manifest = agent_api.create_audit_integrity_manifest(
+        args.audit_log,
+        manifest_path=args.output,
+        previous_manifest_path=args.previous_manifest,
+    )
+    if args.json:
+        print_json(manifest)
+        return 0
+    print("AANA audit integrity manifest created.")
+    print(f"- Audit log: {manifest['audit_log_path']}")
+    if args.output:
+        print(f"- Manifest: {args.output}")
+    print(f"- Records: {manifest['record_count']}")
+    print(f"- Audit SHA-256: {manifest['audit_log_sha256']}")
+    print(f"- Manifest SHA-256: {manifest['manifest_sha256']}")
+    return 0
+
+
+def command_audit_verify(args):
+    report = agent_api.verify_audit_integrity_manifest(args.manifest)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "FAIL"
+    print(f"AANA audit integrity verification: {status}")
+    print(f"- Manifest: {report['manifest_path']}")
+    print(f"- Audit log: {report['audit_log_path']}")
+    print(f"- Records: {report['record_count']}")
+    if report["issues"]:
+        print("Issues:")
+        for issue in report["issues"]:
+            print(f"- {issue['level']} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
 def production_preflight_report(
     gallery_path=DEFAULT_GALLERY,
     deployment_manifest=None,
@@ -359,6 +997,8 @@ def production_preflight_report(
                     "audit_workflow_batch",
                     "append_audit_record",
                     "summarize_audit_file",
+                    "create_audit_integrity_manifest",
+                    "verify_audit_integrity_manifest",
                 ]
             },
         )
@@ -382,6 +1022,17 @@ def production_preflight_report(
                     if report["production_ready"]
                     else "Evidence registry has issues.",
                     report,
+                )
+            )
+            integrations = evidence_integrations.integration_coverage_report(registry=registry)
+            checks.append(
+                check_status(
+                    "evidence_integrations",
+                    "pass" if integrations["valid"] else "fail",
+                    "Evidence registry covers production integration stubs."
+                    if integrations["valid"]
+                    else "Evidence registry is missing sources required by production integration stubs.",
+                    integrations,
                 )
             )
         except (OSError, ValueError, json.JSONDecodeError) as exc:
@@ -465,7 +1116,7 @@ def production_preflight_report(
             "Rate limits and deployment-level request controls",
             "Immutable audit sink and retention policy",
             "Evidence-source authorization and freshness checks",
-            "Dashboards or alerts for gate/action/violation drift",
+            "Dashboards or alerts for gate/action/violation/AIx drift",
             "Domain-owner signoff for production adapters",
             "Human-review queue for high-impact or low-confidence decisions",
         ]
@@ -563,6 +1214,11 @@ def release_check_report(
     governance_policy=None,
     evidence_registry=None,
     observability_policy=None,
+    audit_log=None,
+    min_aix_score_average=0.85,
+    min_aix_score_min=0.5,
+    max_aix_hard_blockers=0,
+    allowed_aix_decisions=None,
     run_local_check=True,
 ):
     checks = []
@@ -594,6 +1250,41 @@ def release_check_report(
             doctor["summary"],
         )
     )
+
+    freeze = contract_freeze.contract_freeze_report(
+        gallery_path=gallery_path,
+        evidence_registry_path=evidence_registry,
+    )
+    checks.append(
+        check_status(
+            "contract_freeze",
+            "pass" if freeze["valid"] else "fail",
+            "Public contracts are frozen and compatibility fixtures pass."
+            if freeze["valid"]
+            else "Public contract freeze checks failed.",
+            freeze["summary"],
+        )
+    )
+
+    try:
+        tuning = adapter_aix_tuning_report(load_gallery(gallery_path))
+        checks.append(
+            check_status(
+                "adapter_aix_tuning",
+                "pass" if tuning["valid"] else "fail",
+                "Adapter AIx tuning meets declared risk tiers."
+                if tuning["valid"]
+                else "Adapter AIx tuning is missing or below declared risk-tier requirements.",
+                {
+                    "adapter_count": tuning["adapter_count"],
+                    "failing_count": tuning["failing_count"],
+                    "risk_tier_counts": tuning["risk_tier_counts"],
+                    "issues": tuning["issues"],
+                },
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        checks.append(check_status("adapter_aix_tuning", "fail", str(exc), {"gallery": str(gallery_path)}))
 
     preflight = production_preflight_report(
         gallery_path=gallery_path,
@@ -650,6 +1341,35 @@ def release_check_report(
     else:
         checks.append(check_status("observability_policy", "warn", "Pass --observability-policy to validate dashboard, alert, and drift-review gates."))
 
+    if audit_log:
+        try:
+            metrics = agent_api.export_audit_metrics_file(audit_log)
+            aix_release = production.validate_aix_audit_metrics(
+                metrics,
+                min_average_score=min_aix_score_average,
+                min_min_score=min_aix_score_min,
+                max_hard_blockers=max_aix_hard_blockers,
+                allowed_decisions=allowed_aix_decisions,
+            )
+            checks.append(
+                check_status(
+                    "aix_audit_enforcement",
+                    "pass" if aix_release["production_ready"] else "fail" if not aix_release["valid"] else "warn",
+                    "Audit AIx release gates passed." if aix_release["production_ready"] else "Audit AIx release gates failed.",
+                    {"audit_log": str(audit_log), "metrics": metrics, "aix_release": aix_release},
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("aix_audit_enforcement", "fail", str(exc), {"audit_log": str(audit_log)}))
+    else:
+        checks.append(
+            check_status(
+                "aix_audit_enforcement",
+                "warn",
+                "Pass --audit-log to enforce AIx score, hard-blocker, and decision-drift release gates.",
+            )
+        )
+
     required_files = [
         "CHANGELOG.md",
         "docs/production-readiness-plan.md",
@@ -688,6 +1408,11 @@ def command_release_check(args):
         governance_policy=args.governance_policy,
         evidence_registry=args.evidence_registry,
         observability_policy=args.observability_policy,
+        audit_log=args.audit_log,
+        min_aix_score_average=args.min_aix_score_average,
+        min_aix_score_min=args.min_aix_score_min,
+        max_aix_hard_blockers=args.max_aix_hard_blockers,
+        allowed_aix_decisions=args.allowed_aix_decision,
         run_local_check=not args.skip_local_check,
     )
     if args.json:
@@ -695,6 +1420,26 @@ def command_release_check(args):
         return 0 if report["valid"] else 1
     summary = report["summary"]
     print(f"AANA release check: {summary['status']} ({summary['failures']} failure(s), {summary['warnings']} warning(s)).")
+    for check in report["checks"]:
+        print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
+        for issue in check.get("details", {}).get("issues", []):
+            print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_contract_freeze(args):
+    report = contract_freeze.contract_freeze_report(
+        gallery_path=args.gallery,
+        evidence_registry_path=args.evidence_registry,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    print(
+        f"AANA contract freeze: {summary['status']} "
+        f"({summary['failures']} failure(s), {summary['contracts']} contract(s), {summary['schemas']} schema(s))."
+    )
     for check in report["checks"]:
         print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
         for issue in check.get("details", {}).get("issues", []):
@@ -882,11 +1627,36 @@ def command_validate_gallery(args):
         for issue in report["issues"]:
             print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
         for item in report["checked_examples"]:
-            print(f"- {item['id']}: gate={item['gate_decision']} action={item['recommended_action']}")
+            print(
+                f"- {item['id']}: gate={item['gate_decision']} "
+                f"action={item['recommended_action']} aix={item.get('aix_decision')}"
+            )
     return 0 if report["valid"] else 1
 
 
 def command_scaffold(args):
+    if args.dry_run:
+        output_dir = pathlib.Path(args.output_dir)
+        slug = new_adapter.slugify(args.domain)
+        would_create = {
+            "adapter": str(output_dir / f"{slug}_adapter.json"),
+            "prompt": str(output_dir / f"{slug}_adapter_prompt.txt"),
+            "bad_candidate": str(output_dir / f"{slug}_adapter_bad_candidate.txt"),
+            "readme": str(output_dir / f"{slug}_adapter_README.md"),
+        }
+        print_json(
+            {
+                "dry_run": True,
+                "would_create": would_create,
+                "next_steps": [
+                    f"python scripts/aana_cli.py scaffold \"{args.domain}\" --output-dir {args.output_dir}",
+                    f"python scripts/aana_cli.py validate-adapter {would_create['adapter']}",
+                    "Replace the starter prompt and bad candidate with a real workflow case.",
+                ],
+            }
+        )
+        return 0
+
     created = new_adapter.scaffold(args.domain, args.output_dir, force=args.force)
     print_json(
         {
@@ -906,9 +1676,17 @@ def build_parser():
     parser.add_argument("--gallery", default=str(DEFAULT_GALLERY), help="Path to adapter gallery JSON.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    cli_contract_parser = subparsers.add_parser("cli-contract", help="Print the stable CLI command, exit-code, and error contract.")
+    cli_contract_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    cli_contract_parser.set_defaults(func=command_cli_contract)
+
     list_parser = subparsers.add_parser("list", help="List gallery adapters.")
     list_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     list_parser.set_defaults(func=command_list)
+
+    aix_tuning_parser = subparsers.add_parser("aix-tuning", help="Report adapter AIx risk tiers and tuning thresholds.")
+    aix_tuning_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    aix_tuning_parser.set_defaults(func=command_aix_tuning)
 
     doctor_parser = subparsers.add_parser("doctor", help="Check local AANA platform readiness.")
     doctor_parser.add_argument("--json", action="store_true", help="Emit JSON.")
@@ -929,6 +1707,8 @@ def build_parser():
     agent_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
     agent_parser.add_argument("--adapter-id", default=None, help="Override adapter id from the event.")
     agent_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
+    agent_parser.add_argument("--evidence-registry", default=None, help="Validate structured event evidence against this registry before checking.")
+    agent_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured event evidence strings before checking.")
     agent_parser.set_defaults(func=command_agent_check)
 
     workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
@@ -966,6 +1746,11 @@ def build_parser():
     validate_evidence_registry_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     validate_evidence_registry_parser.set_defaults(func=command_validate_evidence_registry)
 
+    evidence_integrations_parser = subparsers.add_parser("evidence-integrations", help="List production evidence integration stubs and registry coverage.")
+    evidence_integrations_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON to check required source coverage.")
+    evidence_integrations_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    evidence_integrations_parser.set_defaults(func=command_evidence_integrations)
+
     validate_workflow_evidence_parser = subparsers.add_parser("validate-workflow-evidence", help="Validate workflow evidence against an evidence registry.")
     validate_workflow_evidence_parser.add_argument("--workflow", required=True, help="Path to workflow request JSON.")
     validate_workflow_evidence_parser.add_argument("--evidence-registry", required=True, help="Path to evidence registry JSON.")
@@ -975,6 +1760,8 @@ def build_parser():
 
     validate_event_parser = subparsers.add_parser("validate-event", help="Validate an AI-agent event contract.")
     validate_event_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
+    validate_event_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON for source/freshness validation.")
+    validate_event_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured event evidence strings.")
     validate_event_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     validate_event_parser.set_defaults(func=command_validate_event)
 
@@ -1008,6 +1795,7 @@ def build_parser():
     scaffold_event_parser.add_argument("--output-dir", default=str(agent_api.DEFAULT_AGENT_EVENTS_DIR), help="Directory for generated event JSON.")
     scaffold_event_parser.add_argument("--agent", default="openclaw", help="Agent name to place in the event.")
     scaffold_event_parser.add_argument("--force", action="store_true", help="Overwrite an existing event file.")
+    scaffold_event_parser.add_argument("--dry-run", action="store_true", help="Show the event file that would be created without writing it.")
     scaffold_event_parser.set_defaults(func=command_scaffold_agent_event)
 
     policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
@@ -1019,12 +1807,36 @@ def build_parser():
     audit_summary_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     audit_summary_parser.set_defaults(func=command_audit_summary)
 
+    audit_metrics_parser = subparsers.add_parser("audit-metrics", help="Export dashboard metrics from a redacted AANA audit JSONL file.")
+    audit_metrics_parser.add_argument("--audit-log", required=True, help="Path to audit JSONL file.")
+    audit_metrics_parser.add_argument("--output", default=None, help="Optional path to write the metrics JSON file.")
+    audit_metrics_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    audit_metrics_parser.set_defaults(func=command_audit_metrics)
+
+    audit_manifest_parser = subparsers.add_parser("audit-manifest", help="Create a SHA-256 integrity manifest for an AANA audit JSONL file.")
+    audit_manifest_parser.add_argument("--audit-log", required=True, help="Path to audit JSONL file.")
+    audit_manifest_parser.add_argument("--output", required=True, help="Path to write the integrity manifest JSON file.")
+    audit_manifest_parser.add_argument("--previous-manifest", default=None, help="Optional previous manifest to chain by SHA-256.")
+    audit_manifest_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    audit_manifest_parser.set_defaults(func=command_audit_manifest)
+
+    audit_verify_parser = subparsers.add_parser("audit-verify", help="Verify an AANA audit integrity manifest.")
+    audit_verify_parser.add_argument("--manifest", required=True, help="Path to audit integrity manifest JSON file.")
+    audit_verify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    audit_verify_parser.set_defaults(func=command_audit_verify)
+
     preflight_parser = subparsers.add_parser("production-preflight", help="Check repo-local production readiness and list external gates.")
     preflight_parser.add_argument("--deployment-manifest", default=None, help="Optional deployment manifest JSON to validate external gates.")
     preflight_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON to validate evidence-source gates.")
     preflight_parser.add_argument("--observability-policy", default=None, help="Optional observability policy JSON to validate dashboard, alert, and drift-review gates.")
     preflight_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     preflight_parser.set_defaults(func=command_production_preflight)
+
+    contract_freeze_parser = subparsers.add_parser("contract-freeze", help="Validate frozen public AANA contracts and compatibility fixtures.")
+    contract_freeze_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    contract_freeze_parser.add_argument("--evidence-registry", default=None, help="Evidence registry JSON. Defaults to examples/evidence_registry.json.")
+    contract_freeze_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    contract_freeze_parser.set_defaults(func=command_contract_freeze)
 
     deployment_parser = subparsers.add_parser("validate-deployment", help="Validate an AANA production deployment manifest.")
     deployment_parser.add_argument("--deployment-manifest", required=True, help="Path to deployment manifest JSON.")
@@ -1046,6 +1858,16 @@ def build_parser():
     release_parser.add_argument("--governance-policy", default=None, help="Optional human-governance policy JSON.")
     release_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON.")
     release_parser.add_argument("--observability-policy", default=None, help="Optional observability policy JSON.")
+    release_parser.add_argument("--audit-log", default=None, help="Optional redacted audit JSONL file for AIx release enforcement.")
+    release_parser.add_argument("--min-aix-score-average", type=float, default=0.85, help="Minimum allowed average AIx score when --audit-log is supplied.")
+    release_parser.add_argument("--min-aix-score-min", type=float, default=0.5, help="Minimum allowed lowest AIx score when --audit-log is supplied.")
+    release_parser.add_argument("--max-aix-hard-blockers", type=int, default=0, help="Maximum allowed AIx hard blockers when --audit-log is supplied.")
+    release_parser.add_argument(
+        "--allowed-aix-decision",
+        action="append",
+        default=None,
+        help="Allowed final AIx decision in release audit logs. Can be passed multiple times; defaults to accept and revise.",
+    )
     release_parser.add_argument("--skip-local-check", action="store_true", help="Skip scripts/dev.py check.")
     release_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     release_parser.set_defaults(func=command_release_check)
@@ -1064,6 +1886,7 @@ def build_parser():
     scaffold_parser.add_argument("domain", help="Human-readable domain name.")
     scaffold_parser.add_argument("--output-dir", default="examples", help="Directory for generated files.")
     scaffold_parser.add_argument("--force", action="store_true", help="Overwrite existing scaffold files.")
+    scaffold_parser.add_argument("--dry-run", action="store_true", help="Show files that would be created without writing them.")
     scaffold_parser.set_defaults(func=command_scaffold)
     return parser
 
@@ -1072,10 +1895,15 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        validate_cli_paths(args)
         return args.func(args)
+    except CliError as exc:
+        print_cli_error(exc, json_output=getattr(args, "json", False))
+        return exc.exit_code
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        print(f"aana_cli failed: {exc}", file=sys.stderr)
-        return 2
+        error = CliError(str(exc), exit_code=EXIT_USAGE)
+        print_cli_error(error, json_output=getattr(args, "json", False))
+        return error.exit_code
 
 
 if __name__ == "__main__":

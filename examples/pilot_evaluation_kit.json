@@ -1,0 +1,316 @@
+{
+  "kit_version": "0.1",
+  "name": "AANA Pilot Evaluation Kit",
+  "description": "Synthetic and public-data-rehearsal pilot scenarios for evaluating AANA adapter routing before real-world deployment.",
+  "evaluation_mode": "shadow_advisory",
+  "default_expected": {
+    "candidate_gate": "block",
+    "gate_decision": "pass",
+    "recommended_action": "revise",
+    "aix_decision": "accept",
+    "candidate_aix_decision": "refuse"
+  },
+  "public_data_options": [
+    {
+      "id": "task_dialogue",
+      "name": "MultiWOZ-style task dialogue",
+      "best_for": ["booking_purchase_guardrail", "calendar_scheduling", "support_reply"],
+      "use": "Convert task-oriented dialogues into missing-fact, wrong-recipient, wrong-booking, and policy-boundary scenarios."
+    },
+    {
+      "id": "workplace_email",
+      "name": "Enron-style workplace email corpus",
+      "best_for": ["email_send_guardrail", "meeting_summary_checker", "publication_check"],
+      "use": "Create recipient, attachment, sensitive-content, and attribution stress cases after redaction review."
+    },
+    {
+      "id": "legal_reasoning",
+      "name": "LegalBench-style legal reasoning tasks",
+      "best_for": ["legal_safety_router", "research_answer_grounding"],
+      "use": "Create source-boundary, jurisdiction, unsupported-advice, and human-review routing fixtures."
+    },
+    {
+      "id": "medical_qa",
+      "name": "PubMedQA/MedQA-style medical QA",
+      "best_for": ["medical_safety_router", "research_answer_grounding"],
+      "use": "Create emergency-routing, unsupported medical-claim, and evidence-boundary scenarios."
+    },
+    {
+      "id": "open_procurement",
+      "name": "Data.gov/Open Contracting procurement records",
+      "best_for": ["procurement_vendor_risk", "grant_application_review"],
+      "use": "Create vendor-identity, pricing, eligibility, deadline, and required-document checks."
+    },
+    {
+      "id": "public_records",
+      "name": "Public records request and FOIA-style release logs",
+      "best_for": ["data_export_guardrail", "publication_check", "research_answer_grounding"],
+      "use": "Create privacy redaction, export scope, retention, source-boundary, and public-release review scenarios."
+    }
+  ],
+  "packs": [
+    {
+      "id": "enterprise",
+      "title": "Enterprise Shadow Pilot",
+      "goal": "Evaluate customer, employee, engineering, and release workflows that need private facts, approval routing, or rollback readiness.",
+      "pilot_surface": {
+        "entrypoint": "HTTP bridge or agent middleware before customer-visible messages, internal ticket updates, access changes, code changes, exports, and releases.",
+        "operating_mode": "shadow first, advisory after route calibration, direct action only for low-risk accept paths with complete evidence.",
+        "primary_users": ["support agents", "SRE/release owners", "security/IAM reviewers", "engineering leads", "data stewards"],
+        "evidence_systems": ["CRM", "support policy", "ticketing", "data classification", "IAM", "git/CI", "deployment manifest", "incident timeline"],
+        "review_handoff": "Route revise/defer/refuse outcomes to the owning queue with redacted audit metrics and source-freshness notes."
+      },
+      "scenarios": [
+        {
+          "id": "enterprise_crm_support_refund",
+          "surface": "crm_support_reply",
+          "adapter_id": "crm_support_reply",
+          "source": "gallery",
+          "data_basis": "synthetic_crm_order_policy",
+          "operator_workflow": "Support agent sees revised reply and verifies order/refund facts before sending."
+        },
+        {
+          "id": "enterprise_email_send_risk",
+          "surface": "email_send_guardrail",
+          "adapter_id": "email_send_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_draft_recipient_approval",
+          "operator_workflow": "User must confirm recipient, intent, attachments, and irreversible send before delivery."
+        },
+        {
+          "id": "enterprise_ticket_update",
+          "surface": "ticket_update_checker",
+          "adapter_id": "ticket_update_checker",
+          "source": "gallery",
+          "data_basis": "synthetic_ticket_history_sprint_status_policy",
+          "operator_workflow": "Support or engineering owner verifies status claims, commitments, and customer-visible wording before updating the ticket."
+        },
+        {
+          "id": "enterprise_data_export",
+          "surface": "data_export_guardrail",
+          "adapter_id": "data_export_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_data_classification_access_export_request",
+          "operator_workflow": "Data steward confirms scope, destination, authorization, private data handling, and retention policy before export."
+        },
+        {
+          "id": "enterprise_access_permission",
+          "surface": "access_permission_change",
+          "adapter_id": "access_permission_change",
+          "source": "gallery",
+          "data_basis": "synthetic_iam_request_role_catalog",
+          "operator_workflow": "IAM reviewer checks least privilege, authority, approval, and expiration."
+        },
+        {
+          "id": "enterprise_code_change_review",
+          "surface": "code_change_review",
+          "adapter_id": "code_change_review",
+          "source": "gallery",
+          "data_basis": "synthetic_git_diff_tests_ci_status",
+          "operator_workflow": "Engineering reviewer checks diff scope, test evidence, secrets, destructive commands, and migration risk before merge."
+        },
+        {
+          "id": "enterprise_deployment_readiness",
+          "surface": "deployment_readiness",
+          "adapter_id": "deployment_readiness",
+          "source": "gallery",
+          "data_basis": "synthetic_deployment_manifest_ci_release_notes",
+          "operator_workflow": "Release owner resolves rollback, migration, health-check, and observability gaps before launch."
+        },
+        {
+          "id": "enterprise_incident_response",
+          "surface": "incident_response_update",
+          "adapter_id": "incident_response_update",
+          "source": "gallery",
+          "data_basis": "synthetic_incident_timeline_status_page_oncall_notes",
+          "operator_workflow": "Incident commander validates severity, customer impact, mitigation status, ETA, and comms approval before posting."
+        }
+      ]
+    },
+    {
+      "id": "personal",
+      "title": "Personal Productivity Pilot",
+      "goal": "Evaluate local assistant guardrails for private files, email, calendar, research, and purchases.",
+      "pilot_surface": {
+        "entrypoint": "Local desktop, browser extension, or personal assistant middleware before sending, scheduling, editing files, purchasing, or publishing research answers.",
+        "operating_mode": "advisory by default; user confirmation remains mandatory for irreversible send, schedule, purchase, export, write, move, and delete actions.",
+        "primary_users": ["individual knowledge workers", "researchers", "students", "creators", "personal assistant users"],
+        "evidence_systems": ["draft email", "recipient metadata", "calendar free/busy", "file metadata", "diff/preview", "live quote/cart", "retrieved documents"],
+        "review_handoff": "Return a concise user-facing revise/ask/defer explanation and require explicit approval before external side effects."
+      },
+      "scenarios": [
+        {
+          "id": "personal_email_guardrail",
+          "surface": "email_guardrail",
+          "adapter_id": "email_send_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_draft_recipient_approval",
+          "operator_workflow": "User checks recipient, intent, sensitive content, attachments, and irreversible send approval before sending."
+        },
+        {
+          "id": "personal_file_operation",
+          "surface": "file_operation_guardrail",
+          "adapter_id": "file_operation_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_file_metadata_diff_backup",
+          "operator_workflow": "User reviews path scope, diff/preview, backup status, and confirmation before write/delete."
+        },
+        {
+          "id": "personal_calendar_scheduling",
+          "surface": "calendar_scheduling",
+          "adapter_id": "calendar_scheduling",
+          "source": "gallery",
+          "data_basis": "synthetic_freebusy_attendee_instruction",
+          "operator_workflow": "User confirms timezone, attendees, availability, and consent before invites are sent."
+        },
+        {
+          "id": "personal_booking_purchase",
+          "surface": "purchase_booking_guardrail",
+          "adapter_id": "booking_purchase_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_quote_cart_payment_policy",
+          "operator_workflow": "User approves price, vendor, refundability, and irreversible payment before purchase."
+        },
+        {
+          "id": "personal_research_grounding",
+          "surface": "research_grounding",
+          "adapter_id": "research_answer_grounding",
+          "source": "gallery",
+          "data_basis": "synthetic_retrieved_docs_citation_index",
+          "operator_workflow": "Writer revises unsupported claims and preserves uncertainty before publishing or sharing."
+        }
+      ]
+    },
+    {
+      "id": "civic_government",
+      "title": "Civic and Government Pilot",
+      "goal": "Evaluate public-service workflows where eligibility, procurement, deadlines, policy boundaries, and review routing matter.",
+      "pilot_surface": {
+        "entrypoint": "Case-management or document-review middleware before public replies, procurement notes, grant decisions, public-record releases, policy memos, and benefits triage.",
+        "operating_mode": "shadow only until agency policy, records retention, accessibility, and human-review obligations are approved.",
+        "primary_users": ["program reviewers", "procurement officers", "public-records staff", "policy analysts", "benefits triage staff"],
+        "evidence_systems": ["program rules", "submitted documents", "rubrics", "vendor records", "public-record request", "redaction policy", "source law", "policy sources"],
+        "review_handoff": "Route any eligibility, legal, privacy, protected-class, or public-facing claim risk to a human reviewer with cited evidence boundaries."
+      },
+      "scenarios": [
+        {
+          "id": "civic_public_records_privacy_redaction",
+          "surface": "public_records_privacy_redaction",
+          "adapter_id": "data_export_guardrail",
+          "source": "gallery",
+          "data_basis": "synthetic_public_records_request_data_classification_redaction_policy",
+          "public_data_option": "public_records",
+          "operator_workflow": "Records officer verifies export scope, private-data redaction, destination, authorization, and retention policy before release."
+        },
+        {
+          "id": "civic_policy_memo_grounding",
+          "surface": "policy_memo_grounding",
+          "adapter_id": "research_answer_grounding",
+          "source": "gallery",
+          "data_basis": "synthetic_policy_sources_citation_index_source_registry",
+          "public_data_option": "legal_reasoning",
+          "operator_workflow": "Policy analyst revises unsupported claims, preserves source boundaries, and labels uncertainty before circulation."
+        },
+        {
+          "id": "civic_benefits_eligibility_triage",
+          "surface": "benefits_eligibility_triage",
+          "adapter_id": "insurance_claim_triage",
+          "source": "gallery",
+          "data_basis": "synthetic_program_rules_claim_file_triage_policy",
+          "public_data_option": "task_dialogue",
+          "operator_workflow": "Benefits triage reviewer avoids final eligibility promises, identifies missing documents, and escalates jurisdiction or policy gaps."
+        },
+        {
+          "id": "civic_grant_application",
+          "surface": "grant_application_review",
+          "adapter_id": "grant_application_review",
+          "source": "gallery",
+          "data_basis": "synthetic_program_rules_submission_rubric",
+          "public_data_option": "open_procurement",
+          "operator_workflow": "Reviewer checks eligibility, deadlines, required documents, and scoring claims."
+        },
+        {
+          "id": "civic_procurement_vendor",
+          "surface": "procurement_vendor_risk",
+          "adapter_id": "procurement_vendor_risk",
+          "source": "gallery",
+          "data_basis": "synthetic_quote_vendor_profile_security_docs",
+          "public_data_option": "open_procurement",
+          "operator_workflow": "Procurement reviewer checks vendor identity, data sharing, contract terms, and security review."
+        },
+        {
+          "id": "civic_legal_safety",
+          "surface": "legal_safety_router",
+          "adapter_id": "legal_safety_router",
+          "source": "gallery",
+          "data_basis": "synthetic_jurisdiction_source_law_policy_limits",
+          "public_data_option": "legal_reasoning",
+          "operator_workflow": "Assistant routes legal-adjacent answers to general information, ask, defer, or human review."
+        },
+        {
+          "id": "civic_publication_check",
+          "surface": "publication_check",
+          "adapter_id": "publication_check",
+          "source": "gallery",
+          "data_basis": "synthetic_draft_sources_approval_policy",
+          "operator_workflow": "Publisher fixes claims, citations, private info, and brand/legal risk before posting."
+        }
+      ]
+    },
+    {
+      "id": "public_data_rehearsal",
+      "title": "Public Data Rehearsal",
+      "goal": "Use public-data-shaped cases to prepare for real pilots while avoiding private customer or employee data.",
+      "pilot_surface": {
+        "entrypoint": "Offline fixture generation and shadow evaluation pipeline before any private-data connector is enabled.",
+        "operating_mode": "evaluation only; public datasets seed non-private stress cases after license and redaction review.",
+        "primary_users": ["AANA maintainers", "pilot evaluators", "domain reviewers"],
+        "evidence_systems": ["public task-dialogue data", "public legal/medical/research QA data", "public procurement records", "checked-in synthetic events"],
+        "review_handoff": "Use failed expectations to decide which adapters need stronger fixtures, dedicated adapters, or real connector work."
+      },
+      "scenarios": [
+        {
+          "id": "public_research_summary",
+          "surface": "research_summary",
+          "adapter_id": "research_summary",
+          "source": "agent_event",
+          "event_path": "examples/agent_events/research_summary.json",
+          "data_basis": "checked_in_synthetic_sources",
+          "public_data_option": "legal_reasoning",
+          "operator_workflow": "Evaluator confirms source-boundary behavior and unsupported-claim repair."
+        },
+        {
+          "id": "public_support_reply",
+          "surface": "support_reply",
+          "adapter_id": "support_reply",
+          "source": "agent_event",
+          "event_path": "examples/agent_events/support_reply.json",
+          "data_basis": "checked_in_synthetic_support_case",
+          "public_data_option": "task_dialogue",
+          "operator_workflow": "Evaluator confirms missing private facts route to secure verification."
+        },
+        {
+          "id": "public_model_evaluation_release",
+          "surface": "model_evaluation_release",
+          "adapter_id": "model_evaluation_release",
+          "source": "agent_event",
+          "event_path": "examples/agent_events/model_evaluation_release.json",
+          "data_basis": "checked_in_synthetic_eval_release",
+          "operator_workflow": "Evaluator checks benchmark claims, regressions, safety evals, and release scope."
+        }
+      ]
+    }
+  ],
+  "report_requirements": [
+    "scenario pass/fail by pack",
+    "expected route mismatches",
+    "gate and action counts",
+    "violation counts",
+    "adapter breakdown",
+    "AIx average/min/max",
+    "AIx decisions",
+    "AIx hard blockers",
+    "pilot surface boundaries",
+    "operator workflow notes"
+  ]
+}

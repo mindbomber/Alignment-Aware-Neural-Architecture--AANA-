@@ -203,6 +203,21 @@
       "This adapter is a production-quality model-release guardrail contract, not a full model-evaluation system, leaderboard service, model registry, safety-eval platform, or rollout orchestrator."
     ]
   },
+  "aix": {
+    "risk_tier": "elevated",
+    "beta": 1.15,
+    "layer_weights": {
+      "P": 1.05,
+      "B": 1.1,
+      "C": 1.1,
+      "F": 0.85
+    },
+    "thresholds": {
+      "accept": 0.88,
+      "revise": 0.68,
+      "defer": 0.52
+    }
+  },
   "production_readiness": {
     "status": "production_candidate",
     "owner": "Model Evaluation, Safety, ML Platform, Product, Release Management, Security, Legal/Policy, SRE, and Model Owners must approve before production use.",

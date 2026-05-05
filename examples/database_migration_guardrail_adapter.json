@@ -277,6 +277,21 @@
       "This adapter is a production-quality migration guardrail contract, not a full database migration engine, DBA approval system, backup platform, schema registry, or release orchestrator."
     ]
   },
+  "aix": {
+    "risk_tier": "high",
+    "beta": 1.3,
+    "layer_weights": {
+      "P": 1.1,
+      "B": 1.25,
+      "C": 1.2,
+      "F": 0.9
+    },
+    "thresholds": {
+      "accept": 0.91,
+      "revise": 0.72,
+      "defer": 0.56
+    }
+  },
   "production_readiness": {
     "status": "production_candidate",
     "owner": "Database Engineering, SRE, Application Owners, Data Governance, Security, Privacy, Compliance, Release Management, and Human Review Operations must approve before production use.",

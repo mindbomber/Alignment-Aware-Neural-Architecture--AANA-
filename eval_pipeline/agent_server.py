@@ -13,13 +13,17 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from eval_pipeline import agent_api, agent_contract, workflow_contract
+from eval_pipeline import agent_api, agent_contract, aix, workflow_contract
 
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 DEFAULT_MAX_BODY_BYTES = 1_048_576
 DEFAULT_TOKEN_ENV = "AANA_BRIDGE_TOKEN"
+
+
+class AuditLogError(RuntimeError):
+    pass
 
 
 def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
@@ -197,6 +201,7 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
             "schemas": {
                 "AgentEvent": agent_contract.AGENT_EVENT_SCHEMA,
                 "AgentCheckResult": agent_contract.AGENT_CHECK_RESULT_SCHEMA,
+                "Aix": aix.AIX_SCHEMA,
                 "WorkflowRequest": workflow_contract.WORKFLOW_REQUEST_SCHEMA,
                 "WorkflowBatchRequest": workflow_contract.WORKFLOW_BATCH_REQUEST_SCHEMA,
                 "WorkflowResult": workflow_contract.WORKFLOW_RESULT_SCHEMA,
@@ -255,6 +260,23 @@ def _authorized(headers, auth_token):
     return _header_value(headers, "X-AANA-Token") == auth_token
 
 
+def _append_audit_record(audit_log_path, record):
+    if not audit_log_path:
+        return
+    try:
+        agent_api.append_audit_record(pathlib.Path(audit_log_path), record)
+    except OSError as exc:
+        raise AuditLogError(f"Audit append failed: {exc}") from exc
+
+
+def _append_workflow_batch_audit(audit_log_path, batch_request, result):
+    if not audit_log_path:
+        return
+    audit_record = agent_api.audit_workflow_batch(batch_request, result)
+    for record in audit_record.get("records", []):
+        _append_audit_record(audit_log_path, record)
+
+
 def route_request(
     method,
     target,
@@ -263,6 +285,7 @@ def route_request(
     headers=None,
     max_body_bytes=DEFAULT_MAX_BODY_BYTES,
     auth_token=None,
+    audit_log_path=None,
 ):
     parsed = urlparse(target)
     query = parse_qs(parsed.query)
@@ -295,6 +318,9 @@ def route_request(
     if method == "GET" and parsed.path == "/schemas/agent-check-result.schema.json":
         return 200, agent_contract.AGENT_CHECK_RESULT_SCHEMA
 
+    if method == "GET" and parsed.path == "/schemas/aix.schema.json":
+        return 200, aix.AIX_SCHEMA
+
     if method == "GET" and parsed.path == "/schemas/workflow-request.schema.json":
         return 200, workflow_contract.WORKFLOW_REQUEST_SCHEMA
 
@@ -316,7 +342,11 @@ def route_request(
             if not isinstance(event, dict):
                 raise ValueError("Request body must be a JSON object.")
             adapter_id = query.get("adapter_id", [None])[0]
-            return 200, agent_api.check_event(event, gallery_path=gallery_path, adapter_id=adapter_id)
+            result = agent_api.check_event(event, gallery_path=gallery_path, adapter_id=adapter_id)
+            _append_audit_record(audit_log_path, agent_api.audit_event_check(event, result))
+            return 200, result
+        except AuditLogError as exc:
+            return 500, {"error": str(exc)}
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             return 400, {"error": str(exc)}
 
@@ -332,7 +362,11 @@ def route_request(
             workflow_request = json.loads(body.decode("utf-8") if body else "{}")
             if not isinstance(workflow_request, dict):
                 raise ValueError("Request body must be a JSON object.")
-            return 200, agent_api.check_workflow_request(workflow_request, gallery_path=gallery_path)
+            result = agent_api.check_workflow_request(workflow_request, gallery_path=gallery_path)
+            _append_audit_record(audit_log_path, agent_api.audit_workflow_check(workflow_request, result))
+            return 200, result
+        except AuditLogError as exc:
+            return 500, {"error": str(exc)}
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             return 400, {"error": str(exc)}
 
@@ -341,7 +375,11 @@ def route_request(
             batch_request = json.loads(body.decode("utf-8") if body else "{}")
             if not isinstance(batch_request, dict):
                 raise ValueError("Request body must be a JSON object.")
-            return 200, agent_api.check_workflow_batch(batch_request, gallery_path=gallery_path)
+            result = agent_api.check_workflow_batch(batch_request, gallery_path=gallery_path)
+            _append_workflow_batch_audit(audit_log_path, batch_request, result)
+            return 200, result
+        except AuditLogError as exc:
+            return 500, {"error": str(exc)}
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             return 400, {"error": str(exc)}
 
@@ -368,6 +406,7 @@ def route_request(
             "GET /schemas",
             "GET /schemas/agent-event.schema.json",
             "GET /schemas/agent-check-result.schema.json",
+            "GET /schemas/aix.schema.json",
             "GET /schemas/workflow-request.schema.json",
             "GET /schemas/workflow-batch-request.schema.json",
             "GET /schemas/workflow-result.schema.json",
@@ -386,6 +425,7 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
     gallery_path = agent_api.DEFAULT_GALLERY
     max_body_bytes = DEFAULT_MAX_BODY_BYTES
     auth_token = None
+    audit_log_path = None
 
     def do_GET(self):
         self.respond(*route_request("GET", self.path, gallery_path=self.gallery_path))
@@ -411,6 +451,7 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
                 headers=self.headers,
                 max_body_bytes=self.max_body_bytes,
                 auth_token=self.auth_token,
+                audit_log_path=self.audit_log_path,
             )
         )
 
@@ -426,13 +467,14 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-def make_handler(gallery_path, max_body_bytes=DEFAULT_MAX_BODY_BYTES, auth_token=None):
+def make_handler(gallery_path, max_body_bytes=DEFAULT_MAX_BODY_BYTES, auth_token=None, audit_log_path=None):
     class ConfiguredAanaAgentHandler(AanaAgentHandler):
         pass
 
     ConfiguredAanaAgentHandler.gallery_path = gallery_path
     ConfiguredAanaAgentHandler.max_body_bytes = max_body_bytes
     ConfiguredAanaAgentHandler.auth_token = auth_token
+    ConfiguredAanaAgentHandler.audit_log_path = audit_log_path
     return ConfiguredAanaAgentHandler
 
 
@@ -442,14 +484,19 @@ def run_server(
     gallery_path=agent_api.DEFAULT_GALLERY,
     max_body_bytes=DEFAULT_MAX_BODY_BYTES,
     auth_token=None,
+    audit_log_path=None,
 ):
     token = auth_token if auth_token is not None else os.environ.get(DEFAULT_TOKEN_ENV)
-    server = ThreadingHTTPServer((host, port), make_handler(gallery_path, max_body_bytes, token))
+    server = ThreadingHTTPServer((host, port), make_handler(gallery_path, max_body_bytes, token, audit_log_path))
     print(f"AANA agent bridge listening on http://{host}:{port}")
     if token:
         print("Auth: bearer token required for POST routes.")
     else:
         print(f"Auth: no token configured. Set {DEFAULT_TOKEN_ENV} to require POST authorization.")
+    if audit_log_path:
+        print(f"Audit log: {audit_log_path}")
+    else:
+        print("Audit log: disabled. Pass --audit-log to append redacted gate records.")
     print(f"Max POST body: {max_body_bytes} bytes")
     print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /validate-workflow-batch, POST /workflow-batch")
     try:
@@ -476,12 +523,17 @@ def build_parser():
         default=None,
         help=f"Optional POST auth token. Prefer setting {DEFAULT_TOKEN_ENV} in production-like runs.",
     )
+    parser.add_argument(
+        "--audit-log",
+        default=None,
+        help="Optional JSONL path for redacted audit records from successful gate checks.",
+    )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    run_server(args.host, args.port, args.gallery, args.max_body_bytes, args.auth_token)
+    run_server(args.host, args.port, args.gallery, args.max_body_bytes, args.auth_token, args.audit_log)
     return 0
 
 

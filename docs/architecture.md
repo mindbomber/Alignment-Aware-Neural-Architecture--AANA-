@@ -4,6 +4,22 @@ Alignment-Aware Neural Architecture (AANA) is an evaluation pattern for testing 
 
 The core idea is simple: do not treat the first answer as final. Generate an answer, inspect it, repair it if needed, and only then score the result.
 
+## How AANA differs from SOTA LLMs
+
+State-of-the-art LLMs and multimodal models already include many alignment ingredients: instruction tuning, preference optimization, policy training, refusal behavior, retrieval, tool use, safety classifiers, and sometimes inference-time safety reasoning. AANA is not a replacement for those models.
+
+AANA treats the SOTA model as the generator inside a larger runtime architecture:
+
+```text
+S = (f_theta, E_phi, R, Pi_psi, G)
+```
+
+The difference is that AANA externalizes the verifier stack, evidence module, correction policy, and alignment gate. A base model may learn good behavior on average, but AANA asks a more operational question: for this proposed answer or action, with this evidence and these constraints, should the system accept, revise, retrieve, ask, refuse, or defer?
+
+This matters because deployment constraints are local. A model provider cannot bake in every team's CRM facts, refund policy, jurisdiction, account permissions, CI status, file path scope, calendar state, data-retention rules, or release process. AANA adapters make those constraints explicit at runtime and leave an audit trail for what passed, failed, or required escalation.
+
+See [AANA vs. SOTA LLMs and Multimodal Models](aana-vs-sota-llms.md) for the longer explanation.
+
 ## Where the architecture fits
 
 AANA works best when the system can point to a concrete constraint and do something about it. It is not mainly a politeness layer or a prompt that asks the model to be more careful. It is a correction architecture for cases where failures can be checked and routed.

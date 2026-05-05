@@ -1,6 +1,10 @@
+import json
+import pathlib
 import unittest
 
 from eval_pipeline import production
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class ProductionManifestTests(unittest.TestCase):
@@ -34,7 +38,15 @@ class ProductionManifestTests(unittest.TestCase):
             "observability": {
                 "dashboard_url": "https://observability.example/aana",
                 "alerts_enabled": True,
-                "tracked_metrics": ["gate_decision_count", "violation_code_count"],
+                "tracked_metrics": [
+                    "aix_decision_count",
+                    "aix_hard_blocker_count",
+                    "aix_score_average",
+                    "gate_decision_count",
+                    "recommended_action_count",
+                    "violation_code_count",
+                    "latency",
+                ],
             },
             "domain_owners": [
                 {
@@ -140,6 +152,9 @@ class ProductionManifestTests(unittest.TestCase):
                 "gate_decision_count",
                 "recommended_action_count",
                 "violation_code_count",
+                "aix_score_average",
+                "aix_decision_count",
+                "aix_hard_blocker_count",
                 "latency",
             ],
             "alerts": [
@@ -177,6 +192,17 @@ class ProductionManifestTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any(issue["path"] == "$.tracked_metrics" for issue in report["issues"]))
+        self.assertTrue(any("aix_score_average" in issue["message"] for issue in report["issues"]))
+
+    def test_deployment_manifest_requires_aix_observability_metrics(self):
+        manifest = self.valid_manifest()
+        manifest["observability"]["tracked_metrics"] = ["gate_decision_count", "latency"]
+
+        report = production.validate_deployment_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "$.observability.tracked_metrics" for issue in report["issues"]))
+        self.assertTrue(any("aix_score_average" in issue["message"] for issue in report["issues"]))
 
     def test_observability_policy_rejects_missing_alert_threshold(self):
         policy = self.valid_observability_policy()
@@ -186,6 +212,58 @@ class ProductionManifestTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any(issue["path"] == "$.alerts[0].threshold" for issue in report["issues"]))
+
+    def test_aix_audit_metrics_accepts_clean_release_metrics(self):
+        metrics = {
+            "record_count": 2,
+            "metrics": {
+                "aix_score_average": 0.95,
+                "aix_score_min": 0.9,
+                "aix_hard_blocker_count": 0,
+                "aix_decision_count": 2,
+                "aix_decision_count.accept": 1,
+                "aix_decision_count.revise": 1,
+            },
+        }
+
+        report = production.validate_aix_audit_metrics(metrics)
+
+        self.assertTrue(report["valid"], report)
+        self.assertTrue(report["production_ready"], report)
+
+    def test_aix_audit_metrics_rejects_low_score_hard_blockers_and_decision_drift(self):
+        metrics = {
+            "record_count": 2,
+            "metrics": {
+                "aix_score_average": 0.7,
+                "aix_score_min": 0.4,
+                "aix_hard_blocker_count": 1,
+                "aix_decision_count": 2,
+                "aix_decision_count.accept": 1,
+                "aix_decision_count.refuse": 1,
+            },
+        }
+
+        report = production.validate_aix_audit_metrics(metrics)
+
+        self.assertFalse(report["valid"])
+        messages = " ".join(issue["message"] for issue in report["issues"])
+        self.assertIn("average score", messages)
+        self.assertIn("hard-blocker count", messages)
+        self.assertIn("decision drift", messages)
+
+    def test_internal_pilot_profiles_are_production_ready(self):
+        deployment = json.loads((ROOT / "examples" / "production_deployment_internal_pilot.json").read_text())
+        governance = json.loads((ROOT / "examples" / "human_governance_policy_internal_pilot.json").read_text())
+        observability = json.loads((ROOT / "examples" / "observability_policy_internal_pilot.json").read_text())
+
+        deployment_report = production.validate_deployment_manifest(deployment)
+        governance_report = production.validate_governance_policy(governance)
+        observability_report = production.validate_observability_policy(observability)
+
+        self.assertTrue(deployment_report["production_ready"], deployment_report)
+        self.assertTrue(governance_report["production_ready"], governance_report)
+        self.assertTrue(observability_report["production_ready"], observability_report)
 
 
 if __name__ == "__main__":

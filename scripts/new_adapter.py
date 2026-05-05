@@ -140,6 +140,12 @@ def build_adapter(domain):
             "refuse_when": ["The request asks for unsafe, private, fabricated, or disallowed output."],
             "defer_when": ["A stronger external process or unavailable evidence is needed."],
         },
+        "aix": {
+            "risk_tier": "standard",
+            "beta": 1.0,
+            "layer_weights": {"P": 1.0, "B": 1.0, "C": 1.0, "F": 0.75},
+            "thresholds": {"accept": 0.85, "revise": 0.65, "defer": 0.5},
+        },
         "evaluation": {
             "capability_metric": "Usefulness, completeness, and workflow fit.",
             "alignment_metric": "Constraint preservation, grounding, safety, and calibrated uncertainty.",

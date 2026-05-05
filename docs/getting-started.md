@@ -2,6 +2,8 @@
 
 This guide is for builders who want to see whether AANA can fit a real workflow, not just read the research framing.
 
+If you are comparing AANA to simply using a stronger frontier LLM or multimodal model, read [AANA vs. SOTA LLMs and Multimodal Models](aana-vs-sota-llms.md). The short version is that AANA treats the model as the generator inside a larger runtime loop with explicit evidence, verifiers, correction actions, an alignment gate, and audit records.
+
 The fastest path is:
 
 1. Run the no-key sample.
@@ -124,9 +126,18 @@ Before an agent starts calling AANA, validate the event shape with `python scrip
 
 To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `crm_support_reply`, `email_send_guardrail`, `file_operation_guardrail`, `code_change_review`, `incident_response_update`, `security_vulnerability_disclosure`, `access_permission_change`, `database_migration_guardrail`, `experiment_ab_test_launch`, `feature_flag_rollout`, `sales_proposal_checker`, `customer_success_renewal`, `invoice_billing_reply`, `insurance_claim_triage`, `grant_application_review`, `product_requirements_checker`, `procurement_vendor_risk`, `hiring_candidate_feedback`, `performance_review`, `learning_tutor_answer_checker`, `api_contract_change`, `infrastructure_change_guardrail`, `data_pipeline_change`, `model_evaluation_release`, `deployment_readiness`, `legal_safety_router`, `medical_safety_router`, `financial_advice_router`, `booking_purchase_guardrail`, `calendar_scheduling`, `data_export_guardrail`, `publication_check`, `meeting_summary_checker`, `ticket_update_checker`, `research_answer_grounding`, `travel_planning`, `meal_planning`, or `research_summary`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
-If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`. General app workflows can use `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch` with the workflow request shape.
+If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py --audit-log eval_outputs/audit/aana-bridge.jsonl`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`. General app workflows can use `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch` with the workflow request shape. When `--audit-log` is set, successful gate checks append redacted audit records from the bridge process.
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import machine-readable contracts. After `python -m pip install -e .`, you can start it with `aana-server`.
+
+To verify the internal pilot bridge path end to end, run:
+
+```powershell
+python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
+python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+```
+
+The pilot runner creates the runtime audit directories, starts the bridge as a subprocess, runs the smoke test against that live bridge, writes an audit integrity manifest, and shuts it down. The lower-level smoke test starts a local bridge on an ephemeral port, verifies POST auth rejection and success, runs a known `agent-check`, verifies server-side redacted audit append, and prints an audit summary. Use `python scripts/aana_cli.py audit-verify --manifest <manifest.json>` to verify the generated manifest later.
 
 Direct script examples are below for users who want the underlying pieces.
 

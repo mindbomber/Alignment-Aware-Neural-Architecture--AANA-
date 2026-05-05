@@ -69,6 +69,8 @@ class RunAdapterTests(unittest.TestCase):
         self.assertIn("lunch", result["final_answer"].lower())
         self.assertFalse(result["tool_report"]["violations"])
         self.assertTrue(all(item["status"] == "pass" for item in result["constraint_results"]))
+        self.assertEqual(result["aix"]["decision"], "accept")
+        self.assertEqual(result["aix"]["score"], 1.0)
 
     def test_travel_adapter_blocks_and_repairs_bad_candidate(self):
         candidate = "Use rideshare, skip lunch, buy a $40 ticket, and spend $150 total."
@@ -80,6 +82,9 @@ class RunAdapterTests(unittest.TestCase):
         self.assertEqual(result["recommended_action"], "revise")
         self.assertGreater(len(result["candidate_tool_report"]["violations"]), 0)
         self.assertFalse(result["tool_report"]["violations"])
+        self.assertEqual(result["aix"]["decision"], "accept")
+        self.assertIn("candidate_aix", result)
+        self.assertNotEqual(result["candidate_aix"]["decision"], "accept")
 
     def test_blank_adapter_loads_but_defers_execution(self):
         adapter = run_adapter_module.load_adapter(ROOT / "examples" / "domain_adapter_template.json")
@@ -90,6 +95,7 @@ class RunAdapterTests(unittest.TestCase):
         self.assertEqual(result["gate_decision"], "needs_adapter_implementation")
         self.assertTrue(result["constraint_results"])
         self.assertTrue(all(item["status"] == "unknown" for item in result["constraint_results"]))
+        self.assertEqual(result["aix"]["decision"], "defer")
 
     def test_meal_adapter_generates_gated_answer_without_candidate(self):
         adapter = run_adapter_module.load_adapter(MEAL_ADAPTER)

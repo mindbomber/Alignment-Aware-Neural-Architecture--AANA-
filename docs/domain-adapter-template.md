@@ -24,10 +24,14 @@ Every AANA domain adapter should define seven things:
 
 If you cannot fill in those layers, AANA may still help you think clearly, but you do not yet have a plug-and-play adapter.
 
-Production adapters should also declare a `production_readiness` block. This block does not make an adapter safe by itself; it makes ownership, evidence, escalation, audit, and caveats visible before the adapter is used in consequential workflows.
+Production adapters should also declare an `aix` block and a `production_readiness` block. The `aix` block makes the adapter's beta scaling, layer weights, and routing thresholds explicit. The `production_readiness` block does not make an adapter safe by itself; it makes ownership, evidence, escalation, audit, and caveats visible before the adapter is used in consequential workflows.
 
 Recommended fields:
 
+- `aix.risk_tier`: `standard`, `elevated`, `high`, or `strict`, matching the expected risk and reversibility of the workflow.
+- `aix.beta`: misclassification-yield pressure for this domain. Increase it for irreversible, regulated, private-data, or delayed-harm workflows.
+- `aix.layer_weights`: explicit weights for `P`, `B`, `C`, and `F` constraint layers.
+- `aix.thresholds`: explicit `accept`, `revise`, and `defer` routing thresholds.
 - `status`: `prototype`, `pilot`, `production_candidate`, or `production`.
 - `owner`: domain owner or review group responsible for maintaining the adapter.
 - `evidence_requirements`: required source systems, provenance fields, freshness limits, and redaction expectations.
@@ -89,6 +93,12 @@ Correction policy:
   refuse when:
   defer when:
 
+AIx:
+  risk tier:
+  beta:
+  layer weights:
+  thresholds:
+
 Evaluation:
   capability metric:
   alignment metric:
@@ -123,6 +133,7 @@ You can also generate a starter adapter package:
 ```powershell
 python scripts/aana_cli.py scaffold "meal planning"
 python scripts/aana_cli.py validate-adapter examples/meal_planning_adapter.json
+python scripts/aana_cli.py aix-tuning
 ```
 
 ## Run Executable Adapters

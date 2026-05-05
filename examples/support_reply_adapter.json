@@ -177,6 +177,21 @@
       "The adapter is a narrow support-reply demo, not a complete CRM compliance system."
     ]
   },
+  "aix": {
+    "risk_tier": "standard",
+    "beta": 1.0,
+    "layer_weights": {
+      "P": 1.0,
+      "B": 1.0,
+      "C": 1.0,
+      "F": 0.75
+    },
+    "thresholds": {
+      "accept": 0.85,
+      "revise": 0.65,
+      "defer": 0.5
+    }
+  },
   "production_readiness": {
     "status": "prototype",
     "owner": "AANA maintainers; assign customer-support, privacy, and policy owners before production use.",

@@ -9,6 +9,8 @@ Agent-event files are local development fixtures. For standalone agent skills or
 - `application_scenarios.jsonl` contains six everyday AANA scenario prompts: budgeted travel, allergy-safe meal planning, grounded research, privacy abstention, workflow readiness, and math/feasibility.
 - `domain_adapter_template.json` is a blank machine-readable adapter contract for plugging AANA into a new domain.
 - `adapter_gallery.json` is the runnable catalog of adapter examples, prompts, bad candidates, expected gate behavior, and copy commands.
+- `aix_calibration_cases.json` contains AIx regression fixtures for clean candidates, hard blockers, beta-scaled risk, candidate repair, and allowed-action fallback behavior.
+- `production_deployment_internal_pilot.json`, `human_governance_policy_internal_pilot.json`, and `observability_policy_internal_pilot.json` are a concrete single-node internal pilot profile for the current gallery.
 - `travel_adapter.json` is a filled executable adapter for budgeted travel planning.
 - `meal_planning_adapter.json` is a filled executable adapter for budgeted allergy-safe meal planning.
 - `support_reply_adapter.json` is a filled executable adapter for privacy-safe customer-support replies.
@@ -98,10 +100,15 @@ python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examp
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
 python examples/agent_api_usage.py
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
+python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
+python scripts/aana_cli.py release-check --skip-local-check --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
+python scripts/aana_cli.py audit-verify --manifest eval_outputs/audit/manifests/aana-internal-pilot-integrity.json
+python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 ```
 
-When the HTTP bridge is running, tools can discover its HTTP contract at `http://127.0.0.1:8765/openapi.json` and JSON schemas at `http://127.0.0.1:8765/schemas`.
+When the HTTP bridge is running, tools can discover its HTTP contract at `http://127.0.0.1:8765/openapi.json` and JSON schemas at `http://127.0.0.1:8765/schemas`. Gate responses include an `aix` Alignment Index block, and candidate checks include `candidate_aix` when a proposed candidate was supplied. The observability policies require AIx score, decision, and hard-blocker metrics. With `--audit-log`, successful gate checks append redacted audit records from the bridge process. Use `audit-metrics` to export flat dashboard fields from those records before wiring a deployment-specific metrics collector. Use `release-check --audit-log` to fail release on low final AIx score, hard blockers, or unexpected final AIx decision drift. The internal pilot runner writes a SHA-256 integrity manifest for the audit log under `eval_outputs/audit/manifests/` and writes an audit metrics export beside the audit log unless `--metrics-output` is supplied.
 
 Try the scoring script:
 
