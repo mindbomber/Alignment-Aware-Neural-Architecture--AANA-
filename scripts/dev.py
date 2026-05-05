@@ -6,6 +6,8 @@ Usage:
     python scripts/dev.py dry-run
     python scripts/dev.py check
     python scripts/dev.py production-profiles
+    python scripts/dev.py release-gate
+    python scripts/dev.py release-gate --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
     python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
     python scripts/dev.py contract-freeze
     python scripts/dev.py pilot-certify
@@ -17,6 +19,7 @@ Usage:
 """
 
 import argparse
+import dataclasses
 import pathlib
 import subprocess
 import sys
@@ -29,6 +32,26 @@ PYTHON = sys.executable
 def run(command):
     print("+ " + " ".join(command), flush=True)
     subprocess.run(command, check=True)
+
+
+@dataclasses.dataclass(frozen=True)
+class ReleaseGate:
+    name: str
+    category: str
+    command: list
+    description: str
+
+
+def run_gate(gate):
+    print(f"::group::AANA {gate.category} gate: {gate.name}", flush=True)
+    print(f"AANA release gate [{gate.category}] {gate.name}: {gate.description}", flush=True)
+    try:
+        run(gate.command)
+    except subprocess.CalledProcessError as exc:
+        print(f"::error title=AANA {gate.category} gate failed::{gate.name} failed with exit code {exc.returncode}.", flush=True)
+        raise
+    finally:
+        print("::endgroup::", flush=True)
 
 
 def compile_python():
@@ -93,6 +116,100 @@ def check():
     compile_python()
     test()
     sample()
+
+
+def _append_option(command, option, value):
+    if value:
+        command.extend([option, str(value)])
+
+
+def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, reviewer_report_output=None, manifest_output=None):
+    audit_path = pathlib.Path(audit_log_path) if audit_log_path else pathlib.Path("eval_outputs/audit/release-gate/aana-audit.jsonl")
+    production_profile_command = [PYTHON, "scripts/dev.py", "production-profiles"]
+    _append_option(production_profile_command, "--audit-log", audit_log_path)
+    _append_option(production_profile_command, "--metrics-output", metrics_output)
+    _append_option(production_profile_command, "--drift-output", drift_output)
+    _append_option(production_profile_command, "--reviewer-report-output", reviewer_report_output)
+    _append_option(production_profile_command, "--manifest-output", manifest_output)
+    return [
+        ReleaseGate(
+            "compile",
+            "api",
+            [PYTHON, "-m", "compileall", "eval_pipeline", "tests", "scripts"],
+            "Compile Python sources before contract and runtime checks.",
+        ),
+        ReleaseGate(
+            "unit_tests",
+            "api",
+            [PYTHON, "-m", "unittest", "discover", "-s", "tests"],
+            "Run unit and compatibility tests for API behavior, adapters, audit, catalog, and docs.",
+        ),
+        ReleaseGate(
+            "contract_freeze",
+            "api",
+            [PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"],
+            "Validate frozen Workflow Contract and Agent Event Contract compatibility boundaries.",
+        ),
+        ReleaseGate(
+            "gallery_metadata",
+            "catalog",
+            [PYTHON, "scripts/aana_cli.py", "validate-gallery"],
+            "Validate adapter catalog metadata, docs links, evidence requirements, and completeness.",
+        ),
+        ReleaseGate(
+            "adapter_examples",
+            "adapter",
+            [PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"],
+            "Run executable gallery examples and expected gate/action/AIx outcomes.",
+        ),
+        ReleaseGate(
+            "docs_bundle",
+            "docs",
+            [PYTHON, "scripts/aana_cli.py", "pilot-certify"],
+            "Validate public docs bundle, entrypoints, integration docs, and pilot-facing readiness surfaces.",
+        ),
+        ReleaseGate(
+            "audit_redaction",
+            "audit",
+            [PYTHON, "scripts/aana_cli.py", "agent-check", "--event", "examples/agent_event_support_reply.json", "--audit-log", str(audit_path)],
+            "Write a redacted audit record through the public agent check path.",
+        ),
+        ReleaseGate(
+            "audit_validate",
+            "audit",
+            [PYTHON, "scripts/aana_cli.py", "audit-validate", "--audit-log", str(audit_path)],
+            "Validate audit schema and redaction rules for generated audit records.",
+        ),
+        ReleaseGate(
+            "production_profiles",
+            "production_profile",
+            production_profile_command,
+            "Validate production profiles, audit artifacts, release checks, and deployment boundary inputs.",
+        ),
+    ]
+
+
+def release_gate(audit_log=None, metrics_output=None, drift_output=None, reviewer_report_output=None, manifest_output=None):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = pathlib.Path(temp_dir)
+        audit_log_path = pathlib.Path(audit_log) if audit_log else temp_path / "aana-release-gate-audit.jsonl"
+        metrics_output_path = pathlib.Path(metrics_output) if metrics_output else temp_path / "aana-release-gate-metrics.json"
+        drift_output_path = pathlib.Path(drift_output) if drift_output else temp_path / "aana-release-gate-aix-drift.json"
+        reviewer_report_path = pathlib.Path(reviewer_report_output) if reviewer_report_output else temp_path / "aana-release-gate-reviewer-report.md"
+        manifest_path = pathlib.Path(manifest_output) if manifest_output else temp_path / "manifests" / "aana-release-gate-audit-integrity.json"
+        audit_log_path.parent.mkdir(parents=True, exist_ok=True)
+        metrics_output_path.parent.mkdir(parents=True, exist_ok=True)
+        drift_output_path.parent.mkdir(parents=True, exist_ok=True)
+        reviewer_report_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        for gate in release_gates(
+            audit_log_path=audit_log_path,
+            metrics_output=metrics_output_path,
+            drift_output=drift_output_path,
+            reviewer_report_output=reviewer_report_path,
+            manifest_output=manifest_path,
+        ):
+            run_gate(gate)
 
 
 def contract_freeze():
@@ -260,6 +377,7 @@ COMMANDS = {
     "design-partner-pilots": design_partner_pilots,
     "github-guardrails": github_guardrails,
     "production-profiles": production_profiles,
+    "release-gate": release_gate,
 }
 
 
@@ -272,8 +390,9 @@ def main():
     parser.add_argument("--reviewer-report-output", default=None, help="Production-profiles Markdown reviewer report artifact path.")
     parser.add_argument("--manifest-output", default=None, help="Production-profiles audit integrity manifest artifact path.")
     args = parser.parse_args()
-    if args.command == "production-profiles":
-        production_profiles(
+    if args.command in {"production-profiles", "release-gate"}:
+        selected = production_profiles if args.command == "production-profiles" else release_gate
+        selected(
             audit_log=args.audit_log,
             metrics_output=args.metrics_output,
             drift_output=args.drift_output,
@@ -282,7 +401,7 @@ def main():
         )
         return
     if args.audit_log or args.metrics_output or args.drift_output or args.reviewer_report_output or args.manifest_output:
-        parser.error("--audit-log, --metrics-output, --drift-output, --reviewer-report-output, and --manifest-output are only supported for production-profiles.")
+        parser.error("--audit-log, --metrics-output, --drift-output, --reviewer-report-output, and --manifest-output are only supported for production-profiles and release-gate.")
     COMMANDS[args.command]()
 
 

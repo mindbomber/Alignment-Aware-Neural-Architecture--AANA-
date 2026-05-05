@@ -54,7 +54,7 @@ The matrix covers:
 
 The certification command does not replace real deployment approval. It checks repository readiness, not external TLS, secret storage, immutable audit infrastructure, real evidence-source authorization, production dashboards, domain-owner signoff, or live human-review queues.
 
-For the stricter line between demo, pilot, and enforced production use, run `python scripts/aana_cli.py production-certify` with a production certification policy, deployment manifest, governance policy, evidence registry, observability policy, and redacted shadow-mode audit log. See `docs/production-certification.md`.
+For the stricter line between demo, pilot, and enforced production use, run `python scripts/aana_cli.py production-certify` with a production certification policy, deployment manifest, governance policy, evidence registry, observability policy, redacted shadow-mode audit log, and external production evidence manifest. See `docs/production-certification.md`.
 
 ## Expected Matrix
 

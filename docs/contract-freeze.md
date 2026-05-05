@@ -2,6 +2,8 @@
 
 Contract Freeze is the repo-local compatibility gate for public AANA integration surfaces. It defines which JSON shapes and version fields are stable enough for CLI, Python API, HTTP bridge, agent, workflow, skill/plugin, and evidence-integration users to depend on.
 
+The primary public APIs are the Workflow Contract and the Agent Event Contract. New app, agent, CLI, SDK, HTTP, and low-code integrations should enter AANA through one of those contracts instead of depending on lower-level adapter runner internals.
+
 Run it with:
 
 ```powershell
@@ -16,13 +18,13 @@ python scripts/dev.py contract-freeze
 
 The current freeze version is `0.1`. These surfaces are frozen at the current repo-local compatibility level:
 
-- adapter JSON contract
 - Agent Event Contract
 - agent check result
 - Workflow Request Contract
 - Workflow Batch Request Contract
 - workflow result
 - workflow batch result
+- adapter JSON contract
 - AIx runtime score block
 - structured evidence object
 - evidence registry
@@ -43,6 +45,7 @@ Compatible changes may keep the current version:
 Breaking changes require a version bump and migration notes:
 
 - renaming or removing a required field,
+- removing, renaming, or changing the meaning of a primary public API property,
 - changing field meaning,
 - changing accepted action or gate semantics,
 - changing default routing behavior,
@@ -82,3 +85,15 @@ The freeze gate validates:
 Required compatibility docs include this file, the Workflow Contract guide, agent integration guidance, the HTTP bridge runbook, OpenClaw skill conformance guidance, plugin install/use guidance, evidence integration contract guidance, audit observability hardening guidance, and pilot surface certification guidance.
 
 The goal is not to prove every adapter behavior. The goal is to prevent accidental interface drift across the public surfaces that external agents and pilots will call.
+
+## Internal Boundaries
+
+Lower-level adapter execution code, including the current adapter runner implementation, is an implementation detail. It may be refactored, split into modules, or replaced as long as the frozen public contracts keep the same behavior or receive a documented version bump. External integrations should not import runner helpers, domain-specific verifier functions, or repair internals directly.
+
+Public runtime surfaces must route through the primary contracts:
+
+- Python SDK and typed runtime calls use Workflow Contract request/result objects.
+- Agent integrations use Agent Event request/result objects.
+- HTTP bridge routes `/workflow-check`, `/workflow-batch`, `/agent-check`, and `/playground/check` must return contract-shaped results or a thin wrapper around them.
+- CLI `workflow-check`, `workflow-batch`, and gallery `run` must return Workflow Result shapes.
+- Direct adapter-file execution is a diagnostics path only and must identify itself as outside the primary public API.

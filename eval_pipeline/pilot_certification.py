@@ -619,6 +619,12 @@ def _audit_metrics_surface():
 def _docs_surface():
     required_docs = [
         "README.md",
+        "docs/try-demo/index.md",
+        "docs/try-demo/index.html",
+        "docs/integrate-runtime/index.md",
+        "docs/integrate-runtime/index.html",
+        "docs/build-adapter/index.md",
+        "docs/build-adapter/index.html",
         "docs/getting-started.md",
         "docs/hosted-demo.md",
         "docs/adapter-gallery.md",

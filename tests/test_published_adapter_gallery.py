@@ -14,6 +14,7 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
 
         self.assertEqual(payload["published_gallery_version"], "0.1")
         self.assertEqual(payload["adapter_count"], 43)
+        self.assertIn("not production certification", payload["production_positioning"])
         self.assertEqual(
             set(payload["filters"]["risk_tiers"]),
             {"standard", "elevated", "high", "strict"},
@@ -24,11 +25,16 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         self.assertIn("enterprise", payload["filters"]["families"])
         self.assertIn("developer", payload["filters"]["roles"])
         self.assertIn("try.ready", payload["readiness_counts"])
+        self.assertEqual(
+            set(payload["filters"]["readiness_statuses"]),
+            {"demo_adapter", "pilot_ready", "production_candidate"},
+        )
 
         required_fields = {
             "id",
             "title",
             "workflow",
+            "readiness_status",
             "risk_tier",
             "aix",
             "required_evidence",
@@ -42,9 +48,13 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         }
         for card in payload["adapters"]:
             self.assertTrue(required_fields.issubset(card), card["id"])
+            self.assertIn(card["readiness_status"], {"demo_adapter", "pilot_ready", "production_candidate"}, card["id"])
             self.assertIn(card["risk_tier"], {"standard", "elevated", "high", "strict"})
             self.assertIsInstance(card["required_evidence"], list, card["id"])
             self.assertTrue(card["supported_surfaces"], card["id"])
+            self.assertTrue(card["families"], card["id"])
+            self.assertIn("status", card["production"], card["id"])
+            self.assertIn("claim", card["production"], card["id"])
             self.assertIn(card["readiness"]["try"], {"ready", "partial"}, card["id"])
             self.assertIn(card["readiness"]["pilot"], {"ready", "not_packaged"}, card["id"])
             self.assertIn("beta", card["aix"], card["id"])
@@ -88,6 +98,7 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         rebuilt = adapter_gallery.published_gallery()
 
         self.assertEqual(generated["published_gallery_version"], rebuilt["published_gallery_version"])
+        self.assertEqual(generated["production_positioning"], rebuilt["production_positioning"])
         self.assertEqual(generated["adapter_count"], rebuilt["adapter_count"])
         self.assertEqual(generated["risk_tier_counts"], rebuilt["risk_tier_counts"])
         self.assertEqual(

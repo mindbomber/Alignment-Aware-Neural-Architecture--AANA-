@@ -98,19 +98,22 @@
         "developer_tooling"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate public APIs, external partners, regulated workflows, high-traffic consumers, failed tests, unreviewed breaking changes, disputed compatibility evidence, and repeated policy failures.",
           "Escalate any case with versioning ambiguity, stale docs, missing migration path, consumer owner disagreement, SDK incompatibility, or missing approval evidence.",
           "Escalate repeated false accepts for breaking-change, versioning, docs, tests, or consumer-impact violations."
         ],
         "owner": "API Platform, Service Owners, Developer Experience, SDK Owners, QA, SRE, Product, Security, Legal, Customer Success, and API Governance must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "OpenAPI diff",
         "consumer list",
@@ -120,7 +123,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "api_contract_change api contract change check api contract changes before merge, release, deployment, publication, or consumer notification while preserving breaking-change, versioning, docs, tests, and consumer-impact constraints. openapi diff review api versioning gates contract test checks consumer-impact review migration and docs readiness openapi diff consumer list test output api_breaking_change_unreviewed api_versioning_missing api_docs_missing api_tests_failed_or_missing api_consumer_impact_unaddressed developer_tooling developer ready not_packaged external_required elevated",
+      "search_text": "api_contract_change api contract change check api contract changes before merge, release, deployment, publication, or consumer notification while preserving breaking-change, versioning, docs, tests, and consumer-impact constraints. openapi diff review api versioning gates contract test checks consumer-impact review migration and docs readiness openapi diff consumer list test output api_breaking_change_unreviewed api_versioning_missing api_docs_missing api_tests_failed_or_missing api_consumer_impact_unaddressed developer_tooling developer pilot_ready ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -239,19 +242,22 @@
         "enterprise"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate high-value refunds, chargebacks, legal threats, regulatory complaints, privacy incidents, fraud/risk flags, and account disputes.",
           "Escalate any reply that depends on sensitive identity, billing, payment, risk, or internal CRM notes.",
           "Escalate repeated false accepts for private-data, refund-policy, account-fact, or policy-promise violations."
         ],
         "owner": "Customer Support Operations, Privacy Review, and Support Policy owners must approve before external production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "CRM customer record",
         "order system record",
@@ -269,7 +275,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support ready ready external_required elevated",
+      "search_text": "crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -380,19 +386,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate sensitive meetings, external-party privacy constraints, executive calendars, confidential titles, HR/legal/medical scheduling, minors, and access-control uncertainty.",
           "Escalate any case with attendee mismatch, provider permission errors, conflict override requests, recurrence ambiguity, or timezone conversion uncertainty.",
           "Escalate repeated false accepts for availability, timezone, attendee, conflict, or invite-consent violations."
         ],
         "owner": "Calendar Platform, Productivity Product, Privacy, Security, Legal, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "calendar free/busy",
         "attendee list",
@@ -400,7 +409,7 @@
       ],
       "risk_tier": "elevated",
       "roles": [],
-      "search_text": "calendar_scheduling calendar scheduling check calendar scheduling and invite-send actions before creating or sending invites while preserving availability, timezone, attendee, conflict, and consent constraints. calendar scheduling invite-send guardrails free/busy availability checks attendee list verification timezone and conflict checks calendar free/busy attendee list user instruction availability_unverified timezone_ambiguous_or_wrong attendee_list_drift calendar_conflict_ignored invite_sent_without_consent personal_productivity  ready ready external_required elevated",
+      "search_text": "calendar_scheduling calendar scheduling check calendar scheduling and invite-send actions before creating or sending invites while preserving availability, timezone, attendee, conflict, and consent constraints. calendar scheduling invite-send guardrails free/busy availability checks attendee list verification timezone and conflict checks calendar free/busy attendee list user instruction availability_unverified timezone_ambiguous_or_wrong attendee_list_drift calendar_conflict_ignored invite_sent_without_consent personal_productivity  pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -497,11 +506,17 @@
         "renewal_discount_promise_unauthorized",
         "renewal_private_notes_exposed"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "customer_success_renewal",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate unauthorized discounts, free months, service credits, price locks, payment waivers, nonstandard terms, high-risk account saves, and executive escalations.",
           "Escalate any case with missing approval, conflicting CRM and contract evidence, private-note ambiguity, support escalations, legal exceptions, or finance exceptions.",
@@ -515,6 +530,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "CRM",
         "account health",
@@ -524,7 +540,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "customer_success_renewal customer success renewal check customer-success renewal communications before customer send while preserving account facts, renewal terms, discount-promise authority, and private-note boundaries. renewal email review customer-success account updates renewal offer checks discount promise control private account-note minimization crm account health contract renewal_account_facts_unverified renewal_terms_misrepresented renewal_discount_promise_unauthorized renewal_private_notes_exposed  support ready not_packaged external_required elevated",
+      "search_text": "customer_success_renewal customer success renewal check customer-success renewal communications before customer send while preserving account facts, renewal terms, discount-promise authority, and private-note boundaries. renewal email review customer-success account updates renewal offer checks discount promise control private account-note minimization crm account health contract renewal_account_facts_unverified renewal_terms_misrepresented renewal_discount_promise_unauthorized renewal_private_notes_exposed general support production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -624,11 +640,17 @@
         "data_pipeline_pii_policy_violation",
         "data_pipeline_downstream_consumers_unhandled"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "data_pipeline_change",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate regulated datasets, PII, production dashboards, ML features, finance/customer reporting, schema drift, freshness degradation, disputed lineage, and repeated policy failures.",
           "Escalate any case with PII ambiguity, missing owner approval, missing backfill, disabled monitors, incompatible schema change, or untested downstream consumers.",
@@ -642,6 +664,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "DAG metadata",
         "schema registry",
@@ -651,7 +674,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "data_pipeline_change data pipeline change check data pipeline changes before merge, deploy, backfill, schedule, or promotion while preserving schema-drift, freshness, lineage, pii, and downstream-consumer constraints. dag change review schema registry checks freshness sla gates lineage and catalog review pii and downstream consumer protection dag metadata schema registry lineage graph data_pipeline_schema_drift_unreviewed data_pipeline_freshness_degraded data_pipeline_lineage_broken data_pipeline_pii_policy_violation data_pipeline_downstream_consumers_unhandled  analyst ready not_packaged external_required elevated",
+      "search_text": "data_pipeline_change data pipeline change check data pipeline changes before merge, deploy, backfill, schedule, or promotion while preserving schema-drift, freshness, lineage, pii, and downstream-consumer constraints. dag change review schema registry checks freshness sla gates lineage and catalog review pii and downstream consumer protection dag metadata schema registry lineage graph data_pipeline_schema_drift_unreviewed data_pipeline_freshness_degraded data_pipeline_lineage_broken data_pipeline_pii_policy_violation data_pipeline_downstream_consumers_unhandled general analyst production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -750,11 +773,17 @@
         "experiment_user_impact_unreviewed",
         "experiment_rollback_missing"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "experiment_ab_test_launch",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate high-impact flows, pricing, payments, regulated users, minors, vulnerable users, notifications, privacy-sensitive data, customer support load, legal risk, and disputed metrics.",
           "Escalate any case with hypothesis uncertainty, guardrail gaps, sample-size ambiguity, exposure disagreement, rollback uncertainty, or owner-approval mismatch.",
@@ -768,6 +797,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "experiment config",
         "metric registry",
@@ -775,7 +805,7 @@
       ],
       "risk_tier": "elevated",
       "roles": [],
-      "search_text": "experiment_ab_test_launch experiment/a-b test launch check experiment and a/b test launches before enabling, ramping, scheduling, or shipping while preserving hypothesis, guardrail, sample-size, user-impact, and rollback constraints. a/b test launches experiment ramp review metric guardrail checks sample-size readiness user-impact and rollback gates experiment config metric registry risk policy experiment_hypothesis_missing_or_unmeasurable experiment_guardrails_missing experiment_sample_size_unverified experiment_user_impact_unreviewed experiment_rollback_missing   ready not_packaged external_required elevated",
+      "search_text": "experiment_ab_test_launch experiment/a-b test launch check experiment and a/b test launches before enabling, ramping, scheduling, or shipping while preserving hypothesis, guardrail, sample-size, user-impact, and rollback constraints. a/b test launches experiment ramp review metric guardrail checks sample-size readiness user-impact and rollback gates experiment config metric registry risk policy experiment_hypothesis_missing_or_unmeasurable experiment_guardrails_missing experiment_sample_size_unverified experiment_user_impact_unreviewed experiment_rollback_missing general  production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -874,11 +904,17 @@
         "feature_flag_monitoring_missing",
         "feature_flag_rollback_missing"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "feature_flag_rollout",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate payment, security, authentication, data-access, regulated-user, enterprise-tenant, and major revenue-path rollouts.",
           "Escalate any case with excluded-audience ambiguity, percentage-cap exception, missing kill switch, unhealthy guardrail metrics, missing owner approval, or missing rollback runbook.",
@@ -892,6 +928,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "flag config",
         "rollout plan",
@@ -901,7 +938,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "feature_flag_rollout feature flag rollout check feature flag rollouts before enabling, ramping, scheduling, expanding, or promoting while preserving audience, percentage, kill-switch, monitoring, and rollback constraints. feature flag enablement progressive rollout review audience targeting checks kill-switch readiness monitoring and rollback gates flag config rollout plan metrics feature_flag_audience_mismatch feature_flag_percentage_overexpanded feature_flag_kill_switch_missing feature_flag_monitoring_missing feature_flag_rollback_missing  developer ready not_packaged external_required elevated",
+      "search_text": "feature_flag_rollout feature flag rollout check feature flag rollouts before enabling, ramping, scheduling, expanding, or promoting while preserving audience, percentage, kill-switch, monitoring, and rollback constraints. feature flag enablement progressive rollout review audience targeting checks kill-switch readiness monitoring and rollback gates flag config rollout plan metrics feature_flag_audience_mismatch feature_flag_percentage_overexpanded feature_flag_kill_switch_missing feature_flag_monitoring_missing feature_flag_rollback_missing general developer production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1007,19 +1044,22 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate eligibility disputes, late submissions, deadline exceptions, missing required materials, appeals, conflicts of interest, high-value awards, and panel disagreements.",
           "Escalate any case with sensitive applicant data, legal/regulatory concerns, financial irregularities, scoring ambiguity, or award-authority uncertainty.",
           "Escalate repeated false accepts for eligibility, deadline, required-document, or scoring violations."
         ],
         "owner": "Program Administration, Grants Operations, Review Panel Leads, Compliance, Legal, Finance, Privacy, and Program Leadership must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "program rules",
         "submitted docs",
@@ -1030,7 +1070,7 @@
         "analyst",
         "citizen-services"
       ],
-      "search_text": "grant_application_review grant/application review check grant and application review replies, pre-screen decisions, and reviewer notes while preserving eligibility boundaries, deadline handling, required-document completeness, and rubric-scoring limits. grant intake triage eligibility statement review deadline-sensitive routing missing application document checks rubric and award-claim grounding program rules submitted docs rubric grant_eligibility_claim_unsupported grant_deadline_misrepresented grant_required_docs_missing grant_scoring_claim_unsupported government_civic analyst citizen-services ready ready external_required elevated",
+      "search_text": "grant_application_review grant/application review check grant and application review replies, pre-screen decisions, and reviewer notes while preserving eligibility boundaries, deadline handling, required-document completeness, and rubric-scoring limits. grant intake triage eligibility statement review deadline-sensitive routing missing application document checks rubric and award-claim grounding program rules submitted docs rubric grant_eligibility_claim_unsupported grant_deadline_misrepresented grant_required_docs_missing grant_scoring_claim_unsupported government_civic analyst citizen-services pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1130,11 +1170,17 @@
         "hiring_feedback_tone_unsafe",
         "hiring_decision_claims_unauthorized"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "hiring_candidate_feedback",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate protected-class ambiguity, adverse decision language, accommodation concerns, legal risk, disputed evidence, executive roles, and repeated policy failures.",
           "Escalate any case with job-relatedness ambiguity, rubric mismatch, unsupported claims, tone concerns, or unauthorized decision claims.",
@@ -1148,6 +1194,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "interview notes",
         "rubric",
@@ -1157,7 +1204,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "hiring_candidate_feedback hiring candidate feedback check hiring candidate feedback before sending, saving, sharing, scoring, or decision handoff while preserving job-relatedness, protected-class risk, evidence, tone, and decision-claim constraints. interview feedback candidate scorecards hiring summaries rubric-grounded feedback protected-class and decision-language checks interview notes rubric hiring policy hiring_feedback_not_job_related hiring_protected_class_risk hiring_feedback_evidence_missing hiring_feedback_tone_unsafe hiring_decision_claims_unauthorized  reviewer ready not_packaged external_required elevated",
+      "search_text": "hiring_candidate_feedback hiring candidate feedback check hiring candidate feedback before sending, saving, sharing, scoring, or decision handoff while preserving job-relatedness, protected-class risk, evidence, tone, and decision-claim constraints. interview feedback candidate scorecards hiring summaries rubric-grounded feedback protected-class and decision-language checks interview notes rubric hiring policy hiring_feedback_not_job_related hiring_protected_class_risk hiring_feedback_evidence_missing hiring_feedback_tone_unsafe hiring_decision_claims_unauthorized general reviewer production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1267,19 +1314,22 @@
         "enterprise"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate SEV-1, SEV-2, security, privacy, data-loss, regulated-customer, legal, executive, media, public-status-page, and disputed-impact incident updates.",
           "Escalate any case with severity uncertainty, customer-impact uncertainty, ETA ambiguity, mitigation disagreement, root-cause uncertainty, or approval ambiguity.",
           "Escalate repeated false accepts for severity, impact, mitigation, ETA, or communications-approval violations."
         ],
         "owner": "SRE, Incident Command, Support Operations, Communications, Legal, Security, Privacy, Product, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "incident timeline",
         "on-call notes",
@@ -1289,7 +1339,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "incident_response_update incident response update check incident response updates before posting, sending, or syncing them while preserving severity, customer-impact, mitigation-status, eta, and communications-approval constraints. status page updates customer incident communications severity and impact checks eta policy enforcement communications approval gates incident timeline on-call notes status page policy incident_severity_overstated_or_understated incident_customer_impact_unverified incident_mitigation_status_unverified incident_eta_unsupported incident_comms_approval_missing enterprise support ready ready external_required elevated",
+      "search_text": "incident_response_update incident response update check incident response updates before posting, sending, or syncing them while preserving severity, customer-impact, mitigation-status, eta, and communications-approval constraints. status page updates customer incident communications severity and impact checks eta policy enforcement communications approval gates incident timeline on-call notes status page policy incident_severity_overstated_or_understated incident_customer_impact_unverified incident_mitigation_status_unverified incident_eta_unsupported incident_comms_approval_missing enterprise support pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1385,11 +1435,17 @@
         "billing_tax_claim_unsupported",
         "billing_payment_data_exposed"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "invoice_billing_reply",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate disputed invoices, chargebacks, large credits, refund exceptions, late-fee waivers, collections cases, and legal threats.",
           "Escalate any case with tax exemption, tax refund, reverse-charge, jurisdiction-specific tax claims, payment processor anomalies, or sensitive payment metadata.",
@@ -1403,6 +1459,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "invoice",
         "payment metadata",
@@ -1412,7 +1469,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "invoice_billing_reply invoice/billing reply check invoice and billing replies before customer send while preserving balance facts, credit authority, tax-claim boundaries, and payment-data minimization. invoice reply review billing support messages credit and waiver checks tax claim routing payment data minimization invoice payment metadata billing policy billing_balance_fact_unverified billing_credit_promise_unauthorized billing_tax_claim_unsupported billing_payment_data_exposed  support ready not_packaged external_required elevated",
+      "search_text": "invoice_billing_reply invoice/billing reply check invoice and billing replies before customer send while preserving balance facts, credit authority, tax-claim boundaries, and payment-data minimization. invoice reply review billing support messages credit and waiver checks tax claim routing payment data minimization invoice payment metadata billing policy billing_balance_fact_unverified billing_credit_promise_unauthorized billing_tax_claim_unsupported billing_payment_data_exposed general support production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1508,11 +1565,17 @@
         "model_eval_safety_evals_missing",
         "model_eval_deployment_scope_expanded"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "model_evaluation_release",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate default API promotion, all-user rollout, regulated workflows, high-risk domains, material regressions, failed or pending safety evals, disputed methodology, and release-policy exceptions.",
           "Escalate any case with unsupported public benchmark claims, missing model-card scope, missing approval records, missing rollback evidence, or conflicts between eval results and release notes.",
@@ -1526,6 +1589,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "eval results",
         "model card",
@@ -1535,7 +1599,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "model_evaluation_release model evaluation release check model evaluation releases before announcement, publication, promotion, or rollout while preserving benchmark-claim, regression, safety-eval, and deployment-scope constraints. model release review benchmark claim checks regression disclosure safety eval gates deployment scope and rollout control eval results model card release policy model_eval_benchmark_claim_unsupported model_eval_regression_unreviewed model_eval_safety_evals_missing model_eval_deployment_scope_expanded  developer ready not_packaged external_required elevated",
+      "search_text": "model_evaluation_release model evaluation release check model evaluation releases before announcement, publication, promotion, or rollout while preserving benchmark-claim, regression, safety-eval, and deployment-scope constraints. model release review benchmark claim checks regression disclosure safety eval gates deployment scope and rollout control eval results model card release policy model_eval_benchmark_claim_unsupported model_eval_regression_unreviewed model_eval_safety_evals_missing model_eval_deployment_scope_expanded general developer production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1633,11 +1697,17 @@
         "performance_review_compensation_promise_unauthorized",
         "performance_review_tone_unsafe"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "performance_review",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate protected-class ambiguity, accommodation details, adverse action language, compensation decisions, legal risk, disputed evidence, executive reviews, and repeated policy failures.",
           "Escalate any case with evidence ambiguity, goal mismatch, unsupported claims, private-data concerns, tone concerns, or unauthorized pay or employment outcome claims.",
@@ -1651,6 +1721,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "review packet",
         "goals",
@@ -1660,7 +1731,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "performance_review performance review check employee performance review feedback before drafting, saving, sharing, calibration, or hr handoff while preserving evidence, bias-risk, private-data, compensation-promise, and tone constraints. performance review drafting manager feedback review calibration hr policy checks compensation and private-data guardrails review packet goals hr policy performance_review_evidence_missing performance_review_bias_risk performance_review_private_data_exposed performance_review_compensation_promise_unauthorized performance_review_tone_unsafe  reviewer ready not_packaged external_required elevated",
+      "search_text": "performance_review performance review check employee performance review feedback before drafting, saving, sharing, calibration, or hr handoff while preserving evidence, bias-risk, private-data, compensation-promise, and tone constraints. performance review drafting manager feedback review calibration hr policy checks compensation and private-data guardrails review packet goals hr policy performance_review_evidence_missing performance_review_bias_risk performance_review_private_data_exposed performance_review_compensation_promise_unauthorized performance_review_tone_unsafe general reviewer production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1774,19 +1845,22 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate legal-risk content, regulated claims, health/financial/safety claims, paid ads, press releases, investor content, competitor comparisons, customer stories, crisis communications, and confidential material.",
           "Escalate any case with source mismatch, citation uncertainty, privacy uncertainty, trademark/endorsement concerns, defamation risk, or approval-policy ambiguity.",
           "Escalate repeated false accepts for claims, citations, private info, brand/legal risk, or approval-policy violations."
         ],
         "owner": "Editorial, Brand, Legal, Privacy, Product Marketing, Compliance, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "draft",
         "source list",
@@ -1796,7 +1870,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "publication_check publication check check draft content before publishing, posting, releasing, scheduling, or sending it while preserving claim support, citation, private-info, brand/legal, and approval-policy constraints. public content publishing claim and citation checks private-info removal brand and legal review routing approval-policy enforcement draft source list approval policy unsupported_publication_claim citation_mismatch_or_fabrication private_or_confidential_info_leak brand_or_legal_risk_unreviewed publication_approval_missing personal_productivity government_civic analyst ready ready external_required elevated",
+      "search_text": "publication_check publication check check draft content before publishing, posting, releasing, scheduling, or sending it while preserving claim support, citation, private-info, brand/legal, and approval-policy constraints. public content publishing claim and citation checks private-info removal brand and legal review routing approval-policy enforcement draft source list approval policy unsupported_publication_claim citation_mismatch_or_fabrication private_or_confidential_info_leak brand_or_legal_risk_unreviewed publication_approval_missing personal_productivity government_civic analyst pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -1906,19 +1980,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate regulated, legal, medical, financial, scientific, public-policy, public-release, litigation, customer, safety, security, and high-impact answers.",
           "Escalate conflicting sources, low-trust sources, stale sources, private-source ambiguity, publication-rights uncertainty, missing provenance, and unsupported quantitative claims.",
           "Escalate repeated false accepts for citation-index, source-boundary, unsupported-claim, uncertainty, or source-registry-policy violations."
         ],
         "owner": "Research, Knowledge Systems, Search/Retrieval, Editorial, Legal, Privacy, Security, Compliance, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "retrieved documents",
         "citation index",
@@ -1928,7 +2005,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "research_answer_grounding research answer grounding check cited research answers before publication or decision use while preserving citation-index, source-boundary, claim-support, uncertainty, and source-registry constraints. rag answer grounding citation-index verification source-boundary enforcement unsupported claim removal source-registry policy checks retrieved documents citation index source registry citation_not_in_index source_boundary_violation unsupported_research_claim uncertainty_erased source_registry_policy_bypassed personal_productivity analyst ready ready external_required elevated",
+      "search_text": "research_answer_grounding research answer grounding check cited research answers before publication or decision use while preserving citation-index, source-boundary, claim-support, uncertainty, and source-registry constraints. rag answer grounding citation-index verification source-boundary enforcement unsupported claim removal source-registry policy checks retrieved documents citation index source registry citation_not_in_index source_boundary_violation unsupported_research_claim uncertainty_erased source_registry_policy_bypassed personal_productivity analyst pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2025,11 +2102,17 @@
         "sales_legal_terms_unapproved",
         "sales_product_promise_unsupported"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "sales_proposal_checker",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate below-floor pricing, high discounts, free paid services, enterprise customer paper, regulated-data terms, security exceptions, and roadmap commitments.",
           "Escalate any case with missing deal-desk approval, missing legal approval, unsupported compliance claims, ambiguous product scope, or conflicting CRM and price-book evidence.",
@@ -2043,6 +2126,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "CRM opportunity",
         "price book",
@@ -2050,7 +2134,7 @@
       ],
       "risk_tier": "elevated",
       "roles": [],
-      "search_text": "sales_proposal_checker sales proposal checker check sales proposals before sending, approving, quoting, redlining, or committing while preserving pricing, discount-authority, legal-term, and product-promise constraints. sales proposal review cpq and quote checks discount authority gates legal term routing product promise control crm opportunity price book contract policy sales_pricing_mismatch sales_discount_authority_exceeded sales_legal_terms_unapproved sales_product_promise_unsupported   ready not_packaged external_required elevated",
+      "search_text": "sales_proposal_checker sales proposal checker check sales proposals before sending, approving, quoting, redlining, or committing while preserving pricing, discount-authority, legal-term, and product-promise constraints. sales proposal review cpq and quote checks discount authority gates legal term routing product promise control crm opportunity price book contract policy sales_pricing_mismatch sales_discount_authority_exceeded sales_legal_terms_unapproved sales_product_promise_unsupported general  production_candidate ready not_packaged external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2159,19 +2243,22 @@
         "enterprise"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate outage communications, security incidents, legal threats, enterprise customer updates, refunds, SLA credits, executive escalations, sensitive customers, disputed status, and policy exceptions.",
           "Escalate any case with status uncertainty, commitment ambiguity, entitlement uncertainty, private-data uncertainty, customer-visible wording risk, or policy-version ambiguity.",
           "Escalate repeated false accepts for status claims, commitments, wording, internal/private data, or support-policy violations."
         ],
         "owner": "Support Operations, Customer Success, Engineering, Product, Privacy, Security, Legal, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "ticket history",
         "sprint status",
@@ -2181,7 +2268,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support ready ready external_required elevated",
+      "search_text": "ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support pilot_ready ready ready external_required elevated",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2292,19 +2379,22 @@
         "enterprise"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate privileged production access, admin/owner roles, wildcard roles, break-glass roles, service accounts, customer data, regulated systems, cross-account trust, approval conflicts, and permanent access requests.",
           "Escalate any case with requester-authority uncertainty, least-privilege disagreement, scope mismatch, missing owner approval, expiration ambiguity, or inherited-permission uncertainty.",
           "Escalate repeated false accepts for authority, least-privilege, scope, approval, or expiration violations."
         ],
         "owner": "Identity and Access Management, Security Engineering, Compliance, Privacy, IT Operations, SRE, Data Governance, Application Owners, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "IAM request",
         "approval record",
@@ -2314,7 +2404,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "access_permission_change access permission change check iam access changes before granting, modifying, escalating, or extending permissions while preserving requester authority, least privilege, scope, approval, and expiration constraints. iam access requests least-privilege role checks privileged access review approval and owner gates expiration and revocation checks iam request approval record role catalog access_requester_authority_unverified access_least_privilege_violation access_scope_expanded access_approval_missing_or_mismatched access_expiration_missing_or_unsafe enterprise reviewer ready ready external_required high",
+      "search_text": "access_permission_change access permission change check iam access changes before granting, modifying, escalating, or extending permissions while preserving requester authority, least privilege, scope, approval, and expiration constraints. iam access requests least-privilege role checks privileged access review approval and owner gates expiration and revocation checks iam request approval record role catalog access_requester_authority_unverified access_least_privilege_violation access_scope_expanded access_approval_missing_or_mismatched access_expiration_missing_or_unsafe enterprise reviewer pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2422,17 +2512,20 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate eligibility decisions, legal implications, benefits determinations, appeals, vulnerable-person cases, and private-data uncertainty."
         ],
         "owner": "Casework, Program, Legal, Privacy, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "case history",
         "program status",
@@ -2443,7 +2536,7 @@
       "roles": [
         "citizen-services"
       ],
-      "search_text": "casework_response_checker casework response checker check constituent or casework responses before sending while preserving verified case facts, commitment boundaries, public wording, private-data minimization, and policy compliance. constituent casework benefits response boundaries case status claims privacy-safe public replies case history program status support policy program rules case_status_unverified case_commitment_unsupported casewording_unsafe case_private_data_exposed case_policy_bypassed government_civic citizen-services ready ready external_required high",
+      "search_text": "casework_response_checker casework response checker check constituent or casework responses before sending while preserving verified case facts, commitment boundaries, public wording, private-data minimization, and policy compliance. constituent casework benefits response boundaries case status claims privacy-safe public replies case history program status support policy program rules case_status_unverified case_commitment_unsupported casewording_unsafe case_private_data_exposed case_policy_bypassed government_civic citizen-services pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2560,19 +2653,22 @@
         "developer_tooling"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate migrations, destructive commands, auth, payments, privacy, infrastructure, production data, secret exposure, broad refactors, dependency updates, and deployment changes.",
           "Escalate failing or missing CI, stale test output, conflicting test signals, unknown code-owner status, and migration rollback gaps.",
           "Escalate repeated false accepts for tests, scope, secrets, destructive commands, or migration-risk violations."
         ],
         "owner": "Engineering, Security, DevOps, Data Platform, and Code Owners must approve before production merge or release use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "git diff",
         "test output",
@@ -2583,7 +2679,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "code_change_review code change review review proposed code changes while preserving test and ci requirements, diff scope, secret absence, destructive-command safety, and migration-risk handling. pre-commit review pull request triage ci and test gates secret leakage prevention migration safety git diff test output ci status requested change tests_missing_or_failing diff_scope_drift secret_or_sensitive_data_leak destructive_command_introduced migration_risk_unbounded enterprise developer_tooling developer ready ready external_required high",
+      "search_text": "code_change_review code change review review proposed code changes while preserving test and ci requirements, diff scope, secret absence, destructive-command safety, and migration-risk handling. pre-commit review pull request triage ci and test gates secret leakage prevention migration safety git diff test output ci status requested change tests_missing_or_failing diff_scope_drift secret_or_sensitive_data_leak destructive_command_introduced migration_risk_unbounded enterprise developer_tooling developer pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2699,19 +2795,22 @@
         "developer_tooling"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate destructive DDL/DML, production data, customer data, regulated data, large tables, critical paths, cross-region replication, long locks, irreversible changes, failed backups, and missing restore validation.",
           "Escalate any case with data-loss uncertainty, lock-risk uncertainty, rollback ambiguity, backfill ambiguity, compatibility disagreement, backup uncertainty, or owner-approval mismatch.",
           "Escalate repeated false accepts for data-loss, lock, rollback, backfill, compatibility, or backup violations."
         ],
         "owner": "Database Engineering, SRE, Application Owners, Data Governance, Security, Privacy, Compliance, Release Management, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "migration diff",
         "schema state",
@@ -2722,7 +2821,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "database_migration_guardrail database migration guardrail check database migrations before execution, approval, merge, scheduling, or rollout while preserving data-loss, lock-risk, rollback, backfill, compatibility, and backup constraints. production database migrations schema change review online migration readiness backfill and compatibility checks backup and rollback gates migration diff schema state rollout plan backup status migration_data_loss_unreviewed migration_lock_risk_unreviewed migration_rollback_missing migration_backfill_missing migration_compatibility_unverified migration_backup_unverified developer_tooling developer ready not_packaged external_required high",
+      "search_text": "database_migration_guardrail database migration guardrail check database migrations before execution, approval, merge, scheduling, or rollout while preserving data-loss, lock-risk, rollback, backfill, compatibility, and backup constraints. production database migrations schema change review online migration readiness backfill and compatibility checks backup and rollback gates migration diff schema state rollout plan backup status migration_data_loss_unreviewed migration_lock_risk_unreviewed migration_rollback_missing migration_backfill_missing migration_compatibility_unverified migration_backup_unverified developer_tooling developer pilot_ready ready not_packaged external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2833,19 +2932,22 @@
         "developer_tooling"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate production/shared infrastructure, IAM/networking/database changes, regulated data locations, failed policy-as-code checks, high-cost changes, destructive plans, disallowed regions, and repeated policy failures.",
           "Escalate any case with blast-radius ambiguity, secret/security-control concerns, missing rollback, missing backup, missing owner approval, or region/compliance uncertainty.",
           "Escalate repeated false accepts for blast-radius, secrets/security, rollback, cost, or region/compliance violations."
         ],
         "owner": "Infrastructure Platform, SRE, Security, Compliance, FinOps, Service Owners, Data Governance, Legal, and Change Management must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "IaC diff",
         "plan output",
@@ -2855,7 +2957,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "infrastructure_change_guardrail infrastructure change guardrail check infrastructure changes before merge, apply, deployment, promotion, or approval while preserving blast-radius, secrets/security, rollback, cost, and region/compliance constraints. iac diff review terraform/opentofu plan gates cloud security checks finops review region and compliance policy enforcement iac diff plan output policy infra_blast_radius_unreviewed infra_secret_or_security_exposure infra_rollback_missing infra_cost_unreviewed infra_region_compliance_violation developer_tooling developer ready not_packaged external_required high",
+      "search_text": "infrastructure_change_guardrail infrastructure change guardrail check infrastructure changes before merge, apply, deployment, promotion, or approval while preserving blast-radius, secrets/security, rollback, cost, and region/compliance constraints. iac diff review terraform/opentofu plan gates cloud security checks finops review region and compliance policy enforcement iac diff plan output policy infra_blast_radius_unreviewed infra_secret_or_security_exposure infra_rollback_missing infra_cost_unreviewed infra_region_compliance_violation developer_tooling developer pilot_ready ready not_packaged external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -2963,19 +3065,22 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate coverage disputes, high-value claims, injuries, liability questions, suspected fraud, legal threats, regulator contacts, catastrophe claims, and vulnerable claimant cases.",
           "Escalate any case with missing required documents, conflicting policy and claim evidence, jurisdiction uncertainty, licensing uncertainty, or state-rule ambiguity.",
           "Escalate repeated false accepts for coverage claims, missing-document, jurisdiction-rule, or escalation violations."
         ],
         "owner": "Claims Operations, Licensed Adjusting, Compliance, Legal, SIU, Privacy, Product, and Claims Leadership must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "policy docs",
         "claim file",
@@ -2985,7 +3090,7 @@
       "roles": [
         "citizen-services"
       ],
-      "search_text": "insurance_claim_triage insurance claim triage check insurance claim triage replies and routing decisions while preserving coverage boundaries, required document collection, jurisdiction rules, and escalation requirements. claim intake triage coverage statement review missing document checks state rule routing adjuster and siu escalation policy docs claim file triage policy insurance_coverage_claim_unsupported insurance_missing_docs_unresolved insurance_jurisdiction_rule_unverified insurance_escalation_missing government_civic citizen-services ready ready external_required high",
+      "search_text": "insurance_claim_triage insurance claim triage check insurance claim triage replies and routing decisions while preserving coverage boundaries, required document collection, jurisdiction rules, and escalation requirements. claim intake triage coverage statement review missing document checks state rule routing adjuster and siu escalation policy docs claim file triage policy insurance_coverage_claim_unsupported insurance_missing_docs_unresolved insurance_jurisdiction_rule_unverified insurance_escalation_missing government_civic citizen-services pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3093,17 +3198,20 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate legal interpretation, fiscal impact, benefits eligibility, privacy, civil-rights, emergency, and public-commitment claims."
         ],
         "owner": "Policy, Legal, Program, Privacy, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "citation index",
         "source registry",
@@ -3116,7 +3224,7 @@
         "analyst",
         "citizen-services"
       ],
-      "search_text": "policy_memo_grounding policy memo grounding check policy memos before review, publication, or decision support while preserving citations, source boundaries, supported claims, uncertainty, and source-registry policy. policy memos source-law grounding citation checks jurisdiction-bounded analysis citation index source registry jurisdiction retrieved documents source law policy_citation_unverified policy_source_boundary_violation policy_claim_unsupported policy_uncertainty_missing policy_source_registry_bypassed government_civic analyst citizen-services ready ready external_required high",
+      "search_text": "policy_memo_grounding policy memo grounding check policy memos before review, publication, or decision support while preserving citations, source boundaries, supported claims, uncertainty, and source-registry policy. policy memos source-law grounding citation checks jurisdiction-bounded analysis citation index source registry jurisdiction retrieved documents source law policy_citation_unverified policy_source_boundary_violation policy_claim_unsupported policy_uncertainty_missing policy_source_registry_bypassed government_civic analyst citizen-services pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3227,19 +3335,22 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate new vendors, high spend, regulated data, customer data, production access, nonstandard terms, cross-border transfers, subprocessors, model-training rights, missing DPA, security exceptions, and sanctions-screening uncertainty.",
           "Escalate any case with vendor-identity uncertainty, quote mismatch, contract-term ambiguity, data-sharing disagreement, security-review uncertainty, or approval mismatch.",
           "Escalate repeated false accepts for vendor identity, price, contract terms, data sharing, or security review violations."
         ],
         "owner": "Procurement, Legal, Finance, Security, Privacy, Data Governance, Business Owners, IT, Compliance, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "vendor profile",
         "quote",
@@ -3249,7 +3360,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "procurement_vendor_risk procurement/vendor risk check procurement and vendor-risk decisions before purchase, approval, onboarding, contract execution, renewal, or data sharing while preserving vendor identity, price, contract terms, data-sharing, and security-review constraints. vendor approval procurement review contract and quote checks dpa and data-sharing checks third-party security review vendor profile quote dpa/security docs vendor_identity_unverified vendor_price_unverified vendor_contract_terms_unreviewed vendor_data_sharing_unapproved vendor_security_review_missing government_civic analyst ready ready external_required high",
+      "search_text": "procurement_vendor_risk procurement/vendor risk check procurement and vendor-risk decisions before purchase, approval, onboarding, contract execution, renewal, or data sharing while preserving vendor identity, price, contract terms, data-sharing, and security-review constraints. vendor approval procurement review contract and quote checks dpa and data-sharing checks third-party security review vendor profile quote dpa/security docs vendor_identity_unverified vendor_price_unverified vendor_contract_terms_unreviewed vendor_data_sharing_unapproved vendor_security_review_missing government_civic analyst pilot_ready ready ready external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3349,11 +3460,17 @@
         "vulnerability_remediation_unsupported",
         "vulnerability_disclosure_timing_violation"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "security_vulnerability_disclosure",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate critical/high vulnerabilities, active exploitation, public exploit availability, coordinated disclosure, embargoed CVEs, regulated-customer impact, legal exposure, public advisories, and press-visible communications.",
           "Escalate any case with CVE uncertainty, version-range uncertainty, exploitability disagreement, remediation ambiguity, release-timing ambiguity, or approval ambiguity.",
@@ -3367,6 +3484,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "security advisory",
         "scanner output",
@@ -3376,7 +3494,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "security_vulnerability_disclosure security vulnerability disclosure check security vulnerability disclosures before advisory, customer, public, or release-channel publication while preserving cve facts, affected versions, exploitability, remediation, and disclosure-timing constraints. security advisories cve fact checks affected version validation exploitability statements remediation and disclosure timing gates security advisory scanner output release notes vulnerability_cve_facts_unverified vulnerability_affected_versions_unverified vulnerability_exploitability_unverified vulnerability_remediation_unsupported vulnerability_disclosure_timing_violation  reviewer ready not_packaged external_required high",
+      "search_text": "security_vulnerability_disclosure security vulnerability disclosure check security vulnerability disclosures before advisory, customer, public, or release-channel publication while preserving cve facts, affected versions, exploitability, remediation, and disclosure-timing constraints. security advisories cve fact checks affected version validation exploitability statements remediation and disclosure timing gates security advisory scanner output release notes vulnerability_cve_facts_unverified vulnerability_affected_versions_unverified vulnerability_exploitability_unverified vulnerability_remediation_unsupported vulnerability_disclosure_timing_violation general reviewer production_candidate ready not_packaged external_required high",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3466,31 +3584,38 @@
         "diet_contradiction",
         "incomplete_week"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "meal_planning",
       "packs": [],
       "production": {
+        "adapter_readiness": "prototype",
+        "claim": "Demo adapter: suitable for examples and local demos; not pilot or production ready without evidence connectors and owner signoff.",
         "human_review_escalation": [
           "Escalate severe allergy, medical nutrition, pregnancy, pediatric, or clinical dietary workflows.",
           "Escalate missing or conflicting allergen-label evidence.",
           "Escalate repeated false accepts for dietary exclusion or budget constraints."
         ],
         "owner": "AANA maintainers; assign a nutrition, food-safety, or product-domain owner before production use.",
-        "status": "prototype"
+        "status": "demo_adapter"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "demo_adapter",
       "required_evidence": [
         "user-provided grocery budget",
         "local grocery prices when available"
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "meal_planning budgeted allergy-safe meal planning create a meal plan while preserving grocery budget, dietary exclusions, diet requirements, and requested day coverage. grocery planning dietary exclusions weekly meal plans with explicit budget accounting user-provided grocery budget local grocery prices when available cheap_plan_breaks_allergy_rule healthy_plan_breaks_budget diet_contradiction incomplete_week   ready not_packaged external_required standard",
+      "search_text": "meal_planning budgeted allergy-safe meal planning create a meal plan while preserving grocery budget, dietary exclusions, diet requirements, and requested day coverage. grocery planning dietary exclusions weekly meal plans with explicit budget accounting user-provided grocery budget local grocery prices when available cheap_plan_breaks_allergy_rule healthy_plan_breaks_budget diet_contradiction incomplete_week general  demo_adapter ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3587,24 +3712,31 @@
         "forbidden_transport_violation",
         "missing_required_component"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "travel_planning",
       "packs": [],
       "production": {
+        "adapter_readiness": "prototype",
+        "claim": "Demo adapter: suitable for examples and local demos; not pilot or production ready without evidence connectors and owner signoff.",
         "human_review_escalation": [
           "Escalate irreversible booking, purchase, cancellation, or payment actions.",
           "Escalate accessibility-critical, safety-critical, or minor-travel workflows.",
           "Escalate repeated false accepts for budget, route, or destination constraints."
         ],
         "owner": "AANA maintainers; assign a travel-domain owner before production use.",
-        "status": "prototype"
+        "status": "demo_adapter"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "demo_adapter",
       "required_evidence": [
         "user-provided budget",
         "price data when available",
@@ -3616,7 +3748,7 @@
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "travel_planning budgeted travel planning plan an outing while preserving budget, transport, lunch, day-count, and destination constraints. itineraries budgeted outings plans with forbidden transport or required inclusions user-provided budget price data when available user-provided cap ticket prices when available transit route data for production use user-provided destination live destination data for production use premium_plan_breaks_budget ticket_cap_violation forbidden_transport_violation missing_required_component   ready not_packaged external_required standard",
+      "search_text": "travel_planning budgeted travel planning plan an outing while preserving budget, transport, lunch, day-count, and destination constraints. itineraries budgeted outings plans with forbidden transport or required inclusions user-provided budget price data when available user-provided cap ticket prices when available transit route data for production use user-provided destination live destination data for production use premium_plan_breaks_budget ticket_cap_violation forbidden_transport_violation missing_required_component general  demo_adapter ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3705,24 +3837,31 @@
         "unsupported_quantitative_claim",
         "uncertainty_erasure"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "research_summary",
       "packs": [],
       "production": {
+        "adapter_readiness": "prototype",
+        "claim": "Demo adapter: suitable for examples and local demos; not pilot or production ready without evidence connectors and owner signoff.",
         "human_review_escalation": [
           "Escalate publication, legal, medical, financial, policy, or high-impact research claims.",
           "Escalate conflicting sources, missing provenance, and unverifiable quantitative claims.",
           "Escalate repeated false accepts for citation, source-boundary, or unsupported-claim violations."
         ],
         "owner": "AANA maintainers; assign a research, editorial, or knowledge-domain owner before production use.",
-        "status": "prototype"
+        "status": "demo_adapter"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "demo_adapter",
       "required_evidence": [
         "Source A",
         "Source B",
@@ -3730,7 +3869,7 @@
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "research_summary grounded research summary draft a research brief while preserving allowed sources, citation boundaries, supported claims, and uncertainty labels. research briefs knowledge-work summaries citation-grounded analysis with incomplete evidence source a source b provided source notes polished_summary_invents_evidence unsupported_quantitative_claim uncertainty_erasure   ready not_packaged external_required standard",
+      "search_text": "research_summary grounded research summary draft a research brief while preserving allowed sources, citation boundaries, supported claims, and uncertainty labels. research briefs knowledge-work summaries citation-grounded analysis with incomplete evidence source a source b provided source notes polished_summary_invents_evidence unsupported_quantitative_claim uncertainty_erasure general  demo_adapter ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3828,11 +3967,17 @@
         "learning_age_safety_risk",
         "learning_unsupported_claim"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "learning_tutor_answer_checker",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate child-safety ambiguity, sensitive learner data, self-harm or abuse signals, accessibility/accommodation issues, high-stakes assessment content, disputed answer keys, and repeated policy failures.",
           "Escalate any case with curriculum ambiguity, correctness uncertainty, hint-policy conflict, age-safety concerns, or ungrounded diagnostic/ability claims.",
@@ -3846,6 +3991,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "lesson plan",
         "learner profile",
@@ -3853,7 +3999,7 @@
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "learning_tutor_answer_checker learning/tutor answer checker check learner-facing tutor answers before showing, saving, or sending while preserving curriculum fit, correctness, hint-vs-answer behavior, age safety, and evidence-bounded claims. tutor answer checks hint-first learning support curriculum alignment answer-key verification learner age-safety guardrails lesson plan learner profile solution key learning_curriculum_mismatch learning_answer_incorrect learning_hint_vs_answer_violation learning_age_safety_risk learning_unsupported_claim   ready not_packaged external_required standard",
+      "search_text": "learning_tutor_answer_checker learning/tutor answer checker check learner-facing tutor answers before showing, saving, or sending while preserving curriculum fit, correctness, hint-vs-answer behavior, age safety, and evidence-bounded claims. tutor answer checks hint-first learning support curriculum alignment answer-key verification learner age-safety guardrails lesson plan learner profile solution key learning_curriculum_mismatch learning_answer_incorrect learning_hint_vs_answer_violation learning_age_safety_risk learning_unsupported_claim general  production_candidate ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -3962,19 +4108,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate HR, legal, security, customer, incident, disciplinary, executive, regulated, privileged, confidential, external-sharing, or disputed-summary cases.",
           "Escalate any case with low speaker confidence, speaker-attribution uncertainty, transcript gaps, privacy uncertainty, attendee mismatch, retention ambiguity, or distribution-scope ambiguity.",
           "Escalate repeated false accepts for transcript faithfulness, action items, attribution, sensitive content, or metadata-scope violations."
         ],
         "owner": "Productivity Platform, Collaboration Platform, Privacy, Security, Legal, HR, Records, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "transcript",
         "attendee list",
@@ -3982,7 +4131,7 @@
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "meeting_summary_checker meeting summary checker check meeting summaries before publishing, sending, storing, or sharing them while preserving transcript faithfulness, action-item, attribution, sensitive-content, and metadata-scope constraints. meeting recap publication transcript faithfulness checks action item verification speaker attribution checks sensitive meeting content minimization transcript attendee list meeting metadata meeting_transcript_unfaithful meeting_action_item_unsupported meeting_attribution_mismatch meeting_sensitive_content_exposed meeting_metadata_scope_violation personal_productivity  ready ready external_required standard",
+      "search_text": "meeting_summary_checker meeting summary checker check meeting summaries before publishing, sending, storing, or sharing them while preserving transcript faithfulness, action-item, attribution, sensitive-content, and metadata-scope constraints. meeting recap publication transcript faithfulness checks action item verification speaker attribution checks sensitive meeting content minimization transcript attendee list meeting metadata meeting_transcript_unfaithful meeting_action_item_unsupported meeting_attribution_mismatch meeting_sensitive_content_exposed meeting_metadata_scope_violation personal_productivity  pilot_ready ready ready external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4074,24 +4223,31 @@
         "private_data_leak",
         "missing_verification_path"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "support_reply",
       "packs": [],
       "production": {
+        "adapter_readiness": "prototype",
+        "claim": "Demo adapter: suitable for examples and local demos; not pilot or production ready without evidence connectors and owner signoff.",
         "human_review_escalation": [
           "Escalate high-value refunds, account disputes, privacy incidents, and legal or regulatory complaints.",
           "Escalate any request involving sensitive payment, billing, identity, or authentication data.",
           "Escalate repeated false accepts for private-data or unsupported-account-fact violations."
         ],
         "owner": "AANA maintainers; assign customer-support, privacy, and policy owners before production use.",
-        "status": "prototype"
+        "status": "demo_adapter"
       },
       "readiness": {
         "pilot": "not_packaged",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "demo_adapter",
       "required_evidence": [
         "verified account record",
         "secure support system",
@@ -4099,7 +4255,7 @@
       ],
       "risk_tier": "standard",
       "roles": [],
-      "search_text": "support_reply privacy-safe customer support reply draft a support reply while preserving verified account facts, private data minimization, and secure routing for missing account details. support replies refund request triage workflows where missing private facts should trigger ask or defer verified account record secure support system secure customer-support workflow helpful_reply_invents_account_facts private_data_leak missing_verification_path   ready not_packaged external_required standard",
+      "search_text": "support_reply privacy-safe customer support reply draft a support reply while preserving verified account facts, private data minimization, and secure routing for missing account details. support replies refund request triage workflows where missing private facts should trigger ask or defer verified account record secure support system secure customer-support workflow helpful_reply_invents_account_facts private_data_leak missing_verification_path general  demo_adapter ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4196,11 +4352,17 @@
         "prd_dependencies_unresolved",
         "prd_privacy_security_review_missing"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "product_requirements_checker",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate sensitive data, identity, payments, minors, regulated users, safety-critical workflows, permissions, security controls, legal commitments, public commitments, and high-impact launch scope.",
           "Escalate any case with acceptance-criteria ambiguity, scope disagreement, unresolved dependency, design mismatch, privacy uncertainty, security uncertainty, or owner-approval mismatch.",
@@ -4214,6 +4376,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "PRD",
         "design spec",
@@ -4224,7 +4387,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "product_requirements_checker product requirements checker check product requirements before approval, planning, handoff, implementation, or launch-readiness decisions while preserving acceptance criteria, scope, dependencies, and privacy/security review constraints. prd readiness review requirements handoff roadmap scope checks design and dependency checks privacy and security review gates prd design spec roadmap policy checklist prd_acceptance_criteria_missing prd_scope_unbounded_or_expanded prd_dependencies_unresolved prd_privacy_security_review_missing  analyst ready not_packaged external_required standard",
+      "search_text": "product_requirements_checker product requirements checker check product requirements before approval, planning, handoff, implementation, or launch-readiness decisions while preserving acceptance criteria, scope, dependencies, and privacy/security review constraints. prd readiness review requirements handoff roadmap scope checks design and dependency checks privacy and security review gates prd design spec roadmap policy checklist prd_acceptance_criteria_missing prd_scope_unbounded_or_expanded prd_dependencies_unresolved prd_privacy_security_review_missing general analyst production_candidate ready not_packaged external_required standard",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4335,19 +4498,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate high-value purchases, subscriptions, deposits, non-refundable bookings, regulated or age-restricted goods, unusual payment methods, and third-party marketplace purchases.",
           "Escalate any case with vendor mismatch, payment fraud signals, account takeover risk, chargeback risk, disputed terms, or unsupported refundability.",
           "Escalate repeated false accepts for price, vendor, refundability, irreversible-payment, or user-confirmation violations."
         ],
         "owner": "Payments, Commerce, Trust and Safety, Legal, Product, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "live quote",
         "cart",
@@ -4356,7 +4522,7 @@
       ],
       "risk_tier": "strict",
       "roles": [],
-      "search_text": "booking_purchase_guardrail booking/purchase guardrail check booking, reservation, checkout, and purchase actions before payment while preserving price, vendor, refundability, irreversible-payment, and user-confirmation constraints. checkout and purchase actions booking and reservation guardrails live quote and cart checks refundability disclosure irreversible payment confirmation live quote cart payment policy user approval price_mismatch_or_stale_quote vendor_unverified refundability_or_cancellation_hidden irreversible_payment_without_hold missing_or_mismatched_user_confirmation personal_productivity  ready ready external_required strict",
+      "search_text": "booking_purchase_guardrail booking/purchase guardrail check booking, reservation, checkout, and purchase actions before payment while preserving price, vendor, refundability, irreversible-payment, and user-confirmation constraints. checkout and purchase actions booking and reservation guardrails live quote and cart checks refundability disclosure irreversible payment confirmation live quote cart payment policy user approval price_mismatch_or_stale_quote vendor_unverified refundability_or_cancellation_hidden irreversible_payment_without_hold missing_or_mismatched_user_confirmation personal_productivity  pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4468,19 +4634,22 @@
         "enterprise"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate regulated data, customer data, employee data, health or financial data, credentials, bulk exports, public links, external destinations, and cross-border transfers.",
           "Escalate any case with authorization mismatch, legal-hold uncertainty, DLP uncertainty, destination mismatch, retention ambiguity, or unusual recipient scope.",
           "Escalate repeated false accepts for scope, private-data, destination, authorization, or retention violations."
         ],
         "owner": "Data Governance, Security, Privacy, Legal, Product, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "export request",
         "access grants",
@@ -4490,7 +4659,7 @@
       "roles": [
         "analyst"
       ],
-      "search_text": "data_export_guardrail data export guardrail check data export actions before preparing, transmitting, sharing, or storing exported data while preserving scope, private-data, destination, authorization, and retention constraints. data export actions dlp-style export checks access grant verification destination approval retention policy enforcement export request access grants data classification export_scope_expansion private_data_leak destination_unverified authorization_missing_or_mismatched retention_policy_ignored enterprise analyst ready ready external_required strict",
+      "search_text": "data_export_guardrail data export guardrail check data export actions before preparing, transmitting, sharing, or storing exported data while preserving scope, private-data, destination, authorization, and retention constraints. data export actions dlp-style export checks access grant verification destination approval retention policy enforcement export request access grants data classification export_scope_expansion private_data_leak destination_unverified authorization_missing_or_mismatched retention_policy_ignored enterprise analyst pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4609,19 +4778,22 @@
         "developer_tooling"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate migrations, data deletion, auth, payments, privacy, infrastructure, broad config changes, disabled safety gates, sensitive-value exposure, and release-window exceptions.",
           "Escalate failed or missing CI, missing rollback, missing health checks, missing observability, conflicting release notes, and unknown service ownership.",
           "Escalate repeated false accepts for config, sensitive values, rollback, health checks, migration, or observability violations."
         ],
         "owner": "Engineering, SRE, Security, Data Platform, Release Management, and Service Owners must approve before production release use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "deployment manifest",
         "CI result",
@@ -4631,7 +4803,7 @@
       "roles": [
         "developer"
       ],
-      "search_text": "deployment_readiness deployment readiness review production deployments while preserving config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness. production release review deployment manifest checks rollback readiness health checks and canary gates observability readiness deployment manifest ci result release notes deployment_config_invalid deployment_secret_exposure rollback_unavailable health_checks_absent migration_risk_unbounded observability_missing enterprise developer_tooling developer ready ready external_required strict",
+      "search_text": "deployment_readiness deployment readiness review production deployments while preserving config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness. production release review deployment manifest checks rollback readiness health checks and canary gates observability readiness deployment manifest ci result release notes deployment_config_invalid deployment_secret_exposure rollback_unavailable health_checks_absent migration_risk_unbounded observability_missing enterprise developer_tooling developer pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4747,19 +4919,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate broad external sends, reply-all to large lists, Bcc use, legal/HR/finance content, regulated data, credentials, secrets, and sensitive attachments.",
           "Escalate conflicting recipient metadata, lookalike domains, stale aliases, uncertain approval state, and distribution-list expansion failures.",
           "Escalate repeated false accepts for wrong-recipient, private-data, attachment, or irreversible-send violations."
         ],
         "owner": "Product, Security, Privacy, Legal, and Messaging Platform owners must approve before production send use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "draft email",
         "recipient metadata",
@@ -4770,7 +4945,7 @@
       "roles": [
         "support"
       ],
-      "search_text": "email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support ready ready external_required strict",
+      "search_text": "email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -4881,17 +5056,20 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate exemptions, appeals, law-enforcement sensitivity, protected data, high-profile requests, and source-law conflicts."
         ],
         "owner": "FOIA/Public Records, Legal, Privacy, Records Management, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "export request",
         "source law",
@@ -4903,7 +5081,7 @@
       "roles": [
         "citizen-services"
       ],
-      "search_text": "foia_public_records_response_checker foia/public records response checker check foia or public-records response packets before release while preserving request scope, redaction, destination, authorization, retention, and audit constraints. foia response packets public-records review redaction checks appeal and retention handling export request source law data classification approval record retention policy foia_scope_expansion foia_private_data_exposed foia_destination_unverified foia_authorization_missing foia_retention_missing government_civic citizen-services ready ready external_required strict",
+      "search_text": "foia_public_records_response_checker foia/public records response checker check foia or public-records response packets before release while preserving request scope, redaction, destination, authorization, retention, and audit constraints. foia response packets public-records review redaction checks appeal and retention handling export request source law data classification approval record retention policy foia_scope_expansion foia_private_data_exposed foia_destination_unverified foia_authorization_missing foia_retention_missing government_civic citizen-services pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5016,19 +5194,22 @@
         "personal_productivity"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate recursive deletes, broad moves, overwrites, system paths, shared drives, symlinks, hidden directories, secrets, credentials, regulated data, and large generated diffs.",
           "Escalate conflicting file metadata, stale backup state, uncertain version-control status, ambiguous path normalization, and preview mismatches.",
           "Escalate repeated false accepts for scope, path safety, backup, confirmation, or diff-preview violations."
         ],
         "owner": "Product, Security, Infrastructure, Data Governance, and Workspace Platform owners must approve before production file-operation use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "requested action",
         "file metadata",
@@ -5038,7 +5219,7 @@
       ],
       "risk_tier": "strict",
       "roles": [],
-      "search_text": "file_operation_guardrail file operation guardrail check delete, move, write, overwrite, and preview actions while preserving exact scope, backup status, user confirmation, path safety, and diff/preview integrity. file delete approval file move and rename safety write and overwrite previews backup verification path safety requested action file metadata diff or preview backup status user confirmation delete_move_write_scope_expansion unsafe_or_ambiguous_path missing_backup_before_destructive_change missing_user_confirmation missing_or_mismatched_diff_preview personal_productivity  ready ready external_required strict",
+      "search_text": "file_operation_guardrail file operation guardrail check delete, move, write, overwrite, and preview actions while preserving exact scope, backup status, user confirmation, path safety, and diff/preview integrity. file delete approval file move and rename safety write and overwrite previews backup verification path safety requested action file metadata diff or preview backup status user confirmation delete_move_write_scope_expansion unsafe_or_ambiguous_path missing_backup_before_destructive_change missing_user_confirmation missing_or_mismatched_diff_preview personal_productivity  pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5143,11 +5324,17 @@
         "unsupported_financial_prediction",
         "user_intent_overridden"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "financial_advice_router",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate individualized buy, sell, hold, allocation, retirement, debt, insurance, tax, securities, crypto, leverage, derivative, or account-specific financial decisions.",
           "Escalate any response requiring suitability, fiduciary, tax, accounting, jurisdictional, regulatory, or licensed professional judgment.",
@@ -5161,6 +5348,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "financial policy",
         "user intent",
@@ -5170,7 +5358,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "financial_advice_router financial advice router route financial-adjacent answers to general education, ask for context, defer, or qualified review while preserving investment and tax advice boundaries. financial-adjacent q&a investment advice boundary checks tax advice boundary checks risk disclosure enforcement unsupported prediction blocking financial policy user intent source documents personalized_investment_advice personalized_tax_advice risk_disclosure_missing unsupported_financial_prediction user_intent_overridden  reviewer ready not_packaged external_required strict",
+      "search_text": "financial_advice_router financial advice router route financial-adjacent answers to general education, ask for context, defer, or qualified review while preserving investment and tax advice boundaries. financial-adjacent q&a investment advice boundary checks tax advice boundary checks risk disclosure enforcement unsupported prediction blocking financial policy user intent source documents personalized_investment_advice personalized_tax_advice risk_disclosure_missing unsupported_financial_prediction user_intent_overridden general reviewer production_candidate ready not_packaged external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5272,11 +5460,17 @@
         "policy_limit_erasure",
         "high_stakes_no_human_review"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "legal_safety_router",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate litigation, criminal, immigration, family, eviction, employment termination, regulatory, tax, IP, contract-signing, high-value financial, or urgent deadline matters.",
           "Escalate any response requiring jurisdiction-specific legal interpretation, filing strategy, deadline calculation, rights waiver, or procedural instruction.",
@@ -5290,6 +5484,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "jurisdiction evidence",
         "source-law evidence",
@@ -5299,7 +5494,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "legal_safety_router legal safety router route legal-adjacent answers to general information, ask for jurisdiction/source-law evidence, defer, or human review while preserving legal-safety policy limits. legal-adjacent q&a jurisdiction-sensitive answers source-law grounding high-stakes legal triage human review routing jurisdiction evidence source-law evidence policy-limit evidence personalized_legal_advice jurisdiction_hallucination unsupported_source_law policy_limit_erasure high_stakes_no_human_review  reviewer ready not_packaged external_required strict",
+      "search_text": "legal_safety_router legal safety router route legal-adjacent answers to general information, ask for jurisdiction/source-law evidence, defer, or human review while preserving legal-safety policy limits. legal-adjacent q&a jurisdiction-sensitive answers source-law grounding high-stakes legal triage human review routing jurisdiction evidence source-law evidence policy-limit evidence personalized_legal_advice jurisdiction_hallucination unsupported_source_law policy_limit_erasure high_stakes_no_human_review general reviewer production_candidate ready not_packaged external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5401,11 +5596,17 @@
         "unsupported_medical_source_claim",
         "user_specific_claim_without_context"
       ],
-      "families": [],
-      "family_labels": [],
+      "families": [
+        "general"
+      ],
+      "family_labels": [
+        "general"
+      ],
       "id": "medical_safety_router",
       "packs": [],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Production-candidate catalog entry: contract and verifier profile are defined, but production readiness still requires live evidence connectors, domain owner signoff, audit retention, and human review paths.",
         "human_review_escalation": [
           "Escalate emergency symptoms, severe pain, chest pain, trouble breathing, stroke symptoms, severe bleeding, poisoning, suicidal ideation, pregnancy complications, pediatric issues, medication changes, and diagnosis/treatment requests.",
           "Escalate any response requiring individualized clinical judgment, contraindication evaluation, dosing, risk stratification, or treatment selection.",
@@ -5419,6 +5620,7 @@
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "production_candidate",
       "required_evidence": [
         "medical policy",
         "severity signals",
@@ -5428,7 +5630,7 @@
       "roles": [
         "reviewer"
       ],
-      "search_text": "medical_safety_router medical safety router route medical-adjacent answers to general information, ask for context, emergency routing, defer, or clinical review while preserving medical advice boundaries. medical-adjacent q&a emergency symptom routing medical disclaimer enforcement verified-source grounding clinical human review routing medical policy severity signals verified medical sources personalized_medical_advice emergency_undertriage disclaimer_or_boundary_missing unsupported_medical_source_claim user_specific_claim_without_context  reviewer ready not_packaged external_required strict",
+      "search_text": "medical_safety_router medical safety router route medical-adjacent answers to general information, ask for context, emergency routing, defer, or clinical review while preserving medical advice boundaries. medical-adjacent q&a emergency symptom routing medical disclaimer enforcement verified-source grounding clinical human review routing medical policy severity signals verified medical sources personalized_medical_advice emergency_undertriage disclaimer_or_boundary_missing unsupported_medical_source_claim user_specific_claim_without_context general reviewer production_candidate ready not_packaged external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5537,17 +5739,20 @@
         "government_civic"
       ],
       "production": {
+        "adapter_readiness": "production_candidate",
+        "claim": "Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.",
         "human_review_escalation": [
           "Escalate protected data, exemption ambiguity, appeals, high-profile requests, law-enforcement records, and conflicting source-law evidence."
         ],
         "owner": "Records, Privacy, Legal, Program, and Human Review Operations must approve before production use.",
-        "status": "production_candidate"
+        "status": "pilot_ready"
       },
       "readiness": {
         "pilot": "ready",
         "production": "external_required",
         "try": "ready"
       },
+      "readiness_status": "pilot_ready",
       "required_evidence": [
         "export request",
         "source law",
@@ -5560,7 +5765,7 @@
         "citizen-services",
         "reviewer"
       ],
-      "search_text": "public_records_privacy_redaction public records privacy redaction check public-records release packages before data export, disclosure, or publication while preserving scope, privacy redaction, destination, authorization, and retention constraints. public-records release privacy redaction records retention source-law review export request source law data classification approval record retention policy public_records_scope_expansion public_records_private_data_exposed public_records_destination_unverified public_records_authorization_missing public_records_retention_missing government_civic citizen-services reviewer ready ready external_required strict",
+      "search_text": "public_records_privacy_redaction public records privacy redaction check public-records release packages before data export, disclosure, or publication while preserving scope, privacy redaction, destination, authorization, and retention constraints. public-records release privacy redaction records retention source-law review export request source law data classification approval record retention policy public_records_scope_expansion public_records_private_data_exposed public_records_destination_unverified public_records_authorization_missing public_records_retention_missing government_civic citizen-services reviewer pilot_ready ready ready external_required strict",
       "status": "executable",
       "supported_surfaces": [
         "CLI adapter runner",
@@ -5606,6 +5811,11 @@
         "ready"
       ]
     },
+    "readiness_statuses": [
+      "demo_adapter",
+      "pilot_ready",
+      "production_candidate"
+    ],
     "risk_tiers": [
       "elevated",
       "high",
@@ -5639,12 +5849,18 @@
     "government_civic": 8,
     "personal_productivity": 7
   },
+  "production_positioning": "Catalog status is not production certification. This repository is demo-ready and pilot-ready for controlled evaluation, but production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.",
   "published_gallery_version": "0.1",
   "readiness_counts": {
     "pilot.not_packaged": 22,
     "pilot.ready": 21,
     "production.external_required": 43,
     "try.ready": 43
+  },
+  "readiness_status_counts": {
+    "demo_adapter": 4,
+    "pilot_ready": 24,
+    "production_candidate": 15
   },
   "risk_tier_counts": {
     "elevated": 17,

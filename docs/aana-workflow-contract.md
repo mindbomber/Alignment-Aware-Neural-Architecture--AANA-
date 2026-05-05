@@ -1,6 +1,10 @@
 # AANA Workflow Contract v0.1
 
+Canonical entry point: [Integrate Runtime](integrate-runtime/index.md). Treat this contract as the stable integration boundary for workflow checks.
+
 The AANA Workflow Contract is the platform boundary for using AANA inside AI apps, agents, notebooks, and workflow tools.
+
+It is one of the two primary public APIs for the platform, alongside the Agent Event Contract. Runtime internals such as adapter runner helpers, verifier functions, and repair-policy branches are not public integration points; they exist to serve this contract and may change behind the contract boundary.
 
 It answers one question:
 
@@ -196,6 +200,12 @@ Batch request shape:
 ```
 
 ## CLI
+
+The public CLI runtime path is contract-first:
+
+- `workflow-check` and `workflow-batch` accept Workflow Contract payloads directly.
+- `run <adapter_id>` is a gallery shortcut that materializes a Workflow Contract request from the adapter catalog entry, then returns the same Workflow Result shape as `workflow-check`.
+- `run-file` executes an arbitrary adapter JSON file directly and is intended for adapter development diagnostics, not app or agent integration.
 
 Validate a workflow request:
 

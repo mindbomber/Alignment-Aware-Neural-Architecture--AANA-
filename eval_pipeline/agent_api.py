@@ -13,6 +13,7 @@ if str(SCRIPTS) not in sys.path:
 import run_adapter
 import validate_adapter_gallery
 from eval_pipeline import agent_contract, audit, aix, evidence as evidence_registry, evidence_integrations, workflow_contract
+from eval_pipeline.adapter_runner import results as result_assembly
 
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
@@ -326,21 +327,13 @@ def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
     entry = find_entry(gallery, resolved_adapter_id)
     adapter = run_adapter.load_adapter(ROOT / entry["adapter_path"])
     result = run_adapter.run_adapter(adapter, prompt_from_event(event), candidate_from_event(event))
-    return {
-        "agent_check_version": AGENT_EVENT_VERSION,
-        "agent": event.get("agent", "unknown"),
-        "adapter_id": resolved_adapter_id,
-        "workflow": entry.get("title"),
-        "event_id": event.get("event_id"),
-        "gate_decision": result.get("gate_decision"),
-        "recommended_action": result.get("recommended_action"),
-        "candidate_gate": result.get("candidate_gate"),
-        "aix": result.get("aix"),
-        "candidate_aix": result.get("candidate_aix"),
-        "violations": result.get("candidate_tool_report", result.get("tool_report", {})).get("violations", []),
-        "safe_response": result.get("final_answer"),
-        "adapter_result": result,
-    }
+    return result_assembly.assemble_agent_check_result(
+        event,
+        resolved_adapter_id,
+        entry,
+        result,
+        AGENT_EVENT_VERSION,
+    )
 
 
 def check_workflow(
@@ -402,38 +395,18 @@ def check_workflow_request(workflow_request, gallery_path=DEFAULT_GALLERY):
         notes = list(workflow_aix.get("notes", []))
         notes.append("Workflow allowed_actions changed the recommended action; direct accept is blocked.")
         workflow_aix["notes"] = notes
-    return {
-        "contract_version": WORKFLOW_CONTRACT_VERSION,
-        "workflow_id": workflow_request.get("workflow_id"),
-        "adapter": result.get("adapter_id"),
-        "workflow": result.get("workflow"),
-        "gate_decision": result.get("gate_decision"),
-        "recommended_action": recommended_action,
-        "candidate_gate": result.get("candidate_gate"),
-        "aix": workflow_aix,
-        "candidate_aix": result.get("candidate_aix"),
-        "violations": violations,
-        "output": result.get("safe_response"),
-        "raw_result": result,
-    }
+    return result_assembly.assemble_workflow_result(
+        workflow_request,
+        result,
+        contract_version=WORKFLOW_CONTRACT_VERSION,
+        recommended_action=recommended_action,
+        violations=violations,
+        aix=workflow_aix,
+    )
 
 
 def workflow_batch_summary(results):
-    gate_decisions = {}
-    recommended_actions = {}
-    for result in results:
-        gate_decision = result.get("gate_decision")
-        recommended_action = result.get("recommended_action")
-        gate_decisions[gate_decision] = gate_decisions.get(gate_decision, 0) + 1
-        recommended_actions[recommended_action] = recommended_actions.get(recommended_action, 0) + 1
-    failed = sum(1 for result in results if result.get("gate_decision") != "pass")
-    return {
-        "total": len(results),
-        "passed": len(results) - failed,
-        "failed": failed,
-        "gate_decisions": gate_decisions,
-        "recommended_actions": recommended_actions,
-    }
+    return result_assembly.workflow_batch_summary(results)
 
 
 def workflow_item_failure_result(workflow_request, error, index=None, batch_id=None):
@@ -442,46 +415,14 @@ def workflow_item_failure_result(workflow_request, error, index=None, batch_id=N
     if not workflow_id and index is not None:
         workflow_id = f"{batch_id or 'workflow-batch'}-{index + 1}"
     recommended_action, action_violation = workflow_contract.safe_failure_action(item.get("allowed_actions"))
-    violation = {
-        "code": "workflow_item_error",
-        "severity": "high",
-        "message": str(error),
-    }
-    violations = [violation]
-    hard_blockers = [violation["code"]]
-    if action_violation:
-        violations.append(action_violation)
-        hard_blockers.append(action_violation["code"])
-    return {
-        "contract_version": WORKFLOW_CONTRACT_VERSION,
-        "workflow_id": workflow_id,
-        "adapter": item.get("adapter"),
-        "workflow": None,
-        "gate_decision": "fail",
-        "recommended_action": recommended_action,
-        "candidate_gate": "block",
-        "aix": {
-            "aix_version": aix.AIX_VERSION,
-            "score": 0.0,
-            "components": {},
-            "base_score": 0.0,
-            "penalty": 1.0,
-            "beta": 1.0,
-            "thresholds": dict(aix.DEFAULT_THRESHOLDS),
-            "decision": "refuse",
-            "hard_blockers": sorted(set(hard_blockers)),
-            "notes": ["Workflow batch item failed before adapter completion; direct accept is blocked."],
-        },
-        "candidate_aix": None,
-        "violations": violations,
-        "output": None,
-        "raw_result": {
-            "error": {
-                "type": error.__class__.__name__,
-                "message": str(error),
-            }
-        },
-    }
+    return result_assembly.assemble_workflow_failure_result(
+        item,
+        error,
+        contract_version=WORKFLOW_CONTRACT_VERSION,
+        recommended_action=recommended_action,
+        action_violation=action_violation,
+        workflow_id=workflow_id,
+    )
 
 
 def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
@@ -507,12 +448,11 @@ def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
                 )
             )
 
-    return {
-        "contract_version": WORKFLOW_CONTRACT_VERSION,
-        "batch_id": batch_request.get("batch_id"),
-        "summary": workflow_batch_summary(results),
-        "results": results,
-    }
+    return result_assembly.assemble_workflow_batch_result(
+        batch_request,
+        results,
+        contract_version=WORKFLOW_CONTRACT_VERSION,
+    )
 
 
 def apply_shadow_mode(result):

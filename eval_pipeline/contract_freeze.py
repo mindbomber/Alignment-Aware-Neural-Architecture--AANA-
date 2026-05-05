@@ -10,6 +10,14 @@ from scripts import validate_adapter, validate_adapter_gallery
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONTRACT_FREEZE_VERSION = "0.1"
 CONTRACT_STATUS = "frozen"
+PRIMARY_PUBLIC_CONTRACTS = {
+    "agent_event",
+    "agent_check_result",
+    "workflow_request",
+    "workflow_batch_request",
+    "workflow_result",
+    "workflow_batch_result",
+}
 
 
 EVIDENCE_OBJECT_SCHEMA = {
@@ -187,6 +195,8 @@ def contract_inventory():
             "schema": "adapter_contract",
             "validator": "scripts.validate_adapter.validate_adapter",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "adapter_catalog",
             "breaking_change_requires": "adapter contract version bump and migration notes",
         },
         {
@@ -195,6 +205,8 @@ def contract_inventory():
             "schema": "agent_event",
             "validator": "eval_pipeline.agent_contract.validate_agent_event",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "event_version bump",
         },
         {
@@ -203,6 +215,8 @@ def contract_inventory():
             "schema": "agent_check_result",
             "validator": "eval_pipeline.agent_api.check_event",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "agent_check_version bump",
         },
         {
@@ -211,6 +225,8 @@ def contract_inventory():
             "schema": "workflow_request",
             "validator": "eval_pipeline.workflow_contract.validate_workflow_request",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "contract_version bump",
         },
         {
@@ -219,6 +235,8 @@ def contract_inventory():
             "schema": "workflow_batch_request",
             "validator": "eval_pipeline.workflow_contract.validate_workflow_batch_request",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "contract_version bump",
         },
         {
@@ -227,6 +245,8 @@ def contract_inventory():
             "schema": "workflow_result",
             "validator": "eval_pipeline.agent_api.check_workflow_request",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "contract_version bump",
         },
         {
@@ -235,6 +255,8 @@ def contract_inventory():
             "schema": "workflow_batch_result",
             "validator": "eval_pipeline.agent_api.check_workflow_batch",
             "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
             "breaking_change_requires": "contract_version bump",
         },
         {
@@ -243,6 +265,8 @@ def contract_inventory():
             "schema": "aix",
             "validator": "eval_pipeline.aix.compute_aix",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_result_block",
             "breaking_change_requires": "aix_version bump",
         },
         {
@@ -251,6 +275,8 @@ def contract_inventory():
             "schema": "evidence_object",
             "validator": "eval_pipeline.workflow_contract.validate_workflow_request",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_contract_component",
             "breaking_change_requires": "contract_version bump",
         },
         {
@@ -259,6 +285,8 @@ def contract_inventory():
             "schema": "evidence_registry",
             "validator": "eval_pipeline.evidence.validate_registry",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_contract_component",
             "breaking_change_requires": "registry_version bump",
         },
         {
@@ -267,6 +295,8 @@ def contract_inventory():
             "schema": "audit_record",
             "validator": "eval_pipeline.audit.agent_audit_record",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_observability_contract",
             "breaking_change_requires": "audit_record_version bump",
         },
         {
@@ -275,6 +305,8 @@ def contract_inventory():
             "schema": "audit_metrics_export",
             "validator": "eval_pipeline.audit.export_metrics",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_observability_contract",
             "breaking_change_requires": "audit_metrics_export_version bump",
         },
         {
@@ -283,6 +315,8 @@ def contract_inventory():
             "schema": "audit_integrity_manifest",
             "validator": "eval_pipeline.audit.create_integrity_manifest",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_observability_contract",
             "breaking_change_requires": "audit_integrity_manifest_version bump",
         },
         {
@@ -291,6 +325,8 @@ def contract_inventory():
             "schema": "audit_drift_report",
             "validator": "eval_pipeline.audit.aix_drift_report",
             "stability": CONTRACT_STATUS,
+            "public_api": False,
+            "boundary": "public_observability_contract",
             "breaking_change_requires": "audit_drift_report_version bump",
         },
     ]
@@ -349,6 +385,11 @@ def validate_inventory(catalog=None):
         seen.add(item_id)
         if item.get("stability") != CONTRACT_STATUS:
             issues.append(_issue("error", f"{path}.stability", f"Contract stability must be {CONTRACT_STATUS}."))
+        expected_public_api = item_id in PRIMARY_PUBLIC_CONTRACTS
+        if item.get("public_api") is not expected_public_api:
+            issues.append(_issue("error", f"{path}.public_api", f"public_api must be {expected_public_api}."))
+        if expected_public_api and item.get("boundary") != "primary_public_api":
+            issues.append(_issue("error", f"{path}.boundary", "Primary public APIs must declare boundary='primary_public_api'."))
         if not isinstance(item.get("version"), str) or not item.get("version").strip():
             issues.append(_issue("error", f"{path}.version", "Contract version must be a non-empty string."))
         if item.get("schema") not in catalog:

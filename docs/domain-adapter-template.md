@@ -1,5 +1,7 @@
 # AANA Domain Adapter Template
 
+Canonical entry point: [Build Adapter](build-adapter/index.md). This page keeps the detailed adapter design template for existing links.
+
 AANA becomes useful in real applications through domain adapters.
 
 If you are new to the repo, start with [`getting-started.md`](getting-started.md) first. It explains the no-key demo, live API setup, provider limits, and the shortest path to a first working adapter.

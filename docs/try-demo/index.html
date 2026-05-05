@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Try Demo - AANA</title>
+    <link rel="stylesheet" href="../site.css">
+  </head>
+  <body>
+    <main class="section">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">AANA Docs</p>
+            <h1>Try Demo</h1>
+          </div>
+          <p>Follow one local path: install, run doctor, run a gallery example, check a workflow, start the HTTP bridge, and inspect redacted audit output.</p>
+        </div>
+        <div class="resource-grid">
+          <a class="resource-card" href="../demo/"><h3>Hosted Demo</h3><p>Try static synthetic examples with no secrets and no real actions.</p></a>
+          <a class="resource-card" href="../adapter-gallery/"><h3>Adapter Gallery</h3><p>Browse catalog entries by workflow, risk tier, evidence, and readiness.</p></a>
+          <a class="resource-card" href="../getting-started.md"><h3>Getting Started</h3><p>Run the local command hub and no-key examples.</p></a>
+          <a class="resource-card" href="../results-interpretation.md"><h3>Read Results</h3><p>Interpret demo and evaluation outputs without overstating claims.</p></a>
+        </div>
+        <pre><code>python -m pip install -e .
+aana doctor
+aana run travel_planning
+aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl</code></pre>
+      </div>
+    </main>
+  </body>
+</html>

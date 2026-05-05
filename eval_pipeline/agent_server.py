@@ -841,6 +841,12 @@ def route_request(
             _append_audit_record(audit_log_path, audit_record)
             return 200, {
                 "playground_check_version": BRIDGE_VERSION,
+                "runtime_boundary": {
+                    "public_api": "workflow_contract",
+                    "canonical_route": "/workflow-check",
+                    "request_contract_version": workflow_request.get("contract_version", agent_api.WORKFLOW_CONTRACT_VERSION),
+                    "result_contract_version": result.get("contract_version"),
+                },
                 "result": result,
                 "audit_record": audit_record,
                 "audit_appended": bool(audit_log_path),

@@ -9,6 +9,23 @@ from eval_pipeline import agent_api, evidence_integrations, production
 
 
 PRODUCTION_CERTIFICATION_VERSION = "0.1"
+EXTERNAL_EVIDENCE_VERSION = "0.1"
+CONSERVATIVE_PRODUCTION_POSITIONING = (
+    "This repository is demo-ready and pilot-ready for controlled evaluation, but it is not "
+    "production-certified by itself. Production readiness requires live evidence connectors, "
+    "domain owner signoff, audit retention, observability, and human review paths."
+)
+BOUNDARY_CHECKER_LINE = (
+    "production-certify is a boundary checker, not a production guarantee. It separates repo-local "
+    "readiness from deployment readiness and requires external evidence before production claims."
+)
+REQUIRED_EXTERNAL_EVIDENCE_ARTIFACTS = (
+    "connector_manifests",
+    "shadow_mode_logs",
+    "audit_retention_policy",
+    "escalation_policy",
+    "owner_approval",
+)
 MIN_SHADOW_DURATION_DAYS = 14
 MIN_SHADOW_RECORDS = 100
 MIN_AUDIT_RETENTION_DAYS = 365
@@ -65,19 +82,19 @@ def readiness_boundary():
             "purpose": "Public understanding and adapter walkthroughs.",
             "data": "Synthetic-only examples.",
             "side_effects": "No real sends, deletes, deploys, payments, bookings, permission changes, or exports.",
-            "certification_line": "Demo-ready does not require live evidence connectors, shadow-mode traffic, or production audit retention.",
+            "certification_line": "Demo-ready is not production-certified; it uses synthetic examples and does not require live evidence connectors, shadow-mode traffic, or production audit retention.",
         },
         "pilot": {
             "purpose": "Evaluate workflow value with synthetic, public, or tightly scoped redacted data.",
             "data": "No private production data unless approved for a controlled pilot.",
             "side_effects": "Shadow mode or advisory mode preferred; enforcement requires local owner approval.",
-            "certification_line": "Pilot-ready requires repo-local surfaces, redacted telemetry, and review artifacts, but not full production signoff.",
+            "certification_line": "Pilot-ready supports controlled evaluation, but it is not production-certified without domain owner signoff and deployment evidence.",
         },
         "production": {
             "purpose": "Enforced gate in front of real user or business actions.",
             "data": "Authorized production evidence connectors with freshness, redaction, and failure-mode contracts.",
             "side_effects": "Blocking or routing decisions may affect live workflows only after certification gates pass.",
-            "certification_line": "Production-ready requires shadow-mode evidence, required metrics, human-review routing, connector evidence, and audit retention.",
+            "certification_line": "Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human-review routing, and shadow-mode evidence.",
         },
     }
 
@@ -88,6 +105,8 @@ def certification_program_matrix():
     boundary = readiness_boundary()
     return {
         "production_certification_version": PRODUCTION_CERTIFICATION_VERSION,
+        "production_positioning": CONSERVATIVE_PRODUCTION_POSITIONING,
+        "certification_scope": BOUNDARY_CHECKER_LINE,
         "levels": {
             "demo_ready": {
                 "boundary": boundary["demo"],
@@ -106,12 +125,16 @@ def certification_program_matrix():
                 "boundary": boundary["production"],
                 "required_gates": sorted(
                     {
+                        "external_connector_manifests",
                         "shadow_mode_minimum_duration",
+                        "external_shadow_mode_logs",
                         "required_metrics",
                         "human_review_routing",
                         "connector_evidence",
                         "audit_retention",
+                        "audit_retention_policy",
                         "domain_owner_signoff",
+                        "owner_approval",
                     }
                 ),
             },
@@ -160,6 +183,119 @@ def _result(valid, issues, extra=None):
     if extra:
         payload.update(extra)
     return payload
+
+
+def validate_external_evidence_manifest(manifest, certification_policy=None):
+    """Validate explicit external evidence required before production claims."""
+
+    issues = []
+    if not isinstance(manifest, dict):
+        return _result(
+            False,
+            [{"level": "error", "path": "$", "message": "External production evidence must be a JSON object."}],
+        )
+    if manifest.get("external_evidence_version") != EXTERNAL_EVIDENCE_VERSION:
+        _add_issue(
+            issues,
+            "error",
+            "$.external_evidence_version",
+            f"external_evidence_version must be {EXTERNAL_EVIDENCE_VERSION}.",
+        )
+    if manifest.get("evidence_scope") != "external_deployment":
+        _add_issue(
+            issues,
+            "error",
+            "$.evidence_scope",
+            "evidence_scope must be external_deployment; repo templates and local fixtures are not production evidence.",
+        )
+
+    required_connectors = set()
+    if certification_policy:
+        required_connectors = set(_list(_object(certification_policy.get("connector_evidence")).get("required_connectors")))
+    connector_manifests = _list(manifest.get("connector_manifests"))
+    connector_ids = {
+        item.get("connector_id")
+        for item in connector_manifests
+        if isinstance(item, dict) and _has_text(item.get("connector_id"))
+    }
+    if not connector_manifests:
+        _add_issue(issues, "error", "$.connector_manifests", "At least one external connector manifest is required.")
+    missing_connectors = sorted(required_connectors - connector_ids)
+    if missing_connectors:
+        _add_issue(
+            issues,
+            "error",
+            "$.connector_manifests",
+            "External connector manifests are missing required connectors: " + ", ".join(missing_connectors),
+        )
+    for index, item in enumerate(connector_manifests):
+        if not isinstance(item, dict):
+            _add_issue(issues, "error", f"$.connector_manifests[{index}]", "Connector manifest entries must be objects.")
+            continue
+        for key in ("connector_id", "manifest_uri", "owner", "auth_boundary", "freshness_slo", "redaction_policy"):
+            if not _has_text(item.get(key)):
+                _add_issue(issues, "error", f"$.connector_manifests[{index}].{key}", f"{key} is required.")
+        if item.get("environment") != "production":
+            _add_issue(issues, "error", f"$.connector_manifests[{index}].environment", "environment must be production.")
+        if not _list(item.get("failure_modes")):
+            _add_issue(issues, "error", f"$.connector_manifests[{index}].failure_modes", "failure_modes are required.")
+
+    shadow_logs = _object(manifest.get("shadow_mode_logs"))
+    if not _has_text(shadow_logs.get("audit_log_uri")):
+        _add_issue(issues, "error", "$.shadow_mode_logs.audit_log_uri", "External shadow-mode audit log URI is required.")
+    if shadow_logs.get("environment") != "production":
+        _add_issue(issues, "error", "$.shadow_mode_logs.environment", "Shadow-mode logs must come from production.")
+    if shadow_logs.get("redacted") is not True:
+        _add_issue(issues, "error", "$.shadow_mode_logs.redacted", "Shadow-mode logs must be redacted.")
+    if not _has_text(shadow_logs.get("retention_policy_ref")):
+        _add_issue(issues, "error", "$.shadow_mode_logs.retention_policy_ref", "Shadow logs must reference retention policy.")
+
+    audit_policy = _object(manifest.get("audit_retention_policy"))
+    if not _has_text(audit_policy.get("policy_uri")):
+        _add_issue(issues, "error", "$.audit_retention_policy.policy_uri", "Audit retention policy URI is required.")
+    retention_days = audit_policy.get("retention_days")
+    if not isinstance(retention_days, int) or retention_days < MIN_AUDIT_RETENTION_DAYS:
+        _add_issue(
+            issues,
+            "error",
+            "$.audit_retention_policy.retention_days",
+            f"External audit retention must be at least {MIN_AUDIT_RETENTION_DAYS} days.",
+        )
+    if audit_policy.get("immutable") is not True:
+        _add_issue(issues, "error", "$.audit_retention_policy.immutable", "External audit retention must be immutable or append-only.")
+    if not _has_text(audit_policy.get("owner")):
+        _add_issue(issues, "error", "$.audit_retention_policy.owner", "Audit retention owner is required.")
+
+    escalation_policy = _object(manifest.get("escalation_policy"))
+    if not _has_text(escalation_policy.get("policy_uri")):
+        _add_issue(issues, "error", "$.escalation_policy.policy_uri", "Escalation policy URI is required.")
+    if not _has_text(escalation_policy.get("human_review_queue")):
+        _add_issue(issues, "error", "$.escalation_policy.human_review_queue", "Human-review queue is required.")
+    covers = " ".join(str(item).lower() for item in _list(escalation_policy.get("covers")))
+    for topic in sorted(REQUIRED_HUMAN_REVIEW_TOPICS):
+        if topic not in covers:
+            _add_issue(issues, "error", "$.escalation_policy.covers", f"Escalation policy must cover {topic} decisions.")
+    if not _has_text(escalation_policy.get("owner")):
+        _add_issue(issues, "error", "$.escalation_policy.owner", "Escalation policy owner is required.")
+
+    approval = _object(manifest.get("owner_approval"))
+    for key in ("approval_uri", "domain_owner", "approved_at", "scope"):
+        if not _has_text(approval.get(key)):
+            _add_issue(issues, "error", f"$.owner_approval.{key}", f"{key} is required.")
+    if approval.get("scope") != "production":
+        _add_issue(issues, "error", "$.owner_approval.scope", "Owner approval scope must be production.")
+
+    errors, _ = _count_issues(issues)
+    return _result(
+        errors == 0,
+        issues,
+        {
+            "external_evidence_version": manifest.get("external_evidence_version"),
+            "required_artifacts": list(REQUIRED_EXTERNAL_EVIDENCE_ARTIFACTS),
+            "connector_count": len(connector_manifests),
+            "required_connectors": sorted(required_connectors),
+        },
+    )
 
 
 def validate_certification_policy(policy):
@@ -427,6 +563,7 @@ def production_certification_report(
     evidence_registry=None,
     observability_policy=None,
     audit_log=None,
+    external_evidence_manifest=None,
 ):
     checks = []
     policy_report = validate_certification_policy(certification_policy)
@@ -572,19 +709,60 @@ def production_certification_report(
     else:
         checks.append(_check("shadow_mode_evidence", "fail", "Production certification requires a redacted shadow-mode audit log."))
 
+    repo_failed = [item for item in checks if item["status"] == "fail"]
+    repo_warnings = [item for item in checks if item["status"] == "warn"]
+    repo_local_ready = not repo_failed and not repo_warnings
+
+    if external_evidence_manifest:
+        external_report = validate_external_evidence_manifest(external_evidence_manifest, certification_policy)
+        checks.append(
+            _check(
+                "external_production_evidence",
+                "pass" if external_report["valid"] else "fail",
+                "External production evidence is explicit and satisfies production-claim prerequisites."
+                if external_report["valid"]
+                else "External production evidence is missing or incomplete; production claims are not allowed.",
+                external_report,
+            )
+        )
+    else:
+        checks.append(
+            _check(
+                "external_production_evidence",
+                "fail",
+                "Production claims require explicit external evidence: connector manifests, shadow-mode logs, audit retention policy, escalation policy, and owner approval.",
+                {"required_artifacts": list(REQUIRED_EXTERNAL_EVIDENCE_ARTIFACTS)},
+            )
+        )
+
     failed = [item for item in checks if item["status"] == "fail"]
     warnings = [item for item in checks if item["status"] == "warn"]
-    ready = not failed and not warnings
+    deployment_ready = repo_local_ready and not failed and not warnings
+    readiness_level = (
+        "deployment_ready"
+        if deployment_ready
+        else "external_evidence_required"
+        if repo_local_ready
+        else "repo_local_not_ready"
+    )
     return {
         "production_certification_version": PRODUCTION_CERTIFICATION_VERSION,
+        "production_positioning": CONSERVATIVE_PRODUCTION_POSITIONING,
+        "certification_scope": BOUNDARY_CHECKER_LINE,
         "valid": not failed,
-        "production_ready": ready,
+        "production_ready": deployment_ready,
+        "repo_local_ready": repo_local_ready,
+        "deployment_ready": deployment_ready,
+        "production_certified": False,
+        "production_claim_allowed": deployment_ready,
         "summary": {
-            "status": "pass" if ready else "fail" if failed else "warn",
-            "readiness_level": "production_ready" if ready else "not_production_ready",
+            "status": "pass" if deployment_ready else "fail" if failed else "warn",
+            "readiness_level": readiness_level,
             "checks": len(checks),
             "failures": len(failed),
             "warnings": len(warnings),
+            "repo_local_failures": len(repo_failed),
+            "repo_local_warnings": len(repo_warnings),
         },
         "readiness_boundary": readiness_boundary(),
         "public_readiness_matrix": certification_program_matrix(),
@@ -600,12 +778,14 @@ def production_certification_report_from_paths(
     evidence_registry_path=None,
     observability_policy_path=None,
     audit_log_path=None,
+    external_evidence_path=None,
 ):
     certification_policy = agent_api.load_json_file(pathlib.Path(certification_policy_path))
     deployment_manifest = agent_api.load_json_file(pathlib.Path(deployment_manifest_path)) if deployment_manifest_path else None
     governance_policy = agent_api.load_json_file(pathlib.Path(governance_policy_path)) if governance_policy_path else None
     evidence_registry = agent_api.load_evidence_registry(pathlib.Path(evidence_registry_path)) if evidence_registry_path else None
     observability_policy = agent_api.load_json_file(pathlib.Path(observability_policy_path)) if observability_policy_path else None
+    external_evidence_manifest = agent_api.load_json_file(pathlib.Path(external_evidence_path)) if external_evidence_path else None
     return production_certification_report(
         certification_policy=certification_policy,
         deployment_manifest=deployment_manifest,
@@ -613,4 +793,5 @@ def production_certification_report_from_paths(
         evidence_registry=evidence_registry,
         observability_policy=observability_policy,
         audit_log=pathlib.Path(audit_log_path) if audit_log_path else None,
+        external_evidence_manifest=external_evidence_manifest,
     )

@@ -1,23 +1,45 @@
 # AANA Getting Started
 
+Canonical entry point: [Try Demo](try-demo/index.md). This page is kept as a compatibility guide for existing links and focuses on the local command hub.
+
 This guide is for builders who want to see whether AANA can fit a real workflow, not just read the research framing.
 
 If you are comparing AANA to simply using a stronger frontier LLM or multimodal model, read [AANA vs. SOTA LLMs and Multimodal Models](aana-vs-sota-llms.md). The short version is that AANA treats the model as the generator inside a larger runtime loop with explicit evidence, verifiers, correction actions, an alignment gate, and audit records.
 
-The fastest path is:
+## Recommended Local Path
 
-1. Run the no-key sample.
-2. List the runnable adapter gallery.
-3. Run one gallery adapter.
-4. Scaffold an adapter for one workflow from your own life or product.
-5. Validate the adapter contract.
-6. Replace the starter prompt and bad candidate with a real case.
-7. Add verifiers for the constraints that can be checked.
-8. Decide what the system should do after failure: accept, revise, retrieve, ask, refuse, or defer.
+Use this path for platform onboarding. It exercises install, health checks, the adapter catalog, the Workflow Contract, the HTTP bridge, and redacted audit output without mixing in advanced research/eval workflows.
 
-## Command Hub
+```powershell
+python -m pip install -e .
+aana doctor
+aana run travel_planning
+aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+```
 
-Use `scripts/aana_cli.py` for the lowest-friction path:
+What each step proves:
+
+- `python -m pip install -e .` installs the CLI and Python package entrypoints.
+- `aana doctor` checks Python, schemas, gallery examples, agent examples, and optional provider config.
+- `aana run travel_planning` runs a catalog-backed adapter example through the public contract path.
+- `aana workflow-check ... --audit-log ...` checks a Workflow Contract payload and writes a redacted decision record.
+- `aana-server ... --audit-log ...` starts the local HTTP bridge for playground, gallery, and API integration.
+- `aana audit-summary ...` verifies that audit output is inspectable without raw prompts, candidates, evidence, or safe responses.
+
+## Keep Research/Eval Separate
+
+Advanced research/eval workflows are still available, but they are not the platform onboarding path. Use them after the local path above when you need model-provider experiments, comparison tables, paper artifacts, or benchmark-style scoring.
+
+- [`evaluation-design.md`](evaluation-design.md)
+- [`pilot-evaluation-kit.md`](pilot-evaluation-kit.md)
+- [`paper-pilot-results-section.md`](paper-pilot-results-section.md)
+- [`results-interpretation.md`](results-interpretation.md)
+
+## Command Hub Reference
+
+Use the command hub reference when you need a specific adapter, schema, event, or diagnostic command:
 
 ```powershell
 python scripts/aana_cli.py list

@@ -1,6 +1,8 @@
 # AANA Production Certification
 
-Production certification is the line between trying AANA and letting AANA enforce decisions in front of real user or business actions.
+Production certification is the line between trying AANA and letting AANA enforce decisions in front of real user or business actions. The `production-certify` command is a boundary checker, not a guarantee: it separates repo-local readiness from deployment readiness and reports whether required evidence exists for a production-readiness review.
+
+This repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
 
 Run the certification command with real operating artifacts:
 
@@ -11,7 +13,8 @@ python scripts/aana_cli.py production-certify `
   --governance-policy path/to/governance.json `
   --evidence-registry path/to/evidence_registry.json `
   --observability-policy path/to/observability.json `
-  --audit-log path/to/redacted-shadow-audit.jsonl
+  --audit-log path/to/redacted-shadow-audit.jsonl `
+  --external-evidence path/to/external-production-evidence.json
 ```
 
 Use `--json` for automation:
@@ -23,10 +26,26 @@ python scripts/aana_cli.py production-certify --json `
   --governance-policy path/to/governance.json `
   --evidence-registry path/to/evidence_registry.json `
   --observability-policy path/to/observability.json `
-  --audit-log path/to/redacted-shadow-audit.jsonl
+  --audit-log path/to/redacted-shadow-audit.jsonl `
+  --external-evidence path/to/external-production-evidence.json
 ```
 
-The command fails unless the deployment has a valid certification policy, production deployment manifest, governance policy, observability policy, evidence registry, and redacted shadow-mode audit log.
+The command reports two boundaries:
+
+- `repo_local_ready`: local contracts, manifests, registry coverage, governance policy, observability policy, and redacted shadow-mode audit shape pass.
+- `deployment_ready`: repo-local readiness passes and an explicit external evidence manifest is supplied.
+
+The command still sets `production_certified` to `false`; final certification remains an external domain owner, security, and governance decision. Passing local examples, `release-check`, or a synthetic shadow audit does not certify production.
+
+The command fails deployment readiness unless it receives explicit external evidence for production claims:
+
+- connector manifests
+- shadow-mode logs
+- audit retention policy
+- escalation policy
+- owner approval
+
+Use [`examples/external_production_evidence_template.json`](../examples/external_production_evidence_template.json) only as a shape template. It intentionally uses `evidence_scope: template`; a real deployment manifest must use `evidence_scope: external_deployment` and point to environment-owned artifacts.
 
 ## Readiness Levels
 
@@ -36,7 +55,7 @@ The command fails unless the deployment has a valid certification policy, produc
 | Pilot | Synthetic, public, or tightly scoped redacted data | Shadow or advisory mode preferred | Measures value and friction without broad production enforcement. |
 | Production | Authorized production evidence | Enforcement may block or route live workflows | Requires shadow evidence, metrics, human review, connector evidence, and audit retention. |
 
-Demo-ready and pilot-ready do not imply production-ready. Production certification is intentionally stricter than `pilot-certify` or `release-check`.
+Demo-ready and pilot-ready do not imply production certification. Production boundary checks are intentionally stricter than `pilot-certify`, `release-check`, or local tests, because those checks cannot prove live connector freshness, domain owner approval, retained audit evidence, deployed observability, or human review operations.
 
 ## Required Gates
 
@@ -81,4 +100,4 @@ Before production, replace owners, routes, evidence sources, audit sink, dashboa
 - `pilot-certify` checks whether a local evaluator can try AANA through public surfaces.
 - `release-check` checks repo-local release readiness and optional AIx audit enforcement.
 - `production-preflight` lists deployment gates and validates selected manifests.
-- `production-certify` requires all production artifacts plus shadow-mode evidence and draws the final demo/pilot/production boundary.
+- `production-certify` requires all repo-local artifacts plus explicit external evidence and draws the repo-local/deployment boundary; it does not guarantee production safety by itself.

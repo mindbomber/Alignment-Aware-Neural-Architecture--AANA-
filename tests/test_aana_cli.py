@@ -130,7 +130,7 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("evidence_registry", output)
-        self.assertIn("Evidence registry is production-ready", output)
+        self.assertIn("Evidence registry satisfies production-readiness checks", output)
         self.assertIn("evidence_integrations", output)
         self.assertIn("Evidence registry covers production integration stubs", output)
 
@@ -144,7 +144,7 @@ class AanaCliTests(unittest.TestCase):
         )
 
         self.assertEqual(code, 0)
-        self.assertIn("Deployment manifest is production-ready", output)
+        self.assertIn("Deployment manifest is ready for production-readiness review", output)
 
     def test_validate_governance_template_is_production_ready(self):
         code, output = self.run_cli(
@@ -156,7 +156,7 @@ class AanaCliTests(unittest.TestCase):
         )
 
         self.assertEqual(code, 0)
-        self.assertIn("Governance policy is production-ready", output)
+        self.assertIn("Governance policy is ready for production-readiness review", output)
 
     def test_validate_observability_policy_is_production_ready(self):
         code, output = self.run_cli(
@@ -168,7 +168,7 @@ class AanaCliTests(unittest.TestCase):
         )
 
         self.assertEqual(code, 0)
-        self.assertIn("Observability policy is production-ready", output)
+        self.assertIn("Observability policy is ready for production-readiness review", output)
 
     def test_production_preflight_accepts_deployment_manifest(self):
         code, output = self.run_cli(
@@ -181,7 +181,7 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("deployment_manifest", output)
-        self.assertIn("Deployment manifest is production-ready", output)
+        self.assertIn("Deployment manifest satisfies production-readiness checks", output)
 
     def test_release_check_reports_governance_and_preflight_warnings(self):
         code, output = self.run_cli(["release-check", "--skip-local-check"])
@@ -190,6 +190,8 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("AANA release check", output)
         self.assertIn("adapter_aix_tuning", output)
         self.assertIn("Adapter AIx tuning meets declared risk tiers", output)
+        self.assertIn("adapter_catalog", output)
+        self.assertIn("Catalog completeness: 1.0", output)
         self.assertIn("governance_policy", output)
         self.assertIn("production_preflight", output)
         self.assertIn("observability_policy", output)
@@ -255,7 +257,7 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("observability_policy", output)
-        self.assertIn("Observability policy is production-ready", output)
+        self.assertIn("Observability policy satisfies production-readiness checks", output)
 
     def test_release_check_passes_aix_audit_enforcement_for_clean_log(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -734,7 +736,7 @@ class AanaCliTests(unittest.TestCase):
         )
 
         self.assertEqual(code, 0)
-        self.assertIn("Workflow evidence is production-ready", output)
+        self.assertIn("Workflow evidence is ready for production-readiness review", output)
 
     def test_workflow_check_rejects_unstructured_evidence_when_required(self):
         code, output = self.run_cli(

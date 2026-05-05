@@ -1,6 +1,10 @@
 # AANA Agent Integration Kit
 
+Canonical entry point: [Integrate Runtime](integrate-runtime/index.md). Treat the Agent Event Contract as the stable integration boundary for agent checks.
+
 AANA can sit around an AI agent as a verification and correction layer. The agent still plans and acts; AANA checks whether the next answer or action should pass, be revised, ask for missing information, defer to a stronger workflow, or be blocked.
+
+The Agent Event Contract is one of AANA's two primary public APIs, alongside the Workflow Contract. Agent integrations should build and validate Agent Event payloads, then call the Python API, CLI, or HTTP bridge that accepts that payload. They should not depend on adapter runner internals, verifier helper names, or repair-policy implementation details.
 
 Security boundary: an agent integration should call AANA only through a trusted interface that the user or administrator has configured and reviewed. Do not let an agent infer a local script path, run an unreviewed helper, or treat an untrusted checker as authoritative.
 
@@ -76,6 +80,8 @@ The output includes:
 - the full adapter result
 
 `aix` is the score-derived Alignment Index for the final gated output. `candidate_aix` is the same score block for the proposed candidate when a candidate was supplied. Treat `aix.decision=accept` as actionable only when `gate_decision` is `pass`, `recommended_action` permits proceeding, and `aix.hard_blockers` is empty.
+
+Agent, Workflow, SDK, CLI, HTTP bridge, and playground surfaces all route through the same contract runtime. Agent surfaces return Agent Check fields such as `safe_response`; workflow surfaces return Workflow Result fields such as `output`. The decision fields are intentionally aligned across both: `gate_decision`, `recommended_action`, `candidate_gate`, `aix`, `candidate_aix`, and `violations`.
 
 Print the versioned schemas when you need to wire another agent framework:
 

@@ -426,19 +426,22 @@
         &quot;enterprise&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate high-value refunds, chargebacks, legal threats, regulatory complaints, privacy incidents, fraud/risk flags, and account disputes.&quot;,
           &quot;Escalate any reply that depends on sensitive identity, billing, payment, risk, or internal CRM notes.&quot;,
           &quot;Escalate repeated false accepts for private-data, refund-policy, account-fact, or policy-promise violations.&quot;
         ],
         &quot;owner&quot;: &quot;Customer Support Operations, Privacy Review, and Support Policy owners must approve before external production use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;CRM customer record&quot;,
         &quot;order system record&quot;,
@@ -456,7 +459,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support ready ready external_required elevated&quot;,
+      &quot;search_text&quot;: &quot;crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support pilot_ready ready ready external_required elevated&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -571,19 +574,22 @@
         &quot;personal_productivity&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate broad external sends, reply-all to large lists, Bcc use, legal/HR/finance content, regulated data, credentials, secrets, and sensitive attachments.&quot;,
           &quot;Escalate conflicting recipient metadata, lookalike domains, stale aliases, uncertain approval state, and distribution-list expansion failures.&quot;,
           &quot;Escalate repeated false accepts for wrong-recipient, private-data, attachment, or irreversible-send violations.&quot;
         ],
         &quot;owner&quot;: &quot;Product, Security, Privacy, Legal, and Messaging Platform owners must approve before production send use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;draft email&quot;,
         &quot;recipient metadata&quot;,
@@ -594,7 +600,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support ready ready external_required strict&quot;,
+      &quot;search_text&quot;: &quot;email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support pilot_ready ready ready external_required strict&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -706,19 +712,22 @@
         &quot;enterprise&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate outage communications, security incidents, legal threats, enterprise customer updates, refunds, SLA credits, executive escalations, sensitive customers, disputed status, and policy exceptions.&quot;,
           &quot;Escalate any case with status uncertainty, commitment ambiguity, entitlement uncertainty, private-data uncertainty, customer-visible wording risk, or policy-version ambiguity.&quot;,
           &quot;Escalate repeated false accepts for status claims, commitments, wording, internal/private data, or support-policy violations.&quot;
         ],
         &quot;owner&quot;: &quot;Support Operations, Customer Success, Engineering, Product, Privacy, Security, Legal, and Human Review Operations must approve before production use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;ticket history&quot;,
         &quot;sprint status&quot;,
@@ -728,7 +737,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support ready ready external_required elevated&quot;,
+      &quot;search_text&quot;: &quot;ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support pilot_ready ready ready external_required elevated&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -839,19 +848,22 @@
         &quot;enterprise&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate regulated data, customer data, employee data, health or financial data, credentials, bulk exports, public links, external destinations, and cross-border transfers.&quot;,
           &quot;Escalate any case with authorization mismatch, legal-hold uncertainty, DLP uncertainty, destination mismatch, retention ambiguity, or unusual recipient scope.&quot;,
           &quot;Escalate repeated false accepts for scope, private-data, destination, authorization, or retention violations.&quot;
         ],
         &quot;owner&quot;: &quot;Data Governance, Security, Privacy, Legal, Product, and Human Review Operations must approve before production use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;export request&quot;,
         &quot;access grants&quot;,
@@ -861,7 +873,7 @@
       &quot;roles&quot;: [
         &quot;analyst&quot;
       ],
-      &quot;search_text&quot;: &quot;data_export_guardrail data export guardrail check data export actions before preparing, transmitting, sharing, or storing exported data while preserving scope, private-data, destination, authorization, and retention constraints. data export actions dlp-style export checks access grant verification destination approval retention policy enforcement export request access grants data classification export_scope_expansion private_data_leak destination_unverified authorization_missing_or_mismatched retention_policy_ignored enterprise analyst ready ready external_required strict&quot;,
+      &quot;search_text&quot;: &quot;data_export_guardrail data export guardrail check data export actions before preparing, transmitting, sharing, or storing exported data while preserving scope, private-data, destination, authorization, and retention constraints. data export actions dlp-style export checks access grant verification destination approval retention policy enforcement export request access grants data classification export_scope_expansion private_data_leak destination_unverified authorization_missing_or_mismatched retention_policy_ignored enterprise analyst pilot_ready ready ready external_required strict&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -972,19 +984,22 @@
         &quot;enterprise&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate privileged production access, admin/owner roles, wildcard roles, break-glass roles, service accounts, customer data, regulated systems, cross-account trust, approval conflicts, and permanent access requests.&quot;,
           &quot;Escalate any case with requester-authority uncertainty, least-privilege disagreement, scope mismatch, missing owner approval, expiration ambiguity, or inherited-permission uncertainty.&quot;,
           &quot;Escalate repeated false accepts for authority, least-privilege, scope, approval, or expiration violations.&quot;
         ],
         &quot;owner&quot;: &quot;Identity and Access Management, Security Engineering, Compliance, Privacy, IT Operations, SRE, Data Governance, Application Owners, and Human Review Operations must approve before production use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;IAM request&quot;,
         &quot;approval record&quot;,
@@ -994,7 +1009,7 @@
       &quot;roles&quot;: [
         &quot;reviewer&quot;
       ],
-      &quot;search_text&quot;: &quot;access_permission_change access permission change check iam access changes before granting, modifying, escalating, or extending permissions while preserving requester authority, least privilege, scope, approval, and expiration constraints. iam access requests least-privilege role checks privileged access review approval and owner gates expiration and revocation checks iam request approval record role catalog access_requester_authority_unverified access_least_privilege_violation access_scope_expanded access_approval_missing_or_mismatched access_expiration_missing_or_unsafe enterprise reviewer ready ready external_required high&quot;,
+      &quot;search_text&quot;: &quot;access_permission_change access permission change check iam access changes before granting, modifying, escalating, or extending permissions while preserving requester authority, least privilege, scope, approval, and expiration constraints. iam access requests least-privilege role checks privileged access review approval and owner gates expiration and revocation checks iam request approval record role catalog access_requester_authority_unverified access_least_privilege_violation access_scope_expanded access_approval_missing_or_mismatched access_expiration_missing_or_unsafe enterprise reviewer pilot_ready ready ready external_required high&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -1111,19 +1126,22 @@
         &quot;developer_tooling&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate migrations, destructive commands, auth, payments, privacy, infrastructure, production data, secret exposure, broad refactors, dependency updates, and deployment changes.&quot;,
           &quot;Escalate failing or missing CI, stale test output, conflicting test signals, unknown code-owner status, and migration rollback gaps.&quot;,
           &quot;Escalate repeated false accepts for tests, scope, secrets, destructive commands, or migration-risk violations.&quot;
         ],
         &quot;owner&quot;: &quot;Engineering, Security, DevOps, Data Platform, and Code Owners must approve before production merge or release use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;git diff&quot;,
         &quot;test output&quot;,
@@ -1134,7 +1152,7 @@
       &quot;roles&quot;: [
         &quot;developer&quot;
       ],
-      &quot;search_text&quot;: &quot;code_change_review code change review review proposed code changes while preserving test and ci requirements, diff scope, secret absence, destructive-command safety, and migration-risk handling. pre-commit review pull request triage ci and test gates secret leakage prevention migration safety git diff test output ci status requested change tests_missing_or_failing diff_scope_drift secret_or_sensitive_data_leak destructive_command_introduced migration_risk_unbounded enterprise developer_tooling developer ready ready external_required high&quot;,
+      &quot;search_text&quot;: &quot;code_change_review code change review review proposed code changes while preserving test and ci requirements, diff scope, secret absence, destructive-command safety, and migration-risk handling. pre-commit review pull request triage ci and test gates secret leakage prevention migration safety git diff test output ci status requested change tests_missing_or_failing diff_scope_drift secret_or_sensitive_data_leak destructive_command_introduced migration_risk_unbounded enterprise developer_tooling developer pilot_ready ready ready external_required high&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -1254,19 +1272,22 @@
         &quot;developer_tooling&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate migrations, data deletion, auth, payments, privacy, infrastructure, broad config changes, disabled safety gates, sensitive-value exposure, and release-window exceptions.&quot;,
           &quot;Escalate failed or missing CI, missing rollback, missing health checks, missing observability, conflicting release notes, and unknown service ownership.&quot;,
           &quot;Escalate repeated false accepts for config, sensitive values, rollback, health checks, migration, or observability violations.&quot;
         ],
         &quot;owner&quot;: &quot;Engineering, SRE, Security, Data Platform, Release Management, and Service Owners must approve before production release use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;deployment manifest&quot;,
         &quot;CI result&quot;,
@@ -1276,7 +1297,7 @@
       &quot;roles&quot;: [
         &quot;developer&quot;
       ],
-      &quot;search_text&quot;: &quot;deployment_readiness deployment readiness review production deployments while preserving config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness. production release review deployment manifest checks rollback readiness health checks and canary gates observability readiness deployment manifest ci result release notes deployment_config_invalid deployment_secret_exposure rollback_unavailable health_checks_absent migration_risk_unbounded observability_missing enterprise developer_tooling developer ready ready external_required strict&quot;,
+      &quot;search_text&quot;: &quot;deployment_readiness deployment readiness review production deployments while preserving config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness. production release review deployment manifest checks rollback readiness health checks and canary gates observability readiness deployment manifest ci result release notes deployment_config_invalid deployment_secret_exposure rollback_unavailable health_checks_absent migration_risk_unbounded observability_missing enterprise developer_tooling developer pilot_ready ready ready external_required strict&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -1388,19 +1409,22 @@
         &quot;enterprise&quot;
       ],
       &quot;production&quot;: {
+        &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate SEV-1, SEV-2, security, privacy, data-loss, regulated-customer, legal, executive, media, public-status-page, and disputed-impact incident updates.&quot;,
           &quot;Escalate any case with severity uncertainty, customer-impact uncertainty, ETA ambiguity, mitigation disagreement, root-cause uncertainty, or approval ambiguity.&quot;,
           &quot;Escalate repeated false accepts for severity, impact, mitigation, ETA, or communications-approval violations.&quot;
         ],
         &quot;owner&quot;: &quot;SRE, Incident Command, Support Operations, Communications, Legal, Security, Privacy, Product, and Human Review Operations must approve before production use.&quot;,
-        &quot;status&quot;: &quot;production_candidate&quot;
+        &quot;status&quot;: &quot;pilot_ready&quot;
       },
       &quot;readiness&quot;: {
         &quot;pilot&quot;: &quot;ready&quot;,
         &quot;production&quot;: &quot;external_required&quot;,
         &quot;try&quot;: &quot;ready&quot;
       },
+      &quot;readiness_status&quot;: &quot;pilot_ready&quot;,
       &quot;required_evidence&quot;: [
         &quot;incident timeline&quot;,
         &quot;on-call notes&quot;,
@@ -1410,7 +1434,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;incident_response_update incident response update check incident response updates before posting, sending, or syncing them while preserving severity, customer-impact, mitigation-status, eta, and communications-approval constraints. status page updates customer incident communications severity and impact checks eta policy enforcement communications approval gates incident timeline on-call notes status page policy incident_severity_overstated_or_understated incident_customer_impact_unverified incident_mitigation_status_unverified incident_eta_unsupported incident_comms_approval_missing enterprise support ready ready external_required elevated&quot;,
+      &quot;search_text&quot;: &quot;incident_response_update incident response update check incident response updates before posting, sending, or syncing them while preserving severity, customer-impact, mitigation-status, eta, and communications-approval constraints. status page updates customer incident communications severity and impact checks eta policy enforcement communications approval gates incident timeline on-call notes status page policy incident_severity_overstated_or_understated incident_customer_impact_unverified incident_mitigation_status_unverified incident_eta_unsupported incident_comms_approval_missing enterprise support pilot_ready ready ready external_required elevated&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,

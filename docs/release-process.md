@@ -10,13 +10,34 @@ This project is early research software. Releases should mark stable public chec
 git status --short --branch
 ```
 
-2. Run local checks.
+2. Run the hardened release gate.
 
 ```powershell
-python scripts/dev.py check
+python scripts/dev.py release-gate
 ```
 
-3. Review generated and ignored files.
+The release gate is aligned with CI around the hardened core:
+
+- `api`: Python compile, unit tests, and public contract freeze.
+- `catalog`: adapter gallery metadata, docs links, evidence requirements, and completeness.
+- `adapter`: executable adapter examples and expected gate/action/AIx behavior.
+- `docs`: public docs bundle and onboarding surfaces.
+- `audit`: redacted audit write and audit redaction validation.
+- `production_profile`: deployment, governance, observability, evidence, release, and audit-profile checks.
+
+Failure annotations include the gate category so it is clear whether the issue is API, adapter, catalog, audit, docs, or production-profile related.
+
+3. Run the post-refactor stability pass before updating release docs.
+
+```powershell
+python scripts/dev.py test
+python -m unittest tests.test_adapter_runner_golden_outputs
+python scripts/compare_adapter_runner_baseline.py --ref HEAD
+```
+
+Use `--ref <pre-refactor-ref>` when the pre-refactor runner is not the current `HEAD`. The comparison checks representative adapter-runner decision surfaces before and after decomposition: gate decision, recommended action, AIx decision, candidate AIx decision, violations, and failed constraints. Do not update release docs or create the platform-core tag until the full suite and golden comparison pass.
+
+4. Review generated and ignored files.
 
 ```powershell
 git status --ignored --short
@@ -24,7 +45,7 @@ git status --ignored --short
 
 Confirm that `.env`, API keys, private prompts, and unreviewed generated outputs are not being committed.
 
-4. Update `CHANGELOG.md`.
+5. Update `CHANGELOG.md`.
 
 Move unreleased notes into a versioned section such as:
 
@@ -32,7 +53,17 @@ Move unreleased notes into a versioned section such as:
 ## v0.1.0 - 2026-04-28
 ```
 
-5. Commit and push all release documentation changes.
+6. Commit and push all release documentation changes.
+
+7. Tag the first clean platform-core baseline only after the baseline commit exists and the working tree is clean.
+
+```powershell
+git status --short --branch
+git tag -a platform-core-baseline-v0.1 -m "First clean platform core baseline"
+git push origin platform-core-baseline-v0.1
+```
+
+The tag should identify the committed platform-core state, not a dirty working tree or an earlier commit.
 
 ## Creating `v0.1.0` on GitHub
 

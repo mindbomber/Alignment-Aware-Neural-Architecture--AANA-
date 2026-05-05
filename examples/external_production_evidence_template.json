@@ -1,0 +1,40 @@
+{
+  "external_evidence_version": "0.1",
+  "evidence_scope": "template",
+  "connector_manifests": [
+    {
+      "connector_id": "crm_support",
+      "manifest_uri": "https://example.internal/aana/connectors/crm-support.json",
+      "environment": "production",
+      "owner": "Customer Support Operations",
+      "auth_boundary": "Read-only CRM evidence connector with tenant-scoped service identity.",
+      "freshness_slo": "Records retrieved within the approved production freshness SLO.",
+      "redaction_policy": "Connector returns redacted summaries only; raw CRM records remain in the source system.",
+      "failure_modes": ["unauthorized", "stale_evidence", "unredacted_evidence", "connector_unavailable"]
+    }
+  ],
+  "shadow_mode_logs": {
+    "audit_log_uri": "s3://replace-with-production-audit-bucket/aana/shadow-mode.jsonl",
+    "environment": "production",
+    "redacted": true,
+    "retention_policy_ref": "aana-prod-audit-retention-policy"
+  },
+  "audit_retention_policy": {
+    "policy_uri": "https://example.internal/aana/policies/audit-retention",
+    "owner": "Security and Compliance",
+    "retention_days": 365,
+    "immutable": true
+  },
+  "escalation_policy": {
+    "policy_uri": "https://example.internal/aana/policies/escalation",
+    "owner": "Governance Operations",
+    "human_review_queue": "AANA Production Human Review",
+    "covers": ["high-impact decisions", "low-confidence verifier results", "irreversible external actions"]
+  },
+  "owner_approval": {
+    "approval_uri": "https://example.internal/aana/approvals/domain-owner-signoff",
+    "domain_owner": "Named Domain Owner",
+    "approved_at": "2026-05-05T00:00:00Z",
+    "scope": "production"
+  }
+}

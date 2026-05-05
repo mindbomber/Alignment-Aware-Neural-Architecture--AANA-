@@ -13,9 +13,15 @@ This repository contains a small Python evaluation pipeline for testing Alignmen
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
 
-Start here if you want the lowest-friction path from idea to working demo: [docs/getting-started.md](docs/getting-started.md).
+Start with the path that matches what you are doing:
+
+- **Try Demo**: [docs/try-demo/index.md](docs/try-demo/index.md)
+- **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
+- **Build Adapter**: [docs/build-adapter/index.md](docs/build-adapter/index.md)
 
 Try the hosted synthetic demo without cloning the repo: [AANA hosted demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/). It uses precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
+
+Production positioning: this repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
 
 ## Why this matters
 
@@ -41,7 +47,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For copyable integration paths, see [docs/integration-recipes.md](docs/integration-recipes.md). For the architecture distinction between AANA and frontier base models, see [docs/aana-vs-sota-llms.md](docs/aana-vs-sota-llms.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For the family-aware platform layer, see [docs/platform-layer.md](docs/platform-layer.md). For frozen public interfaces, see [docs/contract-freeze.md](docs/contract-freeze.md). For pilot evaluation before real data, see [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md). For synthetic starter pilots that produce workflow, audit, metrics, and report artifacts, see [docs/starter-pilot-kits.md](docs/starter-pilot-kits.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands; the published searchable gallery at [docs/adapter-gallery/index.html](docs/adapter-gallery/index.html) adds risk tier, required evidence, supported surfaces, example inputs/outputs, AIx tuning, family, role, and readiness filters for choosing adapters by workflow. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+The docs are organized around three entry points: [Try Demo](docs/try-demo/index.md), [Integrate Runtime](docs/integrate-runtime/index.md), and [Build Adapter](docs/build-adapter/index.md). Deeper background remains available for [architecture](docs/architecture.md), [AANA vs frontier models](docs/aana-vs-sota-llms.md), [pilot evaluation](docs/pilot-evaluation-kit.md), and [production certification boundaries](docs/production-certification.md).
 
 ## Who this is for
 
@@ -50,19 +56,24 @@ For the shortest practical path, see [docs/getting-started.md](docs/getting-star
 - Product engineers testing whether assistants preserve user constraints under pressure.
 - Students and independent researchers learning how model-evaluation pipelines are structured.
 
-## Try it in 60 seconds
+## Recommended Local Path
 
-Run the checked-in sample workflow. It uses no API key and makes no live model calls.
-
-```powershell
-python scripts/dev.py sample
-```
-
-List the runnable adapter examples:
+Use this path for platform onboarding:
 
 ```powershell
-python scripts/aana_cli.py list
+python -m pip install -e .
+aana doctor
+aana run travel_planning
+aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
 ```
+
+This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, and `/openapi.json`.
+
+Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
+
+## Result Shape
 
 Expected summary shape:
 
@@ -120,13 +131,17 @@ python scripts/aana_cli.py pilot-certify --json
 
 The command prints a public readiness score across the CLI, Python API, HTTP bridge, adapters, evidence, audit/metrics, docs, contracts, and skills/plugins. Details are in [docs/pilot-surface-certification.md](docs/pilot-surface-certification.md).
 
+Passing `pilot-certify`, `release-check`, or local tests does not certify production safety. Those checks prove repo-local behavior and release hygiene; live deployment still needs external evidence, owner approval, retained audit records, observability, and human review.
+
 Define the line between demo, pilot, and production certification:
 
 ```powershell
 python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json
 ```
 
-That command reports `not_production_ready` until real deployment, governance, observability, evidence, and redacted shadow-mode audit artifacts are supplied. See [docs/production-certification.md](docs/production-certification.md).
+That command reports `repo_local_not_ready`, `external_evidence_required`, or `deployment_ready` depending on which boundary has been satisfied. See [docs/production-certification.md](docs/production-certification.md).
+
+`production-certify` is a boundary checker, not a production guarantee. It separates repo-local readiness from deployment readiness and requires explicit external evidence for production claims: connector manifests, shadow-mode logs, audit retention policy, escalation policy, and owner approval.
 
 Or run the same platform contract from the CLI:
 
@@ -338,17 +353,10 @@ The scripts compare several evaluation modes:
 
 For a fuller explanation, see:
 
-- `docs/getting-started.md`
-- `docs/architecture.md`
-- `docs/evaluation-design.md`
-- `docs/aana-workflow-contract.md`
-- `docs/productive-workflows.md`
-- `docs/application-playbook.md`
-- `docs/domain-adapter-template.md`
-- `docs/application-demo-report.md`
-- `docs/travel-tool-demo-report.md`
-- `docs/results-interpretation.md`
-- `docs/unified-aana-comparison.md`
+- `docs/try-demo/index.md` for hosted demos, local demos, catalog browsing, and result interpretation.
+- `docs/integrate-runtime/index.md` for Workflow Contract, Agent Event Contract, SDK, bridge, CI, audit, and production-boundary integration.
+- `docs/build-adapter/index.md` for adapter design, catalog metadata, AIx tuning, and adapter validation.
+- `docs/architecture.md` and `docs/evaluation-design.md` for the research and evaluation background.
 
 ## Requirements
 

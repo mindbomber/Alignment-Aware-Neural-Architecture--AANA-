@@ -9,6 +9,11 @@ import pathlib
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PUBLISHED_GALLERY_VERSION = "0.1"
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
+PRODUCTION_POSITIONING = (
+    "Catalog status is not production certification. This repository is demo-ready and pilot-ready "
+    "for controlled evaluation, but production readiness requires live evidence connectors, domain "
+    "owner signoff, audit retention, observability, and human review paths."
+)
 
 GITHUB_ACTION_ADAPTERS = {
     "api_contract_change",
@@ -113,6 +118,7 @@ FAMILY_LABELS = {
     "developer_tooling": "Developer Tooling",
 }
 READINESS_STATES = ("ready", "partial", "external_required", "not_packaged")
+CATALOG_STATUSES = ("demo_adapter", "pilot_ready", "production_candidate")
 
 
 def load_json(path):
@@ -237,6 +243,13 @@ def _readiness_state(adapter_id, surfaces, packs, production_readiness):
     }
 
 
+def _entry_list(entry, field, fallback=None):
+    value = entry.get(field)
+    if isinstance(value, list) and value:
+        return value
+    return list(fallback or [])
+
+
 def _adapter_card(entry, adapter, root=ROOT):
     adapter_id = entry.get("id")
     aix = adapter.get("aix") if isinstance(adapter.get("aix"), dict) else {}
@@ -247,14 +260,19 @@ def _adapter_card(entry, adapter, root=ROOT):
     domain = adapter.get("domain") if isinstance(adapter.get("domain"), dict) else {}
     failure_modes = adapter.get("failure_modes") if isinstance(adapter.get("failure_modes"), list) else []
     failure_mode_names = [item.get("name") for item in failure_modes if isinstance(item, dict)]
-    evidence_requirements = production_readiness.get("evidence_requirements", [])
+    evidence_requirements = entry.get("evidence_requirements", production_readiness.get("evidence_requirements", []))
     if not isinstance(evidence_requirements, list):
         evidence_requirements = []
     adapter_path = _adapter_path(entry, root=root)
-    supported_surfaces = _supported_surfaces(adapter_id)
-    packs = _pack_membership(adapter_id)
+    supported_surfaces = _entry_list(entry, "supported_surfaces", _supported_surfaces(adapter_id))
+    declared_families = _entry_list(entry, "family", _pack_membership(adapter_id) or ["general"])
+    packs = [item for item in declared_families if item != "general"]
     roles = _role_membership(adapter_id)
     readiness = _readiness_state(adapter_id, supported_surfaces, packs, production_readiness)
+    catalog_status = entry.get("readiness") if entry.get("readiness") in CATALOG_STATUSES else "demo_adapter"
+    production_status = (
+        entry.get("production_status") if isinstance(entry.get("production_status"), dict) else {}
+    )
     search_blob = " ".join(
         str(part)
         for part in [
@@ -264,8 +282,9 @@ def _adapter_card(entry, adapter, root=ROOT):
             " ".join(entry.get("best_for", []) if isinstance(entry.get("best_for"), list) else []),
             " ".join(constraints["required_evidence"]),
             " ".join(failure_mode_names),
-            " ".join(packs),
+            " ".join(declared_families),
             " ".join(roles),
+            catalog_status,
             " ".join(readiness.values()),
             aix.get("risk_tier"),
         ]
@@ -277,7 +296,8 @@ def _adapter_card(entry, adapter, root=ROOT):
         "workflow": entry.get("workflow") or domain.get("user_workflow"),
         "best_for": entry.get("best_for", []) if isinstance(entry.get("best_for"), list) else [],
         "adapter_path": adapter_path.relative_to(root).as_posix() if adapter_path.is_relative_to(root) else adapter_path.as_posix(),
-        "risk_tier": aix.get("risk_tier", "unspecified"),
+        "readiness_status": catalog_status,
+        "risk_tier": entry.get("risk_tier") or aix.get("risk_tier", "unspecified"),
         "aix": {
             "risk_tier": aix.get("risk_tier", "unspecified"),
             "beta": aix.get("beta"),
@@ -288,8 +308,8 @@ def _adapter_card(entry, adapter, root=ROOT):
         "evidence_requirements": evidence_requirements,
         "supported_surfaces": supported_surfaces,
         "packs": packs,
-        "families": packs,
-        "family_labels": [FAMILY_LABELS.get(pack, pack) for pack in packs],
+        "families": declared_families,
+        "family_labels": [FAMILY_LABELS.get(family, family) for family in declared_families],
         "roles": roles,
         "readiness": readiness,
         "example_inputs": {
@@ -304,7 +324,9 @@ def _adapter_card(entry, adapter, root=ROOT):
         "constraints": constraints,
         "failure_modes": _unique_strings(failure_mode_names),
         "production": {
-            "status": production_readiness.get("status"),
+            "status": production_status.get("level", catalog_status),
+            "adapter_readiness": production_status.get("adapter_readiness", production_readiness.get("status")),
+            "claim": production_status.get("claim"),
             "owner": production_readiness.get("owner"),
             "human_review_escalation": production_readiness.get("human_review_escalation", [])
             if isinstance(production_readiness.get("human_review_escalation"), list)
@@ -319,6 +341,7 @@ def published_gallery(gallery_path=DEFAULT_GALLERY, root=ROOT):
     entries = gallery.get("adapters", []) if isinstance(gallery.get("adapters"), list) else []
     adapters = []
     risk_tier_counts = {}
+    readiness_status_counts = {}
     surface_counts = {}
     pack_counts = {}
     role_counts = {}
@@ -330,6 +353,7 @@ def published_gallery(gallery_path=DEFAULT_GALLERY, root=ROOT):
         card = _adapter_card(entry, adapter, root=root)
         adapters.append(card)
         risk_tier_counts[card["risk_tier"]] = risk_tier_counts.get(card["risk_tier"], 0) + 1
+        readiness_status_counts[card["readiness_status"]] = readiness_status_counts.get(card["readiness_status"], 0) + 1
         for surface in card["supported_surfaces"]:
             surface_counts[surface] = surface_counts.get(surface, 0) + 1
         for pack in card["packs"]:
@@ -344,8 +368,10 @@ def published_gallery(gallery_path=DEFAULT_GALLERY, root=ROOT):
         "published_gallery_version": PUBLISHED_GALLERY_VERSION,
         "source_gallery_version": gallery.get("version"),
         "description": "Searchable AANA adapter gallery for choosing guardrails by workflow, evidence, risk tier, surface, and AIx tuning.",
+        "production_positioning": PRODUCTION_POSITIONING,
         "adapter_count": len(adapters),
         "risk_tier_counts": dict(sorted(risk_tier_counts.items())),
+        "readiness_status_counts": dict(sorted(readiness_status_counts.items())),
         "surface_counts": dict(sorted(surface_counts.items())),
         "pack_counts": dict(sorted(pack_counts.items())),
         "family_counts": dict(sorted(pack_counts.items())),
@@ -353,6 +379,7 @@ def published_gallery(gallery_path=DEFAULT_GALLERY, root=ROOT):
         "readiness_counts": dict(sorted(readiness_counts.items())),
         "filters": {
             "risk_tiers": sorted(risk_tier_counts),
+            "readiness_statuses": sorted(readiness_status_counts),
             "surfaces": sorted(surface_counts),
             "packs": sorted(pack_counts),
             "families": sorted(pack_counts),

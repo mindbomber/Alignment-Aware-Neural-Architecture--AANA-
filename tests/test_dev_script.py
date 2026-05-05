@@ -1,4 +1,6 @@
+import contextlib
 import importlib.util
+import io
 import pathlib
 import tempfile
 import unittest
@@ -19,6 +21,88 @@ dev = load_script("dev", ROOT / "scripts" / "dev.py")
 
 
 class DevScriptTests(unittest.TestCase):
+    def test_release_gates_name_hardened_core_categories(self):
+        gates = dev.release_gates(
+            audit_log_path="eval_outputs/audit/test/aana-audit.jsonl",
+            metrics_output="eval_outputs/audit/test/aana-metrics.json",
+        )
+        names = [gate.name for gate in gates]
+        categories = {gate.category for gate in gates}
+
+        self.assertEqual(
+            names,
+            [
+                "compile",
+                "unit_tests",
+                "contract_freeze",
+                "gallery_metadata",
+                "adapter_examples",
+                "docs_bundle",
+                "audit_redaction",
+                "audit_validate",
+                "production_profiles",
+            ],
+        )
+        self.assertTrue({"api", "adapter", "catalog", "audit", "docs", "production_profile"}.issubset(categories))
+        production_command = next(gate.command for gate in gates if gate.name == "production_profiles")
+        self.assertIn("--audit-log", production_command)
+        self.assertIn("eval_outputs/audit/test/aana-audit.jsonl", production_command)
+        self.assertIn("--metrics-output", production_command)
+        self.assertIn("eval_outputs/audit/test/aana-metrics.json", production_command)
+
+    def test_release_gate_wraps_failures_with_category_annotation(self):
+        gate = dev.ReleaseGate(
+            name="contract_freeze",
+            category="api",
+            command=[dev.PYTHON, "-c", "raise SystemExit(1)"],
+            description="fail for test",
+        )
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            with mock.patch.object(dev, "run", side_effect=dev.subprocess.CalledProcessError(1, gate.command)):
+                with self.assertRaises(dev.subprocess.CalledProcessError):
+                    dev.run_gate(gate)
+
+        self.assertIn("AANA release gate [api] contract_freeze", output.getvalue())
+        self.assertIn("::error title=AANA api gate failed::contract_freeze failed", output.getvalue())
+
+    def test_release_gate_runs_all_hardened_core_gates(self):
+        commands = []
+
+        def capture(gate):
+            commands.append(gate)
+
+        with mock.patch.object(dev, "run_gate", side_effect=capture):
+            dev.release_gate(
+                audit_log="eval_outputs/audit/test/aana-audit.jsonl",
+                metrics_output="eval_outputs/audit/test/aana-metrics.json",
+            )
+
+        self.assertEqual(
+            [gate.name for gate in commands],
+            [
+                "compile",
+                "unit_tests",
+                "contract_freeze",
+                "gallery_metadata",
+                "adapter_examples",
+                "docs_bundle",
+                "audit_redaction",
+                "audit_validate",
+                "production_profiles",
+            ],
+        )
+
+    def test_ci_workflow_uses_hardened_release_gate_and_artifact_profile(self):
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+        self.assertIn("python scripts/dev.py release-gate", workflow)
+        self.assertIn("--audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl", workflow)
+        self.assertIn("--metrics-output eval_outputs/audit/ci/aana-ci-metrics.json", workflow)
+        self.assertNotIn("python scripts/dev.py production-profiles", workflow)
+        self.assertIn("aana-production-profile-audit-artifacts", workflow)
+
     def test_production_profiles_runs_internal_pilot_profile_guard(self):
         commands = []
 

@@ -5,6 +5,7 @@ import argparse
 import json
 import pathlib
 import sys
+from urllib.parse import urlparse
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -19,6 +20,12 @@ REQUIRED_ENTRY_FIELDS = [
     "title",
     "status",
     "adapter_path",
+    "readiness",
+    "family",
+    "risk_tier",
+    "evidence_requirements",
+    "supported_surfaces",
+    "production_status",
     "workflow",
     "best_for",
     "prompt",
@@ -35,6 +42,34 @@ EXPECTED_FIELDS = [
     "aix_decision",
     "candidate_aix_decision",
 ]
+CATALOG_READINESS = {"demo_adapter", "pilot_ready", "production_candidate"}
+PRODUCTION_LEVELS = CATALOG_READINESS
+RISK_TIERS = {"standard", "elevated", "high", "strict"}
+REQUIRED_PUBLIC_SURFACES = {
+    "Workflow Contract",
+    "HTTP bridge /workflow-check",
+    "Published adapter gallery",
+}
+COMPLETENESS_FIELDS = [
+    "id",
+    "title",
+    "status",
+    "adapter_path",
+    "readiness",
+    "family",
+    "risk_tier",
+    "evidence_requirements",
+    "supported_surfaces",
+    "production_status",
+    "workflow",
+    "best_for",
+    "prompt",
+    "bad_candidate",
+    "expected",
+    "copy_command",
+    "caveats",
+]
+MIN_CATALOG_COMPLETENESS_SCORE = 0.95
 
 
 def add_issue(issues, level, path, message):
@@ -57,6 +92,75 @@ def load_gallery(path):
     return gallery
 
 
+def _is_docs_link(value):
+    if not isinstance(value, str) or not value.strip():
+        return False
+    parsed = urlparse(value)
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        return True
+    path = pathlib.Path(value)
+    return bool(path.parts) and path.parts[0] in {"docs", "examples", "web", ".github"}
+
+
+def _link_exists(value):
+    parsed = urlparse(value)
+    if parsed.scheme in {"http", "https"}:
+        return True
+    return (ROOT / value).exists()
+
+
+def _entry_docs_links(entry):
+    links = []
+    for field in ("docs", "docs_links", "documentation", "documentation_links"):
+        value = entry.get(field)
+        if isinstance(value, str):
+            links.append(value)
+        elif isinstance(value, list):
+            links.extend(item for item in value if isinstance(item, str))
+    for value in entry.get("supported_surfaces", []) if isinstance(entry.get("supported_surfaces"), list) else []:
+        if _is_docs_link(value):
+            links.append(value)
+    return links
+
+
+def _entry_completeness(entry):
+    present = []
+    missing = []
+    weak = []
+    for field in COMPLETENESS_FIELDS:
+        value = entry.get(field)
+        ok = has_text(value) or nonempty_list(value) or isinstance(value, dict)
+        if ok:
+            present.append(field)
+        else:
+            missing.append(field)
+    expected = entry.get("expected") if isinstance(entry.get("expected"), dict) else {}
+    for field in EXPECTED_FIELDS:
+        if has_text(expected.get(field)) or nonempty_list(expected.get(field)):
+            present.append(f"expected.{field}")
+        else:
+            missing.append(f"expected.{field}")
+    production_status = entry.get("production_status") if isinstance(entry.get("production_status"), dict) else {}
+    for field in ("level", "adapter_readiness", "claim"):
+        if has_text(production_status.get(field)):
+            present.append(f"production_status.{field}")
+        else:
+            missing.append(f"production_status.{field}")
+    if len(entry.get("caveats", [])) < 2:
+        weak.append("caveats")
+    if len(entry.get("evidence_requirements", [])) < 1:
+        weak.append("evidence_requirements")
+    total = len(present) + len(missing) + len(weak)
+    score = round(len(present) / total, 4) if total else 0.0
+    return {
+        "id": entry.get("id"),
+        "score": score,
+        "present": len(present),
+        "missing": missing,
+        "weak": weak,
+    }
+
+
 def validate_entry_shape(entry, index, issues):
     base = f"adapters[{index}]"
     if not isinstance(entry, dict):
@@ -67,13 +171,51 @@ def validate_entry_shape(entry, index, issues):
         if field not in entry:
             add_issue(issues, "error", f"{base}.{field}", "Required field is missing.")
 
-    for field in ["id", "title", "status", "adapter_path", "workflow", "prompt", "bad_candidate", "copy_command"]:
+    for field in ["id", "title", "status", "adapter_path", "readiness", "risk_tier", "workflow", "prompt", "bad_candidate", "copy_command"]:
         if field in entry and not has_text(entry.get(field)):
             add_issue(issues, "error", f"{base}.{field}", "Field must be a non-empty string.")
 
-    for field in ["best_for", "caveats"]:
+    for field in ["family", "evidence_requirements", "supported_surfaces", "best_for", "caveats"]:
         if field in entry and not nonempty_list(entry.get(field)):
             add_issue(issues, "error", f"{base}.{field}", "Field must be a non-empty list.")
+
+    docs_links = _entry_docs_links(entry)
+    if not docs_links:
+        add_issue(issues, "error", f"{base}.docs_links", "Catalog entry must include at least one docs link.")
+    for link in docs_links:
+        if not _link_exists(link):
+            add_issue(issues, "error", f"{base}.docs_links", f"Docs link does not resolve: {link}.")
+
+    if entry.get("readiness") not in CATALOG_READINESS:
+        add_issue(issues, "error", f"{base}.readiness", f"Readiness must be one of {sorted(CATALOG_READINESS)}.")
+
+    if entry.get("risk_tier") not in RISK_TIERS:
+        add_issue(issues, "error", f"{base}.risk_tier", f"Risk tier must be one of {sorted(RISK_TIERS)}.")
+
+    surfaces = set(entry.get("supported_surfaces", []) if isinstance(entry.get("supported_surfaces"), list) else [])
+    missing_surfaces = REQUIRED_PUBLIC_SURFACES - surfaces
+    if missing_surfaces:
+        add_issue(
+            issues,
+            "error",
+            f"{base}.supported_surfaces",
+            f"Supported surfaces must include public catalog/runtime surfaces: {sorted(missing_surfaces)}.",
+        )
+
+    production_status = entry.get("production_status")
+    if not isinstance(production_status, dict):
+        add_issue(issues, "error", f"{base}.production_status", "Production status must be an object.")
+    else:
+        if production_status.get("level") not in PRODUCTION_LEVELS:
+            add_issue(
+                issues,
+                "error",
+                f"{base}.production_status.level",
+                f"Production status level must be one of {sorted(PRODUCTION_LEVELS)}.",
+            )
+        for field in ["adapter_readiness", "claim"]:
+            if not has_text(production_status.get(field)):
+                add_issue(issues, "error", f"{base}.production_status.{field}", "Field must be a non-empty string.")
 
     expected = entry.get("expected", {})
     if not isinstance(expected, dict):
@@ -94,6 +236,7 @@ def validate_entry_shape(entry, index, issues):
 
 def validate_gallery(gallery, run_examples=False):
     issues = []
+    completeness_items = []
 
     if not has_text(gallery.get("version")):
         add_issue(issues, "error", "version", "Gallery version must be a non-empty string.")
@@ -111,6 +254,7 @@ def validate_gallery(gallery, run_examples=False):
         validate_entry_shape(entry, index, issues)
         if not isinstance(entry, dict):
             continue
+        completeness_items.append(_entry_completeness(entry))
 
         entry_id = entry.get("id")
         if entry_id in seen_ids:
@@ -131,6 +275,44 @@ def validate_gallery(gallery, run_examples=False):
 
         if not adapter_report["valid"]:
             add_issue(issues, "error", f"adapters[{index}].adapter_path", "Referenced adapter does not pass adapter validation.")
+
+        adapter_aix = adapter.get("aix") if isinstance(adapter.get("aix"), dict) else {}
+        if entry.get("risk_tier") != adapter_aix.get("risk_tier"):
+            add_issue(
+                issues,
+                "error",
+                f"adapters[{index}].risk_tier",
+                f"Gallery risk_tier must match adapter AIx risk_tier {adapter_aix.get('risk_tier')!r}.",
+            )
+
+        production_readiness = (
+            adapter.get("production_readiness")
+            if isinstance(adapter.get("production_readiness"), dict)
+            else {}
+        )
+        production_status = entry.get("production_status") if isinstance(entry.get("production_status"), dict) else {}
+        if production_status.get("adapter_readiness") != production_readiness.get("status"):
+            add_issue(
+                issues,
+                "error",
+                f"adapters[{index}].production_status.adapter_readiness",
+                "Gallery production_status.adapter_readiness must match the adapter production_readiness.status.",
+            )
+
+        declared_evidence = set(entry.get("evidence_requirements", []))
+        adapter_evidence = set(
+            production_readiness.get("evidence_requirements", [])
+            if isinstance(production_readiness.get("evidence_requirements"), list)
+            else []
+        )
+        missing_evidence = adapter_evidence - declared_evidence
+        if missing_evidence:
+            add_issue(
+                issues,
+                "error",
+                f"adapters[{index}].evidence_requirements",
+                f"Gallery evidence requirements must include adapter evidence requirements: {sorted(missing_evidence)}.",
+            )
 
         if run_examples and entry.get("status") == "executable":
             result = run_adapter.run_adapter(adapter, entry.get("prompt", ""), entry.get("bad_candidate", ""))
@@ -201,12 +383,39 @@ def validate_gallery(gallery, run_examples=False):
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")
+    average_score = (
+        round(sum(item["score"] for item in completeness_items) / len(completeness_items), 4)
+        if completeness_items
+        else 0.0
+    )
+    weak_entries = [item for item in completeness_items if item["score"] < MIN_CATALOG_COMPLETENESS_SCORE]
+    completeness = {
+        "score": average_score,
+        "minimum_required": MIN_CATALOG_COMPLETENESS_SCORE,
+        "entry_count": len(completeness_items),
+        "weak_entry_count": len(weak_entries),
+        "weak_entries": weak_entries,
+        "readiness_counts": {},
+    }
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, dict):
+            readiness = entry.get("readiness")
+            completeness["readiness_counts"][readiness] = completeness["readiness_counts"].get(readiness, 0) + 1
+    if average_score < MIN_CATALOG_COMPLETENESS_SCORE or weak_entries:
+        errors += 1
+        add_issue(
+            issues,
+            "error",
+            "catalog_completeness",
+            f"Catalog completeness score {average_score} is below required {MIN_CATALOG_COMPLETENESS_SCORE}.",
+        )
     return {
         "valid": errors == 0,
         "errors": errors,
         "warnings": warnings,
         "issues": issues,
         "checked_examples": checked,
+        "catalog_completeness": completeness,
     }
 
 
@@ -233,6 +442,12 @@ def main():
             print("Checked examples:")
             for item in report["checked_examples"]:
                 print(f"- {item['id']}: gate={item['gate_decision']} action={item['recommended_action']} aix={item.get('aix_decision')}")
+        completeness = report.get("catalog_completeness", {})
+        if completeness:
+            print(
+                f"Catalog completeness: {completeness.get('score')} "
+                f"(weak entries: {completeness.get('weak_entry_count')})"
+            )
     return 0 if report["valid"] else 1
 
 

@@ -16,15 +16,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Compile Python files
-        run: python scripts/dev.py compile
-
-      - name: Run tests
-        run: python scripts/dev.py test
-
-      - name: Validate production profiles
+      - name: Run hardened release gates
         run: >
-          python scripts/dev.py production-profiles
+          python scripts/dev.py release-gate
           --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl
           --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
           --drift-output eval_outputs/audit/ci/aana-ci-aix-drift.json

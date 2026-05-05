@@ -72,6 +72,7 @@ READ_FILE_ARGS_BY_COMMAND = {
         "evidence_registry",
         "observability_policy",
         "audit_log",
+        "external_evidence",
     ],
     "contract-freeze": ["gallery", "evidence_registry"],
     "validate-deployment": ["deployment_manifest"],
@@ -142,6 +143,7 @@ def cli_command_matrix():
             "command": "run",
             "category": "adapter",
             "json_output": True,
+            "public_api": "workflow_contract",
             "reads": ["--gallery"],
             "writes": [],
             "dry_run": False,
@@ -151,6 +153,7 @@ def cli_command_matrix():
             "command": "run-file",
             "category": "adapter",
             "json_output": True,
+            "public_api": False,
             "reads": ["--adapter", "--candidate-file"],
             "writes": [],
             "dry_run": False,
@@ -160,6 +163,7 @@ def cli_command_matrix():
             "command": "agent-check",
             "category": "agent",
             "json_output": True,
+            "public_api": "agent_event_contract",
             "reads": ["--event", "--evidence-registry", "--gallery", "--shadow-mode"],
             "writes": ["--audit-log"],
             "dry_run": False,
@@ -169,6 +173,7 @@ def cli_command_matrix():
             "command": "workflow-check",
             "category": "workflow",
             "json_output": True,
+            "public_api": "workflow_contract",
             "reads": ["--workflow", "--evidence-registry", "--gallery", "--shadow-mode"],
             "writes": ["--audit-log"],
             "dry_run": False,
@@ -178,6 +183,7 @@ def cli_command_matrix():
             "command": "workflow-batch",
             "category": "workflow",
             "json_output": True,
+            "public_api": "workflow_contract",
             "reads": ["--batch", "--evidence-registry", "--gallery", "--shadow-mode"],
             "writes": ["--audit-log"],
             "dry_run": False,
@@ -410,10 +416,11 @@ def cli_command_matrix():
                 "--evidence-registry",
                 "--observability-policy",
                 "--audit-log",
+                "--external-evidence",
             ],
             "writes": [],
             "dry_run": False,
-            "example": "python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest examples/production_deployment_template.json --governance-policy examples/human_governance_policy_template.json --evidence-registry examples/evidence_registry.json --observability-policy examples/observability_policy.json --audit-log path/to/shadow-audit.jsonl --json",
+            "example": "python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest examples/production_deployment_template.json --governance-policy examples/human_governance_policy_template.json --evidence-registry examples/evidence_registry.json --observability-policy examples/observability_policy.json --audit-log path/to/shadow-audit.jsonl --external-evidence path/to/external-production-evidence.json --json",
         },
         {
             "command": "readiness-matrix",
@@ -714,15 +721,33 @@ def command_aix_tuning(args):
     return 0 if report["valid"] else 1
 
 
-def run_entry(entry):
-    adapter = run_adapter.load_adapter(ROOT / entry["adapter_path"])
-    return run_adapter.run_adapter(adapter, entry["prompt"], entry.get("bad_candidate"))
+def workflow_request_from_gallery_entry(entry):
+    return {
+        "contract_version": agent_api.WORKFLOW_CONTRACT_VERSION,
+        "workflow_id": f"gallery-{entry['id']}",
+        "adapter": entry["id"],
+        "request": entry["prompt"],
+        "candidate": entry.get("bad_candidate"),
+        "allowed_actions": ["accept", "revise", "retrieve", "ask", "defer", "refuse"],
+        "metadata": {
+            "surface": "aana_cli_run",
+            "gallery_title": entry.get("title"),
+            "gallery_status": entry.get("status"),
+        },
+    }
+
+
+def run_entry(entry, gallery_path=DEFAULT_GALLERY):
+    return agent_api.check_workflow_request(
+        workflow_request_from_gallery_entry(entry),
+        gallery_path=gallery_path,
+    )
 
 
 def command_run(args):
     gallery = load_gallery(args.gallery)
     entry = find_entry(gallery, args.adapter_id)
-    result = run_entry(entry)
+    result = run_entry(entry, gallery_path=args.gallery)
     print_json(result)
     return 0 if result.get("gate_decision") == "pass" else 1
 
@@ -733,6 +758,15 @@ def command_run_file(args):
     if args.candidate_file:
         candidate = pathlib.Path(args.candidate_file).read_text(encoding="utf-8")
     result = run_adapter.run_adapter(adapter, args.prompt, candidate)
+    result = {
+        **result,
+        "runtime_boundary": {
+            "public_api": False,
+            "entrypoint": "legacy_adapter_runner",
+            "recommended_entrypoint": "workflow-check",
+            "note": "run-file executes an adapter JSON file directly and is intended for adapter development diagnostics.",
+        },
+    }
     print_json(result)
     return 0 if result.get("gate_decision") in {"pass", "needs_adapter_implementation"} else 1
 
@@ -943,7 +977,7 @@ def command_validate_workflow_evidence(args):
     if args.json:
         print_json(report)
     else:
-        status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+        status = "ready for production-readiness review" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
         print(f"Workflow evidence is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
         for issue in report["issues"]:
             print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
@@ -1303,6 +1337,7 @@ def command_production_certify(args):
         evidence_registry_path=args.evidence_registry,
         observability_policy_path=args.observability_policy,
         audit_log_path=args.audit_log,
+        external_evidence_path=args.external_evidence,
     )
     if args.json:
         print_json(report)
@@ -1313,6 +1348,12 @@ def command_production_certify(args):
         f"{summary['status']} ({summary['readiness_level']}, "
         f"{summary['failures']} failure(s), {summary['warnings']} warning(s), {summary['checks']} check(s))."
     )
+    print(report["production_positioning"])
+    print(report["certification_scope"])
+    print(f"Repo-local readiness: {'ready' if report['repo_local_ready'] else 'not ready'}")
+    print(f"Deployment readiness: {'ready' if report['deployment_ready'] else 'not ready'}")
+    if not report["production_certified"]:
+        print("Production certified: no; final certification remains an external owner/governance decision.")
     print("Readiness boundary:")
     for level, details in report["readiness_boundary"].items():
         print(f"- {level}: {details['certification_line']}")
@@ -1332,6 +1373,7 @@ def command_readiness_matrix(args):
         print_json(matrix)
         return 0
     print("AANA public readiness matrix")
+    print(matrix["production_positioning"])
     for level, details in matrix["levels"].items():
         print(f"- {level}: {', '.join(details['required_gates'])}")
     for family, details in matrix["families"].items():
@@ -1386,7 +1428,7 @@ def production_preflight_report(
                 check_status(
                     "evidence_registry",
                     "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
-                    "Evidence registry is production-ready."
+                    "Evidence registry satisfies production-readiness checks."
                     if report["production_ready"]
                     else "Evidence registry has issues.",
                     report,
@@ -1413,7 +1455,7 @@ def production_preflight_report(
                 check_status(
                     "observability_policy",
                     "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
-                    "Observability policy is production-ready."
+                    "Observability policy satisfies production-readiness checks."
                     if report["production_ready"]
                     else "Observability policy has issues.",
                     report,
@@ -1470,7 +1512,7 @@ def production_preflight_report(
                 check_status(
                     "deployment_manifest",
                     "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
-                    "Deployment manifest is production-ready."
+                    "Deployment manifest satisfies production-readiness checks."
                     if report["production_ready"]
                     else "Deployment manifest has issues that must be resolved before launch.",
                     report,
@@ -1543,7 +1585,7 @@ def command_validate_deployment(args):
     if args.json:
         print_json(report)
         return 0 if report["valid"] else 1
-    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    status = "ready for production-readiness review" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
     print(f"Deployment manifest is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
     for issue in report["issues"]:
         print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
@@ -1556,7 +1598,7 @@ def command_validate_governance(args):
     if args.json:
         print_json(report)
         return 0 if report["valid"] else 1
-    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    status = "ready for production-readiness review" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
     print(f"Governance policy is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
     for issue in report["issues"]:
         print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
@@ -1569,7 +1611,7 @@ def command_validate_observability(args):
     if args.json:
         print_json(report)
         return 0 if report["valid"] else 1
-    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    status = "ready for production-readiness review" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
     print(f"Observability policy is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
     for issue in report["issues"]:
         print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
@@ -1654,6 +1696,31 @@ def release_check_report(
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         checks.append(check_status("adapter_aix_tuning", "fail", str(exc), {"gallery": str(gallery_path)}))
 
+    try:
+        gallery_report = validate_adapter_gallery.validate_gallery(
+            load_gallery(gallery_path),
+            run_examples=True,
+        )
+        completeness = gallery_report.get("catalog_completeness", {})
+        checks.append(
+            check_status(
+                "adapter_catalog",
+                "pass" if gallery_report["valid"] else "fail",
+                "Adapter catalog metadata, examples, AIx, evidence, docs links, and completeness gate passed."
+                if gallery_report["valid"]
+                else "Adapter catalog validation failed and blocks release.",
+                {
+                    "errors": gallery_report["errors"],
+                    "warnings": gallery_report["warnings"],
+                    "checked_examples": len(gallery_report.get("checked_examples", [])),
+                    "catalog_completeness": completeness,
+                    "issues": gallery_report["issues"],
+                },
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        checks.append(check_status("adapter_catalog", "fail", str(exc), {"gallery": str(gallery_path)}))
+
     preflight = production_preflight_report(
         gallery_path=gallery_path,
         deployment_manifest=deployment_manifest,
@@ -1664,7 +1731,7 @@ def release_check_report(
         check_status(
             "production_preflight",
             "pass" if preflight["production_ready"] else "fail" if not preflight["valid"] else "warn",
-            "Production preflight is ready."
+            "Production preflight checks pass; external production certification still requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths."
             if preflight["production_ready"]
             else "Production preflight has warnings or failures.",
             preflight["summary"],
@@ -1679,7 +1746,7 @@ def release_check_report(
                 check_status(
                     "governance_policy",
                     "pass" if governance["production_ready"] else "fail" if not governance["valid"] else "warn",
-                    "Governance policy is production-ready."
+                    "Governance policy satisfies production-readiness checks."
                     if governance["production_ready"]
                     else "Governance policy has issues.",
                     governance,
@@ -1698,7 +1765,7 @@ def release_check_report(
                 check_status(
                     "observability_policy",
                     "pass" if observability["production_ready"] else "fail" if not observability["valid"] else "warn",
-                    "Observability policy is production-ready."
+                    "Observability policy satisfies production-readiness checks."
                     if observability["production_ready"]
                     else "Observability policy has issues.",
                     observability,
@@ -1792,6 +1859,12 @@ def command_release_check(args):
         print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
         for issue in check.get("details", {}).get("issues", []):
             print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+        completeness = check.get("details", {}).get("catalog_completeness")
+        if completeness:
+            print(
+                f"  - Catalog completeness: {completeness.get('score')} "
+                f"(weak entries: {completeness.get('weak_entry_count')})"
+            )
     return 0 if report["valid"] else 1
 
 
@@ -1994,6 +2067,12 @@ def command_validate_gallery(args):
         print(f"Adapter gallery is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
         for issue in report["issues"]:
             print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+        completeness = report.get("catalog_completeness", {})
+        if completeness:
+            print(
+                f"Catalog completeness: {completeness.get('score')} "
+                f"(weak entries: {completeness.get('weak_entry_count')})"
+            )
         for item in report["checked_examples"]:
             print(
                 f"- {item['id']}: gate={item['gate_decision']} "
@@ -2064,7 +2143,7 @@ def build_parser():
     run_parser.add_argument("adapter_id", help="Gallery adapter id, such as travel_planning.")
     run_parser.set_defaults(func=command_run)
 
-    run_file_parser = subparsers.add_parser("run-file", help="Run any adapter JSON file.")
+    run_file_parser = subparsers.add_parser("run-file", help="Run an adapter JSON file directly for adapter development diagnostics.")
     run_file_parser.add_argument("--adapter", required=True, help="Path to adapter JSON.")
     run_file_parser.add_argument("--prompt", required=True, help="Prompt to run.")
     run_file_parser.add_argument("--candidate", default=None, help="Optional candidate answer.")
@@ -2297,7 +2376,7 @@ def build_parser():
     civic_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     civic_certify_parser.set_defaults(func=command_civic_certify)
 
-    production_certify_parser = subparsers.add_parser("production-certify", help="Certify AANA production readiness from policy, audit, evidence, and governance artifacts.")
+    production_certify_parser = subparsers.add_parser("production-certify", help="Check the production readiness boundary from policy, audit, evidence, governance, and external deployment artifacts.")
     production_certify_parser.add_argument(
         "--certification-policy",
         default=str(ROOT / "examples" / "production_certification_template.json"),
@@ -2308,6 +2387,7 @@ def build_parser():
     production_certify_parser.add_argument("--evidence-registry", default=None, help="Evidence registry JSON.")
     production_certify_parser.add_argument("--observability-policy", default=None, help="Observability policy JSON.")
     production_certify_parser.add_argument("--audit-log", default=None, help="Redacted shadow-mode audit JSONL file.")
+    production_certify_parser.add_argument("--external-evidence", default=None, help="External production evidence manifest JSON.")
     production_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     production_certify_parser.set_defaults(func=command_production_certify)
 

@@ -1,6 +1,10 @@
 # AANA Adapter Gallery
 
+Canonical entry point: [Build Adapter](build-adapter/index.md). The gallery is the adapter catalog used by demo, runtime, and adapter-building paths.
+
 The adapter gallery is the shortest path from "AANA works in one demo" to "I can copy this pattern into my own domain."
+
+Catalog status is not production certification. This repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
 
 Open the searchable published gallery:
 

@@ -1,5 +1,7 @@
 # AANA Integration Recipes
 
+Canonical entry point: [Integrate Runtime](integrate-runtime/index.md). This page keeps the copyable recipe index for existing links.
+
 These recipes are copyable starting points for using AANA around real workflows without hand-building contracts. Run commands from the repository root.
 
 ## Recipes

@@ -2,6 +2,10 @@
 
 This plan converts the current AANA prototype into a production-capable platform without overstating what the repository can guarantee by itself. AANA remains a verifier-grounded correction architecture; production readiness means the platform has clear contracts, audited evidence flow, observable gates, secure integration boundaries, and repeatable release controls.
 
+Current positioning: this repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+
+`production-certify` is a boundary checker, not a guarantee. It can show that repo-local artifacts are coherent, but deployment readiness requires explicit external evidence: connector manifests, shadow-mode logs, an audit retention policy, an escalation policy, and owner approval.
+
 ## Milestone 1: Stable Platform Contract
 
 Status: complete for the local repository baseline.
@@ -312,11 +316,11 @@ The certification command prints a public readiness score and fails if any repo-
 Production certification:
 
 ```powershell
-python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
-python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
+python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl --external-evidence path/to/external-production-evidence.json
+python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl --external-evidence path/to/external-production-evidence.json
 ```
 
-Production certification is intentionally stricter than pilot certification. It draws the line between demo, pilot, and production by requiring at least 14 days of shadow mode, at least 100 redacted shadow audit records, required gate/action/violation/AIx/shadow/human-review metrics, human-review routing for high-impact, low-confidence, and irreversible decisions, connector evidence contracts, and at least 365 days of immutable redacted audit retention. See `docs/production-certification.md`.
+Production boundary checking is intentionally stricter than pilot certification. It draws the line between repo-local readiness and deployment readiness by requiring at least 14 days of shadow mode, at least 100 redacted shadow audit records, required gate/action/violation/AIx/shadow/human-review metrics, human-review routing for high-impact, low-confidence, and irreversible decisions, connector evidence contracts, at least 365 days of immutable redacted audit retention, plus explicit external evidence for connector manifests, shadow-mode logs, audit retention policy, escalation policy, and owner approval. See `docs/production-certification.md`.
 
 For quick command validation without recursively running the full test suite:
 
