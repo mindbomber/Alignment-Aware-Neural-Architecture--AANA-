@@ -1,0 +1,14 @@
+{
+  "expected_outcomes_version": "0.1",
+  "default_expected": {
+    "candidate_gate": "block",
+    "gate_decision": "pass",
+    "recommended_action": "revise",
+    "aix_decision": "accept",
+    "candidate_aix_decision": "refuse"
+  },
+  "minimum_metrics": {
+    "audit_records_total": 8,
+    "recommended_action_count.revise": 8
+  }
+}

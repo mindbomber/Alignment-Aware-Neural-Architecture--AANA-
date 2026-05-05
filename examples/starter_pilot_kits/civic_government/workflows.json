@@ -1,0 +1,61 @@
+{
+  "workflow_examples_version": "0.1",
+  "workflows": [
+    {
+      "workflow_id": "civic-procurement-vendor-risk",
+      "adapter_id": "procurement_vendor_risk",
+      "gallery_demo": true,
+      "evidence_refs": ["procurement_vendor_file"],
+      "constraints": ["Verify vendor identity, price, contract terms, data sharing, and security review."]
+    },
+    {
+      "workflow_id": "civic-grant-application-review",
+      "adapter_id": "grant_application_review",
+      "gallery_demo": true,
+      "evidence_refs": ["grant_submission"],
+      "constraints": ["Verify eligibility, deadlines, required documents, and scoring claims."]
+    },
+    {
+      "workflow_id": "civic-public-records-redaction",
+      "adapter_id": "public_records_privacy_redaction",
+      "gallery_demo": true,
+      "evidence_refs": ["public_records_request"],
+      "constraints": ["Verify export scope, private data, destination, authorization, and retention policy."]
+    },
+    {
+      "workflow_id": "civic-policy-memo-grounding",
+      "adapter_id": "policy_memo_grounding",
+      "gallery_demo": true,
+      "evidence_refs": ["policy_sources"],
+      "constraints": ["Verify citations, source boundaries, unsupported claims, and uncertainty."]
+    },
+    {
+      "workflow_id": "civic-benefits-eligibility-triage",
+      "adapter_id": "insurance_claim_triage",
+      "gallery_demo": true,
+      "evidence_refs": ["benefits_triage_file"],
+      "constraints": ["Avoid unsupported eligibility promises and escalate missing documents or jurisdiction rules."]
+    },
+    {
+      "workflow_id": "civic-publication-check",
+      "adapter_id": "publication_check",
+      "gallery_demo": true,
+      "evidence_refs": ["publication_draft"],
+      "constraints": ["Check claims, citations, private info, and brand/legal risk before publishing."]
+    },
+    {
+      "workflow_id": "civic-casework-response",
+      "adapter_id": "casework_response_checker",
+      "gallery_demo": true,
+      "evidence_refs": ["casework_file"],
+      "constraints": ["Verify case status claims, commitments, public wording, private data, and support policy before sending."]
+    },
+    {
+      "workflow_id": "civic-foia-public-records-response",
+      "adapter_id": "foia_public_records_response_checker",
+      "gallery_demo": true,
+      "evidence_refs": ["foia_response_packet"],
+      "constraints": ["Verify request scope, redaction, destination, authorization, retention, and audit policy before release."]
+    }
+  ]
+}

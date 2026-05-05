@@ -1,0 +1,97 @@
+{
+  "contract_version": "0.1",
+  "description": "Canonical Workflow Contract examples grouped by pilot adapter family.",
+  "source_registry": "examples/evidence_registry.json",
+  "adapter_families": [
+    {
+      "family_id": "enterprise",
+      "title": "Enterprise guardrails",
+      "examples": [
+        {
+          "adapter": "crm_support_reply",
+          "workflow_file": "examples/workflow_crm_support_reply.json"
+        },
+        {
+          "adapter": "email_send_guardrail",
+          "workflow_file": "examples/workflow_email_send_guardrail.json"
+        },
+        {
+          "adapter": "ticket_update_checker",
+          "workflow_file": "examples/workflow_ticket_update_checker.json"
+        },
+        {
+          "adapter": "data_export_guardrail",
+          "workflow_file": "examples/workflow_data_export_guardrail.json"
+        },
+        {
+          "adapter": "access_permission_change",
+          "workflow_file": "examples/workflow_access_permission_change.json"
+        },
+        {
+          "adapter": "code_change_review",
+          "workflow_file": "examples/workflow_code_change_review.json"
+        },
+        {
+          "adapter": "deployment_readiness",
+          "workflow_file": "examples/workflow_deployment_readiness.json"
+        },
+        {
+          "adapter": "incident_response_update",
+          "workflow_file": "examples/workflow_incident_response_update.json"
+        }
+      ]
+    },
+    {
+      "family_id": "personal_productivity",
+      "title": "Personal productivity guardrails",
+      "examples": [
+        {
+          "adapter": "email_send_guardrail",
+          "workflow_file": "examples/workflow_email_send_guardrail.json"
+        },
+        {
+          "adapter": "calendar_scheduling",
+          "workflow_file": "examples/workflow_calendar_scheduling.json"
+        },
+        {
+          "adapter": "file_operation_guardrail",
+          "workflow_file": "examples/workflow_file_operation_guardrail.json"
+        },
+        {
+          "adapter": "booking_purchase_guardrail",
+          "workflow_file": "examples/workflow_booking_purchase_guardrail.json"
+        },
+        {
+          "adapter": "research_answer_grounding",
+          "workflow_file": "examples/workflow_research_answer_grounding.json"
+        }
+      ]
+    },
+    {
+      "family_id": "government_civic",
+      "title": "Government and civic guardrails",
+      "examples": [
+        {
+          "adapter": "procurement_vendor_risk",
+          "workflow_file": "examples/workflow_procurement_vendor_risk.json"
+        },
+        {
+          "adapter": "grant_application_review",
+          "workflow_file": "examples/workflow_grant_application_review.json"
+        },
+        {
+          "adapter": "insurance_claim_triage",
+          "workflow_file": "examples/workflow_insurance_claim_triage.json"
+        },
+        {
+          "adapter": "publication_check",
+          "workflow_file": "examples/workflow_publication_check.json"
+        },
+        {
+          "adapter": "research_answer_grounding",
+          "workflow_file": "examples/workflow_research_answer_grounding.json"
+        }
+      ]
+    }
+  ]
+}

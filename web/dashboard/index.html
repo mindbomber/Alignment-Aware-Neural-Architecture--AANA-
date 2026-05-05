@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AANA Metrics Dashboard</title>
+    <link rel="stylesheet" href="/dashboard/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/dashboard/preview.png" alt="" />
+        <div>
+          <h1>AANA Metrics Dashboard</h1>
+          <p>Redacted gate, action, violation, AIx, adapter, and shadow-mode telemetry for pilot review.</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="refresh" type="button">Refresh</button>
+        <a href="/playground">Playground</a>
+        <a href="/demos">Demos</a>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="status-band">
+        <div>
+          <h2 id="status-title">Loading metrics</h2>
+          <p id="status-detail">Reading the configured redacted audit log.</p>
+        </div>
+        <div class="audit-path" id="audit-path"></div>
+      </section>
+
+      <section class="score-grid" aria-live="polite">
+        <article class="metric-card">
+          <span>Total checks</span>
+          <strong id="total-records">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Gate pass / fail</span>
+          <strong id="gate-pass-fail">0 / 0</strong>
+        </article>
+        <article class="metric-card">
+          <span>AIx avg / min / max</span>
+          <strong id="aix-stats">-</strong>
+        </article>
+        <article class="metric-card">
+          <span>Hard blockers</span>
+          <strong id="hard-blockers">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Violations</span>
+          <strong id="violation-total">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Shadow would block</span>
+          <strong id="shadow-block-rate">0%</strong>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel">
+          <h2>Gate Decisions</h2>
+          <div id="gate-chart" class="bar-list"></div>
+        </article>
+        <article class="panel">
+          <h2>Recommended Actions</h2>
+          <div id="action-chart" class="bar-list"></div>
+        </article>
+        <article class="panel">
+          <h2>Top Violations</h2>
+          <div id="violation-chart" class="bar-list"></div>
+        </article>
+        <article class="panel">
+          <h2>Shadow Mode</h2>
+          <div id="shadow-chart" class="bar-list"></div>
+        </article>
+        <article class="panel wide">
+          <h2>Violation Trends</h2>
+          <div id="trend-table" class="table-wrap"></div>
+        </article>
+        <article class="panel wide">
+          <h2>Adapter Breakdown</h2>
+          <div id="adapter-table" class="table-wrap"></div>
+        </article>
+        <article class="panel wide">
+          <h2>Family Breakdown</h2>
+          <div id="family-table" class="table-wrap"></div>
+        </article>
+        <article class="panel wide">
+          <h2>Hard Blockers</h2>
+          <div id="blocker-chart" class="bar-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="/dashboard/app.js"></script>
+  </body>
+</html>

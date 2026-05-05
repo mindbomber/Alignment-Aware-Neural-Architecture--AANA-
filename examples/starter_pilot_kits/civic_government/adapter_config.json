@@ -1,0 +1,18 @@
+{
+  "pack_id": "civic_government",
+  "adapters": [
+    {"adapter_id": "procurement_vendor_risk", "risk_tier": "high", "evidence_sources": ["quote", "vendor-profile", "dpa-security-docs"]},
+    {"adapter_id": "grant_application_review", "risk_tier": "elevated", "evidence_sources": ["program-rules", "submitted-docs", "rubric"]},
+    {"adapter_id": "insurance_claim_triage", "risk_tier": "high", "evidence_sources": ["policy-docs", "claim-file", "triage-policy"]},
+    {"adapter_id": "public_records_privacy_redaction", "risk_tier": "strict", "evidence_sources": ["data-classification", "export-request", "source-law"]},
+    {"adapter_id": "policy_memo_grounding", "risk_tier": "high", "evidence_sources": ["retrieved-documents", "citation-index", "source-registry", "jurisdiction", "source-law"]},
+    {"adapter_id": "publication_check", "risk_tier": "elevated", "evidence_sources": ["publication-draft", "publication-source-list", "publication-approval-policy"]},
+    {"adapter_id": "casework_response_checker", "risk_tier": "high", "evidence_sources": ["ticket-history", "support-policy", "program-rules"]},
+    {"adapter_id": "foia_public_records_response_checker", "risk_tier": "strict", "evidence_sources": ["export-request", "source-law", "data-classification"]}
+  ],
+  "pilot_controls": [
+    "synthetic public-service records only",
+    "human review required for eligibility, legal, privacy, and public-facing claims",
+    "no real records release, grant decision, procurement decision, or benefits determination"
+  ]
+}

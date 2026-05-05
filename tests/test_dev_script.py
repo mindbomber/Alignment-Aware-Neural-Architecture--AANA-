@@ -30,15 +30,20 @@ class DevScriptTests(unittest.TestCase):
 
         joined = [" ".join(str(part) for part in command) for command in commands]
         self.assertTrue(any("validate-gallery --run-examples" in command for command in joined))
+        self.assertTrue(any("pilot-certify" in command for command in joined))
         self.assertTrue(any("contract-freeze --evidence-registry examples/evidence_registry.json" in command for command in joined))
         self.assertTrue(any("aix-tuning" in command for command in joined))
         self.assertTrue(any("validate-deployment --deployment-manifest examples/production_deployment_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-governance --governance-policy examples/human_governance_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-observability --observability-policy examples/observability_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-evidence-registry --evidence-registry examples/evidence_registry.json" in command for command in joined))
-        self.assertTrue(any("evidence-integrations --evidence-registry examples/evidence_registry.json" in command for command in joined))
+        self.assertTrue(any("evidence-integrations --evidence-registry examples/evidence_registry.json --mock-fixtures examples/evidence_mock_connector_fixtures.json" in command for command in joined))
         self.assertTrue(any("agent-check --event examples/agent_event_support_reply.json" in command for command in joined))
+        self.assertTrue(any("audit-validate --audit-log" in command for command in joined))
         self.assertTrue(any("audit-metrics --audit-log" in command for command in joined))
+        self.assertTrue(any("audit-drift --audit-log" in command for command in joined))
+        self.assertTrue(any("audit-manifest --audit-log" in command for command in joined))
+        self.assertTrue(any("audit-reviewer-report --audit-log" in command for command in joined))
         self.assertTrue(any("release-check --skip-local-check" in command for command in joined))
         self.assertTrue(any("--audit-log" in command for command in joined))
 
@@ -55,12 +60,19 @@ class DevScriptTests(unittest.TestCase):
                 dev.production_profiles(audit_log=audit_log, metrics_output=metrics_output)
 
             metrics_commands = [command for command in commands if "audit-metrics" in command]
+            drift_commands = [command for command in commands if "audit-drift" in command]
+            reviewer_commands = [command for command in commands if "audit-reviewer-report" in command]
             release_commands = [command for command in commands if "release-check" in command]
 
             self.assertEqual(len(metrics_commands), 1)
+            self.assertEqual(len(drift_commands), 1)
+            self.assertEqual(len(reviewer_commands), 1)
             self.assertEqual(len(release_commands), 1)
             self.assertIn(str(audit_log), metrics_commands[0])
             self.assertIn(str(metrics_output), metrics_commands[0])
+            self.assertIn(str(audit_log), drift_commands[0])
+            self.assertIn(str(audit_log), reviewer_commands[0])
+            self.assertIn(str(metrics_output), reviewer_commands[0])
             self.assertIn(str(audit_log), release_commands[0])
             self.assertEqual(audit_log.read_text(encoding="utf-8"), "")
 
@@ -88,6 +100,18 @@ class DevScriptTests(unittest.TestCase):
         joined = [" ".join(str(part) for part in command) for command in commands]
         self.assertTrue(any("scripts/aana_cli.py contract-freeze" in command for command in joined))
 
+    def test_pilot_certify_runs_certification_command(self):
+        commands = []
+
+        def capture(command):
+            commands.append(command)
+
+        with mock.patch.object(dev, "run", side_effect=capture):
+            dev.pilot_certify()
+
+        joined = [" ".join(str(part) for part in command) for command in commands]
+        self.assertTrue(any("scripts/aana_cli.py pilot-certify" in command for command in joined))
+
     def test_pilot_eval_runs_evaluation_kit_script(self):
         commands = []
 
@@ -99,6 +123,30 @@ class DevScriptTests(unittest.TestCase):
 
         joined = [" ".join(str(part) for part in command) for command in commands]
         self.assertTrue(any("scripts/run_pilot_evaluation_kit.py" in command for command in joined))
+
+    def test_starter_kits_runs_starter_pilot_kit_script(self):
+        commands = []
+
+        def capture(command):
+            commands.append(command)
+
+        with mock.patch.object(dev, "run", side_effect=capture):
+            dev.starter_kits()
+
+        joined = [" ".join(str(part) for part in command) for command in commands]
+        self.assertTrue(any("scripts/run_starter_pilot_kit.py --kit all" in command for command in joined))
+
+    def test_github_guardrails_runs_github_action_guardrail_script(self):
+        commands = []
+
+        def capture(command):
+            commands.append(command)
+
+        with mock.patch.object(dev, "run", side_effect=capture):
+            dev.github_guardrails()
+
+        joined = [" ".join(str(part) for part in command) for command in commands]
+        self.assertTrue(any("scripts/run_github_action_guardrails.py --force --fail-on never" in command for command in joined))
 
 
 if __name__ == "__main__":

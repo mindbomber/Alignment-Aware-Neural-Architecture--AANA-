@@ -2,9 +2,23 @@
 
 The adapter gallery is the shortest path from "AANA works in one demo" to "I can copy this pattern into my own domain."
 
+Open the searchable published gallery:
+
+- [`docs/adapter-gallery/index.html`](adapter-gallery/index.html)
+
+When the gallery is served by the Docker or Python HTTP bridge, each adapter
+detail pane includes **Try this adapter**. That opens the web playground with
+the adapter preselected, preloads the prompt and bad candidate, and lets a user
+run the AANA check from the browser.
+
 It lists each runnable domain adapter with:
 
 - the adapter JSON file,
+- risk tier,
+- required evidence,
+- supported surfaces,
+- example inputs and expected outputs,
+- AIx tuning,
 - a realistic prompt,
 - a deliberately bad candidate,
 - expected gate behavior,
@@ -14,6 +28,13 @@ It lists each runnable domain adapter with:
 Machine-readable gallery:
 
 - [`examples/adapter_gallery.json`](../examples/adapter_gallery.json)
+- [`docs/adapter-gallery/data.json`](adapter-gallery/data.json)
+
+Rebuild the published gallery data after adapter changes:
+
+```powershell
+python scripts/build_adapter_gallery.py
+```
 
 Validate the gallery:
 

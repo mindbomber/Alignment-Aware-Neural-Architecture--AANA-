@@ -1,0 +1,112 @@
+name: AANA Guardrails
+description: Run AANA code, deployment, API, infrastructure, and database migration guardrails in GitHub Actions.
+
+inputs:
+  adapters:
+    description: Comma-separated adapter ids to run.
+    required: false
+    default: code_change_review,deployment_readiness,api_contract_change,infrastructure_change_guardrail,database_migration_guardrail
+  fail-on:
+    description: Failure mode: candidate-block, recommended-action, gate-fail, or never.
+    required: false
+    default: candidate-block
+  output-dir:
+    description: Directory for redacted audit, metrics, and report artifacts.
+    required: false
+    default: eval_outputs/github_action/aana-guardrails
+  base-ref:
+    description: Optional git base ref or SHA for diff collection.
+    required: false
+    default: ""
+  head-ref:
+    description: Optional git head ref or SHA for diff collection.
+    required: false
+    default: ""
+  changed-files:
+    description: Optional comma/newline-separated changed files override.
+    required: false
+    default: ""
+  diff-file:
+    description: Optional path to a diff artifact.
+    required: false
+    default: ""
+  test-output:
+    description: Optional path to test output evidence.
+    required: false
+    default: ""
+  ci-status:
+    description: Optional CI status text.
+    required: false
+    default: ""
+  deployment-manifest:
+    description: Optional deployment manifest evidence path.
+    required: false
+    default: ""
+  release-notes:
+    description: Optional release notes evidence path.
+    required: false
+    default: ""
+  openapi-diff:
+    description: Optional OpenAPI diff evidence path.
+    required: false
+    default: ""
+  consumer-list:
+    description: Optional API consumer-list evidence path.
+    required: false
+    default: ""
+  iac-plan:
+    description: Optional IaC plan or policy output evidence path.
+    required: false
+    default: ""
+  migration-diff:
+    description: Optional database migration diff evidence path.
+    required: false
+    default: ""
+  schema-state:
+    description: Optional database schema-state evidence path.
+    required: false
+    default: ""
+  backup-status:
+    description: Optional database backup-status evidence path.
+    required: false
+    default: ""
+  rollout-plan:
+    description: Optional database rollout-plan evidence path.
+    required: false
+    default: ""
+  force:
+    description: Run selected adapters even when no relevant changed files are detected.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Run AANA guardrails
+      shell: bash
+      run: |
+        FORCE_FLAG=""
+        if [ "${{ inputs.force }}" = "true" ]; then
+          FORCE_FLAG="--force"
+        fi
+        python "${{ github.action_path }}/../../../scripts/run_github_action_guardrails.py" \
+          --repo-root "$GITHUB_WORKSPACE" \
+          --adapters "${{ inputs.adapters }}" \
+          --fail-on "${{ inputs.fail-on }}" \
+          --output-dir "${{ inputs.output-dir }}" \
+          --base-ref "${{ inputs.base-ref }}" \
+          --head-ref "${{ inputs.head-ref }}" \
+          --changed-files "${{ inputs.changed-files }}" \
+          --diff-file "${{ inputs.diff-file }}" \
+          --test-output "${{ inputs.test-output }}" \
+          --ci-status "${{ inputs.ci-status }}" \
+          --deployment-manifest "${{ inputs.deployment-manifest }}" \
+          --release-notes "${{ inputs.release-notes }}" \
+          --openapi-diff "${{ inputs.openapi-diff }}" \
+          --consumer-list "${{ inputs.consumer-list }}" \
+          --iac-plan "${{ inputs.iac-plan }}" \
+          --migration-diff "${{ inputs.migration-diff }}" \
+          --schema-state "${{ inputs.schema-state }}" \
+          --backup-status "${{ inputs.backup-status }}" \
+          --rollout-plan "${{ inputs.rollout-plan }}" \
+          $FORCE_FLAG

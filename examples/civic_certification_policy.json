@@ -1,0 +1,33 @@
+{
+  "certification_policy_version": "0.1",
+  "family_id": "civic_government",
+  "synthetic_only_default": true,
+  "jurisdiction_labeling_required": true,
+  "source_law_traceability_required": true,
+  "privacy_redaction_required": true,
+  "human_review_required_for_final_determinations": true,
+  "public_records_retention_audit_required": true,
+  "redacted_audit_only": true,
+  "shadow_mode_available": true,
+  "no_final_determination_without_human_review": [
+    "legal interpretation",
+    "benefits eligibility",
+    "grant award",
+    "procurement approval",
+    "public-records release"
+  ],
+  "required_evidence_connectors": [
+    "civic_program_rules",
+    "civic_vendor_profiles",
+    "public_law_policy_sources",
+    "redaction_classification_registry",
+    "civic_case_history",
+    "benefits_claims",
+    "civic_source_registry"
+  ],
+  "exportable_outputs": [
+    "audit.jsonl",
+    "metrics.json",
+    "report.md"
+  ]
+}

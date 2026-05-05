@@ -1,0 +1,17 @@
+{
+  "pack_id": "personal_productivity",
+  "adapters": [
+    {"adapter_id": "email_send_guardrail", "risk_tier": "strict", "evidence_sources": ["draft-email", "recipient-metadata", "user-approval"]},
+    {"adapter_id": "calendar_scheduling", "risk_tier": "elevated", "evidence_sources": ["calendar-freebusy", "attendee-list", "user-instruction"]},
+    {"adapter_id": "file_operation_guardrail", "risk_tier": "strict", "evidence_sources": ["file-metadata", "requested-action", "diff-preview"]},
+    {"adapter_id": "booking_purchase_guardrail", "risk_tier": "strict", "evidence_sources": ["live-quote", "cart", "user-approval"]},
+    {"adapter_id": "research_answer_grounding", "risk_tier": "elevated", "evidence_sources": ["retrieved-documents", "citation-index", "source-registry"]},
+    {"adapter_id": "publication_check", "risk_tier": "elevated", "evidence_sources": ["publication-draft", "publication-source-list", "publication-approval-policy"]},
+    {"adapter_id": "meeting_summary_checker", "risk_tier": "standard", "evidence_sources": ["meeting-transcript", "meeting-attendee-list", "meeting-metadata"]}
+  ],
+  "pilot_controls": [
+    "local-only synthetic evidence",
+    "no real sends, file writes, invites, purchases, or publication",
+    "explicit user approval remains mandatory for irreversible actions"
+  ]
+}

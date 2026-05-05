@@ -1,0 +1,17 @@
+{
+  "starter_pilot_kits_version": "0.1",
+  "kits": [
+    {
+      "id": "enterprise",
+      "path": "examples/starter_pilot_kits/enterprise"
+    },
+    {
+      "id": "personal_productivity",
+      "path": "examples/starter_pilot_kits/personal_productivity"
+    },
+    {
+      "id": "civic_government",
+      "path": "examples/starter_pilot_kits/civic_government"
+    }
+  ]
+}

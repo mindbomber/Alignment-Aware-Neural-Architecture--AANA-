@@ -1,0 +1,54 @@
+{
+  "workflow_examples_version": "0.1",
+  "workflows": [
+    {
+      "workflow_id": "personal-email-guardrail",
+      "adapter_id": "email_send_guardrail",
+      "gallery_demo": true,
+      "evidence_refs": ["personal_email_draft"],
+      "constraints": ["Verify recipient, intent, private data, attachments, and user approval before send."]
+    },
+    {
+      "workflow_id": "personal-calendar-scheduling",
+      "adapter_id": "calendar_scheduling",
+      "gallery_demo": true,
+      "evidence_refs": ["calendar_freebusy"],
+      "constraints": ["Verify availability, timezone, attendees, conflicts, and consent before invites."]
+    },
+    {
+      "workflow_id": "personal-file-operation",
+      "adapter_id": "file_operation_guardrail",
+      "gallery_demo": true,
+      "evidence_refs": ["file_preview"],
+      "constraints": ["Verify action scope, backup status, user confirmation, path safety, and diff preview."]
+    },
+    {
+      "workflow_id": "personal-booking-purchase",
+      "adapter_id": "booking_purchase_guardrail",
+      "gallery_demo": true,
+      "evidence_refs": ["booking_cart"],
+      "constraints": ["Verify price, vendor, refundability, irreversible payment risk, and user confirmation."]
+    },
+    {
+      "workflow_id": "personal-research-grounding",
+      "adapter_id": "research_answer_grounding",
+      "gallery_demo": true,
+      "evidence_refs": ["research_sources"],
+      "constraints": ["Verify citations, source boundaries, unsupported claims, and uncertainty."]
+    },
+    {
+      "workflow_id": "personal-publication-check",
+      "adapter_id": "publication_check",
+      "gallery_demo": true,
+      "evidence_refs": ["publication_draft"],
+      "constraints": ["Verify publication claims, citations, private information, brand/legal risk, and approval before publishing."]
+    },
+    {
+      "workflow_id": "personal-meeting-summary",
+      "adapter_id": "meeting_summary_checker",
+      "gallery_demo": true,
+      "evidence_refs": ["meeting_summary"],
+      "constraints": ["Verify transcript faithfulness, action items, attribution, sensitive content, and distribution scope."]
+    }
+  ]
+}

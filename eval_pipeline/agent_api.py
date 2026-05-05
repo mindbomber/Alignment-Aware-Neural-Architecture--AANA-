@@ -515,25 +515,63 @@ def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
     }
 
 
-def audit_event_check(event, result=None, created_at=None):
+def apply_shadow_mode(result):
+    """Return a result annotated for observe-only shadow-mode enforcement."""
+
+    if not isinstance(result, dict):
+        return result
+    if isinstance(result.get("results"), list):
+        shadowed = dict(result)
+        shadowed["results"] = [apply_shadow_mode(item) for item in result["results"]]
+        shadowed["execution_mode"] = "shadow"
+        shadowed["shadow_mode"] = True
+        shadowed["shadow_observation"] = {
+            "shadow_mode": True,
+            "enforcement": "observe_only",
+            "production_effect": "not_blocked",
+            "would_routes": {
+                route: sum(
+                    1
+                    for item in shadowed["results"]
+                    if item.get("shadow_observation", {}).get("would_route") == route
+                )
+                for route in sorted(audit.SHADOW_ROUTES)
+            },
+        }
+        return shadowed
+
+    shadowed = dict(result)
+    shadowed["execution_mode"] = "shadow"
+    shadowed["shadow_mode"] = True
+    shadowed["shadow_observation"] = audit.shadow_observation(result)
+    shadowed["production_decision"] = {
+        "enforcement": "observe_only",
+        "gate_decision": "pass",
+        "recommended_action": "accept",
+        "production_effect": "not_blocked",
+    }
+    return shadowed
+
+
+def audit_event_check(event, result=None, created_at=None, shadow_mode=False):
     if result is None:
         result = check_event(event)
-    return audit.agent_audit_record(event, result, created_at=created_at)
+    return audit.agent_audit_record(event, result, created_at=created_at, shadow_mode=shadow_mode)
 
 
-def audit_workflow_check(workflow_request, result=None, created_at=None):
+def audit_workflow_check(workflow_request, result=None, created_at=None, shadow_mode=False):
     if result is None:
         result = check_workflow_request(workflow_request)
-    return audit.workflow_audit_record(workflow_request, result, created_at=created_at)
+    return audit.workflow_audit_record(workflow_request, result, created_at=created_at, shadow_mode=shadow_mode)
 
 
-def audit_workflow_batch(batch_request, result=None, created_at=None):
+def audit_workflow_batch(batch_request, result=None, created_at=None, shadow_mode=False):
     if result is None:
         result = check_workflow_batch(batch_request)
     requests = batch_request.get("requests", []) if isinstance(batch_request, dict) else []
     records = []
     for workflow_request, workflow_result in zip(requests, result.get("results", []), strict=False):
-        records.append(audit_workflow_check(workflow_request, workflow_result, created_at=created_at))
+        records.append(audit_workflow_check(workflow_request, workflow_result, created_at=created_at, shadow_mode=shadow_mode))
     timestamp = created_at or (records[0]["created_at"] if records else None)
     return {
         "audit_record_version": audit.AUDIT_RECORD_VERSION,
@@ -553,6 +591,18 @@ def load_audit_records(path):
     return audit.load_jsonl(path)
 
 
+def validate_audit_records(records):
+    return audit.validate_audit_records(records)
+
+
+def validate_audit_file(path):
+    return audit.validate_audit_jsonl(path)
+
+
+def audit_redaction_report(records, forbidden_terms=None):
+    return audit.redaction_report(records, forbidden_terms=forbidden_terms)
+
+
 def summarize_audit_records(records):
     return audit.summarize_records(records)
 
@@ -567,6 +617,42 @@ def export_audit_metrics(records, audit_log_path=None, created_at=None):
 
 def export_audit_metrics_file(audit_log_path, output_path=None, created_at=None):
     return audit.export_metrics_jsonl(audit_log_path, output_path=output_path, created_at=created_at)
+
+
+def audit_dashboard(records, audit_log_path=None, created_at=None):
+    return audit.dashboard_payload(records, audit_log_path=audit_log_path, created_at=created_at)
+
+
+def audit_dashboard_file(audit_log_path, created_at=None):
+    return audit.dashboard_payload_jsonl(audit_log_path, created_at=created_at)
+
+
+def validate_audit_metrics_export(metrics_export):
+    return audit.validate_metrics_export(metrics_export)
+
+
+def audit_aix_drift_report(records, baseline_metrics=None, created_at=None):
+    return audit.aix_drift_report(records, baseline_metrics=baseline_metrics, created_at=created_at)
+
+
+def audit_aix_drift_report_file(audit_log_path, output_path=None, baseline_metrics_path=None, created_at=None):
+    return audit.aix_drift_report_jsonl(
+        audit_log_path,
+        output_path=output_path,
+        baseline_metrics_path=baseline_metrics_path,
+        created_at=created_at,
+    )
+
+
+def write_audit_reviewer_report(audit_log_path, output_path, metrics_path=None, drift_report_path=None, manifest_path=None, created_at=None):
+    return audit.write_reviewer_report(
+        audit_log_path,
+        output_path,
+        metrics_path=metrics_path,
+        drift_report_path=drift_report_path,
+        manifest_path=manifest_path,
+        created_at=created_at,
+    )
 
 
 def create_audit_integrity_manifest(audit_log_path, manifest_path=None, previous_manifest_path=None, created_at=None):
@@ -616,8 +702,44 @@ def evidence_integration_stubs():
     return [stub.to_dict() for stub in evidence_integrations.all_integration_stubs()]
 
 
+def evidence_connector_marketplace(integration_ids=None):
+    return evidence_integrations.connector_marketplace(integration_ids=integration_ids)
+
+
 def evidence_integration_coverage(registry=None):
     return evidence_integrations.integration_coverage_report(registry=registry)
+
+
+def load_evidence_mock_fixtures(path=evidence_integrations.DEFAULT_MOCK_FIXTURES_PATH):
+    return evidence_integrations.load_mock_connector_fixtures(path)
+
+
+def normalize_evidence_object(integration_id, **kwargs):
+    return evidence_integrations.normalize_evidence_object(integration_id, **kwargs)
+
+
+def run_evidence_mock_connector(integration_id, fixtures=None, auth_scopes=None, now=None, source_ids=None, request=None):
+    return evidence_integrations.run_mock_connector(
+        integration_id,
+        fixtures=fixtures,
+        auth_scopes=auth_scopes,
+        now=now,
+        source_ids=source_ids,
+        request=request,
+    )
+
+
+def evidence_mock_connector_matrix(fixtures=None, integration_ids=None, now=None):
+    return evidence_integrations.mock_connector_matrix(
+        fixtures=fixtures,
+        integration_ids=integration_ids,
+        now=now,
+    )
+
+
+def evidence_connector_contracts(integration_ids=None):
+    ids = integration_ids or evidence_integrations.CORE_CONNECTOR_CONTRACT_IDS
+    return [evidence_integrations.find_integration_stub(integration_id).connector_contract() for integration_id in ids]
 
 
 def validate_workflow_evidence(workflow_request, registry, require_structured=False, now=None):

@@ -35,6 +35,7 @@ class OpenClawRuntimeConnectorPluginTests(unittest.TestCase):
         self.assertEqual(schema["type"], "object")
         self.assertFalse(schema["additionalProperties"])
         self.assertIn("bridgeBaseUrl", schema["properties"])
+        self.assertIn("bridgeToken", schema["properties"])
         self.assertTrue(schema["properties"]["requireExplicitBridgeBaseUrl"]["default"])
 
     def test_runtime_registers_expected_optional_tools(self):
@@ -43,14 +44,19 @@ class OpenClawRuntimeConnectorPluginTests(unittest.TestCase):
         self.assertIn('definePluginEntry', runtime)
         for tool_name in (
             "aana_runtime_health",
+            "aana_runtime_ready",
             "aana_validate_event",
             "aana_agent_check",
             "aana_validate_workflow",
             "aana_workflow_check",
+            "aana_validate_workflow_batch",
+            "aana_workflow_batch",
         ):
             self.assertIn(f'name: "{tool_name}"', runtime)
 
-        self.assertEqual(runtime.count("{ optional: true }"), 5)
+        self.assertEqual(runtime.count("{ optional: true }"), 8)
+        self.assertIn("decision_rule", runtime)
+        self.assertIn("aix.hard_blockers", runtime)
 
     def test_runtime_limits_side_effects(self):
         runtime = RUNTIME.read_text(encoding="utf-8")

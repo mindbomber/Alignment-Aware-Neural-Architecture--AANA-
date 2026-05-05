@@ -152,11 +152,12 @@ Local evidence registry validation:
 ```powershell
 python scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json
 python scripts/aana_cli.py evidence-integrations --evidence-registry examples/evidence_registry.json
+python scripts/aana_cli.py evidence-integrations --evidence-registry examples/evidence_registry.json --mock-fixtures examples/evidence_mock_connector_fixtures.json
 python scripts/aana_cli.py validate-workflow-evidence --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured-evidence
 ```
 
-Production evidence integration stubs define the connector boundary for CRM/support, ticketing, email, calendar, IAM, CI/code review, deployment/release, billing/payment, data export, workspace files, and security systems. These stubs intentionally do not call external systems; they define required source IDs, adapter coverage, authentication boundaries, redaction expectations, freshness behavior, and structured evidence templates. A real connector must implement retrieval, redaction, freshness checks, and audit logging before its evidence can be treated as production input.
+Production evidence integration stubs define the connector boundary for CRM/support, ticketing, email, calendar, IAM, CI/GitHub, deployment/release, billing/payment, data export, workspace files, and security systems. These stubs intentionally do not call external systems; they define required source IDs, adapter coverage, authentication scopes, action/auth boundaries, redaction expectations, freshness SLOs, failure modes, and structured evidence templates. Hardened connector contracts now expose typed auth context, fetch request, result, and failure objects so production implementations can fail closed on missing auth, unknown source IDs, stale records, unredacted records, invalid shapes, and upstream outages. Mock connector fixtures cover CRM/support, email, calendar, IAM, CI/GitHub, deployment, billing, data export, and workspace files, proving that connector output can normalize into structured evidence objects accepted by the Workflow Contract validator. A real connector must implement retrieval, redaction, freshness checks, and audit logging before its evidence can be treated as production input.
 
 Production preflight and release checks can include the evidence registry:
 
@@ -195,14 +196,19 @@ Local audit JSONL support:
 ```powershell
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/aana-audit.jsonl
 python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json --audit-log eval_outputs/audit/aana-audit.jsonl
+python scripts/aana_cli.py audit-validate --audit-log eval_outputs/audit/aana-audit.jsonl
 python scripts/aana_cli.py audit-summary --audit-log eval_outputs/audit/aana-audit.jsonl
 python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/aana-metrics.json
+python scripts/aana_cli.py audit-drift --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/aana-aix-drift.json
 python scripts/aana_cli.py audit-manifest --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/manifests/aana-audit-integrity.json
 python scripts/aana_cli.py audit-verify --manifest eval_outputs/audit/manifests/aana-audit-integrity.json
+python scripts/aana_cli.py audit-reviewer-report --audit-log eval_outputs/audit/aana-audit.jsonl --metrics eval_outputs/audit/aana-metrics.json --drift-report eval_outputs/audit/aana-aix-drift.json --manifest eval_outputs/audit/manifests/aana-audit-integrity.json --output eval_outputs/audit/aana-reviewer-report.md
 python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 ```
 
-The CLI can append audit records for direct command-line checks. The HTTP bridge appends redacted audit records itself for successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls when `--audit-log` is set, so callers do not need to duplicate audit writes. The `audit-metrics` command converts redacted audit JSONL into flat dashboard fields such as `gate_decision_count.pass`, `recommended_action_count.revise`, `violation_code_count.<code>`, `aix_score_average`, and `aix_decision_count.<decision>`. The `audit-manifest` command records the audit JSONL SHA-256, byte size, record count, summary, optional previous-manifest hash, and manifest self-hash; `audit-verify` recomputes those values to catch local tampering. The JSONL file, metrics export, and manifest are redacted handoff formats, not a complete production audit store. Production deployments still need retention policy, append-only storage, access controls, and review workflows.
+The CLI can append audit records for direct command-line checks. The HTTP bridge appends redacted audit records itself for successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls when `--audit-log` is set, so callers do not need to duplicate audit writes. The `audit-validate` command checks audit schema compatibility and rejects raw prompt, candidate, evidence, constraints, safe-response, and output fields. The `audit-metrics` command converts redacted audit JSONL into flat dashboard fields such as `gate_decision_count.pass`, `recommended_action_count.revise`, `violation_code_count.<code>`, `aix_score_average`, and `aix_decision_count.<decision>`. The `audit-drift` command turns those AIx metrics into a release-review drift report for low score, hard blockers, and unexpected AIx decisions. The `audit-manifest` command records the audit JSONL SHA-256, byte size, record count, summary, optional previous-manifest hash, and manifest self-hash; `audit-verify` recomputes those values to catch local tampering. The `audit-reviewer-report` command writes a Markdown handoff summarizing schema/redaction status, gate/action counts, AIx distribution, top violations, drift issues, and manifest hashes. The JSONL file, metrics export, drift report, reviewer report, and manifest are redacted handoff formats, not a complete production audit store. Production deployments still need retention policy, append-only storage, access controls, and review workflows.
+
+The HTTP bridge also serves a local metrics dashboard at `GET /dashboard` and a redacted dashboard feed at `GET /dashboard/metrics`. The dashboard shows gate/action counts, violation trends, AIx average/min/max, hard blockers, adapter breakdowns, and shadow-mode would-block/would-intervene rates from the configured audit log. It is intended for pilot review and uses the same redacted audit records as the CLI metrics exporter.
 
 Local observability policy validation:
 
@@ -235,14 +241,82 @@ Completion criteria:
 Local release gate:
 
 ```powershell
+docker compose up --build
 python scripts/dev.py contract-freeze
+python scripts/dev.py pilot-certify
 python scripts/dev.py production-profiles
-python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
+python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json --drift-output eval_outputs/audit/ci/aana-ci-aix-drift.json --reviewer-report-output eval_outputs/audit/ci/aana-ci-reviewer-report.md --manifest-output eval_outputs/audit/ci/manifests/aana-ci-audit-integrity.json
 python scripts/aana_cli.py release-check
 python scripts/aana_cli.py release-check --deployment-manifest path/to/your-production-deployment.json --governance-policy path/to/your-governance-policy.json --audit-log path/to/redacted-audit.jsonl
 ```
 
-The CI workflow uses the stable `eval_outputs/audit/ci/` paths and uploads the redacted audit JSONL plus metrics JSON as the `aana-production-profile-audit-metrics` artifact, so reviewers can inspect gate/action counts, adapter counts, AIx score distribution, AIx decisions, and hard-blocker totals without scraping logs.
+The CI workflow uses the stable `eval_outputs/audit/ci/` paths and uploads the redacted audit JSONL, metrics JSON, AIx drift JSON, integrity manifest, and Markdown reviewer report as the `aana-production-profile-audit-artifacts` artifact, so reviewers can inspect gate/action counts, adapter counts, AIx score distribution, AIx decisions, hard-blocker totals, drift status, and hashes without scraping logs.
+
+Dockerized local runtime:
+
+```powershell
+docker compose up --build
+Invoke-RestMethod http://localhost:8765/ready
+```
+
+The Docker bridge packages the HTTP server, adapter gallery, internal pilot profiles, web playground, local action demos, and a mounted redacted audit log path. See `docs/docker-http-bridge.md` for POST examples for `/agent-check`, `/workflow-check`, and `/workflow-batch`.
+
+Copyable integration recipes are published in `docs/integration-recipes.md`. They cover GitHub Actions, local agents, CRM support drafts, deployment reviews, and shadow-mode pilots, each pointing to checked-in payloads and commands that produce a working result.
+
+Web playground:
+
+```powershell
+python scripts/run_playground.py
+```
+
+Open `http://localhost:8765/playground` to pick an adapter, edit the proposed answer or action, and inspect violations, AIx, safe response, and redacted audit preview.
+
+Local desktop/browser demos:
+
+```powershell
+python scripts/run_local_demos.py
+```
+
+Open `http://localhost:8765/demos` to test AANA around email send, file operation, calendar scheduling, purchase/booking, and research-grounding checks using synthetic evidence.
+
+Shadow mode:
+
+```powershell
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
+python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --output eval_outputs/audit/shadow/aana-shadow-metrics.json
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
+```
+
+Shadow mode keeps production behavior unchanged while writing redacted telemetry for would-pass, would-revise, would-defer, and would-refuse decisions. Use it for early user evaluation before enforcing any adapter route.
+
+Adapter Integration SDK:
+
+```powershell
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --auth-token aana-local-dev-token --audit-log eval_outputs/audit/sdk/aana-sdk.jsonl --shadow-mode
+$env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
+python examples/sdk/python_client_example.py
+```
+
+The SDK adds `aana.AANAClient`, evidence normalization, Agent Event builders, Workflow Contract builders, and a mirrored TypeScript package under `sdk/typescript`. Use it when app teams need to call AANA from production or shadow-mode integrations without hand-building JSON.
+
+Pilot surface certification:
+
+```powershell
+python scripts/aana_cli.py pilot-certify
+python scripts/aana_cli.py pilot-certify --json
+python scripts/dev.py pilot-certify
+```
+
+The certification command prints a public readiness score and fails if any repo-local pilot surface is missing its required gates for CLI, Python API, HTTP bridge, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, or contract freeze.
+
+Production certification:
+
+```powershell
+python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
+python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
+```
+
+Production certification is intentionally stricter than pilot certification. It draws the line between demo, pilot, and production by requiring at least 14 days of shadow mode, at least 100 redacted shadow audit records, required gate/action/violation/AIx/shadow/human-review metrics, human-review routing for high-impact, low-confidence, and irreversible decisions, connector evidence contracts, and at least 365 days of immutable redacted audit retention. See `docs/production-certification.md`.
 
 For quick command validation without recursively running the full test suite:
 
@@ -299,8 +373,11 @@ Internal pilot smoke test:
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
 python scripts/dev.py pilot-bundle
 python scripts/dev.py pilot-eval
+python scripts/dev.py starter-kits
 python scripts/run_e2e_pilot_bundle.py
 python scripts/run_pilot_evaluation_kit.py
+python scripts/run_starter_pilot_kit.py --kit all
+python scripts/run_github_action_guardrails.py --force --fail-on never
 python scripts/run_pilot_evaluation_kit.py --pack enterprise --report-output eval_outputs/pilot_eval/enterprise-report.md
 python scripts/run_e2e_pilot_bundle.py --event support_reply --event research_summary --skip-production-profiles
 python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
@@ -312,6 +389,14 @@ python scripts/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --audit-log 
 The e2e pilot bundle is the broadest one-command local pilot path. It checks multiple agent events across adapters, writes redacted audit JSONL, exports audit metrics, writes an audit integrity manifest, runs `release-check` with internal pilot deployment/governance/evidence/observability profiles, and then runs `python scripts/dev.py production-profiles`. Use `--event` to narrow the bundle while debugging and `--skip-production-profiles` only when avoiding recursive validation inside focused tests.
 
 The Pilot Evaluation Kit is the broader pre-real-data evaluation path. It runs named synthetic and public-data-rehearsal packs for enterprise, personal, civic/government, and public-data pilot planning; writes a redacted audit JSONL file, flat metrics JSON, JSON report, and Markdown report; and records operator workflow notes for each scenario. Use it before real-world testing to decide which adapters deserve shadow-mode pilots and which evidence connectors must be built first.
+
+The Starter Pilot Kits are the fastest realistic no-private-data handoff path. They provide self-contained enterprise, personal productivity, and civic/government kit folders with synthetic records, adapter configuration, workflow examples, expected outcomes, and a one-command runner. The runner materializes Workflow Contract batch requests, appends redacted audit logs, exports metrics JSON, and writes pilot reports under `eval_outputs/starter_pilot_kits/`. Use these kits when a reviewer needs to understand AANA behavior from concrete workflow artifacts before a real evidence connector or shadow-mode deployment exists.
+
+The Design Partner Pilots are the first field-evaluation package. They define four controlled pilots across enterprise support operations, developer tooling/release, personal productivity irreversible actions, and civic/government-style workflows. The runner writes redacted audit logs, metrics, dashboard payloads, AIx drift reports, audit manifests, reviewer reports, field-note templates, and structured feedback templates under `eval_outputs/design_partner_pilots/`. Use `python scripts/run_design_partner_pilots.py --pilot all` before scheduling partner sessions, then attach redacted `<pilot_id>.json` feedback files with `--feedback-dir` to collect real failure modes, friction points, and adoption blockers.
+
+The Hosted Demo is the public no-clone option at `/demo/` on the project site. It is a static GitHub Pages surface backed by `docs/demo/scenarios.json`, uses only precomputed synthetic examples, accepts no secrets, and cannot send email, delete files, deploy releases, run migrations, submit payments, book purchases, or export private data. Use it for first-contact evaluation before asking someone to clone the repo, run Docker, or connect a local bridge.
+
+The GitHub Action is the first team-facing CI integration. It packages the code review, deployment readiness, API contract change, infrastructure change, and database migration adapters behind a composite action at `.github/actions/aana-guardrails`. Teams can add one workflow step to PR/release jobs, feed in test output, deployment manifests, OpenAPI diffs, IaC plans, and migration evidence, and receive redacted audit logs, metrics JSON, a report JSON, and a Markdown job summary. Use `fail-on: candidate-block` for PR blocking mode or `fail-on: never` for advisory shadow mode.
 
 The pilot runner sets up the runtime audit directory, starts the real bridge process with `--audit-log`, runs the smoke test against that live bridge, verifies that the bridge appended a redacted audit record, writes an audit integrity manifest under the runtime `manifests` directory, exports flat audit metrics beside the audit log by default, summarizes the audit log, and shuts the bridge down. Use `--metrics-output` when the metrics handoff file should live somewhere else. The smoke-test commands are lower-level checks: one starts an ephemeral local bridge using the same HTTP handler and audit path, and the other targets an already-running bridge. All verify unauthenticated POST rejection, authenticated event validation, authenticated agent checking, server-side redacted audit append, and audit summary generation. Use `--client-audit` only when intentionally testing a non-auditing bridge target.
 
@@ -362,6 +447,20 @@ Completed in this repository:
 - CLI hardening for stable exit-code meanings, `cli-contract` command matrix output, structured JSON error responses, preflight input path validation, scaffold dry-run modes, command examples, and golden-output tests.
 - Python runtime API hardening with typed public `eval_pipeline` exports, versioned `RuntimeResult` and `ValidationReport` dataclasses, predictable `AANAError` exception subclasses, typed `aana.*_typed` compatibility helpers, runtime API smoke tests, and public API reference docs.
 - Agent Event Contract hardening for candidate field validation, structured evidence objects, source/freshness validation, allowed-action validation, route mismatch warnings, policy preset compatibility, schema route examples, and valid/invalid contract fixtures.
+- Workflow Contract hardening for strict structured evidence mode, batch behavior guarantees, per-item runtime failure isolation, safe non-accept fallback on failed items, source-registry validation, and canonical adapter-family workflow examples.
+- HTTP Bridge hardening with token-file rotation support, structured error payloads, `/ready` dependency checks, process-local POST rate limits, request body read timeouts, locked server-side audit appends, concurrent request tests, and deployment runbook guidance.
+- Skills/plugins hardening with OpenClaw/Codex result-handling guidance, conformance tests for AIx and action-routing rules, runtime connector readiness and batch tools, high-risk workflow examples, and plugin install/use docs.
+- Evidence Integration Stub hardening with machine-checkable auth scopes, freshness SLOs, redaction expectations, failure modes, normalized evidence helpers, public SDK helpers, CLI fixture checks, contract-freeze fixture validation, and mock connector fixtures/tests for CRM/support, email, calendar, IAM, CI, deployment, billing, and data export.
+- Observability and Audit hardening with audit record schema validation, redaction checks, audit metrics compatibility validation, AIx drift reports, Markdown reviewer reports, contract-freeze drift fixture validation, and CI artifact generation for redacted audit JSONL, metrics, drift, manifest, and reviewer handoff files.
+- Pilot Surface Certification with a one-command public readiness score and matrix for CLI, Python API, HTTP bridge, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, and contract freeze.
+- Production Certification with an explicit demo/pilot/production boundary, shadow-mode duration and record-count requirements, required metrics, human-review routing, connector evidence, and audit-retention gates.
+- Dockerized HTTP Bridge packaging with `docker compose up --build`, local token auth, mounted redacted audit logs, bundled internal pilot profiles, and endpoint examples for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch`.
+- Web Playground for local adapter gallery demos with editable request/candidate fields, allowed-action fallback presets, verifier violations, AIx details, safe response, and redacted audit preview.
+- Local Desktop/Browser Demos for email send, file operations, calendar scheduling, purchase/booking, and research grounding, backed by synthetic evidence templates, `GET /demos/scenarios`, and the same Workflow Contract/audit path as `/playground/check`.
+- Starter Pilot Kits for enterprise, personal productivity, and civic/government packs with synthetic data, adapter config, workflow examples, expected outcomes, redacted audit logs, metrics reports, and Markdown pilot reports.
+- Design Partner Pilots for 3 to 5 controlled field runs across enterprise, developer/tooling, personal productivity, and civic/government-style workflows, including redacted audit/metrics artifacts plus field-note and feedback templates for failure modes, friction points, and adoption blockers.
+- Hosted Demo Option for public synthetic-only AANA examples on GitHub Pages with no secrets, no live backend, and no real sends/deletes/deploys/payments/exports.
+- GitHub Action packaging for code review, deployment readiness, API contract change, infrastructure change, and database migration guardrails with one-step YAML integration and redacted CI artifacts.
 - Structured Workflow Contract evidence objects with validation and agent-event conversion.
 - Evidence registry template, validator, CLI checks, and workflow-check enforcement for structured evidence.
 - Production evidence integration stubs for CRM/support, ticketing, email, calendar, IAM, CI/code review, deployment/release, billing/payment, data export, workspace files, and security evidence.

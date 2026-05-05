@@ -53,9 +53,22 @@ function resolveTimeout(api, params = {}) {
   return timeout;
 }
 
+function resolveBridgeToken(api, params = {}) {
+  const config = readConfig(api);
+  const value = params.bridgeToken ?? config.bridgeToken;
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+  if (typeof value !== "string") {
+    throw new Error("bridgeToken must be a string when provided.");
+  }
+  return value;
+}
+
 async function callBridge(api, params, path, options = {}) {
   const baseUrl = resolveBridgeBaseUrl(api, params);
   const timeoutMs = resolveTimeout(api, params);
+  const bridgeToken = resolveBridgeToken(api, params);
   const basePath = baseUrl.pathname === "/" ? "" : baseUrl.pathname.replace(/\/+$/, "");
   const endpoint = new URL(`${basePath}${path}`, baseUrl.origin);
   if (options.adapterId) {
@@ -67,7 +80,10 @@ async function callBridge(api, params, path, options = {}) {
   try {
     const response = await fetch(endpoint, {
       method: options.method ?? "POST",
-      headers: options.body ? { "content-type": "application/json" } : undefined,
+      headers: {
+        ...(options.body ? { "content-type": "application/json" } : {}),
+        ...(bridgeToken ? { authorization: `Bearer ${bridgeToken}` } : {})
+      },
       body: options.body ? JSON.stringify(options.body) : undefined,
       signal: controller.signal
     });
@@ -83,14 +99,16 @@ async function callBridge(api, params, path, options = {}) {
         ok: false,
         status: response.status,
         endpoint: path,
-        error: payload
+        error: payload,
+        decision_rule: "Do not proceed with the planned action while the AANA bridge call is not ok."
       });
     }
     return textResult({
       ok: true,
       status: response.status,
       endpoint: path,
-      result: payload
+      result: payload,
+      decision_rule: "Proceed only when gate_decision is pass, recommended_action is accept, and aix.hard_blockers is empty."
     });
   } finally {
     clearTimeout(timeout);
@@ -109,6 +127,10 @@ const bridgeParams = {
       minimum: 1000,
       maximum: 30000,
       description: "Optional timeout override in milliseconds."
+    },
+    bridgeToken: {
+      type: "string",
+      description: "Optional bridge token. Prefer host-managed secret configuration over per-call entry."
     }
   },
   additionalProperties: false
@@ -163,6 +185,18 @@ export default definePluginEntry({
 
     api.registerTool(
       {
+        name: "aana_runtime_ready",
+        description: "Check whether the configured local AANA bridge is ready to serve checks.",
+        parameters: bridgeParams,
+        async execute(_id, params = {}) {
+          return callBridge(api, params, "/ready", { method: "GET" });
+        }
+      },
+      { optional: true }
+    );
+
+    api.registerTool(
+      {
         name: "aana_validate_event",
         description: "Validate an AANA agent event shape without running the gate.",
         parameters: eventParams,
@@ -207,6 +241,52 @@ export default definePluginEntry({
         parameters: workflowParams,
         async execute(_id, params = {}) {
           return callBridge(api, params, "/workflow-check", { body: params.workflowRequest });
+        }
+      },
+      { optional: true }
+    );
+
+    api.registerTool(
+      {
+        name: "aana_validate_workflow_batch",
+        description: "Validate an AANA Workflow Batch Contract request without running gates.",
+        parameters: {
+          type: "object",
+          required: ["workflowBatchRequest"],
+          properties: {
+            ...bridgeParams.properties,
+            workflowBatchRequest: {
+              type: "object",
+              description: "AANA Workflow Batch Contract request object."
+            }
+          },
+          additionalProperties: false
+        },
+        async execute(_id, params = {}) {
+          return callBridge(api, params, "/validate-workflow-batch", { body: params.workflowBatchRequest });
+        }
+      },
+      { optional: true }
+    );
+
+    api.registerTool(
+      {
+        name: "aana_workflow_batch",
+        description: "Check multiple proposed outputs or actions through the AANA Workflow Batch Contract gate.",
+        parameters: {
+          type: "object",
+          required: ["workflowBatchRequest"],
+          properties: {
+            ...bridgeParams.properties,
+            workflowBatchRequest: {
+              type: "object",
+              description: "AANA Workflow Batch Contract request object."
+            }
+          },
+          additionalProperties: false
+        },
+        async execute(_id, params = {}) {
+          return callBridge(api, params, "/workflow-batch", { body: params.workflowBatchRequest });
         }
       },
       { optional: true }

@@ -29,6 +29,7 @@ The current freeze version is `0.1`. These surfaces are frozen at the current re
 - redacted audit record
 - audit metrics export
 - audit integrity manifest
+- AIx audit drift report
 
 ## Version Rules
 
@@ -59,6 +60,7 @@ Version fields:
 - `audit_record_version` for audit records,
 - `audit_metrics_export_version` for metrics exports,
 - `audit_integrity_manifest_version` for audit manifests.
+- `audit_drift_report_version` for AIx drift reports.
 
 ## Compatibility Fixtures
 
@@ -70,8 +72,13 @@ The freeze gate validates:
 - Agent Event Contract valid/invalid fixtures for accept, revise, ask, defer, refuse, malformed candidates, unsupported actions, policy preset mismatches, route mismatches, and evidence source validation,
 - structured workflow request example,
 - workflow batch example,
+- canonical Workflow Contract adapter-family examples for enterprise, personal productivity, and government/civic pilot surfaces,
 - evidence registry,
+- evidence mock connector fixtures for CRM/support, email, calendar, IAM, CI, deployment, billing, and data export,
 - generated redacted audit record,
-- generated audit metrics export.
+- generated audit metrics export,
+- generated AIx audit drift report.
+
+Required compatibility docs include this file, the Workflow Contract guide, agent integration guidance, the HTTP bridge runbook, OpenClaw skill conformance guidance, plugin install/use guidance, evidence integration contract guidance, audit observability hardening guidance, and pilot surface certification guidance.
 
 The goal is not to prove every adapter behavior. The goal is to prevent accidental interface drift across the public surfaces that external agents and pilots will call.

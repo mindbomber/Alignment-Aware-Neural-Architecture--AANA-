@@ -1,0 +1,20 @@
+{
+  "kit_version": "0.1",
+  "id": "personal_productivity",
+  "title": "Personal Productivity Starter Pilot Kit",
+  "goal": "Run a no-private-data local assistant pilot for email, calendar, files, booking/purchase, research grounding, publication checks, and meeting summaries.",
+  "entrypoints": [
+    "python scripts/run_starter_pilot_kit.py --kit personal_productivity",
+    "python scripts/run_playground.py",
+    "http://localhost:8765/playground"
+  ],
+  "operating_mode": "local_shadow_advisory",
+  "primary_users": ["individual knowledge workers", "researchers", "students", "creators"],
+  "files": {
+    "synthetic_data": "synthetic_data.json",
+    "adapter_config": "adapter_config.json",
+    "workflows": "workflows.json",
+    "expected_outcomes": "expected_outcomes.json"
+  },
+  "default_output_dir": "eval_outputs/starter_pilot_kits/personal_productivity"
+}

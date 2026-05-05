@@ -3,7 +3,7 @@
 import json
 import pathlib
 
-from eval_pipeline import agent_api, agent_contract, audit, aix, evidence, workflow_contract
+from eval_pipeline import agent_api, agent_contract, audit, aix, evidence, evidence_integrations, workflow_contract
 from scripts import validate_adapter, validate_adapter_gallery
 
 
@@ -106,6 +106,28 @@ AUDIT_INTEGRITY_MANIFEST_SCHEMA = {
 }
 
 
+AUDIT_DRIFT_REPORT_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/audit-drift-report.schema.json",
+    "title": "AANA AIx Drift Report",
+    "description": "AIx drift and threshold report generated from redacted AANA audit records.",
+    "type": "object",
+    "required": ["audit_drift_report_version", "created_at", "valid", "record_count", "thresholds", "metrics", "issues"],
+    "properties": {
+        "audit_drift_report_version": {"type": "string", "examples": [audit.AUDIT_DRIFT_REPORT_VERSION]},
+        "created_at": {"type": "string"},
+        "valid": {"type": "boolean"},
+        "record_count": {"type": "integer"},
+        "thresholds": {"type": "object"},
+        "metrics": {"type": "object"},
+        "decision_counts": {"type": "object"},
+        "baseline_comparisons": {"type": "object"},
+        "issues": {"type": "array", "items": {"type": "object"}},
+    },
+    "additionalProperties": True,
+}
+
+
 ADAPTER_CONTRACT_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/adapter-contract.schema.json",
@@ -152,6 +174,7 @@ def schema_catalog():
         "audit_record": AUDIT_RECORD_SCHEMA,
         "audit_metrics_export": AUDIT_METRICS_EXPORT_SCHEMA,
         "audit_integrity_manifest": AUDIT_INTEGRITY_MANIFEST_SCHEMA,
+        "audit_drift_report": AUDIT_DRIFT_REPORT_SCHEMA,
     }
     return dict(sorted(catalog.items()))
 
@@ -261,6 +284,14 @@ def contract_inventory():
             "validator": "eval_pipeline.audit.create_integrity_manifest",
             "stability": CONTRACT_STATUS,
             "breaking_change_requires": "audit_integrity_manifest_version bump",
+        },
+        {
+            "id": "audit_drift_report",
+            "version": audit.AUDIT_DRIFT_REPORT_VERSION,
+            "schema": "audit_drift_report",
+            "validator": "eval_pipeline.audit.aix_drift_report",
+            "stability": CONTRACT_STATUS,
+            "breaking_change_requires": "audit_drift_report_version bump",
         },
     ]
 
@@ -397,19 +428,100 @@ def validate_fixtures(gallery_path=None, evidence_registry_path=None):
         if issue["level"] == "error":
             issues.append(_issue("error", f"workflow_batch{issue['path'][1:]}", issue["message"]))
 
+    try:
+        workflow_examples = _load_json(ROOT / "examples" / "workflow_contract_examples.json")
+        families = workflow_examples.get("adapter_families", [])
+        if not isinstance(families, list) or not families:
+            issues.append(_issue("error", "workflow_contract_examples.adapter_families", "Workflow example families must be a non-empty array."))
+        seen_families = set()
+        for family_index, family in enumerate(families if isinstance(families, list) else []):
+            family_path = f"workflow_contract_examples.adapter_families[{family_index}]"
+            if not isinstance(family, dict):
+                issues.append(_issue("error", family_path, "Workflow example family must be an object."))
+                continue
+            family_id = family.get("family_id")
+            if not isinstance(family_id, str) or not family_id.strip():
+                issues.append(_issue("error", f"{family_path}.family_id", "Workflow example family must include family_id."))
+            elif family_id in seen_families:
+                issues.append(_issue("error", f"{family_path}.family_id", f"Duplicate workflow example family: {family_id}."))
+            else:
+                seen_families.add(family_id)
+            examples = family.get("examples")
+            if not isinstance(examples, list) or not examples:
+                issues.append(_issue("error", f"{family_path}.examples", "Workflow example family must include examples."))
+                continue
+            for example_index, example in enumerate(examples):
+                example_path = f"{family_path}.examples[{example_index}]"
+                if not isinstance(example, dict):
+                    issues.append(_issue("error", example_path, "Workflow example entry must be an object."))
+                    continue
+                workflow_file = example.get("workflow_file")
+                adapter_id = example.get("adapter")
+                if not isinstance(workflow_file, str) or not workflow_file.strip():
+                    issues.append(_issue("error", f"{example_path}.workflow_file", "Workflow example entry must include workflow_file."))
+                    continue
+                workflow_path = ROOT / workflow_file
+                if not workflow_path.exists():
+                    issues.append(_issue("error", f"{example_path}.workflow_file", f"Workflow example file does not exist: {workflow_file}."))
+                    continue
+                request = _load_json(workflow_path)
+                report = workflow_contract.validate_workflow_request(request)
+                for issue in report["issues"]:
+                    if issue["level"] == "error":
+                        issues.append(_issue("error", f"{example_path}{issue['path'][1:]}", issue["message"]))
+                if adapter_id != request.get("adapter"):
+                    issues.append(
+                        _issue(
+                            "error",
+                            f"{example_path}.adapter",
+                            f"Workflow example adapter {adapter_id!r} does not match request adapter {request.get('adapter')!r}.",
+                        )
+                    )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        issues.append(_issue("error", "workflow_contract_examples", str(exc)))
+
     registry_report = evidence.validate_registry(evidence.load_registry(evidence_registry_path))
     for issue in registry_report["issues"]:
         if issue["level"] == "error":
             issues.append(_issue("error", f"evidence_registry{issue['path'][1:]}", issue["message"]))
 
+    try:
+        mock_matrix = evidence_integrations.mock_connector_matrix(
+            fixtures=evidence_integrations.load_mock_connector_fixtures(ROOT / "examples" / "evidence_mock_connector_fixtures.json"),
+            integration_ids=[
+                "crm_support",
+                "email_send",
+                "calendar",
+                "iam",
+                "ci",
+                "deployment",
+                "billing",
+                "data_export",
+            ],
+            now="2026-05-05T01:00:00Z",
+        )
+        if not mock_matrix["valid"]:
+            issues.append(_issue("error", "evidence_mock_connector_fixtures", "One or more mock connector fixtures failed the evidence contract."))
+    except (OSError, ValueError, json.JSONDecodeError, evidence_integrations.EvidenceConnectorError) as exc:
+        issues.append(_issue("error", "evidence_mock_connector_fixtures", str(exc)))
+
     event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
     result = agent_api.check_event(event, gallery_path=example_gallery_path)
     audit_record = audit.agent_audit_record(event, result, created_at="2026-01-01T00:00:00+00:00")
     metrics = audit.export_metrics([audit_record], created_at="2026-01-01T00:00:00+00:00")
+    drift = audit.aix_drift_report([audit_record], created_at="2026-01-01T00:00:00+00:00")
     if audit_record.get("audit_record_version") != audit.AUDIT_RECORD_VERSION:
         issues.append(_issue("error", "audit_record.audit_record_version", "Audit record version mismatch."))
+    audit_record_report = audit.validate_audit_records([audit_record])
+    if not audit_record_report["valid"]:
+        issues.append(_issue("error", "audit_record.validation", "Generated audit record failed schema/redaction validation."))
     if metrics.get("audit_metrics_export_version") != audit.AUDIT_METRICS_EXPORT_VERSION:
         issues.append(_issue("error", "audit_metrics.audit_metrics_export_version", "Audit metrics export version mismatch."))
+    metrics_report = audit.validate_metrics_export(metrics)
+    if not metrics_report["valid"]:
+        issues.append(_issue("error", "audit_metrics.validation", "Generated audit metrics export failed compatibility validation."))
+    if drift.get("audit_drift_report_version") != audit.AUDIT_DRIFT_REPORT_VERSION:
+        issues.append(_issue("error", "audit_drift_report.audit_drift_report_version", "Audit drift report version mismatch."))
 
     return {
         "valid": not any(issue["level"] == "error" for issue in issues),
@@ -428,6 +540,12 @@ def contract_freeze_report(gallery_path=None, evidence_registry_path=None):
         ROOT / "docs" / "contract-freeze.md",
         ROOT / "docs" / "aana-workflow-contract.md",
         ROOT / "docs" / "agent-integration.md",
+        ROOT / "docs" / "http-bridge-runbook.md",
+        ROOT / "docs" / "openclaw-skill-conformance.md",
+        ROOT / "docs" / "openclaw-plugin-install-use.md",
+        ROOT / "docs" / "evidence-integration-contracts.md",
+        ROOT / "docs" / "audit-observability-hardening.md",
+        ROOT / "docs" / "pilot-surface-certification.md",
     ]
     missing_docs = [str(path.relative_to(ROOT)) for path in docs if not path.exists()]
     docs_report = {

@@ -1,7 +1,7 @@
 {
   "name": "aana-runtime-connector",
   "version": "0.1.0",
-  "description": "OpenClaw runtime connector tools for calling a user-configured local AANA bridge.",
+  "description": "OpenClaw runtime connector tools for calling a user-configured local AANA bridge with AIx-aware action routing.",
   "type": "module",
   "license": "MIT",
   "files": [

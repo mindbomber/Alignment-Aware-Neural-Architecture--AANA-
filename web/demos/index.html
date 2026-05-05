@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AANA Local Action Demos</title>
+    <link rel="stylesheet" href="/demos/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/demos/preview.png" alt="" />
+        <div>
+          <h1>AANA Local Action Demos</h1>
+          <p>Email, files, calendar, purchases, research, publication, and meeting-summary checks for everyday irreversible actions.</p>
+        </div>
+      </div>
+      <div class="connection">
+        <label for="token">Bridge token</label>
+        <div class="token-row">
+          <input id="token" type="password" autocomplete="off" placeholder="aana-local-dev-token" />
+          <button id="save-token" type="button">Save</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <nav class="demo-nav" aria-label="Action demos">
+        <button type="button" class="demo-tab active" data-demo="email_send">
+          <span class="icon">Mail</span>
+          <strong>Email Send</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="file_operation">
+          <span class="icon">File</span>
+          <strong>File Operation</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="calendar_scheduling">
+          <span class="icon">Time</span>
+          <strong>Calendar</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="booking_purchase">
+          <span class="icon">Pay</span>
+          <strong>Purchase</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="research_grounding">
+          <span class="icon">Cite</span>
+          <strong>Research</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="publication_check">
+          <span class="icon">Post</span>
+          <strong>Publication</strong>
+        </button>
+        <button type="button" class="demo-tab" data-demo="meeting_summary">
+          <span class="icon">Note</span>
+          <strong>Meeting Summary</strong>
+        </button>
+      </nav>
+
+      <section class="workspace">
+        <div class="workspace-head">
+          <div>
+            <h2 id="demo-title">Email Send Guardrail</h2>
+            <p id="demo-subtitle">Check recipient, intent, private data, attachments, and irreversible send risk.</p>
+          </div>
+          <div class="actions">
+            <button id="reset-demo" type="button">Reset</button>
+            <button id="run-check" type="button">Run AANA Check</button>
+          </div>
+        </div>
+
+        <section class="action-surface">
+          <label class="field">
+            <span id="candidate-label">Draft action</span>
+            <textarea id="candidate" rows="8"></textarea>
+          </label>
+          <div class="facts" id="facts"></div>
+        </section>
+
+        <section class="evidence-surface">
+          <label class="field">
+            <span>Evidence notes</span>
+            <textarea id="evidence" rows="6"></textarea>
+          </label>
+          <label class="field">
+            <span>Required constraints</span>
+            <textarea id="constraints" rows="6"></textarea>
+          </label>
+          <label class="field">
+            <span>Allowed action preset</span>
+            <select id="allowed-action">
+              <option value="all">accept, revise, retrieve, ask, defer, refuse</option>
+              <option value="no-accept">revise, retrieve, ask, defer, refuse</option>
+              <option value="human-review">ask, defer, refuse</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="results" aria-live="polite">
+          <div class="score-strip">
+            <div class="metric">
+              <span>Gate</span>
+              <strong id="gate">-</strong>
+            </div>
+            <div class="metric">
+              <span>Action</span>
+              <strong id="action">-</strong>
+            </div>
+            <div class="metric">
+              <span>Final AIx</span>
+              <strong id="aix-score">-</strong>
+            </div>
+            <div class="metric">
+              <span>Candidate AIx</span>
+              <strong id="candidate-aix-score">-</strong>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <article class="panel">
+              <h3>Violations</h3>
+              <div id="violations" class="empty">Run a check to see verifier findings.</div>
+            </article>
+            <article class="panel">
+              <h3>Safe Response</h3>
+              <pre id="safe-response">Run a check to see the corrected output.</pre>
+            </article>
+            <article class="panel wide">
+              <h3>AIx Details</h3>
+              <pre id="aix-details">Run a check to inspect score, decision, components, thresholds, and hard blockers.</pre>
+            </article>
+            <article class="panel wide">
+              <h3>Redacted Audit Record</h3>
+              <pre id="audit-record">Run a check to preview the audit record written by the bridge.</pre>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/demos/app.js"></script>
+  </body>
+</html>

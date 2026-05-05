@@ -36,6 +36,8 @@ Outputs are written under `eval_outputs/pilot_eval/` by default:
 
 The kit is intentionally not a replacement for real-world testing. Its job is to make the next pilot safer by proving that adapter routing, hard blockers, AIx decisions, audit records, and operator handoffs behave coherently before private data or irreversible actions are involved.
 
+For a more concrete workflow handoff, use the Starter Pilot Kits in [docs/starter-pilot-kits.md](starter-pilot-kits.md). They materialize synthetic records into Workflow Contract requests and generate per-kit audit logs, metrics, and Markdown reports for enterprise, personal productivity, and civic/government scenarios.
+
 ## Current Packs
 
 Enterprise pack:

@@ -23,6 +23,14 @@ Unlike the guardrail pack, the runtime connector registers optional OpenClaw too
 
 The connector should be enabled only when the user or administrator has separately reviewed and started the AANA bridge. Review payloads should stay minimal and redacted, and tool access should remain opt-in for agents that need live gate decisions.
 
+The connector now exposes health, readiness, agent-event validation/checking, Workflow Contract validation/checking, and Workflow Batch validation/checking tools. It returns the bridge response plus an explicit decision rule: proceed only when `gate_decision` is `pass`, `recommended_action` is `accept`, and `aix.hard_blockers` is empty. Bridge errors, failed validation, missing auth, or rate limits are blockers for the planned action.
+
+Conformance and install/use docs:
+
+- `docs/openclaw-skill-conformance.md`
+- `docs/openclaw-plugin-install-use.md`
+- `examples/openclaw/high-risk-workflow-examples.json`
+
 ## Provenance Boundary
 
 For standalone skill installation, do not rely on a relative script path or a helper that is absent from the reviewed package. If a deployment wants live AANA checks, configure one reviewed interface outside the skill:

@@ -27,13 +27,19 @@ jobs:
           python scripts/dev.py production-profiles
           --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl
           --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
+          --drift-output eval_outputs/audit/ci/aana-ci-aix-drift.json
+          --reviewer-report-output eval_outputs/audit/ci/aana-ci-reviewer-report.md
+          --manifest-output eval_outputs/audit/ci/manifests/aana-ci-audit-integrity.json
 
-      - name: Upload production profile audit metrics
+      - name: Upload production profile audit artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: aana-production-profile-audit-metrics
+          name: aana-production-profile-audit-artifacts
           path: |
             eval_outputs/audit/ci/aana-ci-audit.jsonl
             eval_outputs/audit/ci/aana-ci-metrics.json
+            eval_outputs/audit/ci/aana-ci-aix-drift.json
+            eval_outputs/audit/ci/aana-ci-reviewer-report.md
+            eval_outputs/audit/ci/manifests/aana-ci-audit-integrity.json
           if-no-files-found: warn

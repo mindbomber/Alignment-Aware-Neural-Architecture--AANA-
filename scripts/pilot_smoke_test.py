@@ -82,7 +82,12 @@ def wait_for_health(base_url, timeout_seconds=5):
 
 
 def start_local_bridge(host, port, gallery_path, max_body_bytes, token, audit_log_path):
-    handler = agent_server.make_handler(pathlib.Path(gallery_path), max_body_bytes, token, audit_log_path)
+    handler = agent_server.make_handler(
+        pathlib.Path(gallery_path),
+        max_body_bytes=max_body_bytes,
+        auth_token=token,
+        audit_log_path=audit_log_path,
+    )
     server = ThreadingHTTPServer((host, port), handler)
     thread = threading.Thread(target=server.serve_forever, name="aana-pilot-smoke-server", daemon=True)
     thread.start()

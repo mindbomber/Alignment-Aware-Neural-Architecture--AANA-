@@ -1,0 +1,51 @@
+{
+  "pack_id": "enterprise",
+  "adapters": [
+    {
+      "adapter_id": "crm_support_reply",
+      "risk_tier": "elevated",
+      "evidence_sources": ["crm-record", "support-policy", "order-system"]
+    },
+    {
+      "adapter_id": "email_send_guardrail",
+      "risk_tier": "strict",
+      "evidence_sources": ["draft-email", "recipient-metadata", "user-approval"]
+    },
+    {
+      "adapter_id": "ticket_update_checker",
+      "risk_tier": "elevated",
+      "evidence_sources": ["ticket-history", "sprint-status", "support-policy"]
+    },
+    {
+      "adapter_id": "data_export_guardrail",
+      "risk_tier": "strict",
+      "evidence_sources": ["data-classification", "access-grants", "export-request"]
+    },
+    {
+      "adapter_id": "access_permission_change",
+      "risk_tier": "high",
+      "evidence_sources": ["iam-request", "role-catalog", "approval-record"]
+    },
+    {
+      "adapter_id": "code_change_review",
+      "risk_tier": "high",
+      "evidence_sources": ["git-diff", "test-output", "ci-status"]
+    },
+    {
+      "adapter_id": "deployment_readiness",
+      "risk_tier": "strict",
+      "evidence_sources": ["deployment-manifest", "ci-result", "release-notes"]
+    },
+    {
+      "adapter_id": "incident_response_update",
+      "risk_tier": "elevated",
+      "evidence_sources": ["incident-timeline", "status-page-policy", "on-call-notes"]
+    }
+  ],
+  "pilot_controls": [
+    "shadow mode before blocking",
+    "redacted audit JSONL only",
+    "human owner reviews revise/defer/refuse outcomes",
+    "no live sends, exports, permission changes, merges, or deploys"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "synthetic_data_version": "0.1",
+  "records": {
+    "procurement_vendor_file": {
+      "source_id": "vendor-profile",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic vendor file: identity, contract terms, data sharing, and security review are incomplete."
+    },
+    "grant_submission": {
+      "source_id": "submitted-docs",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic grant submission: eligibility, deadline, required document, and scoring evidence are incomplete."
+    },
+    "public_records_request": {
+      "source_id": "export-request",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic public records request: export scope and redaction policy require review before release."
+    },
+    "policy_sources": {
+      "source_id": "source-registry",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic policy sources: unsupported citations and jurisdiction-specific claims must be revised or deferred."
+    },
+    "benefits_triage_file": {
+      "source_id": "claim-file",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic benefits triage file: missing documents and jurisdiction rules prevent final eligibility promises."
+    },
+    "legal_policy_limits": {
+      "source_id": "policy-limits",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic legal routing policy: legal-adjacent answers must stay general or defer to human review when jurisdiction or source law is incomplete."
+    },
+    "publication_draft": {
+      "source_id": "publication-draft",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic public draft: claims, citations, private info, and brand/legal approval are incomplete."
+    },
+    "casework_file": {
+      "source_id": "ticket-history",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic casework file: case status is under review, documents are missing, consent is incomplete, and no final benefits or legal outcome is approved."
+    },
+    "foia_response_packet": {
+      "source_id": "source-law",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "synthetic",
+      "text": "Synthetic FOIA packet: request scope, exemption review, redaction, destination, authorization, and retention/audit handling are incomplete."
+    }
+  }
+}

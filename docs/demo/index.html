@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AANA Hosted Demo</title>
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="AANA home">
+        <span>AANA</span>
+      </a>
+      <nav aria-label="Demo links">
+        <a href="../hosted-demo.md">Docs</a>
+        <a href="../integration-recipes.md">Integrations</a>
+        <a href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">Hosted synthetic demo</p>
+          <h1>Try AANA without cloning the repo.</h1>
+          <p>
+            Inspect precomputed AANA checks across Enterprise, Personal Productivity, and Government/Civic workflows.
+            The page is static, synthetic-only, and cannot send, delete, deploy, purchase, export, or store secrets.
+          </p>
+          <p class="pilot-path">For a local pilot, clone the repo and run <code>docker compose up</code>.</p>
+        </div>
+        <div class="safety-strip" aria-label="Hosted demo safety limits">
+          <span>No secrets</span>
+          <span>Synthetic data</span>
+          <span>No real actions</span>
+        </div>
+      </section>
+
+      <section class="demo-shell" aria-live="polite">
+        <aside class="scenario-panel">
+          <div class="panel-heading">
+            <h2>Examples</h2>
+            <p>Choose a synthetic action proposal.</p>
+          </div>
+          <div id="family-tabs" class="family-tabs" role="tablist" aria-label="Demo families"></div>
+          <div id="scenario-list" class="scenario-list"></div>
+        </aside>
+
+        <section class="workspace">
+          <div class="workspace-heading">
+            <div>
+              <p id="scenario-category" class="eyebrow">Select an example</p>
+              <h2 id="scenario-title">AANA check</h2>
+              <p id="scenario-workflow">Choose a scenario to inspect its verifier output.</p>
+            </div>
+            <button id="run-demo" type="button">Run Synthetic Check</button>
+          </div>
+
+          <div class="input-grid">
+            <article>
+              <h3>Request</h3>
+              <p id="request-text"></p>
+            </article>
+            <article>
+              <h3>Candidate</h3>
+              <p id="candidate-text"></p>
+            </article>
+            <article class="wide">
+              <h3>Evidence</h3>
+              <p id="evidence-text"></p>
+            </article>
+          </div>
+
+          <section id="result-section" class="result-section" hidden>
+            <div class="score-row">
+              <div>
+                <span>Gate</span>
+                <strong id="gate-decision">-</strong>
+              </div>
+              <div>
+                <span>Action</span>
+                <strong id="recommended-action">-</strong>
+              </div>
+              <div>
+                <span>Final AIx</span>
+                <strong id="aix-score">-</strong>
+              </div>
+              <div>
+                <span>Candidate AIx</span>
+                <strong id="candidate-aix-score">-</strong>
+              </div>
+            </div>
+
+            <div class="result-grid">
+              <article>
+                <h3>Verifier Findings</h3>
+                <div id="violations" class="violation-list"></div>
+              </article>
+              <article>
+                <h3>Safe Response</h3>
+                <pre id="safe-response"></pre>
+              </article>
+              <article class="wide">
+                <h3>Decision Metadata</h3>
+                <pre id="decision-metadata"></pre>
+              </article>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

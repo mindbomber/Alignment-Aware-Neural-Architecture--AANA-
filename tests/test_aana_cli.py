@@ -351,7 +351,7 @@ class AanaCliTests(unittest.TestCase):
         )
 
         self.assertEqual(code, 0)
-        self.assertIn("AANA evidence integration stubs: valid", output)
+        self.assertIn("AANA evidence connector contracts: valid", output)
         self.assertIn("crm_support", output)
         self.assertIn("deployment", output)
 
@@ -518,6 +518,54 @@ class AanaCliTests(unittest.TestCase):
             self.assertIn('"gate_decision_count.pass": 1', metrics_text)
             self.assertIn('"aix_decision_count.accept": 1', metrics_text)
 
+    def test_audit_validate_drift_and_reviewer_report_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "audit.jsonl"
+            metrics_path = pathlib.Path(tmp) / "aana-metrics.json"
+            drift_path = pathlib.Path(tmp) / "aana-aix-drift.json"
+            manifest_path = pathlib.Path(tmp) / "aana-integrity.json"
+            reviewer_path = pathlib.Path(tmp) / "aana-reviewer-report.md"
+            self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                ]
+            )
+            validate_code, validate_output = self.run_cli(["audit-validate", "--audit-log", str(audit_log)])
+            metrics_code, _ = self.run_cli(["audit-metrics", "--audit-log", str(audit_log), "--output", str(metrics_path)])
+            drift_code, drift_output = self.run_cli(["audit-drift", "--audit-log", str(audit_log), "--output", str(drift_path)])
+            manifest_code, _ = self.run_cli(["audit-manifest", "--audit-log", str(audit_log), "--output", str(manifest_path)])
+            reviewer_code, reviewer_output = self.run_cli(
+                [
+                    "audit-reviewer-report",
+                    "--audit-log",
+                    str(audit_log),
+                    "--metrics",
+                    str(metrics_path),
+                    "--drift-report",
+                    str(drift_path),
+                    "--manifest",
+                    str(manifest_path),
+                    "--output",
+                    str(reviewer_path),
+                ]
+            )
+
+            self.assertEqual(validate_code, 0)
+            self.assertEqual(metrics_code, 0)
+            self.assertEqual(drift_code, 0)
+            self.assertEqual(manifest_code, 0)
+            self.assertEqual(reviewer_code, 0)
+            self.assertTrue(drift_path.exists())
+            self.assertTrue(reviewer_path.exists())
+            self.assertIn("AANA audit validation: valid", validate_output)
+            self.assertIn("AANA AIx drift report: valid", drift_output)
+            self.assertIn("AANA audit reviewer report created", reviewer_output)
+            self.assertIn("# AANA Audit Reviewer Report", reviewer_path.read_text(encoding="utf-8"))
+
     def test_audit_verify_fails_after_log_tampering(self):
         with tempfile.TemporaryDirectory() as tmp:
             audit_log = pathlib.Path(tmp) / "audit.jsonl"
@@ -621,6 +669,39 @@ class AanaCliTests(unittest.TestCase):
             self.assertEqual(len(audit_log.read_text(encoding="utf-8").strip().splitlines()), 3)
             self.assertIn('"total": 3', summary_output)
             self.assertIn('"workflow_check": 3', summary_output)
+
+    def test_shadow_mode_writes_would_action_metrics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            audit_log = pathlib.Path(tmp) / "shadow-audit.jsonl"
+            metrics_path = pathlib.Path(tmp) / "shadow-metrics.json"
+            code, output = self.run_cli(
+                [
+                    "agent-check",
+                    "--event",
+                    "examples/agent_event_support_reply.json",
+                    "--audit-log",
+                    str(audit_log),
+                    "--shadow-mode",
+                ]
+            )
+            metrics_code, metrics_output = self.run_cli(
+                [
+                    "audit-metrics",
+                    "--audit-log",
+                    str(audit_log),
+                    "--output",
+                    str(metrics_path),
+                ]
+            )
+
+            self.assertEqual(code, 0)
+            self.assertIn('"execution_mode": "shadow"', output)
+            self.assertIn('"production_effect": "not_blocked"', output)
+            self.assertEqual(metrics_code, 0)
+            self.assertIn("shadow_would_revise_count: 1", metrics_output)
+            metrics = aana_cli.agent_api.load_json_file(metrics_path)
+            self.assertEqual(metrics["metrics"]["shadow_records_total"], 1)
+            self.assertEqual(metrics["metrics"]["shadow_would_revise_count"], 1)
 
     def test_validate_workflow_accepts_example(self):
         code, output = self.run_cli(["validate-workflow", "--workflow", "examples/workflow_research_summary.json"])

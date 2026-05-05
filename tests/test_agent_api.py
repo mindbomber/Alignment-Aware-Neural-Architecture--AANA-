@@ -150,6 +150,29 @@ class AgentApiTests(unittest.TestCase):
             self.assertEqual(metrics["aix_hard_blocker_count"], 0)
             self.assertIn("latency", payload["unavailable_metrics"])
 
+    def test_shadow_mode_audit_metrics_show_would_actions(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        result = agent_api.apply_shadow_mode(agent_api.check_event(event))
+        record = agent_api.audit_event_check(event, result, created_at="2026-05-05T00:00:00+00:00")
+
+        self.assertEqual(result["execution_mode"], "shadow")
+        self.assertTrue(result["shadow_mode"])
+        self.assertEqual(result["shadow_observation"]["enforcement"], "observe_only")
+        self.assertEqual(record["execution_mode"], "shadow")
+        self.assertEqual(record["shadow_observation"]["would_route"], "revise")
+        self.assertEqual(record["shadow_observation"]["production_effect"], "not_blocked")
+
+        payload = agent_api.export_audit_metrics([record], created_at="2026-05-05T00:01:00+00:00")
+        metrics = payload["metrics"]
+
+        self.assertEqual(metrics["execution_mode_count.shadow"], 1)
+        self.assertEqual(metrics["shadow_records_total"], 1)
+        self.assertEqual(metrics["shadow_would_action_count"], 1)
+        self.assertEqual(metrics["shadow_would_revise_count"], 1)
+        self.assertEqual(metrics["shadow_would_pass_count"], 0)
+        self.assertEqual(metrics["shadow_would_defer_count"], 0)
+        self.assertEqual(metrics["shadow_would_refuse_count"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

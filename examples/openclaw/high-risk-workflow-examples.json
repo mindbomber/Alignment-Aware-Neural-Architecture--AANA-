@@ -1,0 +1,84 @@
+{
+  "version": "0.1",
+  "description": "High-risk AANA skill and plugin examples for no-code and low-code agent entry points.",
+  "decision_rule": "Proceed only when gate_decision is pass, recommended_action is accept, and aix.hard_blockers is empty.",
+  "examples": [
+    {
+      "skill": "aana-email-send-guardrail-skill",
+      "adapter": "email_send_guardrail",
+      "workflow_file": "examples/workflow_email_send_guardrail.json",
+      "risk": "irreversible external send with private data and attachments",
+      "required_evidence": ["draft-email", "recipient-metadata", "user-approval"],
+      "if_revise": "Revise the email or remove unsafe content, then rerun AANA before sending.",
+      "if_ask": "Ask for exact recipient, attachment, and send approval.",
+      "if_defer": "Route to user approval or human review before any send.",
+      "if_refuse": "Do not send the email."
+    },
+    {
+      "skill": "aana-file-operation-guardrail-skill",
+      "adapter": "file_operation_guardrail",
+      "workflow_file": "examples/workflow_file_operation_guardrail.json",
+      "risk": "destructive file write, move, or delete",
+      "required_evidence": ["file-metadata", "requested-action", "diff-preview", "backup-status", "user-confirmation"],
+      "if_revise": "Narrow the file operation and show a safer preview before rerunning AANA.",
+      "if_ask": "Ask for exact path, operation, backup, and confirmation.",
+      "if_defer": "Route to manual review or backup verification.",
+      "if_refuse": "Do not perform the file operation."
+    },
+    {
+      "skill": "aana-data-export-guardrail-skill",
+      "adapter": "data_export_guardrail",
+      "workflow_file": "examples/workflow_data_export_guardrail.json",
+      "risk": "private or regulated data export",
+      "required_evidence": ["data-classification", "access-grants", "export-request"],
+      "if_revise": "Reduce export scope or redact private fields, then rerun AANA.",
+      "if_ask": "Ask for authorization, destination, scope, and retention requirements.",
+      "if_defer": "Route to data governance or privacy review.",
+      "if_refuse": "Do not export or share the data."
+    },
+    {
+      "skill": "aana-code-change-review-skill",
+      "adapter": "code_change_review",
+      "workflow_file": "examples/workflow_code_change_review.json",
+      "risk": "code commit or release-impacting change",
+      "required_evidence": ["git-diff", "test-output", "ci-status"],
+      "if_revise": "Fix scope, tests, secrets, destructive commands, or migration risk, then rerun AANA.",
+      "if_ask": "Ask for missing test, CI, migration, or approval evidence.",
+      "if_defer": "Route to code review or release owner.",
+      "if_refuse": "Do not commit, push, merge, or deploy."
+    },
+    {
+      "skill": "aana-medical-safety-router-skill",
+      "adapter": "medical_safety_router",
+      "workflow_file": "examples/workflow_medical_safety_router.json",
+      "risk": "medical advice boundary or emergency routing",
+      "required_evidence": ["medical-policy", "verified-medical-sources", "severity-signals"],
+      "if_revise": "Revise to general information, uncertainty, and appropriate care-routing boundaries.",
+      "if_ask": "Ask non-urgent clarifying questions without delaying urgent care.",
+      "if_defer": "Route to clinician, pharmacist, crisis, emergency, or human review.",
+      "if_refuse": "Do not provide unsafe medical instructions."
+    },
+    {
+      "skill": "aana-financial-safety-router-skill",
+      "adapter": "financial_advice_router",
+      "workflow_file": "examples/workflow_financial_advice_router.json",
+      "risk": "investment, tax, or regulated financial advice",
+      "required_evidence": ["financial-policy", "financial-source-docs", "financial-user-intent"],
+      "if_revise": "Revise to general information, risk disclosure, and unsupported-prediction removal.",
+      "if_ask": "Ask for intent and non-sensitive context needed for general information.",
+      "if_defer": "Route to qualified financial, tax, or legal professional review.",
+      "if_refuse": "Do not provide personalized regulated financial instructions."
+    },
+    {
+      "skill": "aana-runtime-connector-plugin",
+      "adapter": "research_answer_grounding",
+      "workflow_file": "examples/workflow_research_answer_grounding.json",
+      "risk": "unsupported research answer or citation misuse",
+      "required_evidence": ["retrieved-documents", "citation-index", "source-registry"],
+      "if_revise": "Revise unsupported claims and source boundaries, then rerun AANA.",
+      "if_ask": "Ask for missing source material or citation requirements.",
+      "if_defer": "Route to stronger retrieval or human source review.",
+      "if_refuse": "Do not publish or rely on the unsupported answer."
+    }
+  ]
+}

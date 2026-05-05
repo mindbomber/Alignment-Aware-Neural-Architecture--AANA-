@@ -259,6 +259,7 @@
           </div>
           <div class="section-actions">
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/getting-started.md" target="_blank" rel="noopener">Start building guide</a>
+            <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/integration-recipes.md" target="_blank" rel="noopener">Copy integration recipes</a>
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/application-playbook.md" target="_blank" rel="noopener">Read application playbook</a>
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/domain-adapter-template.md" target="_blank" rel="noopener">Use adapter template</a>
             <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/application_scenarios.jsonl" target="_blank" rel="noopener">View scenario pack</a>
@@ -630,8 +631,10 @@
             <p>
               To start from your own workflow, scaffold a domain adapter and validate it before
               adding verifier logic. The adapter gallery keeps published examples honest by pairing
-              each adapter with a prompt, bad candidate, expected gate behavior, and caveats.
-              The installable <code>aana</code> command, command hub, Workflow Contract, and Python SDK wrap those pieces behind short calls, including single-output and batch workflow gates,
+              each adapter with a prompt, bad candidate, expected gate behavior, and caveats. In the
+              local Docker bridge, the gallery links directly into the playground so a reviewer can
+              choose an adapter, run the example, and inspect gate decision, AIx, violations, safe
+              response, and redacted audit preview from the browser. The installable <code>aana</code> command, command hub, Workflow Contract, and Python SDK wrap those pieces behind short calls, including single-output and batch workflow gates,
               agent-check contract, CLI and HTTP validation, local HTTP bridge, OpenAPI route,
               JSON schemas, and policy presets for OpenClaw-style agents.
             </p>
@@ -730,6 +733,34 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Getting Started</h3>
               <p>The shortest path from no-key demo to live model setup and a first domain adapter.</p>
             </a>
+            <a class="resource-card" href="demo/">
+              <h3>Hosted Demo</h3>
+              <p>Try synthetic AANA examples in the browser with no clone, no secrets, and no real actions.</p>
+            </a>
+            <a class="resource-card" href="enterprise/">
+              <h3>Enterprise Pack</h3>
+              <p>Customer, code, deployment, data, access, billing, and incident guardrails packaged with a starter pilot kit.</p>
+            </a>
+            <a class="resource-card" href="enterprise-family.md">
+              <h3>Enterprise Certification</h3>
+              <p>Core pack, evidence connectors, agent skills, pilot surfaces, and enterprise readiness gates.</p>
+            </a>
+            <a class="resource-card" href="personal-productivity/">
+              <h3>Personal Productivity Pack</h3>
+              <p>Email, calendar, file, booking, purchase, and research checks for local assistants and irreversible personal actions.</p>
+            </a>
+            <a class="resource-card" href="government-civic/">
+              <h3>Government Civic Pack</h3>
+              <p>Procurement, grants, records, privacy, eligibility, policy, and public-communication workflows with human-review boundaries.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/production-certification.md" target="_blank" rel="noopener">
+              <h3>Production Certification</h3>
+              <p>The stricter line between demo, pilot, and enforced production use: shadow evidence, metrics, human review, connectors, and retention.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/integration-recipes.md" target="_blank" rel="noopener">
+              <h3>Integration Recipes</h3>
+              <p>Copyable recipes for GitHub Actions, local agents, CRM support drafts, deployment reviews, and shadow mode.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-workflow-contract.md" target="_blank" rel="noopener">
               <h3>Workflow Contract</h3>
               <p>The platform boundary for checking AI outputs and actions from apps, agents, notebooks, and tools.</p>
@@ -746,9 +777,9 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Domain Adapter Template</h3>
               <p>The plug-in contract: constraints, verifiers, grounding, correction actions, gate rules, and metrics.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/adapter-gallery.md" target="_blank" rel="noopener">
+            <a class="resource-card" href="adapter-gallery/">
               <h3>Adapter Gallery</h3>
-              <p>A runnable catalog of domains, prompts, bad candidates, expected gates, and caveats.</p>
+              <p>Search adapters by workflow, then use the local bridge to open the selected example in the playground and run an AANA check.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-integration.md" target="_blank" rel="noopener">
               <h3>Agent Integration Kit</h3>

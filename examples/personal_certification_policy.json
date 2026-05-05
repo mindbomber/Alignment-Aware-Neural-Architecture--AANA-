@@ -1,0 +1,20 @@
+{
+  "policy_version": "0.1",
+  "policy_id": "aana-personal-productivity-pilot-certification",
+  "family": "personal_productivity",
+  "local_only_default": true,
+  "shadow_mode_available": true,
+  "no_irreversible_action_without_explicit_approval": true,
+  "redacted_audit_only": true,
+  "exportable_report_required": true,
+  "exportable_outputs": ["audit.jsonl", "metrics.json", "report.md"],
+  "irreversible_actions": ["send_email", "send_invite", "delete_file", "move_file", "write_file", "submit_payment", "publish_content", "share_meeting_summary"],
+  "required_evidence_connectors": ["workspace_files", "email_send", "calendar", "browser_cart_quote", "citation_source_registry", "local_approval"],
+  "required_controls": [
+    "synthetic examples first",
+    "local-only browser demo by default",
+    "no real send, delete, invite, purchase, publish, or broad share by default",
+    "explicit approval evidence required before any irreversible action",
+    "redacted audit and metrics export available"
+  ]
+}

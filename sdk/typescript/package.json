@@ -1,0 +1,21 @@
+{
+  "name": "@aana/integration-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript helpers and HTTP client for AANA Agent Event and Workflow Contract integrations.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

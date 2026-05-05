@@ -15,6 +15,8 @@ The project is meant for researchers, builders, and curious beginners who want a
 
 Start here if you want the lowest-friction path from idea to working demo: [docs/getting-started.md](docs/getting-started.md).
 
+Try the hosted synthetic demo without cloning the repo: [AANA hosted demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/). It uses precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
+
 ## Why this matters
 
 Language models can produce answers that look capable while quietly violating important constraints: inventing unsupported facts, exceeding budgets, ignoring safety limits, guessing private information, or becoming manipulative under pressure. AANA experiments measure that failure mode directly by comparing capability and alignment scores across baseline, correction, verifier-loop, tool-assisted, and originality conditions.
@@ -39,7 +41,7 @@ Weaker fit examples:
 
 In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
 
-For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For the architecture distinction between AANA and frontier base models, see [docs/aana-vs-sota-llms.md](docs/aana-vs-sota-llms.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For frozen public interfaces, see [docs/contract-freeze.md](docs/contract-freeze.md). For pilot evaluation before real data, see [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
+For the shortest practical path, see [docs/getting-started.md](docs/getting-started.md). For copyable integration paths, see [docs/integration-recipes.md](docs/integration-recipes.md). For the architecture distinction between AANA and frontier base models, see [docs/aana-vs-sota-llms.md](docs/aana-vs-sota-llms.md). For the platform boundary, see [docs/aana-workflow-contract.md](docs/aana-workflow-contract.md). For the family-aware platform layer, see [docs/platform-layer.md](docs/platform-layer.md). For frozen public interfaces, see [docs/contract-freeze.md](docs/contract-freeze.md). For pilot evaluation before real data, see [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md). For synthetic starter pilots that produce workflow, audit, metrics, and report artifacts, see [docs/starter-pilot-kits.md](docs/starter-pilot-kits.md). For a broader productive-work path across research, analysis, writing, and knowledge workflows, see [docs/productive-workflows.md](docs/productive-workflows.md). For a more detailed bridge from lab evidence to everyday systems, see [docs/application-playbook.md](docs/application-playbook.md). To plug AANA into your own domain, start with [docs/domain-adapter-template.md](docs/domain-adapter-template.md), then copy [examples/domain_adapter_template.json](examples/domain_adapter_template.json). The executable example adapters are [examples/travel_adapter.json](examples/travel_adapter.json), [examples/meal_planning_adapter.json](examples/meal_planning_adapter.json), [examples/support_reply_adapter.json](examples/support_reply_adapter.json), and [examples/research_summary_adapter.json](examples/research_summary_adapter.json), all runnable through [scripts/run_adapter.py](scripts/run_adapter.py). The adapter gallery in [examples/adapter_gallery.json](examples/adapter_gallery.json) lists runnable domains, prompts, bad candidates, expected gate behavior, and copyable commands; the published searchable gallery at [docs/adapter-gallery/index.html](docs/adapter-gallery/index.html) adds risk tier, required evidence, supported surfaces, example inputs/outputs, AIx tuning, family, role, and readiness filters for choosing adapters by workflow. Starter application prompts are in [examples/application_scenarios.jsonl](examples/application_scenarios.jsonl).
 
 ## Who this is for
 
@@ -109,6 +111,23 @@ result = aana.check_file("examples/workflow_research_summary.json")
 batch = aana.check_batch_file("examples/workflow_batch_productive_work.json")
 ```
 
+Certify the local pilot surface before handing the repo to a new evaluator:
+
+```powershell
+python scripts/aana_cli.py pilot-certify
+python scripts/aana_cli.py pilot-certify --json
+```
+
+The command prints a public readiness score across the CLI, Python API, HTTP bridge, adapters, evidence, audit/metrics, docs, contracts, and skills/plugins. Details are in [docs/pilot-surface-certification.md](docs/pilot-surface-certification.md).
+
+Define the line between demo, pilot, and production certification:
+
+```powershell
+python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json
+```
+
+That command reports `not_production_ready` until real deployment, governance, observability, evidence, and redacted shadow-mode audit artifacts are supplied. See [docs/production-certification.md](docs/production-certification.md).
+
 Or run the same platform contract from the CLI:
 
 ```powershell
@@ -164,7 +183,83 @@ Then POST the same event JSON to `http://127.0.0.1:8765/validate-event` and `htt
 
 The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
 
+For the packaged pilot runtime, run the Dockerized bridge:
+
+```powershell
+docker compose up --build
+```
+
+That starts `http://localhost:8765` with the adapter gallery, playground, family pack pages, internal pilot profiles, local token auth, and mounted redacted audit logs. Open `http://localhost:8765/adapter-gallery`, choose an adapter, click **Try this adapter**, then click **Run AANA Check** in the playground to inspect gate decision, recommended action, violations, AIx, safe response, and redacted audit preview. The packaged family pages are `http://localhost:8765/enterprise`, `http://localhost:8765/personal-productivity`, and `http://localhost:8765/government-civic`. See [docs/docker-http-bridge.md](docs/docker-http-bridge.md) for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch` examples.
+
+Add AANA to GitHub PR and release workflows with the composite action in [.github/actions/aana-guardrails](.github/actions/aana-guardrails). It packages the code review, deployment readiness, API contract, infrastructure change, and database migration adapters and writes redacted audit/metrics artifacts:
+
+```yaml
+- uses: mindbomber/Alignment-Aware-Neural-Architecture--AANA-/.github/actions/aana-guardrails@main
+  with:
+    fail-on: candidate-block
+```
+
+See [docs/github-action.md](docs/github-action.md) and [examples/github-actions/aana-guardrails.yml](examples/github-actions/aana-guardrails.yml).
+
+To try adapter gallery demos in a browser, open the local playground:
+
+```powershell
+python scripts/run_playground.py
+```
+
+Then visit `http://localhost:8765/playground`. You can also deep-link from the gallery, for example `http://localhost:8765/playground?adapter=email_send_guardrail`. The playground lets you pick an adapter, edit the candidate answer or action, and inspect violations, AIx, the safe response, and the redacted audit record. See [docs/web-playground.md](docs/web-playground.md).
+
+To try everyday irreversible-action demos for email, files, calendar, purchase/booking, and research grounding:
+
+```powershell
+python scripts/run_local_demos.py
+```
+
+Then visit `http://localhost:8765/demos`. The demos use synthetic evidence and the same Workflow Contract/audit path as the bridge, so non-engineers can see how AANA blocks or revises risky actions in a few minutes. See [docs/local-desktop-browser-demos.md](docs/local-desktop-browser-demos.md).
+
+Run AANA in observe-only shadow mode before changing production behavior:
+
+```powershell
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
+python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl
+```
+
+Shadow telemetry is redacted and reports would-pass, would-revise, would-defer, and would-refuse counts. See [docs/shadow-mode.md](docs/shadow-mode.md).
+
+Use the Adapter Integration SDK when calling AANA from apps without hand-building JSON:
+
+```python
+import aana
+
+client = aana.AANAClient(shadow_mode=True)
+request = client.workflow_request(
+    adapter="research_summary",
+    request="Answer using Source A.",
+    candidate="Unsupported claim [Source C].",
+    evidence=client.evidence("Source A: Evidence is incomplete.", source_id="source-a"),
+)
+result = client.workflow_check(request)
+```
+
+The TypeScript SDK lives in [sdk/typescript](sdk/typescript). See [docs/adapter-integration-sdk.md](docs/adapter-integration-sdk.md).
+
 Workflow Contract routes are available at `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch`.
+
+Run synthetic starter pilot kits for realistic enterprise, personal productivity, and civic/government scenarios without private data:
+
+```powershell
+python scripts/run_starter_pilot_kit.py --kit all
+```
+
+The command writes materialized Workflow Contract requests, redacted audit logs, audit metrics, JSON reports, and Markdown reports under `eval_outputs/starter_pilot_kits/`. See [docs/starter-pilot-kits.md](docs/starter-pilot-kits.md).
+
+Run controlled design-partner pilot bundles when you are ready to collect reviewer friction and adoption blockers:
+
+```powershell
+python scripts/run_design_partner_pilots.py --pilot all
+```
+
+This writes redacted audit, metrics, dashboard, drift, reviewer, field-notes, and feedback-template artifacts for enterprise, developer/tooling, personal productivity, and civic/government-style pilots. See [docs/design-partner-pilots.md](docs/design-partner-pilots.md).
 
 For OpenClaw-style agents, start with the no-code plugin pack in [examples/openclaw/aana-guardrail-pack-plugin](examples/openclaw/aana-guardrail-pack-plugin). Use the live bridge connector in [examples/openclaw/aana-runtime-connector-plugin](examples/openclaw/aana-runtime-connector-plugin) when agents should call a configured AANA runtime before acting. For lower-level integration details, see [docs/agent-integration.md](docs/agent-integration.md), the standalone install boundaries in [docs/openclaw-skill-review-notes.md](docs/openclaw-skill-review-notes.md), the instruction-only guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md), the inspectable bundled-helper variant in [examples/openclaw/aana-guardrail-skill-bundled](examples/openclaw/aana-guardrail-skill-bundled), the continuous self-improvement skill in [examples/openclaw/aana-continuous-improvement-skill](examples/openclaw/aana-continuous-improvement-skill), the research-grounding skill in [examples/openclaw/aana-research-grounding-skill](examples/openclaw/aana-research-grounding-skill), the private-data guardrail skill in [examples/openclaw/aana-private-data-guardrail-skill](examples/openclaw/aana-private-data-guardrail-skill), the file-operation guardrail skill in [examples/openclaw/aana-file-operation-guardrail-skill](examples/openclaw/aana-file-operation-guardrail-skill), the code-change review skill in [examples/openclaw/aana-code-change-review-skill](examples/openclaw/aana-code-change-review-skill), the support-reply guardrail skill in [examples/openclaw/aana-support-reply-guardrail-skill](examples/openclaw/aana-support-reply-guardrail-skill), the medical-safety router skill in [examples/openclaw/aana-medical-safety-router-skill](examples/openclaw/aana-medical-safety-router-skill), the purchase-booking guardrail skill in [examples/openclaw/aana-purchase-booking-guardrail-skill](examples/openclaw/aana-purchase-booking-guardrail-skill), the decision-log skill in [examples/openclaw/aana-decision-log-skill](examples/openclaw/aana-decision-log-skill), the financial-safety router skill in [examples/openclaw/aana-financial-safety-router-skill](examples/openclaw/aana-financial-safety-router-skill), the legal-safety router skill in [examples/openclaw/aana-legal-safety-router-skill](examples/openclaw/aana-legal-safety-router-skill), the evidence-first answering skill in [examples/openclaw/aana-evidence-first-answering-skill](examples/openclaw/aana-evidence-first-answering-skill), the tool-use gate skill in [examples/openclaw/aana-tool-use-gate-skill](examples/openclaw/aana-tool-use-gate-skill), the human-review router skill in [examples/openclaw/aana-human-review-router-skill](examples/openclaw/aana-human-review-router-skill), the task-scope guardrail skill in [examples/openclaw/aana-task-scope-guardrail-skill](examples/openclaw/aana-task-scope-guardrail-skill), the agent-memory gate skill in [examples/openclaw/aana-agent-memory-gate-skill](examples/openclaw/aana-agent-memory-gate-skill), the workflow-readiness check skill in [examples/openclaw/aana-workflow-readiness-check-skill](examples/openclaw/aana-workflow-readiness-check-skill), the publication-check skill in [examples/openclaw/aana-publication-check-skill](examples/openclaw/aana-publication-check-skill), the email-send guardrail skill in [examples/openclaw/aana-email-send-guardrail-skill](examples/openclaw/aana-email-send-guardrail-skill), the meeting-summary checker skill in [examples/openclaw/aana-meeting-summary-checker-skill](examples/openclaw/aana-meeting-summary-checker-skill), the calendar scheduling guardrail skill in [examples/openclaw/aana-calendar-scheduling-guardrail-skill](examples/openclaw/aana-calendar-scheduling-guardrail-skill), the message-send guardrail skill in [examples/openclaw/aana-message-send-guardrail-skill](examples/openclaw/aana-message-send-guardrail-skill), the ticket-update checker skill in [examples/openclaw/aana-ticket-update-checker-skill](examples/openclaw/aana-ticket-update-checker-skill), the data-export guardrail skill in [examples/openclaw/aana-data-export-guardrail-skill](examples/openclaw/aana-data-export-guardrail-skill), and the release-readiness check skill in [examples/openclaw/aana-release-readiness-check-skill](examples/openclaw/aana-release-readiness-check-skill).
 

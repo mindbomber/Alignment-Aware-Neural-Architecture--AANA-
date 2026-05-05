@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AANA Adapter Gallery</title>
+    <meta
+      name="description"
+      content="Search AANA adapters by workflow, risk tier, required evidence, supported surface, example behavior, and AIx tuning."
+    >
+    <link rel="stylesheet" href="app.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AANA Adapter Gallery</p>
+          <h1>Choose a guardrail by workflow.</h1>
+          <p>
+            Search production-candidate AANA adapters by task, evidence, risk tier, supported surface,
+            example behavior, and AIx tuning without reading adapter source files.
+          </p>
+        </div>
+        <a class="button" href="../">Project site</a>
+      </header>
+
+      <section class="summary" aria-label="Gallery summary">
+        <article>
+          <span id="adapter-count">-</span>
+          <strong>adapters</strong>
+        </article>
+        <article>
+          <span id="strict-count">-</span>
+          <strong>strict risk</strong>
+        </article>
+        <article>
+          <span id="surface-count">-</span>
+          <strong>surfaces</strong>
+        </article>
+        <article>
+          <span id="visible-count">-</span>
+          <strong>visible</strong>
+        </article>
+      </section>
+
+      <section class="filters" aria-label="Gallery filters">
+        <label>
+          Search
+          <input id="search" type="search" placeholder="email, deployment, citation, refund, PII, rollback">
+        </label>
+        <label>
+          Risk tier
+          <select id="risk">
+            <option value="">Any risk tier</option>
+          </select>
+        </label>
+        <label>
+          Surface
+          <select id="surface">
+            <option value="">Any surface</option>
+          </select>
+        </label>
+        <label>
+          Pack
+          <select id="pack">
+            <option value="">Any pack</option>
+          </select>
+        </label>
+        <label>
+          Role
+          <select id="role">
+            <option value="">Any role</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="layout">
+        <div>
+          <div class="list-head">
+            <h2>Adapters</h2>
+            <button id="clear" type="button">Clear filters</button>
+          </div>
+          <div id="adapter-list" class="adapter-list" aria-label="Adapter results"></div>
+        </div>
+
+        <article id="details" class="details" aria-label="Adapter details">
+          <p class="empty">Select an adapter to inspect its evidence, AIx tuning, surfaces, and example behavior.</p>
+        </article>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

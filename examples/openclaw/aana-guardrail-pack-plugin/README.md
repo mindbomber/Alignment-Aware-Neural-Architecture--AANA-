@@ -55,6 +55,10 @@ For OpenClaw agents, that means the plugin should be used before higher-risk ste
 - using a tool with external side effects,
 - continuing work after the original task is complete.
 
+All bundled skills include the shared AANA Runtime Result Handling rule: proceed only when `gate_decision` is `pass`, `recommended_action` is `accept`, and `aix.hard_blockers` is empty. If the result says `revise`, `ask`, `defer`, or `refuse`, the host agent must route to that behavior instead of continuing the original action.
+
+See `docs/openclaw-skill-conformance.md`, `docs/openclaw-plugin-install-use.md`, and `examples/openclaw/high-risk-workflow-examples.json` in the repository for conformance checks, install/use guidance, and high-risk workflow rehearsals.
+
 ## Marketplace Boundary
 
 - `instruction_only_behavior`: true

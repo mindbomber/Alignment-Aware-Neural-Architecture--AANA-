@@ -1,0 +1,39 @@
+services:
+  aana-bridge:
+    build:
+      context: .
+    image: aana/http-bridge:local
+    ports:
+      - "${AANA_BRIDGE_PORT:-8765}:8765"
+    environment:
+      AANA_BRIDGE_TOKEN: "${AANA_BRIDGE_TOKEN:-aana-local-dev-token}"
+      AANA_ADAPTER_GALLERY: "${AANA_ADAPTER_GALLERY:-examples/adapter_gallery.json}"
+      AANA_AUDIT_LOG: "${AANA_AUDIT_LOG:-eval_outputs/audit/docker/aana-bridge.jsonl}"
+      AANA_MAX_BODY_BYTES: "${AANA_MAX_BODY_BYTES:-1048576}"
+      AANA_RATE_LIMIT_PER_MINUTE: "${AANA_RATE_LIMIT_PER_MINUTE:-0}"
+      AANA_READ_TIMEOUT_SECONDS: "${AANA_READ_TIMEOUT_SECONDS:-30}"
+    command:
+      - /bin/sh
+      - -c
+      - >
+        mkdir -p "$$(dirname "$${AANA_AUDIT_LOG}")" &&
+        python scripts/aana_server.py
+        --host 0.0.0.0
+        --port 8765
+        --gallery "$${AANA_ADAPTER_GALLERY}"
+        --audit-log "$${AANA_AUDIT_LOG}"
+        --max-body-bytes "$${AANA_MAX_BODY_BYTES}"
+        --rate-limit-per-minute "$${AANA_RATE_LIMIT_PER_MINUTE}"
+        --read-timeout-seconds "$${AANA_READ_TIMEOUT_SECONDS}"
+    volumes:
+      - ./eval_outputs:/app/eval_outputs
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json, urllib.request; data=json.load(urllib.request.urlopen('http://127.0.0.1:8765/ready', timeout=5)); raise SystemExit(0 if data.get('ready') else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s

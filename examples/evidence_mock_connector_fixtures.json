@@ -1,0 +1,528 @@
+{
+  "fixture_version": "0.1",
+  "connector_contract_version": "0.1",
+  "generated_at": "2026-05-05T00:00:00Z",
+  "description": "Redacted mock connector outputs for production evidence integration contract tests.",
+  "connectors": {
+    "crm_support": {
+      "auth_scopes": ["crm.account.read", "support.policy.read", "orders.read"],
+      "records": {
+        "crm-record": {
+          "record_id": "crm-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "CRM account summary: active customer, support tier standard, no raw private notes included."
+        },
+        "support-policy": {
+          "record_id": "policy-support-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support policy summary: refunds require order eligibility and approved tone boundaries."
+        },
+        "order-system": {
+          "record_id": "order-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Order system summary: order exists, shipment complete, refund eligibility requires policy check."
+        }
+      }
+    },
+    "ticketing": {
+      "auth_scopes": ["ticket.history.read", "sprint.status.read", "support.policy.read"],
+      "records": {
+        "ticket-history": {
+          "record_id": "ticket-history-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Ticket history summary: customer-visible status is pending review; internal-only notes are excluded."
+        },
+        "sprint-status": {
+          "record_id": "sprint-status-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Sprint status summary: related work is in progress and has no committed external delivery date."
+        },
+        "support-policy": {
+          "record_id": "ticket-support-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support policy summary: customer-visible updates must avoid unsupported commitments and private internal context."
+        }
+      }
+    },
+    "email_send": {
+      "auth_scopes": ["email.draft.read", "directory.recipient.read", "approval.read"],
+      "records": {
+        "draft-email": {
+          "record_id": "draft-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Draft summary: outbound email contains attachment mention and no raw mailbox content."
+        },
+        "recipient-metadata": {
+          "record_id": "recipient-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Recipient metadata summary: external recipient, domain verified, no distribution list expansion included."
+        },
+        "user-approval": {
+          "record_id": "approval-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "User approval summary: explicit send approval is pending and must be confirmed before send."
+        }
+      }
+    },
+    "calendar": {
+      "auth_scopes": ["calendar.freebusy.read", "calendar.attendees.read", "user_instruction.read"],
+      "records": {
+        "calendar-freebusy": {
+          "record_id": "freebusy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Free/busy summary: requested window is open for organizer and avoids unrelated event details."
+        },
+        "attendee-list": {
+          "record_id": "attendees-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Attendee summary: required attendees are listed with timezone metadata and no private calendar titles."
+        },
+        "user-instruction": {
+          "record_id": "instruction-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "User instruction summary: user asked to draft but not send an invite until final consent."
+        }
+      }
+    },
+    "iam": {
+      "auth_scopes": ["iam.request.read", "iam.role_catalog.read", "iam.approval.read"],
+      "records": {
+        "iam-request": {
+          "record_id": "iam-request-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "IAM request summary: requester asks for temporary read access to a scoped project resource."
+        },
+        "role-catalog": {
+          "record_id": "role-catalog-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Role catalog summary: least-privilege read role exists with time-bound assignment support."
+        },
+        "approval-record": {
+          "record_id": "approval-record-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Approval record summary: manager approval is recorded; security approval still required for elevated scope."
+        }
+      }
+    },
+    "ci": {
+      "auth_scopes": ["repo.diff.read", "ci.logs.read", "ci.status.read"],
+      "records": {
+        "git-diff": {
+          "record_id": "diff-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Git diff summary: files changed are scoped to the adapter and tests; no secrets are included."
+        },
+        "test-output": {
+          "record_id": "tests-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Test output summary: targeted tests passed with raw logs retained in CI."
+        },
+        "ci-status": {
+          "record_id": "ci-status-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "CI status summary: latest pipeline passed required checks."
+        }
+      }
+    },
+    "deployment": {
+      "auth_scopes": ["deployment.manifest.read", "ci.result.read", "release_notes.read"],
+      "records": {
+        "deployment-manifest": {
+          "record_id": "deployment-manifest-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Deployment manifest summary: rollback plan, health checks, audit sink, and token auth are declared."
+        },
+        "ci-result": {
+          "record_id": "ci-result-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "CI result summary: release branch passed required production gates."
+        },
+        "release-notes": {
+          "record_id": "release-notes-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Release notes summary: known caveats and rollback owner are documented."
+        }
+      }
+    },
+    "billing": {
+      "auth_scopes": ["billing.invoice.read", "billing.policy.read", "payment.metadata.read"],
+      "records": {
+        "invoice": {
+          "record_id": "invoice-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Invoice summary: balance and credit state are available without card or bank details."
+        },
+        "billing-policy": {
+          "record_id": "billing-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Billing policy summary: credits require eligibility check and cannot include unsupported tax advice."
+        },
+        "payment-metadata": {
+          "record_id": "payment-metadata-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Payment metadata summary: payment state is present; sensitive payment instrument fields are excluded."
+        }
+      }
+    },
+    "data_export": {
+      "auth_scopes": ["data.classification.read", "iam.access_grants.read", "data.export_request.read"],
+      "records": {
+        "data-classification": {
+          "record_id": "classification-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Data classification summary: requested dataset includes confidential fields and requires approved destination."
+        },
+        "access-grants": {
+          "record_id": "access-grants-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Access grant summary: requester has read access but export authorization is destination-specific."
+        },
+        "export-request": {
+          "record_id": "export-request-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Export request summary: scope, destination, and retention need policy validation before transfer."
+        }
+      }
+    },
+    "workspace_files": {
+      "auth_scopes": ["filesystem.metadata.read", "filesystem.diff_preview.read", "approval.read"],
+      "records": {
+        "file-metadata": {
+          "record_id": "file-metadata-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "File metadata summary: requested path is inside the approved workspace and file type is supported."
+        },
+        "requested-action": {
+          "record_id": "requested-action-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Requested action summary: user asked for a move preview; no write, delete, or overwrite has executed."
+        },
+        "diff-preview": {
+          "record_id": "diff-preview-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Diff preview summary: proposed change is limited to the named file and contains no private file contents."
+        },
+        "backup-status": {
+          "record_id": "backup-status-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Backup status summary: a restorable snapshot exists before the proposed operation."
+        },
+        "user-confirmation": {
+          "record_id": "user-confirmation-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "User confirmation summary: explicit confirmation is required before execution and is not implied by preview."
+        }
+      }
+    },
+    "browser_cart_quote": {
+      "auth_scopes": ["browser.quote.read", "browser.cart.read", "payment.policy.read"],
+      "records": {
+        "live-quote": {
+          "record_id": "live-quote-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Live quote summary: vendor, current price, taxes, fees, refundability, and expiry are captured from the active browser view."
+        },
+        "cart": {
+          "record_id": "cart-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Cart summary: cart vendor differs from the live quote and final payment has not been approved."
+        },
+        "payment-policy": {
+          "record_id": "payment-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Payment policy summary: irreversible payment requires explicit confirmation of vendor, price, refundability, and payment method."
+        }
+      }
+    },
+    "citation_source_registry": {
+      "auth_scopes": ["research.documents.read", "research.citation_index.read", "research.source_registry.read"],
+      "records": {
+        "retrieved-documents": {
+          "record_id": "retrieved-documents-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Retrieved document summary: approved documents support a narrow synthetic pilot only and do not support broad productivity guarantees."
+        },
+        "citation-index": {
+          "record_id": "citation-index-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Citation index summary: Doc A and Doc B are retrieved; Doc X and private notes are not approved citations."
+        },
+        "source-registry": {
+          "record_id": "source-registry-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Source registry summary: allowed sources are retrieved documents and approved public source-list entries only."
+        }
+      }
+    },
+    "local_approval": {
+      "auth_scopes": ["approval.read"],
+      "records": {
+        "user-approval": {
+          "record_id": "user-approval-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Local approval summary: user approved review-only behavior; no send, delete, invite, payment, publication, or broad sharing action is approved."
+        }
+      }
+    },
+    "civic_program_rules": {
+      "auth_scopes": ["civic.program_rules.read", "civic.submitted_docs.read", "civic.rubric.read"],
+      "records": {
+        "program-rules": {
+          "record_id": "program-rules-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Program rules summary: eligibility, deadline, required-document, and human-review requirements are active."
+        },
+        "submitted-docs": {
+          "record_id": "submitted-docs-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Submitted documents summary: application materials are incomplete and final eligibility is not established."
+        },
+        "rubric": {
+          "record_id": "rubric-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Rubric summary: scoring requires panel review and no award outcome has been approved."
+        }
+      }
+    },
+    "civic_vendor_profiles": {
+      "auth_scopes": ["procurement.quote.read", "procurement.vendor.read", "procurement.security_docs.read"],
+      "records": {
+        "quote": {
+          "record_id": "quote-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Quote summary: current price, term, renewal, and payment evidence are incomplete."
+        },
+        "vendor-profile": {
+          "record_id": "vendor-profile-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Vendor profile summary: legal identity, ownership, sanctions, and data-sharing scope require review."
+        },
+        "dpa-security-docs": {
+          "record_id": "dpa-security-docs-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "DPA and security docs summary: security review and data-processing approval are pending."
+        }
+      }
+    },
+    "public_law_policy_sources": {
+      "auth_scopes": ["law.jurisdiction.read", "law.source.read", "policy.limits.read"],
+      "records": {
+        "jurisdiction": {
+          "record_id": "jurisdiction-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Jurisdiction summary: source-law scope is limited to the synthetic pilot jurisdiction."
+        },
+        "source-law": {
+          "record_id": "source-law-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Source-law summary: exemptions, retention, and reviewer approval are required before public release."
+        },
+        "policy-limits": {
+          "record_id": "policy-limits-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Policy limits summary: legal-adjacent answers must remain general or route to human review."
+        }
+      }
+    },
+    "redaction_classification_registry": {
+      "auth_scopes": ["records.classification.read", "records.request.read", "records.access_grants.read"],
+      "records": {
+        "data-classification": {
+          "record_id": "records-data-classification-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Records classification summary: requested files include protected fields requiring redaction."
+        },
+        "export-request": {
+          "record_id": "records-export-request-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Records request summary: release scope, requester, destination, and retention need review."
+        },
+        "access-grants": {
+          "record_id": "records-access-grants-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Records approval summary: release authorization is pending records-officer review."
+        }
+      }
+    },
+    "civic_case_history": {
+      "auth_scopes": ["case.history.read", "case.policy.read", "civic.program_rules.read"],
+      "records": {
+        "ticket-history": {
+          "record_id": "case-ticket-history-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Case history summary: case is under review, documents are missing, and no final outcome is approved."
+        },
+        "support-policy": {
+          "record_id": "case-support-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Case policy summary: no guarantees, private notes, or final determinations without human review."
+        },
+        "program-rules": {
+          "record_id": "case-program-rules-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Program rules summary: final eligibility and benefits decisions require authorized adjudication."
+        }
+      }
+    },
+    "benefits_claims": {
+      "auth_scopes": ["benefits.policy.read", "benefits.claim.read", "benefits.triage_policy.read"],
+      "records": {
+        "policy-docs": {
+          "record_id": "benefits-policy-docs-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Benefits policy summary: coverage and eligibility cannot be promised from intake evidence alone."
+        },
+        "claim-file": {
+          "record_id": "benefits-claim-file-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Claim file summary: required documents and jurisdiction evidence are incomplete."
+        },
+        "triage-policy": {
+          "record_id": "benefits-triage-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Triage policy summary: route missing-document and eligibility uncertainty to human review."
+        }
+      }
+    },
+    "civic_source_registry": {
+      "auth_scopes": ["civic.documents.read", "civic.citation_index.read", "civic.source_registry.read"],
+      "records": {
+        "retrieved-documents": {
+          "record_id": "civic-retrieved-documents-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Civic retrieved documents summary: approved documents support only narrow jurisdiction-bounded claims."
+        },
+        "citation-index": {
+          "record_id": "civic-citation-index-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Civic citation index summary: Doc A and Doc B are indexed; Doc C and private sources are not approved."
+        },
+        "source-registry": {
+          "record_id": "civic-source-registry-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Civic source registry summary: use official public sources and retrieved documents only."
+        }
+      }
+    }
+  }
+}

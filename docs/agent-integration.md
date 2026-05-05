@@ -159,10 +159,12 @@ Included presets cover message sending, file writes, code commits, support repli
 Agents that work best with HTTP tools can run AANA as a local bridge:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl --rate-limit-per-minute 120
 ```
 
-For production-like local use, set `AANA_BRIDGE_TOKEN` before starting the bridge. POST routes then require either `Authorization: Bearer <token>` or `X-AANA-Token: <token>`. The bridge rejects oversized POST bodies by default at `1048576` bytes; use `--max-body-bytes` only when the deployment has a reviewed reason to change that limit. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the bridge process.
+For production-like local use, set `AANA_BRIDGE_TOKEN` before starting the bridge. POST routes then require either `Authorization: Bearer <token>` or `X-AANA-Token: <token>`. Use `--auth-token-file` when the host environment needs token rotation without restarting the bridge; the token file is reread on every POST request. The bridge rejects oversized POST bodies by default at `1048576` bytes; use `--max-body-bytes` only when the deployment has a reviewed reason to change that limit. `--rate-limit-per-minute` adds a process-local per-client POST limit, and `--read-timeout-seconds` bounds request-body reads. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the bridge process.
+
+Use `GET /ready` before routing traffic. It checks the adapter gallery, auth configuration, and audit-log parent directory. See [`http-bridge-runbook.md`](http-bridge-runbook.md) for token rotation, structured error payloads, audit append guarantees, timeout behavior, and deployment guidance.
 
 For audit trails, call `eval_pipeline.agent_api.audit_event_check(event, result)` after `check_event(event)`. The audit record keeps event IDs, adapter IDs, decisions, recommended actions, AIx score summaries, violation codes, and SHA-256 fingerprints, but excludes raw user requests, planned actions, evidence, and safe responses.
 
@@ -236,6 +238,12 @@ Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-event.schema.json
 Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-check-result.schema.json
 Invoke-RestMethod http://127.0.0.1:8765/schemas/aix.schema.json
 ```
+
+OpenClaw-style no-code and low-code entry points are documented in:
+
+- [`openclaw-skill-conformance.md`](openclaw-skill-conformance.md)
+- [`openclaw-plugin-install-use.md`](openclaw-plugin-install-use.md)
+- [`../examples/openclaw/high-risk-workflow-examples.json`](../examples/openclaw/high-risk-workflow-examples.json)
 
 ## Integration Patterns
 

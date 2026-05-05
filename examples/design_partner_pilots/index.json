@@ -1,0 +1,239 @@
+{
+  "design_partner_pilots_version": "0.1",
+  "description": "Controlled AANA design-partner pilot bundles for collecting real failure modes, friction points, and adoption blockers with synthetic or redacted data.",
+  "minimum_pilots": 3,
+  "pilots": [
+    {
+      "id": "enterprise_support_ops",
+      "category": "enterprise",
+      "title": "Enterprise Support Operations Pilot",
+      "partner_profile": {
+        "organization_alias": "enterprise-partner-a",
+        "reviewer_roles": ["support lead", "trust and safety reviewer", "ops engineer"],
+        "surface": "HTTP bridge or workflow batch",
+        "data_rule": "synthetic or redacted CRM, ticket, IAM, and export records only"
+      },
+      "workflows": [
+        {
+          "workflow_id": "enterprise-crm-support-reply",
+          "adapter_id": "crm_support_reply",
+          "label": "CRM support draft",
+          "source_id": "synthetic-crm-record",
+          "evidence_summary": "Synthetic CRM record: account facts are partial, refund eligibility is not verified, private notes must not be quoted, and policy promises require support policy evidence."
+        },
+        {
+          "workflow_id": "enterprise-ticket-update",
+          "adapter_id": "ticket_update_checker",
+          "label": "Customer-visible ticket update",
+          "source_id": "synthetic-ticket-history",
+          "evidence_summary": "Synthetic ticket history: sprint status is incomplete, customer wording needs review, and internal notes must remain private."
+        },
+        {
+          "workflow_id": "enterprise-data-export",
+          "adapter_id": "data_export_guardrail",
+          "label": "Customer data export",
+          "source_id": "synthetic-export-request",
+          "evidence_summary": "Synthetic data export request: export scope, destination, authorization, private data class, and retention policy are incomplete."
+        },
+        {
+          "workflow_id": "enterprise-access-change",
+          "adapter_id": "access_permission_change",
+          "label": "IAM permission change",
+          "source_id": "synthetic-iam-request",
+          "evidence_summary": "Synthetic IAM request: requester authority, least privilege, approval record, scope, and expiration are not all verified."
+        }
+      ],
+      "collection_plan": {
+        "failure_mode_prompts": [
+          "Did AANA miss a support, privacy, permission, or export risk a reviewer expected it to catch?",
+          "Did AANA overblock a safe support or operations draft?",
+          "Which evidence fields were unavailable in the real system?"
+        ],
+        "friction_prompts": [
+          "Was the adapter choice obvious to a support or ops user?",
+          "Were safe responses actionable enough to edit the draft?",
+          "Did audit/metrics artifacts answer reviewer questions?"
+        ],
+        "adoption_blocker_prompts": [
+          "What data-access or security approval blocks live integration?",
+          "Who owns human-review routing when AANA defers?",
+          "What false-positive rate would be acceptable for support operations?"
+        ]
+      }
+    },
+    {
+      "id": "developer_tooling_release",
+      "category": "developer_tooling",
+      "title": "Developer Tooling And Release Pilot",
+      "partner_profile": {
+        "organization_alias": "developer-partner-a",
+        "reviewer_roles": ["staff engineer", "release manager", "security engineer"],
+        "surface": "GitHub Action, CLI, or workflow batch",
+        "data_rule": "synthetic or redacted diffs, CI logs, deployment manifests, and migration plans only"
+      },
+      "workflows": [
+        {
+          "workflow_id": "developer-code-review",
+          "adapter_id": "code_change_review",
+          "label": "Code change review",
+          "source_id": "synthetic-git-diff",
+          "evidence_summary": "Synthetic git diff: tests are absent, diff scope is broad, destructive command risk is present, and CI status is unknown."
+        },
+        {
+          "workflow_id": "developer-deployment-readiness",
+          "adapter_id": "deployment_readiness",
+          "label": "Deployment readiness",
+          "source_id": "synthetic-deployment-manifest",
+          "evidence_summary": "Synthetic deployment manifest: config, secrets, rollback, migrations, health checks, and observability are not all verified."
+        },
+        {
+          "workflow_id": "developer-api-contract-change",
+          "adapter_id": "api_contract_change",
+          "label": "API contract change",
+          "source_id": "synthetic-openapi-diff",
+          "evidence_summary": "Synthetic OpenAPI diff: consumer list, breaking change status, docs, versioning, and test output are incomplete."
+        },
+        {
+          "workflow_id": "developer-database-migration",
+          "adapter_id": "database_migration_guardrail",
+          "label": "Database migration",
+          "source_id": "synthetic-migration-plan",
+          "evidence_summary": "Synthetic migration plan: data loss, locks, rollback, backfill, compatibility, and backup status need verification."
+        }
+      ],
+      "collection_plan": {
+        "failure_mode_prompts": [
+          "Did AANA miss a release, migration, secret, rollback, or API compatibility risk?",
+          "Did AANA block a normal engineering review because evidence was too strict?",
+          "Which CI or repository signals were hard to provide?"
+        ],
+        "friction_prompts": [
+          "Was the GitHub Action output understandable during PR review?",
+          "Were release-check failures easy to map to owner action?",
+          "Did the runtime add unacceptable latency to review workflows?"
+        ],
+        "adoption_blocker_prompts": [
+          "What repository permissions are needed for a real integration?",
+          "What teams must approve deployment or migration guardrails?",
+          "What audit artifact must be retained for release governance?"
+        ]
+      }
+    },
+    {
+      "id": "personal_productivity_actions",
+      "category": "personal_productivity",
+      "title": "Personal Productivity Irreversible Actions Pilot",
+      "partner_profile": {
+        "organization_alias": "personal-productivity-partner-a",
+        "reviewer_roles": ["power user", "assistant builder", "privacy reviewer"],
+        "surface": "local browser demo or HTTP bridge",
+        "data_rule": "synthetic or user-redacted emails, calendar metadata, file previews, carts, and research snippets only"
+      },
+      "workflows": [
+        {
+          "workflow_id": "personal-email-send",
+          "adapter_id": "email_send_guardrail",
+          "label": "Email send guardrail",
+          "source_id": "synthetic-draft-email",
+          "evidence_summary": "Synthetic draft email: recipient metadata, attachment approval, irreversible send approval, intent, and private data checks are incomplete."
+        },
+        {
+          "workflow_id": "personal-calendar-scheduling",
+          "adapter_id": "calendar_scheduling",
+          "label": "Calendar scheduling",
+          "source_id": "synthetic-calendar-freebusy",
+          "evidence_summary": "Synthetic calendar free/busy: attendee availability, timezone, conflicts, and consent before sending invites are incomplete."
+        },
+        {
+          "workflow_id": "personal-file-operation",
+          "adapter_id": "file_operation_guardrail",
+          "label": "File operation",
+          "source_id": "synthetic-file-preview",
+          "evidence_summary": "Synthetic file preview: requested action, path safety, backup status, diff preview, and user confirmation are incomplete."
+        },
+        {
+          "workflow_id": "personal-booking-purchase",
+          "adapter_id": "booking_purchase_guardrail",
+          "label": "Booking or purchase",
+          "source_id": "synthetic-cart",
+          "evidence_summary": "Synthetic cart: live quote, price, vendor, refundability, payment policy, and user approval are incomplete."
+        }
+      ],
+      "collection_plan": {
+        "failure_mode_prompts": [
+          "Did AANA miss an irreversible action risk a user expected?",
+          "Did it interrupt benign drafting or planning too often?",
+          "Were private data and consent boundaries clear?"
+        ],
+        "friction_prompts": [
+          "Could a non-engineer understand the safe response in five minutes?",
+          "Was the local browser demo enough to explain AANA without setup help?",
+          "Which everyday workflow felt most compelling or most annoying?"
+        ],
+        "adoption_blocker_prompts": [
+          "What local permissions would block desktop use?",
+          "What user trust questions remain before running near email, files, or calendar?",
+          "What actions must stay ask-only instead of auto-revise?"
+        ]
+      }
+    },
+    {
+      "id": "civic_government_services",
+      "category": "civic_government",
+      "title": "Civic And Government-Style Workflow Pilot",
+      "partner_profile": {
+        "organization_alias": "civic-partner-a",
+        "reviewer_roles": ["program manager", "procurement reviewer", "public-services analyst"],
+        "surface": "workflow batch or HTTP bridge",
+        "data_rule": "synthetic or redacted program, procurement, claim, and application records only"
+      },
+      "workflows": [
+        {
+          "workflow_id": "civic-procurement-risk",
+          "adapter_id": "procurement_vendor_risk",
+          "label": "Procurement vendor risk",
+          "source_id": "synthetic-vendor-profile",
+          "evidence_summary": "Synthetic vendor profile: vendor identity, price, contract terms, data sharing, and security review are incomplete."
+        },
+        {
+          "workflow_id": "civic-grant-review",
+          "adapter_id": "grant_application_review",
+          "label": "Grant application review",
+          "source_id": "synthetic-grant-file",
+          "evidence_summary": "Synthetic grant file: eligibility, deadlines, required documents, and scoring rubric support are incomplete."
+        },
+        {
+          "workflow_id": "civic-insurance-triage",
+          "adapter_id": "insurance_claim_triage",
+          "label": "Insurance or benefits-style triage",
+          "source_id": "synthetic-claim-file",
+          "evidence_summary": "Synthetic claim file: coverage claims, missing documents, jurisdiction rules, and escalation criteria are incomplete."
+        },
+        {
+          "workflow_id": "civic-research-grounding",
+          "adapter_id": "research_answer_grounding",
+          "label": "Policy memo grounding",
+          "source_id": "synthetic-source-registry",
+          "evidence_summary": "Synthetic source registry: retrieved documents, citation index, source boundaries, and uncertainty labels are incomplete."
+        }
+      ],
+      "collection_plan": {
+        "failure_mode_prompts": [
+          "Did AANA miss a due-process, eligibility, procurement, or citation-grounding issue?",
+          "Did AANA overstate legal or policy authority?",
+          "Which jurisdiction or program-rule evidence was missing?"
+        ],
+        "friction_prompts": [
+          "Could civic reviewers trace every recommendation to evidence?",
+          "Were defer and human-review routes clear enough?",
+          "Did the language fit public-sector review norms?"
+        ],
+        "adoption_blocker_prompts": [
+          "What records-management or public-records requirements affect audit logs?",
+          "What approval is needed before connecting real case or procurement systems?",
+          "What policy-owner signoff is needed before pilot expansion?"
+        ]
+      }
+    }
+  ]
+}

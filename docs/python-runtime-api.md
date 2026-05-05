@@ -130,6 +130,39 @@ except eval_pipeline.AANAError as exc:
 
 Every public exception supports `to_dict()` for structured logging.
 
+## Evidence Connector Helpers
+
+The legacy `aana` surface exposes connector-contract helpers for pilots and production connector tests:
+
+```python
+import aana
+
+fixtures = aana.load_evidence_mock_fixtures("examples/evidence_mock_connector_fixtures.json")
+report = aana.run_evidence_mock_connector("deployment", fixtures=fixtures, now="2026-05-05T01:00:00Z")
+
+assert report["valid"]
+assert report["evidence"][0]["metadata"]["normalized"]
+```
+
+Use `aana.normalize_evidence_object(...)` inside connector tests to ensure a system-specific record becomes a Workflow Contract evidence object before it reaches an adapter gate.
+
+## Audit Review Helpers
+
+Redacted audit records can be validated and converted into reviewer artifacts:
+
+```python
+import aana
+
+records = aana.load_audit_records("eval_outputs/audit/aana-audit.jsonl")
+schema = aana.validate_audit_records(records)
+drift = aana.audit_aix_drift_report(records)
+
+assert schema["valid"]
+assert drift["valid"]
+```
+
+Use `aana.write_audit_reviewer_report(...)` to create a Markdown handoff from an audit JSONL file plus optional metrics, drift, and manifest artifacts.
+
 ## Legacy `aana` Compatibility
 
 Existing calls keep returning dictionaries:

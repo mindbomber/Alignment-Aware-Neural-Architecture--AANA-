@@ -21,6 +21,7 @@ class ContractFreezeTests(unittest.TestCase):
             "audit_record",
             "audit_metrics_export",
             "audit_integrity_manifest",
+            "audit_drift_report",
         ]:
             self.assertIn(contract_id, inventory)
             self.assertEqual(inventory[contract_id]["stability"], "frozen")

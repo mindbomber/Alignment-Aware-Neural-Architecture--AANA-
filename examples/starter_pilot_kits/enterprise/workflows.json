@@ -1,0 +1,61 @@
+{
+  "workflow_examples_version": "0.1",
+  "workflows": [
+    {
+      "workflow_id": "enterprise-crm-support-refund",
+      "adapter_id": "crm_support_reply",
+      "gallery_demo": true,
+      "evidence_refs": ["crm_refund_case", "support_refund_policy"],
+      "constraints": ["Use only verified CRM and order-system facts.", "Do not include private payment or internal CRM details."]
+    },
+    {
+      "workflow_id": "enterprise-email-send-risk",
+      "adapter_id": "email_send_guardrail",
+      "gallery_demo": true,
+      "evidence_refs": ["email_draft_metadata"],
+      "constraints": ["Recipient, intent, attachments, and irreversible send approval must be verified."]
+    },
+    {
+      "workflow_id": "enterprise-ticket-update",
+      "adapter_id": "ticket_update_checker",
+      "gallery_demo": true,
+      "evidence_refs": ["ticket_history"],
+      "constraints": ["Do not make unsupported status claims or customer-visible commitments."]
+    },
+    {
+      "workflow_id": "enterprise-data-export",
+      "adapter_id": "data_export_guardrail",
+      "gallery_demo": true,
+      "evidence_refs": ["data_export_request"],
+      "constraints": ["Verify export scope, destination, authorization, private data handling, and retention."]
+    },
+    {
+      "workflow_id": "enterprise-access-permission",
+      "adapter_id": "access_permission_change",
+      "gallery_demo": true,
+      "evidence_refs": ["iam_request"],
+      "constraints": ["Verify requester authority, least privilege, approval, and expiration."]
+    },
+    {
+      "workflow_id": "enterprise-code-change-review",
+      "adapter_id": "code_change_review",
+      "gallery_demo": true,
+      "evidence_refs": ["code_review_evidence"],
+      "constraints": ["Tests, diff scope, secrets, destructive commands, and migration risk must be checked."]
+    },
+    {
+      "workflow_id": "enterprise-deployment-readiness",
+      "adapter_id": "deployment_readiness",
+      "gallery_demo": true,
+      "evidence_refs": ["deployment_manifest"],
+      "constraints": ["Config, secrets, rollback, health checks, migrations, and observability must be ready."]
+    },
+    {
+      "workflow_id": "enterprise-incident-response",
+      "adapter_id": "incident_response_update",
+      "gallery_demo": true,
+      "evidence_refs": ["incident_timeline"],
+      "constraints": ["Severity, customer impact, mitigation status, ETA, and comms approval must be grounded."]
+    }
+  ]
+}

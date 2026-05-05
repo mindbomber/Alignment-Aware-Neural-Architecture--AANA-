@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AANA Adapter Playground</title>
+    <link rel="stylesheet" href="/playground/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/playground/preview.png" alt="" />
+        <div>
+          <h1>AANA Adapter Playground</h1>
+          <p>Run gallery demos through the local verifier, correction policy, alignment gate, AIx score, and redacted audit preview.</p>
+        </div>
+      </div>
+      <div class="connection">
+        <label for="token">Bridge token</label>
+        <div class="token-row">
+          <input id="token" type="password" autocomplete="off" placeholder="aana-local-dev-token" />
+          <button id="save-token" type="button">Save</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <h2>Adapter Gallery</h2>
+          <input id="adapter-filter" type="search" placeholder="Filter adapters" />
+        </div>
+        <div id="adapter-list" class="adapter-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-head">
+          <div>
+            <h2 id="adapter-title">Select an adapter</h2>
+            <p id="adapter-workflow">Choose a gallery demo to inspect its verifier behavior.</p>
+          </div>
+          <div class="actions">
+            <button id="reset-demo" type="button">Reset</button>
+            <button id="run-check" type="button">Run AANA Check</button>
+          </div>
+        </div>
+
+        <div class="editor-grid">
+          <label class="field">
+            <span>Request</span>
+            <textarea id="request" rows="8"></textarea>
+          </label>
+          <label class="field">
+            <span>Candidate answer or action</span>
+            <textarea id="candidate" rows="8"></textarea>
+          </label>
+        </div>
+
+        <div class="control-row">
+          <label class="field compact">
+            <span>Allowed action fallback</span>
+            <select id="allowed-action">
+              <option value="all">accept, revise, retrieve, ask, defer, refuse</option>
+              <option value="no-accept">revise, retrieve, ask, defer, refuse</option>
+              <option value="human-review">ask, defer, refuse</option>
+            </select>
+          </label>
+          <label class="field compact">
+            <span>Evidence</span>
+            <textarea id="evidence" rows="4" placeholder="Optional evidence, one line per source"></textarea>
+          </label>
+          <label class="field compact">
+            <span>Constraints</span>
+            <textarea id="constraints" rows="4" placeholder="Optional constraints, one line each"></textarea>
+          </label>
+        </div>
+
+        <section class="results" aria-live="polite">
+          <div class="score-strip">
+            <div class="metric">
+              <span>Gate</span>
+              <strong id="gate">-</strong>
+            </div>
+            <div class="metric">
+              <span>Action</span>
+              <strong id="action">-</strong>
+            </div>
+            <div class="metric">
+              <span>Final AIx</span>
+              <strong id="aix-score">-</strong>
+            </div>
+            <div class="metric">
+              <span>Candidate AIx</span>
+              <strong id="candidate-aix-score">-</strong>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <article class="panel">
+              <h3>Violations</h3>
+              <div id="violations" class="empty">Run a check to see verifier findings.</div>
+            </article>
+            <article class="panel">
+              <h3>Safe Response</h3>
+              <pre id="safe-response">Run a check to see the corrected output.</pre>
+            </article>
+            <article class="panel wide">
+              <h3>AIx Details</h3>
+              <pre id="aix-details">Run a check to inspect score, decision, components, thresholds, and hard blockers.</pre>
+            </article>
+            <article class="panel wide">
+              <h3>Redacted Audit Record</h3>
+              <pre id="audit-record">Run a check to preview the audit record written by the bridge.</pre>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/playground/app.js"></script>
+  </body>
+</html>

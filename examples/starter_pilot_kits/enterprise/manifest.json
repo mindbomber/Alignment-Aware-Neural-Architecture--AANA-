@@ -1,0 +1,26 @@
+{
+  "kit_version": "0.1",
+  "id": "enterprise",
+  "title": "Enterprise Starter Pilot Kit",
+  "goal": "Run a no-private-data shadow pilot for customer support, email, ticketing, data export, access, code review, deployment, and incident workflows.",
+  "entrypoints": [
+    "python scripts/run_starter_pilot_kit.py --kit enterprise",
+    "python scripts/aana_cli.py workflow-check --workflow <materialized workflow>",
+    "http://localhost:8765/playground"
+  ],
+  "operating_mode": "shadow_advisory",
+  "primary_users": [
+    "support agents",
+    "engineering leads",
+    "SRE/release owners",
+    "IAM reviewers",
+    "data stewards"
+  ],
+  "files": {
+    "synthetic_data": "synthetic_data.json",
+    "adapter_config": "adapter_config.json",
+    "workflows": "workflows.json",
+    "expected_outcomes": "expected_outcomes.json"
+  },
+  "default_output_dir": "eval_outputs/starter_pilot_kits/enterprise"
+}

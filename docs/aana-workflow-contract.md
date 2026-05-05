@@ -99,6 +99,14 @@ for item in batch_result.results:
     print(item.workflow_id, item.recommended_action)
 ```
 
+Batch behavior is stable:
+
+- top-level batch contract errors fail before execution,
+- each valid item receives a `workflow_id`, generated from `batch_id` when omitted,
+- adapter/runtime failures are isolated to the failed item,
+- failed items return a Workflow Result with `gate_decision: "fail"`, `candidate_gate: "block"`, a `workflow_item_error` violation, and an AIx hard blocker,
+- failed items never recommend direct `accept`; AANA chooses the safest available fallback action and uses `defer` when the caller allowed only `accept`.
+
 The result includes:
 
 - `gate_decision`: `pass`, `block`, `fail`, or `needs_adapter_implementation`
@@ -128,7 +136,7 @@ Evidence can be passed as simple strings or as structured objects when provenanc
 
 Production integrations should prefer structured evidence objects, keep raw private records out of request files when a redacted summary is enough, and treat missing or stale evidence as a reason to `retrieve`, `ask`, or `defer`.
 
-Production evidence connector stubs are available for CRM/support, ticketing, email, calendar, IAM, CI/code review, deployment/release, billing/payment, data export, workspace files, and security systems. They define required source IDs, auth boundaries, redaction expectations, freshness behavior, and structured evidence templates without performing external calls.
+Production evidence connector stubs are available for CRM/support, ticketing, email, calendar, IAM, CI/code review, deployment/release, billing/payment, data export, workspace files, and security systems. They define required source IDs, read scopes, auth/action boundaries, redaction expectations, freshness SLOs, failure modes, and structured evidence templates without performing external calls. `examples/evidence_mock_connector_fixtures.json` provides synthetic connector outputs for the strongest pilot systems and verifies that those outputs normalize into Workflow Contract evidence objects.
 
 Evidence can be validated against an approved source registry:
 
@@ -139,12 +147,15 @@ python scripts/aana_cli.py validate-workflow-evidence --workflow examples/workfl
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured-evidence
 ```
 
+For batch validation, use `workflow-batch --evidence-registry ... --require-structured-evidence` only with batches whose every item uses structured evidence. AANA reports source/freshness/structured-evidence findings per item with paths such as `$.requests[0].evidence[0].source_id`.
+
 ## Request Shape
 
 Machine-readable example:
 
 - [`examples/workflow_research_summary.json`](../examples/workflow_research_summary.json)
 - [`examples/workflow_batch_productive_work.json`](../examples/workflow_batch_productive_work.json)
+- [`examples/workflow_contract_examples.json`](../examples/workflow_contract_examples.json)
 
 ```json
 {
@@ -233,10 +244,12 @@ For production-like local runs, require POST authentication:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl --rate-limit-per-minute 120
 ```
 
-Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`. With `--audit-log`, successful `/workflow-check` and `/workflow-batch` calls append redacted audit records from the bridge process.
+Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`. `--auth-token-file` rereads a token file on every POST request for local token rotation. `--rate-limit-per-minute` adds a process-local per-client POST limit. `--read-timeout-seconds` bounds request-body reads. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the bridge process.
+
+See [`http-bridge-runbook.md`](http-bridge-runbook.md) for token rotation, structured errors, readiness checks, audit append guarantees, timeout behavior, and deployment guidance.
 
 For audit trails, use `aana.audit_workflow_check(workflow_request, result)` or `aana.audit_workflow_batch(batch_request, result)`. These helpers produce redacted records with IDs, gate decisions, recommended actions, AIx score summaries, violation codes, counts, and SHA-256 fingerprints for checked text. They do not include raw requests, candidates, evidence, constraints, or outputs.
 
@@ -259,6 +272,7 @@ Workflow routes:
 - `GET /schemas/workflow-result.schema.json`
 - `GET /schemas/workflow-batch-result.schema.json`
 - `GET /schemas/aix.schema.json`
+- `GET /ready`
 
 PowerShell example:
 
@@ -281,6 +295,12 @@ The contract is stable, but each adapter defines its own domain logic. For examp
 - `meal_planning`: grocery budget, dietary exclusions, day coverage.
 
 For a new domain, keep the same Workflow Contract and swap in a new adapter.
+
+Canonical workflow example families are indexed in [`examples/workflow_contract_examples.json`](../examples/workflow_contract_examples.json):
+
+- `enterprise`: CRM/support, email, ticketing, data export, IAM, code review, deployment, and incident response workflows.
+- `personal_productivity`: email, calendar, file operation, booking/purchase, and research grounding workflows.
+- `government_civic`: procurement/vendor risk, grant/application review, insurance claim triage, publication review, and research grounding workflows.
 
 ## Production Notes
 

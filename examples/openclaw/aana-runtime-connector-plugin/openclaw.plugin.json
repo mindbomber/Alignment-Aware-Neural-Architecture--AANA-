@@ -17,6 +17,10 @@
         "default": 8000,
         "description": "Request timeout for AANA bridge calls."
       },
+      "bridgeToken": {
+        "type": "string",
+        "description": "Optional bearer token for the local bridge. Prefer host-managed secret configuration."
+      },
       "requireExplicitBridgeBaseUrl": {
         "type": "boolean",
         "default": true,
