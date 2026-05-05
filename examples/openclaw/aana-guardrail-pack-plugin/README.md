@@ -4,7 +4,7 @@ Marketplace slug: `aana-guardrail-pack`
 
 This is the first AANA OpenClaw plugin package. It bundles the core AANA guardrail skills as one no-code pack for agents that need practical safety checks before they act.
 
-The plugin is intentionally instruction-only. It does not install dependencies, run scripts, call services, write files, store memory, or create event files. Host agents can use the bundled skills as decision procedures, review checklists, and approval gates.
+The plugin is intentionally instruction-only. It does not install dependencies, run scripts, call services, write files, store memory, or create review payloads. Host agents can use the bundled skills as decision procedures, review checklists, and approval gates.
 
 ## Included Skills
 
@@ -53,6 +53,19 @@ For OpenClaw agents, that means the plugin should be used before higher-risk ste
 - making a code change or release claim,
 - using a tool with external side effects,
 - continuing work after the original task is complete.
+
+## Marketplace Boundary
+
+- `instruction_only`: true
+- `bundled_code`: false
+- `installs_dependencies`: false
+- `executes_commands`: false
+- `writes_files`: false
+- `writes_event_files`: false
+- `persists_memory`: false
+- `calls_services`: false
+- `network_access`: false
+- `bundled_skill_count`: 13
 
 ## Local Review Checklist
 

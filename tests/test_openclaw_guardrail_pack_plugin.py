@@ -7,36 +7,42 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "examples" / "openclaw" / "aana-guardrail-pack-plugin"
 MANIFEST = PLUGIN / "openclaw.plugin.json"
+EXPECTED_SKILLS = {
+    "aana-workflow-readiness-check",
+    "aana-task-scope-guardrail",
+    "aana-tool-use-gate",
+    "aana-human-review-router",
+    "aana-private-data-guardrail",
+    "aana-file-operation-guardrail",
+    "aana-data-export-guardrail",
+    "aana-email-send-guardrail",
+    "aana-message-send-guardrail",
+    "aana-publication-check",
+    "aana-evidence-first-answering",
+    "aana-code-change-review",
+    "aana-decision-log",
+}
 
 
 class OpenClawGuardrailPackPluginTests(unittest.TestCase):
     def test_plugin_manifest_is_reviewable_no_code_pack(self):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        documented_fields = {
+            "id",
+            "name",
+            "version",
+            "description",
+            "skills",
+            "configSchema",
+        }
 
         self.assertEqual(manifest["id"], "aana-guardrail-pack")
         self.assertEqual(manifest["skills"], ["skills"])
         self.assertEqual(manifest["configSchema"]["type"], "object")
         self.assertFalse(manifest["configSchema"].get("additionalProperties", True))
-
-        boundary = manifest["aana_marketplace_boundary"]
-        self.assertTrue(boundary["instruction_only"])
-        for key in (
-            "bundled_code",
-            "installs_dependencies",
-            "executes_commands",
-            "writes_files",
-            "writes_event_files",
-            "persists_memory",
-            "calls_services",
-            "network_access",
-        ):
-            self.assertFalse(boundary[key], key)
-
-        self.assertEqual(boundary["bundled_skill_count"], 13)
-        self.assertEqual(len(manifest["bundled_skills"]), 13)
+        self.assertEqual(set(manifest), documented_fields)
 
     def test_each_declared_skill_is_bundled_and_instruction_only(self):
-        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         skill_dirs = [path for path in (PLUGIN / "skills").iterdir() if path.is_dir()]
         slug_to_dir = {}
 
@@ -54,7 +60,7 @@ class OpenClawGuardrailPackPluginTests(unittest.TestCase):
             self.assertFalse(skill_manifest["writes_event_files"])
             self.assertFalse(skill_manifest["persists_memory"])
 
-        self.assertEqual(set(manifest["bundled_skills"]), set(slug_to_dir))
+        self.assertEqual(EXPECTED_SKILLS, set(slug_to_dir))
 
     def test_plugin_package_contains_only_text_review_artifacts(self):
         allowed_suffixes = {".json", ".md"}
@@ -77,6 +83,9 @@ class OpenClawGuardrailPackPluginTests(unittest.TestCase):
             r"\bbit\.ly\b",
             r"\btinyurl\b",
             r"\b\d{1,3}(?:\.\d{1,3}){3}\b",
+            r"\bevent[-\s]+files?\b",
+            r"\bhelper\s+script\b",
+            r"\blocal\s+helper\b",
         ]
         pattern = re.compile("|".join(risky_patterns), re.IGNORECASE)
 

@@ -31,32 +31,5 @@
       }
     },
     "additionalProperties": false
-  },
-  "aana_marketplace_boundary": {
-    "instruction_only": true,
-    "bundled_code": false,
-    "installs_dependencies": false,
-    "executes_commands": false,
-    "writes_files": false,
-    "writes_event_files": false,
-    "persists_memory": false,
-    "calls_services": false,
-    "network_access": false,
-    "bundled_skill_count": 13
-  },
-  "bundled_skills": [
-    "aana-workflow-readiness-check",
-    "aana-task-scope-guardrail",
-    "aana-tool-use-gate",
-    "aana-human-review-router",
-    "aana-private-data-guardrail",
-    "aana-file-operation-guardrail",
-    "aana-data-export-guardrail",
-    "aana-email-send-guardrail",
-    "aana-message-send-guardrail",
-    "aana-publication-check",
-    "aana-evidence-first-answering",
-    "aana-code-change-review",
-    "aana-decision-log"
-  ]
+  }
 }
