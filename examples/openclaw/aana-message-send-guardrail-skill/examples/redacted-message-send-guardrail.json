@@ -1,0 +1,8 @@
+{
+  "destination_status": "public_channel",
+  "audience_status": "broad",
+  "tone_status": "revise",
+  "privacy_status": "needs_redaction",
+  "approval_status": "required",
+  "recommended_action": "request_approval"
+}

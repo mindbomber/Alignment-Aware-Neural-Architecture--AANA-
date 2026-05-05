@@ -1,0 +1,8 @@
+{
+  "export_type": "records",
+  "scope_status": "bulk",
+  "destination_status": "external",
+  "privacy_status": "sensitive",
+  "approval_status": "required",
+  "recommended_action": "route_to_review"
+}

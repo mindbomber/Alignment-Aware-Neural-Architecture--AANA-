@@ -1,0 +1,8 @@
+{
+  "release_target": "release",
+  "evidence_status": "partial",
+  "docs_status": "incomplete",
+  "artifact_status": "unverified",
+  "approval_status": "required",
+  "recommended_action": "request_approval"
+}

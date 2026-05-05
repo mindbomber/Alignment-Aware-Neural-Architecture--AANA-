@@ -1,0 +1,8 @@
+{
+  "calendar_action": "invite",
+  "attendee_status": "external",
+  "time_status": "timezone_unclear",
+  "privacy_status": "private_notes",
+  "approval_status": "required",
+  "recommended_action": "request_approval"
+}

@@ -1,0 +1,39 @@
+{
+  "title": "AANA Calendar Scheduling Guardrail",
+  "type": "object",
+  "required": [
+    "calendar_action",
+    "attendee_status",
+    "time_status",
+    "privacy_status",
+    "approval_status",
+    "recommended_action"
+  ],
+  "properties": {
+    "calendar_action": {
+      "type": "string",
+      "enum": ["create", "update", "cancel", "invite", "reschedule", "share_availability"]
+    },
+    "attendee_status": {
+      "type": "string",
+      "enum": ["exact", "missing", "ambiguous", "external", "group_alias"]
+    },
+    "time_status": {
+      "type": "string",
+      "enum": ["confirmed", "missing", "timezone_unclear", "conflicting"]
+    },
+    "privacy_status": {
+      "type": "string",
+      "enum": ["clear", "private_notes", "sensitive", "unknown"]
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": ["approved", "required", "unclear", "denied"]
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["proceed", "ask", "narrow", "request_approval", "block"]
+    }
+  },
+  "additionalProperties": false
+}

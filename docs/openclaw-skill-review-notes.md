@@ -148,6 +148,36 @@ A separate instruction-only meeting summary checker skill is available at `examp
 
 That skill is designed to check meeting summaries, notes, action items, owners, dates, decisions, and attributed claims against transcript, notes, chat, agenda, calendar, or other available evidence. It does not bundle code, install dependencies, persist memory, write files, inspect systems, access transcripts, or call services. It asks agents to mark inferred or uncertain items, avoid invented commitments, redact private meeting content, and route high-impact notes to review before sharing.
 
+## Calendar Scheduling Guardrail Skill
+
+A separate instruction-only calendar scheduling guardrail skill is available at `examples/openclaw/aana-calendar-scheduling-guardrail-skill/`.
+
+That skill is designed to check attendees, timezone, date, duration, recurrence, agenda, private notes, visibility, and approval before calendar changes. It does not bundle code, install dependencies, persist memory, write files, inspect systems, create events, or call services.
+
+## Message Send Guardrail Skill
+
+A separate instruction-only message send guardrail skill is available at `examples/openclaw/aana-message-send-guardrail-skill/`.
+
+That skill is designed to check chat destinations, recipients, channel visibility, broadcast scope, tone, private data, attachments, claims, and approval before messages are posted. It does not bundle code, install dependencies, persist memory, write files, inspect systems, send messages, or call services.
+
+## Ticket Update Checker Skill
+
+A separate instruction-only ticket update checker skill is available at `examples/openclaw/aana-ticket-update-checker-skill/`.
+
+That skill is designed to check support, issue, CRM, and task updates for exact ticket scope, evidence, owner/status changes, visibility, private data, and approval. It does not bundle code, install dependencies, persist memory, write files, inspect systems, update tickets, or call services.
+
+## Data Export Guardrail Skill
+
+A separate instruction-only data export guardrail skill is available at `examples/openclaw/aana-data-export-guardrail-skill/`.
+
+That skill is designed to check export scope, destination, privacy, redaction, field minimization, and approval before files, records, datasets, logs, reports, or account data are exported or shared. It does not bundle code, install dependencies, persist memory, write files, inspect systems, export data, or call services.
+
+## Release Readiness Check Skill
+
+A separate instruction-only release readiness check skill is available at `examples/openclaw/aana-release-readiness-check-skill/`.
+
+That skill is designed to check release targets, tags, changelogs, docs, artifacts, tests, approval, compatibility, rollback, and public claims before a release. It does not bundle code, install dependencies, persist memory, write files, inspect systems, create tags, publish releases, or call services.
+
 ## Decision Boundary
 
 AANA recommendations can ask the agent to accept, revise, retrieve, ask, defer, or refuse. This is intentional for higher-risk actions, but production integrations should treat those recommendations as policy decisions:
