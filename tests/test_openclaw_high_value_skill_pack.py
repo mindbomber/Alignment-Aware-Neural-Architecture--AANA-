@@ -12,6 +12,7 @@ SKILLS = {
         "schema": "calendar-scheduling-guardrail.schema.json",
         "example": "redacted-calendar-scheduling-guardrail.json",
         "required_flag": "requires_calendar_change_approval",
+        "risk_key": "calendar_risks",
         "expected_action": "request_approval",
     },
     "aana-message-send-guardrail-skill": {
@@ -19,6 +20,7 @@ SKILLS = {
         "schema": "message-send-guardrail.schema.json",
         "example": "redacted-message-send-guardrail.json",
         "required_flag": "requires_send_approval",
+        "risk_key": "message_risks",
         "expected_action": "request_approval",
     },
     "aana-ticket-update-checker-skill": {
@@ -26,6 +28,7 @@ SKILLS = {
         "schema": "ticket-update-checker.schema.json",
         "example": "redacted-ticket-update-checker.json",
         "required_flag": "requires_visibility_check",
+        "risk_key": "ticket_risks",
         "expected_action": "request_approval",
     },
     "aana-data-export-guardrail-skill": {
@@ -33,6 +36,7 @@ SKILLS = {
         "schema": "data-export-guardrail.schema.json",
         "example": "redacted-data-export-guardrail.json",
         "required_flag": "requires_export_approval",
+        "risk_key": "export_risks",
         "expected_action": "route_to_review",
     },
     "aana-release-readiness-check-skill": {
@@ -40,6 +44,7 @@ SKILLS = {
         "schema": "release-readiness-check.schema.json",
         "example": "redacted-release-readiness-check.json",
         "required_flag": "requires_release_approval",
+        "risk_key": "release_risks",
         "expected_action": "request_approval",
     },
 }
@@ -67,7 +72,28 @@ class OpenClawHighValueSkillPackTests(unittest.TestCase):
 
                 for key in schema["required"]:
                     self.assertIn(key, example)
+                self.assertIn(expected["risk_key"], schema["properties"])
+                self.assertIn("blocker_reason", schema["properties"])
+                self.assertIn("safe_alternative", schema["properties"])
+                self.assertIn(expected["risk_key"], example)
+                self.assertIn("blocker_reason", example)
+                self.assertIn("safe_alternative", example)
                 self.assertEqual(example["recommended_action"], expected["expected_action"])
+
+    def test_skill_instructions_include_operational_depth(self):
+        required_sections = [
+            "## Required Checks",
+            "## Review Payload",
+            "## Decision Rule",
+            "## Output Pattern",
+        ]
+
+        for skill_dir in SKILLS:
+            with self.subTest(skill=skill_dir):
+                skill_text = (OPENCLAW_DIR / skill_dir / "SKILL.md").read_text(encoding="utf-8")
+                for section in required_sections:
+                    self.assertIn(section, skill_text)
+                self.assertGreaterEqual(skill_text.count("- "), 30)
 
     def test_skill_packages_avoid_executable_and_raw_network_patterns(self):
         blocked_phrases = [

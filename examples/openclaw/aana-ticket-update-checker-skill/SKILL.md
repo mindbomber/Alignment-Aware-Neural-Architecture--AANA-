@@ -17,6 +17,50 @@ Ticket updates should be accurate, scoped, evidence-backed, privacy-safe, and au
 - owner, priority, SLA, due date, and escalation authority
 - whether the update is internal-only or customer-visible
 
+## Ticket Risk Classes
+
+Treat these as higher risk:
+
+- customer-visible comments, public issue comments, ticket closure, severity changes, SLA changes, escalation changes, and ownership transfers,
+- refund, billing, legal, security, outage, incident, compliance, HR, or medical/support-related updates,
+- logs, screenshots, account records, customer identifiers, internal notes, or private reproduction data,
+- claims about root cause, fix status, test results, deployment status, policy, or expected timeline.
+
+## Evidence Rules
+
+Do not update a ticket with unsupported claims about:
+
+- root cause,
+- fix shipped,
+- tests passed,
+- customer eligibility,
+- billing/refund decisions,
+- policy exceptions,
+- deployment status,
+- severity or priority.
+
+Retrieve evidence or mark the update as tentative before changing status or posting externally.
+
+## Visibility Rules
+
+Internal notes can include more diagnostic context than customer-visible replies, but still require minimization. Customer-visible updates must be concise, accurate, non-speculative, and free of internal notes or unrelated data.
+
+## Review Payload
+
+When using a configured AANA checker, send only a minimal redacted review payload:
+
+- `update_type`
+- `evidence_status`
+- `visibility_status`
+- `privacy_status`
+- `approval_status`
+- `ticket_risks`
+- `blocker_reason`
+- `safe_alternative`
+- `recommended_action`
+
+Do not include full logs, customer records, secrets, internal notes, or unrelated ticket history when a redacted summary is enough.
+
 ## Decision Rule
 
 - If facts and scope are clear and the update is low-risk, proceed.

@@ -17,6 +17,39 @@ Releases should be evidence-backed, scoped, documented, tested, permissioned, an
 - rollback path, compatibility, breaking changes, and user impact
 - explicit approval for publishing the release or tag
 
+## Release Risk Classes
+
+Treat these as higher risk:
+
+- public releases, marketplace listings, production deployments, security fixes, breaking changes, migrations, and package publishing,
+- claims about safety, reliability, compliance, benchmark performance, compatibility, or production readiness,
+- unverified artifacts, wrong version numbers, stale docs, missing changelogs, generated files, large files, or secrets,
+- releases without rollback, known limitations, migration instructions, or test evidence.
+
+## Evidence Rules
+
+Do not publish release claims unless they match available evidence. If tests were not run, say so. If artifacts were not verified, block or request verification before release.
+
+## Artifact And Version Rules
+
+Verify that the tag, package, artifact, docs, changelog, and release notes refer to the same version and commit. Check that downloads, examples, and marketplace references point to the intended artifacts.
+
+## Review Payload
+
+When using a configured AANA checker, send only a minimal redacted review payload:
+
+- `release_target`
+- `evidence_status`
+- `docs_status`
+- `artifact_status`
+- `approval_status`
+- `release_risks`
+- `blocker_reason`
+- `safe_alternative`
+- `recommended_action`
+
+Do not include secrets, private release notes, credentials, full logs, or unrelated repository data when a redacted summary is enough.
+
 ## Decision Rule
 
 - If artifacts, tests, docs, scope, and approval are ready, proceed.

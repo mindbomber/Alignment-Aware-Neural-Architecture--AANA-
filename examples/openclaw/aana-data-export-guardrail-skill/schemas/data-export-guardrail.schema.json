@@ -8,6 +8,15 @@
     "destination_status": {"type": "string", "enum": ["local", "user", "external", "public", "unknown"]},
     "privacy_status": {"type": "string", "enum": ["clear", "needs_redaction", "sensitive", "regulated"]},
     "approval_status": {"type": "string", "enum": ["approved", "required", "unclear", "denied"]},
+    "export_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["bulk_export", "cross_account", "external_destination", "public_link", "regulated_data", "secrets", "unclear_retention", "excessive_fields", "unknown"]
+      }
+    },
+    "blocker_reason": {"type": "string"},
+    "safe_alternative": {"type": "string"},
     "recommended_action": {"type": "string", "enum": ["proceed", "narrow", "ask", "redact", "request_approval", "route_to_review", "block"]}
   },
   "additionalProperties": false

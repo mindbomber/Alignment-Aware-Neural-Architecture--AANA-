@@ -30,6 +30,19 @@
       "type": "string",
       "enum": ["approved", "required", "unclear", "denied"]
     },
+    "calendar_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["external_attendee", "group_alias", "timezone_ambiguity", "recurrence_change", "private_notes", "confidential_link", "high_impact_meeting", "unknown"]
+      }
+    },
+    "blocker_reason": {
+      "type": "string"
+    },
+    "safe_alternative": {
+      "type": "string"
+    },
     "recommended_action": {
       "type": "string",
       "enum": ["proceed", "ask", "narrow", "request_approval", "block"]

@@ -8,6 +8,15 @@
     "visibility_status": {"type": "string", "enum": ["internal", "customer_visible", "public", "unknown"]},
     "privacy_status": {"type": "string", "enum": ["clear", "needs_redaction", "sensitive", "unknown"]},
     "approval_status": {"type": "string", "enum": ["approved", "required", "unclear", "denied"]},
+    "ticket_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["customer_visible", "status_change", "severity_change", "sla_change", "unsupported_claim", "private_data", "refund_or_billing", "security_or_incident", "unknown"]
+      }
+    },
+    "blocker_reason": {"type": "string"},
+    "safe_alternative": {"type": "string"},
     "recommended_action": {"type": "string", "enum": ["proceed", "revise", "ask", "retrieve", "redact", "request_approval", "block"]}
   },
   "additionalProperties": false
