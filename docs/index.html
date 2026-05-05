@@ -44,6 +44,7 @@
           <a href="#infographic">Infographic</a>
           <a href="#slides">Slides</a>
           <a href="#papers">Papers</a>
+          <a href="#openclaw">OpenClaw</a>
           <a href="#try-it">Try It</a>
         </div>
       </div>
@@ -673,18 +674,6 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Agent Integration Kit</h3>
               <p>How agents can call AANA before risky messages, tool use, private-data handling, or irreversible actions.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-guardrail-pack-plugin" target="_blank" rel="noopener">
-              <h3>AANA Guardrail Pack Plugin</h3>
-              <p>A no-code OpenClaw plugin that bundles the core AANA guardrails into one reviewable install package.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-runtime-connector-plugin" target="_blank" rel="noopener">
-              <h3>AANA Runtime Connector Plugin</h3>
-              <p>Optional OpenClaw tools for calling a configured local AANA bridge before an agent acts.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/openclaw-skill-review-notes.md" target="_blank" rel="noopener">
-              <h3>OpenClaw Review Notes</h3>
-              <p>Provenance, execution, decision, and data-handling boundaries for standalone skill installs.</p>
-            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/eval_pipeline/agent_api.py" target="_blank" rel="noopener">
               <h3>Python Agent API</h3>
               <p>A small importable shim for checking agent events without launching a separate CLI process.</p>
@@ -737,114 +726,6 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>AANA CLI</h3>
               <p>The short command hub for listing, running, validating, and scaffolding adapters.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/openclaw/aana-guardrail-skill/SKILL.md" target="_blank" rel="noopener">
-              <h3>OpenClaw Guardrail Skill</h3>
-              <p>An instruction-only starter skill for calling a separately reviewed AANA interface.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-guardrail-skill-bundled" target="_blank" rel="noopener">
-              <h3>Bundled OpenClaw Helper</h3>
-              <p>An inspectable no-dependency helper package for localhost-only AANA bridge calls.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-continuous-improvement-skill" target="_blank" rel="noopener">
-              <h3>Continuous Improvement Skill</h3>
-              <p>An instruction-only OpenClaw skill for improving agent workflows without silent memory, tool, or policy changes.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-research-grounding-skill" target="_blank" rel="noopener">
-              <h3>Research Grounding Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking citations, source limits, unsupported claims, and uncertainty.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-private-data-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Private Data Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for minimizing, redacting, or blocking private account, billing, payment, health, legal, and personal data.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-file-operation-guardrail-skill" target="_blank" rel="noopener">
-              <h3>File Operation Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking deletes, moves, overwrites, publishing, uploads, exports, and bulk edits before files are touched.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-code-change-review-skill" target="_blank" rel="noopener">
-              <h3>Code Change Review Skill</h3>
-              <p>An instruction-only OpenClaw skill for gating code edits, commits, pull requests, test claims, scope creep, secret leakage, and destructive commands.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-support-reply-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Support Reply Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking customer replies before they invent facts, promise refunds, overstate policy, or expose private data.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-medical-safety-router-skill" target="_blank" rel="noopener">
-              <h3>Medical Safety Router Skill</h3>
-              <p>An instruction-only OpenClaw skill for routing health and wellness questions through uncertainty, emergency care, clinician referral, and no-diagnosis boundaries.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-purchase-booking-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Purchase Booking Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for gating purchases, bookings, reservations, subscriptions, renewals, and irreversible financial actions.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-decision-log-skill" target="_blank" rel="noopener">
-              <h3>Decision Log Skill</h3>
-              <p>An instruction-only OpenClaw skill for compact audit records: what was checked, what failed, what changed, and what risk remains.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-financial-safety-router-skill" target="_blank" rel="noopener">
-              <h3>Financial Safety Router Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking investment, tax, budgeting, debt, and purchase advice for unsupported claims and risk disclosure.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-legal-safety-router-skill" target="_blank" rel="noopener">
-              <h3>Legal Safety Router Skill</h3>
-              <p>An instruction-only OpenClaw skill for preventing unauthorized legal advice, missing jurisdiction caveats, and unsupported legal claims.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-evidence-first-answering-skill" target="_blank" rel="noopener">
-              <h3>Evidence First Answering Skill</h3>
-              <p>An instruction-only OpenClaw skill for separating known facts, assumptions, missing evidence, and next retrieval steps before answering.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-tool-use-gate-skill" target="_blank" rel="noopener">
-              <h3>Tool Use Gate Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking whether tool calls are necessary, scoped, authorized, and safe before use.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-human-review-router-skill" target="_blank" rel="noopener">
-              <h3>Human Review Router Skill</h3>
-              <p>An instruction-only OpenClaw skill for routing uncertain, high-impact, irreversible, or low-evidence actions to user or human review.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-task-scope-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Task Scope Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for keeping agents inside the requested task, using only relevant data, and stopping when complete.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-agent-memory-gate-skill" target="_blank" rel="noopener">
-              <h3>Agent Memory Gate Skill</h3>
-              <p>An instruction-only OpenClaw skill requiring approval before storing, reusing, editing, importing, exporting, or deleting user memory.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-workflow-readiness-check-skill" target="_blank" rel="noopener">
-              <h3>Workflow Readiness Check Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking information, permissions, tools, and evidence before a workflow starts.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-publication-check-skill" target="_blank" rel="noopener">
-              <h3>Publication Check Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking posts, blogs, reports, docs, and website updates before publishing.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-email-send-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Email Send Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for verifying recipients, tone, private data, attachments, claims, and approval before email is sent.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-meeting-summary-checker-skill" target="_blank" rel="noopener">
-              <h3>Meeting Summary Checker Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking meeting notes, action items, owners, dates, and claims against transcript evidence.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-calendar-scheduling-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Calendar Scheduling Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking attendees, timezone, agenda, private notes, and approval before calendar changes.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-message-send-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Message Send Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking chat recipients, channel visibility, tone, private data, claims, and send approval.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-ticket-update-checker-skill" target="_blank" rel="noopener">
-              <h3>Ticket Update Checker Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking support, issue, CRM, and task updates before status or customer-visible changes.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-data-export-guardrail-skill" target="_blank" rel="noopener">
-              <h3>Data Export Guardrail Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking export scope, destination, privacy, redaction, and approval before data is shared.</p>
-            </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-release-readiness-check-skill" target="_blank" rel="noopener">
-              <h3>Release Readiness Check Skill</h3>
-              <p>An instruction-only OpenClaw skill for checking tags, changelogs, docs, artifacts, tests, approval, and rollback before release.</p>
-            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>
               <p>Generate a starter adapter, prompt, bad candidate, and README for a new domain.</p>
@@ -868,6 +749,143 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/results-interpretation.md" target="_blank" rel="noopener">
               <h3>Reading Results</h3>
               <p>A guide to reading capability, alignment, gap score, and pass rate without overclaiming.</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="openclaw">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Agent distribution</p>
+              <h2>OpenClaw plugins and skills.</h2>
+            </div>
+            <p>
+              These packages are for people who want AANA inside agent workflows: installable plugins,
+              optional runtime tools, and focused guardrails for common high-risk actions.
+            </p>
+          </div>
+          <div class="resource-grid">
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-guardrail-pack-plugin" target="_blank" rel="noopener">
+              <h3>AANA Guardrail Pack Plugin</h3>
+              <p>A no-code OpenClaw plugin that bundles the core AANA guardrails into one reviewable install package.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-runtime-connector-plugin" target="_blank" rel="noopener">
+              <h3>AANA Runtime Connector Plugin</h3>
+              <p>Optional OpenClaw tools for calling a configured local AANA bridge before an agent acts.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/openclaw-skill-review-notes.md" target="_blank" rel="noopener">
+              <h3>OpenClaw Review Notes</h3>
+              <p>Provenance, execution, decision, and data-handling boundaries for plugin and skill installs.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/examples/openclaw/aana-guardrail-skill/SKILL.md" target="_blank" rel="noopener">
+              <h3>OpenClaw Guardrail Skill</h3>
+              <p>An instruction-only starter skill for calling a separately reviewed AANA interface.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-guardrail-skill-bundled" target="_blank" rel="noopener">
+              <h3>Bundled OpenClaw Helper</h3>
+              <p>An inspectable no-dependency helper package for localhost-only AANA bridge calls.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-workflow-readiness-check-skill" target="_blank" rel="noopener">
+              <h3>Workflow Readiness Check Skill</h3>
+              <p>Checks information, permissions, tools, and evidence before a workflow starts.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-tool-use-gate-skill" target="_blank" rel="noopener">
+              <h3>Tool Use Gate Skill</h3>
+              <p>Checks whether tool calls are necessary, scoped, authorized, and safe before use.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-human-review-router-skill" target="_blank" rel="noopener">
+              <h3>Human Review Router Skill</h3>
+              <p>Routes uncertain, high-impact, irreversible, or low-evidence actions to user or human review.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-task-scope-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Task Scope Guardrail Skill</h3>
+              <p>Keeps agents inside the requested task, using only relevant data, and stopping when complete.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-private-data-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Private Data Guardrail Skill</h3>
+              <p>Minimizes, redacts, or blocks private account, billing, payment, health, legal, and personal data.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-file-operation-guardrail-skill" target="_blank" rel="noopener">
+              <h3>File Operation Guardrail Skill</h3>
+              <p>Checks deletes, moves, overwrites, publishing, uploads, exports, and bulk edits before files are touched.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-data-export-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Data Export Guardrail Skill</h3>
+              <p>Checks export scope, destination, privacy, redaction, and approval before data is shared.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-email-send-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Email Send Guardrail Skill</h3>
+              <p>Verifies recipients, tone, private data, attachments, claims, and approval before email is sent.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-message-send-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Message Send Guardrail Skill</h3>
+              <p>Checks chat recipients, channel visibility, tone, private data, claims, and send approval.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-support-reply-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Support Reply Guardrail Skill</h3>
+              <p>Checks customer replies before they invent facts, promise refunds, overstate policy, or expose private data.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-code-change-review-skill" target="_blank" rel="noopener">
+              <h3>Code Change Review Skill</h3>
+              <p>Gates code edits, commits, pull requests, test claims, scope creep, secret leakage, and destructive commands.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-publication-check-skill" target="_blank" rel="noopener">
+              <h3>Publication Check Skill</h3>
+              <p>Checks posts, blogs, reports, docs, and website updates before publishing.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-evidence-first-answering-skill" target="_blank" rel="noopener">
+              <h3>Evidence First Answering Skill</h3>
+              <p>Separates known facts, assumptions, missing evidence, and next retrieval steps before answering.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-research-grounding-skill" target="_blank" rel="noopener">
+              <h3>Research Grounding Skill</h3>
+              <p>Checks citations, source limits, unsupported claims, and uncertainty.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-decision-log-skill" target="_blank" rel="noopener">
+              <h3>Decision Log Skill</h3>
+              <p>Creates compact audit records: what was checked, what failed, what changed, and what risk remains.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-agent-memory-gate-skill" target="_blank" rel="noopener">
+              <h3>Agent Memory Gate Skill</h3>
+              <p>Requires approval before storing, reusing, editing, importing, exporting, or deleting user memory.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-continuous-improvement-skill" target="_blank" rel="noopener">
+              <h3>Continuous Improvement Skill</h3>
+              <p>Improves agent workflows without silent memory, tool, or policy changes.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-meeting-summary-checker-skill" target="_blank" rel="noopener">
+              <h3>Meeting Summary Checker Skill</h3>
+              <p>Checks meeting notes, action items, owners, dates, and claims against transcript evidence.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-calendar-scheduling-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Calendar Scheduling Guardrail Skill</h3>
+              <p>Checks attendees, timezone, agenda, private notes, and approval before calendar changes.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-ticket-update-checker-skill" target="_blank" rel="noopener">
+              <h3>Ticket Update Checker Skill</h3>
+              <p>Checks support, issue, CRM, and task updates before status or customer-visible changes.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-release-readiness-check-skill" target="_blank" rel="noopener">
+              <h3>Release Readiness Check Skill</h3>
+              <p>Checks tags, changelogs, docs, artifacts, tests, approval, and rollback before release.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-medical-safety-router-skill" target="_blank" rel="noopener">
+              <h3>Medical Safety Router Skill</h3>
+              <p>Routes health and wellness questions through uncertainty, emergency care, clinician referral, and no-diagnosis boundaries.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-financial-safety-router-skill" target="_blank" rel="noopener">
+              <h3>Financial Safety Router Skill</h3>
+              <p>Checks investment, tax, budgeting, debt, and purchase advice for unsupported claims and risk disclosure.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-legal-safety-router-skill" target="_blank" rel="noopener">
+              <h3>Legal Safety Router Skill</h3>
+              <p>Prevents unauthorized legal advice, missing jurisdiction caveats, and unsupported legal claims.</p>
+            </a>
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/tree/master/examples/openclaw/aana-purchase-booking-guardrail-skill" target="_blank" rel="noopener">
+              <h3>Purchase Booking Guardrail Skill</h3>
+              <p>Gates purchases, bookings, reservations, subscriptions, renewals, and irreversible financial actions.</p>
             </a>
           </div>
         </div>
