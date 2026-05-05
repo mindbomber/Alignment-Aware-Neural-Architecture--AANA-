@@ -1,0 +1,26 @@
+{
+  "name": "aana-runtime-connector",
+  "version": "0.1.0",
+  "description": "OpenClaw runtime connector tools for calling a user-configured local AANA bridge.",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "openclaw.plugin.json",
+    "README.md",
+    "dist/",
+    "examples/"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  }
+}

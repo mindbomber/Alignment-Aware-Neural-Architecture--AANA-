@@ -1,0 +1,28 @@
+{
+  "id": "aana-runtime-connector",
+  "name": "AANA Runtime Connector",
+  "version": "0.1.0",
+  "description": "Optional OpenClaw agent tools that send planned agent events and workflow checks to a user-configured local AANA bridge.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "bridgeBaseUrl": {
+        "type": "string",
+        "description": "Base URL for a trusted local AANA bridge. Must resolve to a loopback host."
+      },
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 30000,
+        "default": 8000,
+        "description": "Request timeout for AANA bridge calls."
+      },
+      "requireExplicitBridgeBaseUrl": {
+        "type": "boolean",
+        "default": true,
+        "description": "Keep enabled so each deployment intentionally configures the bridge endpoint."
+      }
+    },
+    "additionalProperties": false
+  }
+}

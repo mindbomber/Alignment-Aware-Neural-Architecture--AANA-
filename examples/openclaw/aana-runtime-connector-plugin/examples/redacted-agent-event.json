@@ -1,0 +1,21 @@
+{
+  "event_version": "0.1",
+  "event_id": "example-redacted-support-check",
+  "agent": "openclaw",
+  "adapter_id": "support_reply",
+  "user_request": "Draft a customer-support reply using only verified facts. Do not include private account details or invent policy promises.",
+  "candidate_action": "Hi, I can help with that. I do not have the order identifier or refund eligibility yet, so I need to verify those details before promising an outcome.",
+  "available_evidence": [
+    "Customer name is known.",
+    "Order identifier is unavailable.",
+    "Refund eligibility is unavailable.",
+    "Private account details must not be included."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "ask",
+    "defer",
+    "refuse"
+  ]
+}

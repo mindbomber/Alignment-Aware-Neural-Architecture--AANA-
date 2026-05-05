@@ -15,6 +15,14 @@ The plugin bundles 13 instruction-only AANA skills behind one `openclaw.plugin.j
 
 The plugin package is intentionally text-only. It does not bundle executable code, install dependencies, run scripts, call services, write files, write event files, persist memory, or require a local helper path. Host agents should treat the bundled skills as advisory or approval-gated procedures according to the plugin configuration and the user's installation policy.
 
+## Runtime Connector Plugin
+
+A separate OpenClaw runtime connector is available at `examples/openclaw/aana-runtime-connector-plugin/`.
+
+Unlike the guardrail pack, the runtime connector registers optional OpenClaw tools. Those tools call a user-configured loopback AANA bridge for health checks, agent-event validation, agent-event gating, workflow validation, and workflow gating. The connector does not ship a Python helper, model provider, bridge server, background service, dependency installer, memory store, or policy engine.
+
+The connector should be enabled only when the user or administrator has separately reviewed and started the AANA bridge. Review payloads should stay minimal and redacted, and tool access should remain opt-in for agents that need live gate decisions.
+
 ## Provenance Boundary
 
 For standalone skill installation, do not rely on a relative script path or a helper that is absent from the reviewed package. If a deployment wants live AANA checks, configure one reviewed interface outside the skill:
