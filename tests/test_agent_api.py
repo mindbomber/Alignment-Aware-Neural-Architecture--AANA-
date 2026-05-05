@@ -73,6 +73,43 @@ class AgentApiTests(unittest.TestCase):
             self.assertEqual(event["metadata"]["expected_gate_decision"], "pass")
             self.assertTrue(agent_api.validate_event(event)["valid"])
 
+    def test_audit_event_check_excludes_raw_sensitive_text(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        event["candidate_action"] = "Customer card ending 4242 should receive a refund."
+        result = agent_api.check_event(event)
+
+        record = agent_api.audit_event_check(event, result, created_at="2026-05-05T00:00:00+00:00")
+        serialized = str(record)
+
+        self.assertEqual(record["record_type"], "agent_check")
+        self.assertEqual(record["event_id"], event["event_id"])
+        self.assertEqual(record["adapter_id"], "support_reply")
+        self.assertEqual(record["gate_decision"], "pass")
+        self.assertEqual(record["recommended_action"], "revise")
+        self.assertGreater(record["violation_count"], 0)
+        self.assertIn("private_account_detail", record["violation_codes"])
+        self.assertIn("sha256", record["input_fingerprints"]["candidate"])
+        self.assertNotIn("4242", serialized)
+        self.assertNotIn("Customer card", serialized)
+
+    def test_audit_jsonl_roundtrip_and_summary(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+        result = agent_api.check_event(event)
+        record = agent_api.audit_event_check(event, result, created_at="2026-05-05T00:00:00+00:00")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "audit.jsonl"
+            agent_api.append_audit_record(path, record)
+            records = agent_api.load_audit_records(path)
+            summary = agent_api.summarize_audit_records(records)
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["record_type"], "agent_check")
+        self.assertEqual(summary["total"], 1)
+        self.assertEqual(summary["gate_decisions"]["pass"], 1)
+        self.assertEqual(summary["recommended_actions"]["revise"], 1)
+        self.assertIn("invented_order_id", summary["violation_codes"])
+
 
 if __name__ == "__main__":
     unittest.main()

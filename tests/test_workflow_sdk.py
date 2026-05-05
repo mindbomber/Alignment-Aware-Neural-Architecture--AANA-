@@ -143,6 +143,46 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertIn("Source A: verified.", event["available_evidence"])
         self.assertIn("Constraint to preserve: Use Source A only.", event["available_evidence"])
 
+    def test_workflow_contract_accepts_structured_evidence_objects(self):
+        workflow_request = workflow_contract.normalize_workflow_request(
+            adapter="research_summary",
+            request="Summarize Source A.",
+            candidate="Unsupported answer [Source C].",
+            evidence=[
+                {
+                    "source_id": "source-a",
+                    "retrieved_at": "2026-05-05T00:00:00Z",
+                    "trust_tier": "verified",
+                    "redaction_status": "redacted",
+                    "text": "Source A: AANA makes constraints explicit.",
+                }
+            ],
+            constraints=["Use Source A only."],
+            workflow_id="structured-evidence-001",
+        )
+
+        validation = workflow_contract.validate_workflow_request(workflow_request)
+        event = workflow_contract.workflow_request_to_agent_event(workflow_request)
+        result = aana.check_request(workflow_request)
+
+        self.assertTrue(validation["valid"], validation)
+        self.assertIn("source_id=source-a", event["available_evidence"][0])
+        self.assertIn("trust_tier=verified", event["available_evidence"][0])
+        self.assertEqual(result["workflow_id"], "structured-evidence-001")
+        self.assertEqual(result["gate_decision"], "pass")
+
+    def test_workflow_contract_rejects_malformed_evidence_objects(self):
+        workflow_request = workflow_contract.normalize_workflow_request(
+            adapter="research_summary",
+            request="Summarize Source A.",
+            evidence=[{"source_id": "source-a"}],
+        )
+
+        validation = workflow_contract.validate_workflow_request(workflow_request)
+
+        self.assertFalse(validation["valid"])
+        self.assertEqual(validation["issues"][0]["path"], "$.evidence")
+
     def test_http_workflow_routes(self):
         workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
 
@@ -176,6 +216,43 @@ class WorkflowSdkTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(payload["title"], "AANA Workflow Request")
         self.assertIn("adapter", payload["properties"])
+
+    def test_sdk_workflow_audit_record_excludes_raw_text(self):
+        workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
+        result = aana.check_request(workflow_request)
+
+        record = aana.audit_workflow_check(
+            workflow_request,
+            result,
+            created_at="2026-05-05T00:00:00+00:00",
+        )
+        serialized = str(record)
+
+        self.assertEqual(record["record_type"], "workflow_check")
+        self.assertEqual(record["adapter"], "research_summary")
+        self.assertEqual(record["gate_decision"], "pass")
+        self.assertEqual(record["recommended_action"], "revise")
+        self.assertGreater(record["violation_count"], 0)
+        self.assertGreater(record["evidence_count"], 0)
+        self.assertIn("sha256", record["input_fingerprints"]["request"])
+        self.assertNotIn(workflow_request["request"], serialized)
+        self.assertNotIn(workflow_request["candidate"], serialized)
+
+    def test_sdk_workflow_batch_audit_record_summarizes_items(self):
+        batch_request = agent_api.load_json_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+        result = aana.check_batch(batch_request)
+
+        record = aana.audit_workflow_batch(
+            batch_request,
+            result,
+            created_at="2026-05-05T00:00:00+00:00",
+        )
+
+        self.assertEqual(record["record_type"], "workflow_batch_check")
+        self.assertEqual(record["batch_id"], "demo-batch-productive-work-001")
+        self.assertEqual(record["summary"]["total"], 3)
+        self.assertEqual(len(record["records"]), 3)
+        self.assertTrue(all(item["record_type"] == "workflow_check" for item in record["records"]))
 
 
 if __name__ == "__main__":

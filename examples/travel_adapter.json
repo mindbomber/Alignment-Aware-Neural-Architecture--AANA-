@@ -213,5 +213,44 @@
       "Production use needs live prices, hours, transit routes, accessibility data, and availability checks.",
       "The adapter has been tested as a single-scenario case study, not as a broad travel benchmark."
     ]
+  },
+  "production_readiness": {
+    "status": "prototype",
+    "owner": "AANA maintainers; assign a travel-domain owner before production use.",
+    "evidence_requirements": [
+      "Use structured evidence objects for live prices, opening hours, transit routes, accessibility notes, and date-specific availability.",
+      "Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text.",
+      "User-provided constraints must be preserved as first-class evidence."
+    ],
+    "verifier_fallbacks": [
+      "Use deterministic checks for budget totals, per-ticket caps, forbidden transport, lunch presence, day coverage, and destination presence.",
+      "Use retrieval-backed verification when live prices, route feasibility, hours, accessibility, or booking availability are needed.",
+      "Use human review before irreversible booking or purchase actions."
+    ],
+    "calibration_notes": [
+      "Placeholder costs are not calibrated to live travel markets.",
+      "A pass only means known deterministic constraints were preserved for the checked prompt.",
+      "Unknown route, accessibility, or availability facts should lower confidence and route to retrieve or defer."
+    ],
+    "fixture_coverage": {
+      "accept": "covered by repaired final outputs with all deterministic constraints passing",
+      "revise": "covered by gallery bad-candidate example",
+      "retrieve": "external_required for live prices, routes, hours, and availability",
+      "ask": "covered by destination_required constraint behavior",
+      "refuse": "not_applicable for current executable demo; policy states refusal for fabrication or hidden violations",
+      "defer": "external_required for production-quality live travel claims"
+    },
+    "escalation_policy": "Retrieve or defer when live prices, hours, route feasibility, accessibility, or booking availability are missing; ask when destination or hard constraints are incomplete; route irreversible booking actions to human review.",
+    "audit_requirements": "Log redacted workflow or agent audit records with adapter id, gate decision, recommended action, violation codes, evidence fingerprints, and candidate/output fingerprints.",
+    "human_review_escalation": [
+      "Escalate irreversible booking, purchase, cancellation, or payment actions.",
+      "Escalate accessibility-critical, safety-critical, or minor-travel workflows.",
+      "Escalate repeated false accepts for budget, route, or destination constraints."
+    ],
+    "production_caveats": [
+      "Do not use as a booking engine without live inventory and user confirmation.",
+      "Do not represent placeholder costs as current prices.",
+      "Does not cover passport, visa, medical, legal, or accessibility obligations without dedicated verifiers."
+    ]
   }
 }

@@ -16,7 +16,7 @@ class WorkflowRequest:
     adapter: str
     request: str
     candidate: str | None = None
-    evidence: list[str] = field(default_factory=list)
+    evidence: list[str | dict] = field(default_factory=list)
     constraints: list[str] = field(default_factory=list)
     allowed_actions: list[str] = field(default_factory=lambda: list(DEFAULT_ALLOWED_ACTIONS))
     metadata: dict = field(default_factory=dict)
@@ -160,7 +160,26 @@ WORKFLOW_REQUEST_SCHEMA = {
         "evidence": {
             "oneOf": [
                 {"type": "string"},
-                {"type": "array", "items": {"type": "string"}},
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {"type": "string"},
+                            {
+                                "type": "object",
+                                "required": ["text"],
+                                "properties": {
+                                    "text": {"type": "string", "minLength": 1},
+                                    "source_id": {"type": "string"},
+                                    "retrieved_at": {"type": "string"},
+                                    "trust_tier": {"type": "string"},
+                                    "redaction_status": {"type": "string"},
+                                },
+                                "additionalProperties": True,
+                            },
+                        ]
+                    },
+                },
             ]
         },
         "constraints": {
@@ -256,6 +275,61 @@ def _string_list(value):
     return None
 
 
+def _evidence_object(value):
+    if not isinstance(value, dict):
+        return None
+    if not _is_nonempty_string(value.get("text")):
+        return None
+    for key in ("source_id", "retrieved_at", "trust_tier", "redaction_status"):
+        if value.get(key) is not None and not isinstance(value.get(key), str):
+            return None
+    return value
+
+
+def _evidence_list(value):
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        normalized = []
+        for item in value:
+            if isinstance(item, str):
+                normalized.append(item)
+            else:
+                evidence_object = _evidence_object(item)
+                if evidence_object is None:
+                    return None
+                normalized.append(evidence_object)
+        return normalized
+    return None
+
+
+def evidence_item_to_text(item):
+    if isinstance(item, str):
+        return item
+    if not isinstance(item, dict):
+        return str(item)
+    parts = []
+    if item.get("source_id"):
+        parts.append(f"source_id={item['source_id']}")
+    if item.get("trust_tier"):
+        parts.append(f"trust_tier={item['trust_tier']}")
+    if item.get("redaction_status"):
+        parts.append(f"redaction_status={item['redaction_status']}")
+    prefix = " ".join(parts)
+    if prefix:
+        return f"[{prefix}] {item.get('text', '')}"
+    return item.get("text", "")
+
+
+def evidence_to_text_list(value):
+    evidence_items = _evidence_list(value)
+    if evidence_items is None:
+        return []
+    return [evidence_item_to_text(item) for item in evidence_items]
+
+
 def allowed_actions_or_default(value):
     if value is None:
         return list(DEFAULT_ALLOWED_ACTIONS)
@@ -341,15 +415,23 @@ def validate_workflow_request(request):
             }
         )
 
-    for key in ("evidence", "constraints"):
-        if _string_list(request.get(key)) is None:
-            issues.append(
-                {
-                    "level": "error",
-                    "path": f"$.{key}",
-                    "message": f"{key} must be a string or array of strings when provided.",
-                }
-            )
+    if _evidence_list(request.get("evidence")) is None:
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.evidence",
+                "message": "evidence must be a string, array of strings, or array of evidence objects with non-empty text.",
+            }
+        )
+
+    if _string_list(request.get("constraints")) is None:
+        issues.append(
+            {
+                "level": "error",
+                "path": "$.constraints",
+                "message": "constraints must be a string or array of strings when provided.",
+            }
+        )
 
     allowed_actions = request.get("allowed_actions")
     if allowed_actions is not None:
@@ -464,7 +546,7 @@ def normalize_workflow_request(
     metadata=None,
     workflow_id=None,
 ):
-    evidence_items = _string_list(evidence)
+    evidence_items = _evidence_list(evidence)
     constraints_items = _string_list(constraints)
     payload = {
         "contract_version": WORKFLOW_CONTRACT_VERSION,
@@ -481,7 +563,7 @@ def normalize_workflow_request(
 
 
 def workflow_request_to_agent_event(request, agent="workflow"):
-    evidence = _string_list(request.get("evidence")) or []
+    evidence = evidence_to_text_list(request.get("evidence"))
     constraints = _string_list(request.get("constraints")) or []
     if constraints:
         evidence = evidence + [f"Constraint to preserve: {item}" for item in constraints]

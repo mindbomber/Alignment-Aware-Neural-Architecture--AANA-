@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import pathlib
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -17,6 +18,8 @@ from eval_pipeline import agent_api, agent_contract, workflow_contract
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
+DEFAULT_MAX_BODY_BYTES = 1_048_576
+DEFAULT_TOKEN_ENV = "AANA_BRIDGE_TOKEN"
 
 
 def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
@@ -233,9 +236,45 @@ def json_bytes(payload):
     return json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8")
 
 
-def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLERY):
+def _header_value(headers, name):
+    if not headers:
+        return None
+    lower_name = name.lower()
+    for key, value in headers.items():
+        if str(key).lower() == lower_name:
+            return value
+    return None
+
+
+def _authorized(headers, auth_token):
+    if not auth_token:
+        return True
+    authorization = _header_value(headers, "Authorization")
+    if authorization == f"Bearer {auth_token}":
+        return True
+    return _header_value(headers, "X-AANA-Token") == auth_token
+
+
+def route_request(
+    method,
+    target,
+    body=b"",
+    gallery_path=agent_api.DEFAULT_GALLERY,
+    headers=None,
+    max_body_bytes=DEFAULT_MAX_BODY_BYTES,
+    auth_token=None,
+):
     parsed = urlparse(target)
     query = parse_qs(parsed.query)
+
+    if method == "POST" and len(body) > max_body_bytes:
+        return 413, {
+            "error": "Request body too large.",
+            "max_body_bytes": max_body_bytes,
+        }
+
+    if method == "POST" and not _authorized(headers, auth_token):
+        return 401, {"error": "Unauthorized."}
 
     if method == "GET" and parsed.path == "/health":
         return 200, {
@@ -345,14 +384,35 @@ def route_request(method, target, body=b"", gallery_path=agent_api.DEFAULT_GALLE
 
 class AanaAgentHandler(BaseHTTPRequestHandler):
     gallery_path = agent_api.DEFAULT_GALLERY
+    max_body_bytes = DEFAULT_MAX_BODY_BYTES
+    auth_token = None
 
     def do_GET(self):
         self.respond(*route_request("GET", self.path, gallery_path=self.gallery_path))
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", "0") or "0")
+        if length > self.max_body_bytes:
+            self.respond(
+                413,
+                {
+                    "error": "Request body too large.",
+                    "max_body_bytes": self.max_body_bytes,
+                },
+            )
+            return
         body = self.rfile.read(length)
-        self.respond(*route_request("POST", self.path, body=body, gallery_path=self.gallery_path))
+        self.respond(
+            *route_request(
+                "POST",
+                self.path,
+                body=body,
+                gallery_path=self.gallery_path,
+                headers=self.headers,
+                max_body_bytes=self.max_body_bytes,
+                auth_token=self.auth_token,
+            )
+        )
 
     def log_message(self, format, *args):
         sys.stderr.write("aana_server: " + format % args + "\n")
@@ -366,17 +426,31 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-def make_handler(gallery_path):
+def make_handler(gallery_path, max_body_bytes=DEFAULT_MAX_BODY_BYTES, auth_token=None):
     class ConfiguredAanaAgentHandler(AanaAgentHandler):
         pass
 
     ConfiguredAanaAgentHandler.gallery_path = gallery_path
+    ConfiguredAanaAgentHandler.max_body_bytes = max_body_bytes
+    ConfiguredAanaAgentHandler.auth_token = auth_token
     return ConfiguredAanaAgentHandler
 
 
-def run_server(host=DEFAULT_HOST, port=DEFAULT_PORT, gallery_path=agent_api.DEFAULT_GALLERY):
-    server = ThreadingHTTPServer((host, port), make_handler(gallery_path))
+def run_server(
+    host=DEFAULT_HOST,
+    port=DEFAULT_PORT,
+    gallery_path=agent_api.DEFAULT_GALLERY,
+    max_body_bytes=DEFAULT_MAX_BODY_BYTES,
+    auth_token=None,
+):
+    token = auth_token if auth_token is not None else os.environ.get(DEFAULT_TOKEN_ENV)
+    server = ThreadingHTTPServer((host, port), make_handler(gallery_path, max_body_bytes, token))
     print(f"AANA agent bridge listening on http://{host}:{port}")
+    if token:
+        print("Auth: bearer token required for POST routes.")
+    else:
+        print(f"Auth: no token configured. Set {DEFAULT_TOKEN_ENV} to require POST authorization.")
+    print(f"Max POST body: {max_body_bytes} bytes")
     print("Routes: GET /health, GET /policy-presets, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /validate-workflow-batch, POST /workflow-batch")
     try:
         server.serve_forever()
@@ -391,12 +465,23 @@ def build_parser():
     parser.add_argument("--host", default=DEFAULT_HOST, help="Host interface to bind.")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="Port to bind.")
     parser.add_argument("--gallery", default=str(agent_api.DEFAULT_GALLERY), help="Adapter gallery JSON path.")
+    parser.add_argument(
+        "--max-body-bytes",
+        type=int,
+        default=DEFAULT_MAX_BODY_BYTES,
+        help="Maximum accepted POST body size.",
+    )
+    parser.add_argument(
+        "--auth-token",
+        default=None,
+        help=f"Optional POST auth token. Prefer setting {DEFAULT_TOKEN_ENV} in production-like runs.",
+    )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    run_server(args.host, args.port, args.gallery)
+    run_server(args.host, args.port, args.gallery, args.max_body_bytes, args.auth_token)
     return 0
 
 

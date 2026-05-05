@@ -1,0 +1,72 @@
+{
+  "deployment_name": "aana-local-controlled",
+  "environment": "production",
+  "bridge": {
+    "host": "127.0.0.1",
+    "auth_required": true,
+    "tls_terminated": true,
+    "max_body_bytes": 1048576,
+    "rate_limits": {
+      "enabled": true,
+      "requests_per_minute": 60
+    }
+  },
+  "audit": {
+    "sink": "jsonl://eval_outputs/audit/aana-audit.jsonl",
+    "immutable": true,
+    "retention_days": 365,
+    "raw_artifact_store": "none",
+    "redaction_required": true
+  },
+  "evidence_sources": [
+    {
+      "source_id": "aana-example-workflow-evidence",
+      "owner": "AANA Maintainers",
+      "authorization": "local-reviewed-repository-fixtures",
+      "freshness_slo": "repository-versioned",
+      "trust_tier": "verified"
+    }
+  ],
+  "observability": {
+    "dashboard_url": "https://observability.local/aana",
+    "alerts_enabled": true,
+    "tracked_metrics": [
+      "gate_decision_count",
+      "recommended_action_count",
+      "violation_code_count",
+      "adapter_error_count",
+      "latency"
+    ]
+  },
+  "domain_owners": [
+    {
+      "adapter_id": "travel_planning",
+      "owner": "AANA Maintainers",
+      "review_status": "pilot_approved"
+    },
+    {
+      "adapter_id": "meal_planning",
+      "owner": "AANA Maintainers",
+      "review_status": "pilot_approved"
+    },
+    {
+      "adapter_id": "support_reply",
+      "owner": "AANA Maintainers",
+      "review_status": "pilot_approved"
+    },
+    {
+      "adapter_id": "research_summary",
+      "owner": "AANA Maintainers",
+      "review_status": "pilot_approved"
+    }
+  ],
+  "human_review": {
+    "queue": "AANA Local Human Review Queue",
+    "required_for": [
+      "high-impact decisions",
+      "low-confidence verifier results",
+      "irreversible external actions"
+    ],
+    "sla": "1 business day"
+  }
+}

@@ -24,6 +24,21 @@ Every AANA domain adapter should define seven things:
 
 If you cannot fill in those layers, AANA may still help you think clearly, but you do not yet have a plug-and-play adapter.
 
+Production adapters should also declare a `production_readiness` block. This block does not make an adapter safe by itself; it makes ownership, evidence, escalation, audit, and caveats visible before the adapter is used in consequential workflows.
+
+Recommended fields:
+
+- `status`: `prototype`, `pilot`, `production_candidate`, or `production`.
+- `owner`: domain owner or review group responsible for maintaining the adapter.
+- `evidence_requirements`: required source systems, provenance fields, freshness limits, and redaction expectations.
+- `verifier_fallbacks`: deterministic, retrieval-backed, model-judge, and human-review fallback behavior.
+- `calibration_notes`: known confidence limits, weak verifier signals, and conditions that should lower confidence.
+- `fixture_coverage`: coverage status for `accept`, `revise`, `retrieve`, `ask`, `refuse`, and `defer`.
+- `escalation_policy`: when to route to human review, ask, defer, retrieve, or refuse.
+- `audit_requirements`: what decision metadata should be logged and where raw artifacts may be stored.
+- `human_review_escalation`: explicit cases that must leave the automatic path.
+- `production_caveats`: known blind spots and workflows the adapter must not cover.
+
 ## Blank Adapter Template
 
 Copy this structure when designing a new adapter.
@@ -80,6 +95,18 @@ Evaluation:
   gap metric:
   pass condition:
   known caveats:
+
+Production readiness:
+  status:
+  owner:
+  evidence requirements:
+  verifier fallbacks:
+  calibration notes:
+  fixture coverage:
+  escalation policy:
+  audit requirements:
+  human review escalation:
+  production caveats:
 ```
 
 Machine-readable starter files:

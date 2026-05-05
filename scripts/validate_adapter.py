@@ -25,6 +25,18 @@ EVALUATION_KEYS = [
     "pass_condition",
     "known_caveats",
 ]
+PRODUCTION_READINESS_KEYS = [
+    "status",
+    "owner",
+    "evidence_requirements",
+    "verifier_fallbacks",
+    "calibration_notes",
+    "fixture_coverage",
+    "escalation_policy",
+    "audit_requirements",
+    "human_review_escalation",
+    "production_caveats",
+]
 PLACEHOLDER_MARKERS = ["replace_with", "describe what", "describe exactly", "describe how", "describe the", "state the constraint", "constraint_id"]
 
 
@@ -177,12 +189,87 @@ def validate_adapter(adapter):
     if contains_placeholder(adapter):
         add_issue(issues, "warning", "adapter", "Adapter still appears to contain placeholder text.")
 
+    production = adapter.get("production_readiness")
+    if production is None:
+        add_issue(
+            issues,
+            "warning",
+            "production_readiness",
+            "Production adapters should declare status, owner, evidence requirements, escalation policy, audit requirements, and caveats.",
+        )
+    elif not isinstance(production, dict):
+        add_issue(issues, "error", "production_readiness", "Production readiness must be an object when provided.")
+    else:
+        for key in PRODUCTION_READINESS_KEYS:
+            if key not in production:
+                add_issue(issues, "warning", f"production_readiness.{key}", "Production readiness field is missing.")
+        for key in ("status", "owner", "escalation_policy", "audit_requirements"):
+            if key in production and not has_text(production.get(key)):
+                add_issue(issues, "warning", f"production_readiness.{key}", "Field should be a non-empty string.")
+        for key in (
+            "evidence_requirements",
+            "verifier_fallbacks",
+            "calibration_notes",
+            "human_review_escalation",
+            "production_caveats",
+        ):
+            if key in production and not is_nonempty_list(production.get(key)):
+                add_issue(issues, "warning", f"production_readiness.{key}", "Field should be a non-empty list.")
+        fixture_coverage = production.get("fixture_coverage")
+        if "fixture_coverage" in production:
+            if not isinstance(fixture_coverage, dict):
+                add_issue(issues, "warning", "production_readiness.fixture_coverage", "Fixture coverage should be an object.")
+            else:
+                for action in sorted(ALLOWED_ACTIONS):
+                    if action not in fixture_coverage:
+                        add_issue(
+                            issues,
+                            "warning",
+                            f"production_readiness.fixture_coverage.{action}",
+                            "Fixture coverage should state covered, not_applicable, or external_required.",
+                        )
+
     adapter_name = str(adapter.get("adapter_name", "")).lower()
     domain_name = str(domain.get("name", "")).lower()
     executable_adapters = {
         ("travel_planner_aana_adapter", "budgeted_travel_planning"),
         ("meal_planning_aana_adapter", "budgeted_allergy_safe_meal_planning"),
         ("support_reply_aana_adapter", "privacy_safe_customer_support"),
+        ("crm_support_reply_aana_adapter", "crm_support_reply"),
+        ("email_send_guardrail_aana_adapter", "email_send_guardrail"),
+        ("file_operation_guardrail_aana_adapter", "file_operation_guardrail"),
+        ("code_change_review_aana_adapter", "code_change_review"),
+        ("incident_response_update_aana_adapter", "incident_response_update"),
+        ("security_vulnerability_disclosure_aana_adapter", "security_vulnerability_disclosure"),
+        ("access_permission_change_aana_adapter", "access_permission_change"),
+        ("database_migration_guardrail_aana_adapter", "database_migration_guardrail"),
+        ("experiment_ab_test_launch_aana_adapter", "experiment_ab_test_launch"),
+        ("product_requirements_checker_aana_adapter", "product_requirements_checker"),
+        ("procurement_vendor_risk_aana_adapter", "procurement_vendor_risk"),
+        ("hiring_candidate_feedback_aana_adapter", "hiring_candidate_feedback"),
+        ("performance_review_aana_adapter", "performance_review"),
+        ("learning_tutor_answer_checker_aana_adapter", "learning_tutor_answer_checker"),
+        ("api_contract_change_aana_adapter", "api_contract_change"),
+        ("infrastructure_change_guardrail_aana_adapter", "infrastructure_change_guardrail"),
+        ("data_pipeline_change_aana_adapter", "data_pipeline_change"),
+        ("model_evaluation_release_aana_adapter", "model_evaluation_release"),
+        ("feature_flag_rollout_aana_adapter", "feature_flag_rollout"),
+        ("sales_proposal_checker_aana_adapter", "sales_proposal_checker"),
+        ("customer_success_renewal_aana_adapter", "customer_success_renewal"),
+        ("invoice_billing_reply_aana_adapter", "invoice_billing_reply"),
+        ("insurance_claim_triage_aana_adapter", "insurance_claim_triage"),
+        ("grant_application_review_aana_adapter", "grant_application_review"),
+        ("deployment_readiness_aana_adapter", "deployment_readiness"),
+        ("legal_safety_router_aana_adapter", "legal_safety_router"),
+        ("medical_safety_router_aana_adapter", "medical_safety_router"),
+        ("financial_advice_router_aana_adapter", "financial_advice_router"),
+        ("booking_purchase_guardrail_aana_adapter", "booking_purchase_guardrail"),
+        ("calendar_scheduling_aana_adapter", "calendar_scheduling"),
+        ("data_export_guardrail_aana_adapter", "data_export_guardrail"),
+        ("publication_check_aana_adapter", "publication_check"),
+        ("meeting_summary_checker_aana_adapter", "meeting_summary_checker"),
+        ("ticket_update_checker_aana_adapter", "ticket_update_checker"),
+        ("research_answer_grounding_aana_adapter", "research_answer_grounding"),
         ("research_summary_aana_adapter", "grounded_research_summary"),
     }
     if (adapter_name, domain_name) not in executable_adapters:

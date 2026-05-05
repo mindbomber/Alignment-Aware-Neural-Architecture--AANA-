@@ -12,7 +12,7 @@ if str(SCRIPTS) not in sys.path:
 
 import run_adapter
 import validate_adapter_gallery
-from eval_pipeline import agent_contract, workflow_contract
+from eval_pipeline import agent_contract, audit, evidence as evidence_registry, workflow_contract
 
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
@@ -24,21 +24,165 @@ DEFAULT_AGENT_EVENTS_DIR = ROOT / "examples" / "agent_events"
 POLICY_PRESETS = {
     "message_send": {
         "description": "Use before an agent sends an email, chat message, support reply, or public post.",
-        "recommended_adapters": ["support_reply"],
+        "recommended_adapters": ["support_reply", "email_send_guardrail"],
         "call_before": ["send_message", "send_email", "publish_post"],
-        "watch_for": ["private data", "unsupported claims", "tone", "missing evidence"],
+        "watch_for": ["private data", "unsupported claims", "tone", "missing evidence", "recipient and attachment approval"],
     },
     "file_write": {
         "description": "Use before an agent writes, moves, deletes, or publishes user files.",
-        "recommended_adapters": [],
+        "recommended_adapters": ["file_operation_guardrail"],
         "call_before": ["write_file", "move_file", "delete_file", "publish_file"],
-        "watch_for": ["destructive edits", "missing user confirmation", "irreversible loss"],
+        "watch_for": ["operation scope", "path safety", "backup status", "missing user confirmation", "diff or preview"],
     },
     "code_commit": {
         "description": "Use before an agent commits, pushes, or opens a pull request.",
-        "recommended_adapters": [],
+        "recommended_adapters": ["code_change_review"],
         "call_before": ["git_commit", "git_push", "create_pull_request"],
-        "watch_for": ["test failures", "secret leakage", "unreviewed scope", "unsafe automation"],
+        "watch_for": ["test failures", "secret leakage", "unreviewed scope", "unsafe automation", "migration risk"],
+    },
+    "incident_response": {
+        "description": "Use before an agent posts, sends, schedules, or syncs incident response updates.",
+        "recommended_adapters": ["incident_response_update"],
+        "call_before": ["post_status_page_update", "send_incident_update", "sync_incident_status", "notify_customers"],
+        "watch_for": ["severity", "customer impact", "mitigation status", "ETA", "communications approval"],
+    },
+    "security_disclosure": {
+        "description": "Use before an agent drafts, posts, sends, schedules, or releases security vulnerability disclosures.",
+        "recommended_adapters": ["security_vulnerability_disclosure"],
+        "call_before": ["publish_security_advisory", "send_vulnerability_notice", "release_security_notes", "lift_embargo"],
+        "watch_for": ["CVE facts", "affected versions", "exploitability", "remediation", "disclosure timing"],
+    },
+    "access_permission_change": {
+        "description": "Use before an agent grants, modifies, escalates, extends, or removes IAM permissions.",
+        "recommended_adapters": ["access_permission_change"],
+        "call_before": ["grant_access", "modify_role", "escalate_permission", "extend_access", "add_group_member"],
+        "watch_for": ["requester authority", "least privilege", "scope", "approval", "expiration"],
+    },
+    "database_migration": {
+        "description": "Use before an agent approves, runs, schedules, merges, or rolls out database migrations.",
+        "recommended_adapters": ["database_migration_guardrail"],
+        "call_before": ["run_migration", "approve_migration", "schedule_migration", "merge_schema_change"],
+        "watch_for": ["data loss", "locks", "rollback", "backfill", "compatibility", "backup"],
+    },
+    "experiment_launch": {
+        "description": "Use before an agent launches, ramps, schedules, or auto-ships experiments and A/B tests.",
+        "recommended_adapters": ["experiment_ab_test_launch"],
+        "call_before": ["launch_experiment", "ramp_experiment", "schedule_ab_test", "auto_ship_variant"],
+        "watch_for": ["hypothesis", "guardrails", "sample size", "user impact", "rollback"],
+    },
+    "product_requirements": {
+        "description": "Use before an agent approves, summarizes, hands off, or converts product requirements into implementation work.",
+        "recommended_adapters": ["product_requirements_checker"],
+        "call_before": ["approve_prd", "handoff_requirements", "create_epic", "start_implementation"],
+        "watch_for": ["acceptance criteria", "scope", "dependencies", "privacy review", "security review"],
+    },
+    "procurement_vendor_risk": {
+        "description": "Use before an agent approves, purchases, onboards, renews, or shares data with a vendor.",
+        "recommended_adapters": ["procurement_vendor_risk"],
+        "call_before": ["approve_vendor", "purchase_vendor", "onboard_vendor", "share_vendor_data"],
+        "watch_for": ["vendor identity", "price", "contract terms", "data sharing", "security review"],
+    },
+    "hiring_feedback": {
+        "description": "Use before an agent writes, saves, sends, or summarizes hiring candidate feedback.",
+        "recommended_adapters": ["hiring_candidate_feedback"],
+        "call_before": ["save_candidate_feedback", "send_candidate_feedback", "submit_interview_scorecard", "draft_hiring_summary"],
+        "watch_for": ["job-relatedness", "protected-class risk", "evidence", "tone", "decision claims"],
+    },
+    "performance_review": {
+        "description": "Use before an agent drafts, saves, shares, summarizes, or routes employee performance review feedback.",
+        "recommended_adapters": ["performance_review"],
+        "call_before": ["draft_performance_review", "save_performance_review", "share_review_feedback", "submit_review_packet"],
+        "watch_for": ["evidence", "bias risk", "private data", "compensation promises", "tone"],
+    },
+    "learning_tutor_answer_checker": {
+        "description": "Use before an agent shows, sends, saves, or grades learner-facing tutor answers.",
+        "recommended_adapters": ["learning_tutor_answer_checker"],
+        "call_before": ["show_tutor_answer", "send_tutor_hint", "save_tutor_response", "grade_learning_answer"],
+        "watch_for": ["curriculum fit", "correctness", "hint-vs-answer", "age safety", "unsupported claims"],
+    },
+    "api_contract_change": {
+        "description": "Use before an agent merges, releases, deploys, publishes, or announces API contract changes.",
+        "recommended_adapters": ["api_contract_change"],
+        "call_before": ["merge_api_contract", "release_api", "deploy_api", "publish_openapi_spec", "notify_api_consumers"],
+        "watch_for": ["breaking changes", "versioning", "docs", "tests", "consumers"],
+    },
+    "infrastructure_change": {
+        "description": "Use before an agent merges, applies, deploys, promotes, or approves infrastructure changes.",
+        "recommended_adapters": ["infrastructure_change_guardrail"],
+        "call_before": ["merge_iac_change", "apply_infrastructure_plan", "deploy_infrastructure", "approve_change_request"],
+        "watch_for": ["blast radius", "secrets", "rollback", "cost", "region and compliance"],
+    },
+    "data_pipeline_change": {
+        "description": "Use before an agent merges, deploys, backfills, schedules, or promotes data pipeline changes.",
+        "recommended_adapters": ["data_pipeline_change"],
+        "call_before": ["merge_pipeline_change", "deploy_pipeline", "run_backfill", "change_dag_schedule", "promote_dataset"],
+        "watch_for": ["schema drift", "freshness", "lineage", "PII", "downstream consumers"],
+    },
+    "model_evaluation_release": {
+        "description": "Use before an agent announces, publishes, promotes, deploys, or scopes a model evaluation release.",
+        "recommended_adapters": ["model_evaluation_release"],
+        "call_before": ["publish_model_card", "announce_model_benchmark", "promote_model_release", "deploy_model", "expand_model_scope"],
+        "watch_for": ["benchmark claims", "regressions", "safety evals", "deployment scope"],
+    },
+    "feature_flag_rollout": {
+        "description": "Use before an agent enables, ramps, schedules, expands, or promotes a production feature flag.",
+        "recommended_adapters": ["feature_flag_rollout"],
+        "call_before": ["enable_feature_flag", "ramp_feature_flag", "schedule_flag_rollout", "expand_flag_audience", "promote_feature"],
+        "watch_for": ["audience", "percentage", "kill switch", "monitoring", "rollback"],
+    },
+    "sales_proposal_checker": {
+        "description": "Use before an agent sends, approves, quotes, or redlines a customer sales proposal.",
+        "recommended_adapters": ["sales_proposal_checker"],
+        "call_before": ["send_sales_proposal", "approve_quote", "generate_order_form", "redline_contract", "commit_product_terms"],
+        "watch_for": ["pricing", "discount authority", "legal terms", "product promises"],
+    },
+    "customer_success_renewal": {
+        "description": "Use before an agent sends, approves, drafts, or updates a customer renewal communication.",
+        "recommended_adapters": ["customer_success_renewal"],
+        "call_before": ["send_renewal_email", "approve_renewal_offer", "generate_renewal_quote", "update_renewal_opportunity", "commit_renewal_terms"],
+        "watch_for": ["account facts", "renewal terms", "discount promises", "private notes"],
+    },
+    "invoice_billing_reply": {
+        "description": "Use before an agent sends, approves, drafts, or updates a customer invoice or billing reply.",
+        "recommended_adapters": ["invoice_billing_reply"],
+        "call_before": ["send_billing_reply", "approve_invoice_adjustment", "grant_billing_credit", "update_invoice_status", "send_payment_instruction"],
+        "watch_for": ["balance facts", "credits", "tax claims", "payment data"],
+    },
+    "insurance_claim_triage": {
+        "description": "Use before an agent sends, approves, drafts, or routes an insurance claim triage reply.",
+        "recommended_adapters": ["insurance_claim_triage"],
+        "call_before": ["send_claim_reply", "triage_claim", "approve_claim_payment", "close_claim", "route_claim_queue"],
+        "watch_for": ["coverage claims", "missing docs", "jurisdiction rules", "escalation"],
+    },
+    "grant_application_review": {
+        "description": "Use before an agent sends, approves, drafts, scores, or routes a grant/application review decision.",
+        "recommended_adapters": ["grant_application_review"],
+        "call_before": ["send_application_review", "triage_application", "advance_application", "score_application", "notify_applicant"],
+        "watch_for": ["eligibility", "deadlines", "required docs", "scoring claims"],
+    },
+    "deployment_release": {
+        "description": "Use before an agent deploys, releases, promotes, or changes production runtime configuration.",
+        "recommended_adapters": ["deployment_readiness"],
+        "call_before": ["deploy_service", "promote_release", "run_migration", "change_runtime_config"],
+        "watch_for": ["config validity", "sensitive values", "rollback", "health checks", "migrations", "observability"],
+    },
+    "legal_safety": {
+        "description": "Use before an agent answers legal-adjacent questions or drafts legal-adjacent content.",
+        "recommended_adapters": ["legal_safety_router"],
+        "call_before": ["answer_legal_question", "draft_legal_content", "summarize_legal_document"],
+        "watch_for": ["jurisdiction", "source law", "policy limits", "personalized advice", "human review"],
+    },
+    "medical_safety": {
+        "description": "Use before an agent answers medical-adjacent questions or drafts health-related content.",
+        "recommended_adapters": ["medical_safety_router"],
+        "call_before": ["answer_medical_question", "draft_health_content", "summarize_medical_information"],
+        "watch_for": ["medical advice boundaries", "emergency routing", "disclaimers", "verified sources", "user-specific claims"],
+    },
+    "financial_safety": {
+        "description": "Use before an agent answers financial-adjacent questions or drafts investment, tax, or regulated financial content.",
+        "recommended_adapters": ["financial_advice_router"],
+        "call_before": ["answer_financial_question", "draft_financial_content", "summarize_financial_information"],
+        "watch_for": ["investment advice boundaries", "tax advice boundaries", "risk disclosure", "source documents", "unsupported predictions", "user intent"],
     },
     "support_reply": {
         "description": "Use before an agent drafts customer-support replies or account-specific messages.",
@@ -48,9 +192,39 @@ POLICY_PRESETS = {
     },
     "booking_or_purchase": {
         "description": "Use before an agent books, buys, reserves, or recommends paid options.",
-        "recommended_adapters": ["travel_planning"],
+        "recommended_adapters": ["travel_planning", "booking_purchase_guardrail"],
         "call_before": ["book_trip", "purchase_item", "reserve_ticket"],
-        "watch_for": ["budget caps", "forbidden transport", "missing live prices", "irreversible actions"],
+        "watch_for": ["price", "vendor", "refundability", "irreversible payment", "user confirmation", "missing live prices"],
+    },
+    "calendar_scheduling": {
+        "description": "Use before an agent creates, updates, sends, or finalizes calendar invites.",
+        "recommended_adapters": ["calendar_scheduling"],
+        "call_before": ["create_calendar_invite", "send_calendar_invite", "update_calendar_event"],
+        "watch_for": ["availability", "timezone", "attendees", "conflicts", "invite send consent"],
+    },
+    "data_export": {
+        "description": "Use before an agent prepares, downloads, shares, stores, or transmits data exports.",
+        "recommended_adapters": ["data_export_guardrail"],
+        "call_before": ["export_data", "download_dataset", "share_export", "create_public_link"],
+        "watch_for": ["export scope", "private data", "destination", "authorization", "retention policy"],
+    },
+    "publication_check": {
+        "description": "Use before an agent publishes, posts, releases, sends, or schedules public content.",
+        "recommended_adapters": ["publication_check"],
+        "call_before": ["publish_post", "release_article", "schedule_publication", "send_public_content"],
+        "watch_for": ["claims", "citations", "private info", "brand risk", "legal risk", "approval policy"],
+    },
+    "meeting_summary": {
+        "description": "Use before an agent publishes, sends, stores, or shares meeting summaries.",
+        "recommended_adapters": ["meeting_summary_checker"],
+        "call_before": ["publish_meeting_summary", "send_meeting_recap", "store_meeting_notes", "share_meeting_summary"],
+        "watch_for": ["transcript faithfulness", "action items", "attribution", "sensitive content", "distribution scope"],
+    },
+    "ticket_update": {
+        "description": "Use before an agent posts, sends, syncs, or drafts customer-visible ticket updates.",
+        "recommended_adapters": ["ticket_update_checker"],
+        "call_before": ["post_ticket_update", "send_customer_ticket_update", "sync_ticket_status", "draft_support_update"],
+        "watch_for": ["status claims", "commitments", "customer-visible wording", "internal data", "private data", "support policy"],
     },
     "private_data_use": {
         "description": "Use before an agent reads, summarizes, shares, or acts on private user/account data.",
@@ -63,6 +237,12 @@ POLICY_PRESETS = {
         "recommended_adapters": ["research_summary"],
         "call_before": ["draft_research_summary", "publish_brief", "answer_with_citations"],
         "watch_for": ["invented citations", "unsupported claims", "forbidden sources", "missing uncertainty"],
+    },
+    "research_answer_grounding": {
+        "description": "Use before an agent publishes, shares, or relies on a cited research answer from retrieved documents.",
+        "recommended_adapters": ["research_answer_grounding"],
+        "call_before": ["answer_with_retrieval", "publish_cited_answer", "share_research_answer", "ground_rag_output"],
+        "watch_for": ["citation index", "source boundaries", "unsupported claims", "uncertainty", "source registry"],
     },
 }
 
@@ -233,6 +413,52 @@ def check_workflow_batch(batch_request, gallery_path=DEFAULT_GALLERY):
     }
 
 
+def audit_event_check(event, result=None, created_at=None):
+    if result is None:
+        result = check_event(event)
+    return audit.agent_audit_record(event, result, created_at=created_at)
+
+
+def audit_workflow_check(workflow_request, result=None, created_at=None):
+    if result is None:
+        result = check_workflow_request(workflow_request)
+    return audit.workflow_audit_record(workflow_request, result, created_at=created_at)
+
+
+def audit_workflow_batch(batch_request, result=None, created_at=None):
+    if result is None:
+        result = check_workflow_batch(batch_request)
+    requests = batch_request.get("requests", []) if isinstance(batch_request, dict) else []
+    records = []
+    for workflow_request, workflow_result in zip(requests, result.get("results", []), strict=False):
+        records.append(audit_workflow_check(workflow_request, workflow_result, created_at=created_at))
+    timestamp = created_at or (records[0]["created_at"] if records else None)
+    return {
+        "audit_record_version": audit.AUDIT_RECORD_VERSION,
+        "created_at": timestamp,
+        "record_type": "workflow_batch_check",
+        "batch_id": result.get("batch_id") if isinstance(result, dict) else None,
+        "summary": result.get("summary", {}) if isinstance(result, dict) else {},
+        "records": records,
+    }
+
+
+def append_audit_record(path, record):
+    return audit.append_jsonl(path, record)
+
+
+def load_audit_records(path):
+    return audit.load_jsonl(path)
+
+
+def summarize_audit_records(records):
+    return audit.summarize_records(records)
+
+
+def summarize_audit_file(path):
+    return audit.summarize_jsonl(path)
+
+
 def list_policy_presets():
     return POLICY_PRESETS
 
@@ -247,6 +473,23 @@ def validate_workflow_request(workflow_request):
 
 def validate_workflow_batch_request(batch_request):
     return workflow_contract.validate_workflow_batch_request(batch_request)
+
+
+def load_evidence_registry(path):
+    return evidence_registry.load_registry(path)
+
+
+def validate_evidence_registry(registry):
+    return evidence_registry.validate_registry(registry)
+
+
+def validate_workflow_evidence(workflow_request, registry, require_structured=False, now=None):
+    return evidence_registry.validate_workflow_evidence(
+        workflow_request,
+        registry,
+        require_structured=require_structured,
+        now=now,
+    )
 
 
 def schema_catalog():

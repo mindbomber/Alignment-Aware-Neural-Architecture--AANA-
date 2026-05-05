@@ -6,6 +6,7 @@ import json
 import os
 import pathlib
 import platform
+import subprocess
 import sys
 
 
@@ -17,7 +18,7 @@ import new_adapter
 import run_adapter
 import validate_adapter
 import validate_adapter_gallery
-from eval_pipeline import common
+from eval_pipeline import common, production
 from eval_pipeline import agent_api
 
 
@@ -96,6 +97,9 @@ def command_run_file(args):
 def command_agent_check(args):
     event = agent_api.load_json_file(args.event)
     response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
+    if args.audit_log:
+        record = agent_api.audit_event_check(event, response)
+        agent_api.append_audit_record(args.audit_log, record)
     print_json(response)
     return 0 if response["gate_decision"] == "pass" else 1
 
@@ -103,12 +107,44 @@ def command_agent_check(args):
 def command_workflow_check(args):
     if args.workflow:
         workflow_request = agent_api.load_json_file(args.workflow)
+        if args.evidence_registry:
+            registry = agent_api.load_evidence_registry(args.evidence_registry)
+            evidence_report = agent_api.validate_workflow_evidence(
+                workflow_request,
+                registry,
+                require_structured=args.require_structured_evidence,
+            )
+            if not evidence_report["valid"]:
+                print_json({"evidence_validation": evidence_report})
+                return 1
         result = agent_api.check_workflow_request(workflow_request, gallery_path=args.gallery)
+        if args.audit_log:
+            record = agent_api.audit_workflow_check(workflow_request, result)
+            agent_api.append_audit_record(args.audit_log, record)
         print_json(result)
         return 0 if result["gate_decision"] == "pass" else 1
 
     evidence = list(args.evidence or [])
     constraints = list(args.constraint or [])
+    workflow_request = {
+        "contract_version": agent_api.WORKFLOW_CONTRACT_VERSION,
+        "workflow_id": args.workflow_id,
+        "adapter": args.adapter,
+        "request": args.request,
+        "candidate": args.candidate,
+        "evidence": evidence,
+        "constraints": constraints,
+    }
+    if args.evidence_registry:
+        registry = agent_api.load_evidence_registry(args.evidence_registry)
+        evidence_report = agent_api.validate_workflow_evidence(
+            workflow_request,
+            registry,
+            require_structured=args.require_structured_evidence,
+        )
+        if not evidence_report["valid"]:
+            print_json({"evidence_validation": evidence_report})
+            return 1
     result = agent_api.check_workflow(
         adapter=args.adapter,
         request=args.request,
@@ -118,13 +154,33 @@ def command_workflow_check(args):
         workflow_id=args.workflow_id,
         gallery_path=args.gallery,
     )
+    if args.audit_log:
+        record = agent_api.audit_workflow_check(workflow_request, result)
+        agent_api.append_audit_record(args.audit_log, record)
     print_json(result)
     return 0 if result["gate_decision"] == "pass" else 1
 
 
 def command_workflow_batch(args):
     batch_request = agent_api.load_json_file(args.batch)
+    if args.evidence_registry:
+        registry = agent_api.load_evidence_registry(args.evidence_registry)
+        reports = []
+        for index, workflow_request in enumerate(batch_request.get("requests", [])):
+            report = agent_api.validate_workflow_evidence(
+                workflow_request,
+                registry,
+                require_structured=args.require_structured_evidence,
+            )
+            reports.append({"index": index, **report})
+        if any(not report["valid"] for report in reports):
+            print_json({"evidence_validation": reports})
+            return 1
     result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
+    if args.audit_log:
+        record = agent_api.audit_workflow_batch(batch_request, result)
+        for item in record["records"]:
+            agent_api.append_audit_record(args.audit_log, item)
     print_json(result)
     return 0 if result["summary"]["failed"] == 0 else 1
 
@@ -150,6 +206,37 @@ def command_validate_workflow_batch(args):
     else:
         status = "valid" if report["valid"] else "invalid"
         print(f"Workflow batch request is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+        for issue in report["issues"]:
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_evidence_registry(args):
+    registry = agent_api.load_evidence_registry(args.evidence_registry)
+    report = agent_api.validate_evidence_registry(registry)
+    if args.json:
+        print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Evidence registry is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+        for issue in report["issues"]:
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_workflow_evidence(args):
+    workflow_request = agent_api.load_json_file(args.workflow)
+    registry = agent_api.load_evidence_registry(args.evidence_registry)
+    report = agent_api.validate_workflow_evidence(
+        workflow_request,
+        registry,
+        require_structured=args.require_structured,
+    )
+    if args.json:
+        print_json(report)
+    else:
+        status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+        print(f"Workflow evidence is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
         for issue in report["issues"]:
             print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
     return 0 if report["valid"] else 1
@@ -226,6 +313,393 @@ def command_policy_presets(args):
         print(f"- {name}: {preset['description']}")
         print(f"  Recommended adapters: {adapters}")
     return 0
+
+
+def command_audit_summary(args):
+    summary = agent_api.summarize_audit_file(args.audit_log)
+    if args.json:
+        print_json(summary)
+        return 0
+    print(f"AANA audit summary: {summary['total']} record(s).")
+    print("Gate decisions:")
+    for key, value in sorted(summary["gate_decisions"].items()):
+        print(f"- {key}: {value}")
+    print("Recommended actions:")
+    for key, value in sorted(summary["recommended_actions"].items()):
+        print(f"- {key}: {value}")
+    print("Top violation codes:")
+    for key, value in list(summary["violation_codes"].items())[:10]:
+        print(f"- {key}: {value}")
+    return 0
+
+
+def production_preflight_report(
+    gallery_path=DEFAULT_GALLERY,
+    deployment_manifest=None,
+    evidence_registry=None,
+    observability_policy=None,
+):
+    checks = []
+    checks.append(
+        check_status(
+            "bridge_auth_boundary",
+            "pass" if os.environ.get("AANA_BRIDGE_TOKEN") else "warn",
+            "AANA_BRIDGE_TOKEN is configured." if os.environ.get("AANA_BRIDGE_TOKEN") else "AANA_BRIDGE_TOKEN is not set; POST auth will be optional unless --auth-token is passed.",
+        )
+    )
+    checks.append(
+        check_status(
+            "redacted_audit_records",
+            "pass",
+            "Redacted audit helpers and JSONL summary support are available.",
+            {
+                "helpers": [
+                    "audit_event_check",
+                    "audit_workflow_check",
+                    "audit_workflow_batch",
+                    "append_audit_record",
+                    "summarize_audit_file",
+                ]
+            },
+        )
+    )
+    checks.append(
+        check_status(
+            "structured_evidence_contract",
+            "pass",
+            "Workflow Contract accepts structured evidence objects with source_id, retrieved_at, trust_tier, redaction_status, and text.",
+        )
+    )
+    if evidence_registry:
+        try:
+            registry = agent_api.load_evidence_registry(evidence_registry)
+            report = agent_api.validate_evidence_registry(registry)
+            checks.append(
+                check_status(
+                    "evidence_registry",
+                    "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
+                    "Evidence registry is production-ready."
+                    if report["production_ready"]
+                    else "Evidence registry has issues.",
+                    report,
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("evidence_registry", "fail", str(exc)))
+    if observability_policy:
+        try:
+            policy = agent_api.load_json_file(observability_policy)
+            report = production.validate_observability_policy(policy)
+            checks.append(
+                check_status(
+                    "observability_policy",
+                    "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
+                    "Observability policy is production-ready."
+                    if report["production_ready"]
+                    else "Observability policy has issues.",
+                    report,
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("observability_policy", "fail", str(exc)))
+
+    try:
+        gallery = load_gallery(gallery_path)
+        adapter_reports = []
+        missing_metadata = []
+        malformed_metadata = []
+        for entry in gallery_entries(gallery):
+            adapter_path = ROOT / entry["adapter_path"]
+            adapter = validate_adapter.load_adapter(adapter_path)
+            report = validate_adapter.validate_adapter(adapter)
+            adapter_reports.append(
+                {
+                    "id": entry.get("id"),
+                    "valid": report["valid"],
+                    "errors": report["errors"],
+                    "warnings": report["warnings"],
+                }
+            )
+            if not report["valid"]:
+                malformed_metadata.append(entry.get("id"))
+            if any(issue["path"].startswith("production_readiness") for issue in report["issues"]):
+                missing_metadata.append(entry.get("id"))
+        status = "pass"
+        message = "Gallery adapters validate with production-readiness metadata."
+        if malformed_metadata:
+            status = "fail"
+            message = "One or more gallery adapters fail validation."
+        elif missing_metadata:
+            status = "warn"
+            message = "One or more gallery adapters are missing production-readiness metadata."
+        checks.append(
+            check_status(
+                "adapter_production_metadata",
+                status,
+                message,
+                {"adapters": adapter_reports, "needs_metadata": missing_metadata},
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        checks.append(check_status("adapter_production_metadata", "fail", str(exc)))
+
+    if deployment_manifest:
+        try:
+            manifest = agent_api.load_json_file(deployment_manifest)
+            report = production.validate_deployment_manifest(manifest)
+            checks.append(
+                check_status(
+                    "deployment_manifest",
+                    "pass" if report["production_ready"] else "fail" if not report["valid"] else "warn",
+                    "Deployment manifest is production-ready."
+                    if report["production_ready"]
+                    else "Deployment manifest has issues that must be resolved before launch.",
+                    report,
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("deployment_manifest", "fail", str(exc)))
+    else:
+        external_gates = [
+            "TLS termination and authenticated network clients",
+            "Rate limits and deployment-level request controls",
+            "Immutable audit sink and retention policy",
+            "Evidence-source authorization and freshness checks",
+            "Dashboards or alerts for gate/action/violation drift",
+            "Domain-owner signoff for production adapters",
+            "Human-review queue for high-impact or low-confidence decisions",
+        ]
+        checks.append(
+            check_status(
+                "external_deployment_gates",
+                "warn",
+                "Pass --deployment-manifest to validate selected infrastructure and operating gates.",
+                {"remaining": external_gates},
+            )
+        )
+
+    failed = [item for item in checks if item["status"] == "fail"]
+    warnings = [item for item in checks if item["status"] == "warn"]
+    return {
+        "valid": not failed,
+        "production_ready": not failed and not warnings,
+        "summary": {
+            "status": "pass" if not failed and not warnings else "warn" if not failed else "fail",
+            "checks": len(checks),
+            "failures": len(failed),
+            "warnings": len(warnings),
+        },
+        "checks": checks,
+    }
+
+
+def command_production_preflight(args):
+    report = production_preflight_report(
+        gallery_path=args.gallery,
+        deployment_manifest=args.deployment_manifest,
+        evidence_registry=args.evidence_registry,
+        observability_policy=args.observability_policy,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    print(
+        f"AANA production preflight: {summary['status']} "
+        f"({summary['failures']} failure(s), {summary['warnings']} warning(s))."
+    )
+    for check in report["checks"]:
+        print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
+        remaining = check.get("details", {}).get("remaining", [])
+        for item in remaining:
+            print(f"  - {item}")
+        for issue in check.get("details", {}).get("issues", []):
+            print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_deployment(args):
+    manifest = agent_api.load_json_file(args.deployment_manifest)
+    report = production.validate_deployment_manifest(manifest)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    print(f"Deployment manifest is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+    for issue in report["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_governance(args):
+    policy = agent_api.load_json_file(args.governance_policy)
+    report = production.validate_governance_policy(policy)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    print(f"Governance policy is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+    for issue in report["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_validate_observability(args):
+    policy = agent_api.load_json_file(args.observability_policy)
+    report = production.validate_observability_policy(policy)
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "production-ready" if report["production_ready"] else "valid with warnings" if report["valid"] else "invalid"
+    print(f"Observability policy is {status}: {report['errors']} error(s), {report['warnings']} warning(s).")
+    for issue in report["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def release_check_report(
+    gallery_path=DEFAULT_GALLERY,
+    deployment_manifest=None,
+    governance_policy=None,
+    evidence_registry=None,
+    observability_policy=None,
+    run_local_check=True,
+):
+    checks = []
+    if run_local_check:
+        completed = subprocess.run(
+            [sys.executable, "scripts/dev.py", "check"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        checks.append(
+            check_status(
+                "local_check_suite",
+                "pass" if completed.returncode == 0 else "fail",
+                "scripts/dev.py check passed." if completed.returncode == 0 else "scripts/dev.py check failed.",
+                {"returncode": completed.returncode},
+            )
+        )
+    else:
+        checks.append(check_status("local_check_suite", "warn", "Skipped by --skip-local-check."))
+
+    doctor = doctor_report(gallery_path=gallery_path)
+    checks.append(
+        check_status(
+            "doctor",
+            "pass" if doctor["valid"] else "fail",
+            "Doctor checks pass." if doctor["valid"] else "Doctor checks failed.",
+            doctor["summary"],
+        )
+    )
+
+    preflight = production_preflight_report(
+        gallery_path=gallery_path,
+        deployment_manifest=deployment_manifest,
+        evidence_registry=evidence_registry,
+        observability_policy=observability_policy,
+    )
+    checks.append(
+        check_status(
+            "production_preflight",
+            "pass" if preflight["production_ready"] else "fail" if not preflight["valid"] else "warn",
+            "Production preflight is ready."
+            if preflight["production_ready"]
+            else "Production preflight has warnings or failures.",
+            preflight["summary"],
+        )
+    )
+
+    if governance_policy:
+        try:
+            policy = agent_api.load_json_file(governance_policy)
+            governance = production.validate_governance_policy(policy)
+            checks.append(
+                check_status(
+                    "governance_policy",
+                    "pass" if governance["production_ready"] else "fail" if not governance["valid"] else "warn",
+                    "Governance policy is production-ready."
+                    if governance["production_ready"]
+                    else "Governance policy has issues.",
+                    governance,
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("governance_policy", "fail", str(exc)))
+    else:
+        checks.append(check_status("governance_policy", "warn", "Pass --governance-policy to validate human governance gates."))
+
+    if observability_policy:
+        try:
+            policy = agent_api.load_json_file(observability_policy)
+            observability = production.validate_observability_policy(policy)
+            checks.append(
+                check_status(
+                    "observability_policy",
+                    "pass" if observability["production_ready"] else "fail" if not observability["valid"] else "warn",
+                    "Observability policy is production-ready."
+                    if observability["production_ready"]
+                    else "Observability policy has issues.",
+                    observability,
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(check_status("observability_policy", "fail", str(exc)))
+    else:
+        checks.append(check_status("observability_policy", "warn", "Pass --observability-policy to validate dashboard, alert, and drift-review gates."))
+
+    required_files = [
+        "CHANGELOG.md",
+        "docs/production-readiness-plan.md",
+        "docs/aana-workflow-contract.md",
+        "docs/agent-integration.md",
+    ]
+    missing = [path for path in required_files if not (ROOT / path).exists()]
+    checks.append(
+        check_status(
+            "release_documentation",
+            "pass" if not missing else "fail",
+            "Release and production-readiness docs are present." if not missing else "Required release docs are missing.",
+            {"missing": missing},
+        )
+    )
+
+    failed = [item for item in checks if item["status"] == "fail"]
+    warnings = [item for item in checks if item["status"] == "warn"]
+    return {
+        "valid": not failed,
+        "release_ready": not failed and not warnings,
+        "summary": {
+            "status": "pass" if not failed and not warnings else "warn" if not failed else "fail",
+            "checks": len(checks),
+            "failures": len(failed),
+            "warnings": len(warnings),
+        },
+        "checks": checks,
+    }
+
+
+def command_release_check(args):
+    report = release_check_report(
+        gallery_path=args.gallery,
+        deployment_manifest=args.deployment_manifest,
+        governance_policy=args.governance_policy,
+        evidence_registry=args.evidence_registry,
+        observability_policy=args.observability_policy,
+        run_local_check=not args.skip_local_check,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    print(f"AANA release check: {summary['status']} ({summary['failures']} failure(s), {summary['warnings']} warning(s)).")
+    for check in report["checks"]:
+        print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
+        for issue in check.get("details", {}).get("issues", []):
+            print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
 
 
 def check_status(name, status, message, details=None):
@@ -454,6 +928,7 @@ def build_parser():
     agent_parser = subparsers.add_parser("agent-check", help="Check an AI-agent event against a gallery adapter.")
     agent_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
     agent_parser.add_argument("--adapter-id", default=None, help="Override adapter id from the event.")
+    agent_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
     agent_parser.set_defaults(func=command_agent_check)
 
     workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
@@ -464,10 +939,16 @@ def build_parser():
     workflow_parser.add_argument("--evidence", action="append", default=[], help="Verified evidence item. Repeat as needed.")
     workflow_parser.add_argument("--constraint", action="append", default=[], help="Constraint to preserve. Repeat as needed.")
     workflow_parser.add_argument("--workflow-id", default=None, help="Optional workflow id for logs/results.")
+    workflow_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
+    workflow_parser.add_argument("--evidence-registry", default=None, help="Validate workflow evidence against this registry before checking.")
+    workflow_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured evidence strings when validating evidence.")
     workflow_parser.set_defaults(func=command_workflow_check)
 
     workflow_batch_parser = subparsers.add_parser("workflow-batch", help="Check a workflow batch request JSON file.")
     workflow_batch_parser.add_argument("--batch", required=True, help="Path to workflow batch request JSON.")
+    workflow_batch_parser.add_argument("--audit-log", default=None, help="Append redacted per-item audit records to this JSONL file.")
+    workflow_batch_parser.add_argument("--evidence-registry", default=None, help="Validate workflow evidence against this registry before checking.")
+    workflow_batch_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured evidence strings when validating evidence.")
     workflow_batch_parser.set_defaults(func=command_workflow_batch)
 
     validate_workflow_parser = subparsers.add_parser("validate-workflow", help="Validate an AANA workflow request JSON file.")
@@ -479,6 +960,18 @@ def build_parser():
     validate_workflow_batch_parser.add_argument("--batch", required=True, help="Path to workflow batch request JSON.")
     validate_workflow_batch_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     validate_workflow_batch_parser.set_defaults(func=command_validate_workflow_batch)
+
+    validate_evidence_registry_parser = subparsers.add_parser("validate-evidence-registry", help="Validate an AANA evidence registry JSON file.")
+    validate_evidence_registry_parser.add_argument("--evidence-registry", required=True, help="Path to evidence registry JSON.")
+    validate_evidence_registry_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_evidence_registry_parser.set_defaults(func=command_validate_evidence_registry)
+
+    validate_workflow_evidence_parser = subparsers.add_parser("validate-workflow-evidence", help="Validate workflow evidence against an evidence registry.")
+    validate_workflow_evidence_parser.add_argument("--workflow", required=True, help="Path to workflow request JSON.")
+    validate_workflow_evidence_parser.add_argument("--evidence-registry", required=True, help="Path to evidence registry JSON.")
+    validate_workflow_evidence_parser.add_argument("--require-structured", action="store_true", help="Reject unstructured evidence strings.")
+    validate_workflow_evidence_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_workflow_evidence_parser.set_defaults(func=command_validate_workflow_evidence)
 
     validate_event_parser = subparsers.add_parser("validate-event", help="Validate an AI-agent event contract.")
     validate_event_parser.add_argument("--event", required=True, help="Path to agent event JSON.")
@@ -520,6 +1013,42 @@ def build_parser():
     policy_parser = subparsers.add_parser("policy-presets", help="List agent policy presets.")
     policy_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     policy_parser.set_defaults(func=command_policy_presets)
+
+    audit_summary_parser = subparsers.add_parser("audit-summary", help="Summarize a redacted AANA audit JSONL file.")
+    audit_summary_parser.add_argument("--audit-log", required=True, help="Path to audit JSONL file.")
+    audit_summary_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    audit_summary_parser.set_defaults(func=command_audit_summary)
+
+    preflight_parser = subparsers.add_parser("production-preflight", help="Check repo-local production readiness and list external gates.")
+    preflight_parser.add_argument("--deployment-manifest", default=None, help="Optional deployment manifest JSON to validate external gates.")
+    preflight_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON to validate evidence-source gates.")
+    preflight_parser.add_argument("--observability-policy", default=None, help="Optional observability policy JSON to validate dashboard, alert, and drift-review gates.")
+    preflight_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    preflight_parser.set_defaults(func=command_production_preflight)
+
+    deployment_parser = subparsers.add_parser("validate-deployment", help="Validate an AANA production deployment manifest.")
+    deployment_parser.add_argument("--deployment-manifest", required=True, help="Path to deployment manifest JSON.")
+    deployment_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    deployment_parser.set_defaults(func=command_validate_deployment)
+
+    governance_parser = subparsers.add_parser("validate-governance", help="Validate an AANA human-governance policy JSON.")
+    governance_parser.add_argument("--governance-policy", required=True, help="Path to governance policy JSON.")
+    governance_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    governance_parser.set_defaults(func=command_validate_governance)
+
+    observability_parser = subparsers.add_parser("validate-observability", help="Validate an AANA observability policy JSON.")
+    observability_parser.add_argument("--observability-policy", required=True, help="Path to observability policy JSON.")
+    observability_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    observability_parser.set_defaults(func=command_validate_observability)
+
+    release_parser = subparsers.add_parser("release-check", help="Run AANA release and production-readiness gates.")
+    release_parser.add_argument("--deployment-manifest", default=None, help="Optional deployment manifest JSON.")
+    release_parser.add_argument("--governance-policy", default=None, help="Optional human-governance policy JSON.")
+    release_parser.add_argument("--evidence-registry", default=None, help="Optional evidence registry JSON.")
+    release_parser.add_argument("--observability-policy", default=None, help="Optional observability policy JSON.")
+    release_parser.add_argument("--skip-local-check", action="store_true", help="Skip scripts/dev.py check.")
+    release_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    release_parser.set_defaults(func=command_release_check)
 
     validate_adapter_parser = subparsers.add_parser("validate-adapter", help="Validate one adapter JSON file.")
     validate_adapter_parser.add_argument("adapter", help="Path to adapter JSON.")

@@ -1,0 +1,37 @@
+{
+  "policy_name": "AANA Local Production Governance",
+  "owner": "AANA Maintainers",
+  "review_cadence": "weekly",
+  "escalation_classes": [
+    {
+      "name": "high-impact decision",
+      "trigger": "medical, legal, financial, safety, private-data, or irreversible external action",
+      "route": "AANA Local Human Review Queue",
+      "allowed_actions": ["ask", "defer", "refuse"]
+    },
+    {
+      "name": "low-confidence verifier result",
+      "trigger": "missing evidence, stale evidence, unmapped violation, or conflicting verifier signals",
+      "route": "AANA Local Human Review Queue",
+      "allowed_actions": ["retrieve", "ask", "defer"]
+    }
+  ],
+  "decision_explanations": {
+    "ask": "I need one more specific piece of information before I can check this safely.",
+    "defer": "I cannot verify the required evidence in this workflow, so this needs a stronger review path before action.",
+    "refuse": "I cannot help with this request because it would require fabricating evidence, exposing private data, or bypassing a required safety boundary."
+  },
+  "review_metrics": [
+    "false_accept_rate",
+    "false_block_rate",
+    "over_refusal_rate",
+    "human_review_turnaround_time",
+    "repeat_violation_codes"
+  ],
+  "incident_response": {
+    "owner": "AANA Maintainers",
+    "severity_levels": ["low", "medium", "high", "critical"],
+    "rollback_trigger": "critical false accept or repeated high-impact false blocks",
+    "notification_path": "AANA Local Incident Log"
+  }
+}

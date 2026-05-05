@@ -9,6 +9,7 @@ This roadmap describes useful next steps for the public AANA evaluation pipeline
 - Improve beginner examples with one complete end-to-end no-API walkthrough.
 - Add clearer failure messages when input files are missing.
 - Review task schemas and document required versus optional fields.
+- Follow the production-readiness track in `docs/production-readiness-plan.md` before using AANA for consequential workflows.
 
 ## Medium term
 
@@ -32,3 +33,7 @@ This roadmap describes useful next steps for the public AANA evaluation pipeline
 - This repo is not a certified benchmark.
 - This repo should not include private prompts, API keys, or unreviewed sensitive outputs.
 - This repo should stay easy to run with standard-library Python where practical.
+
+## Production readiness
+
+The production conversion plan lives in `docs/production-readiness-plan.md`. The local repository now includes a stable contract surface, a Python/CLI/HTTP integration path, optional POST authentication for the local bridge, request-size limits, and tests for those safeguards. Full production status still requires a target deployment, authenticated evidence sources, observability, domain-owner review, and human-escalation policy.

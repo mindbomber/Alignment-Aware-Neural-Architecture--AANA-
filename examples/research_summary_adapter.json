@@ -179,5 +179,44 @@
       "Production use needs citation parsing, retrieval, source provenance, and stronger factual verification.",
       "The adapter is a narrow research-summary demo, not a complete literature-review system."
     ]
+  },
+  "production_readiness": {
+    "status": "prototype",
+    "owner": "AANA maintainers; assign a research, editorial, or knowledge-domain owner before production use.",
+    "evidence_requirements": [
+      "Use structured evidence objects for source passages, citation IDs, retrieval timestamps, trust tiers, redaction status, and allowed-source boundaries.",
+      "Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text.",
+      "Claims requiring sources outside the supplied evidence must trigger retrieve, ask, or defer."
+    ],
+    "verifier_fallbacks": [
+      "Use deterministic checks for forbidden source labels, unsupported source references, unsupported numbers, and missing uncertainty labels.",
+      "Use retrieval-backed verification for source provenance, citation resolution, and claim-source matching.",
+      "Use human editorial or domain review for publication, legal, medical, financial, or high-impact research outputs."
+    ],
+    "calibration_notes": [
+      "String-based source checks are narrow and not calibrated as general factual verification.",
+      "A pass means source-boundary constraints were preserved for the provided evidence, not that claims are globally true.",
+      "Incomplete or stale evidence should lower confidence and route to retrieve, ask, or defer."
+    ],
+    "fixture_coverage": {
+      "accept": "covered by repaired final outputs with source-boundary constraints passing",
+      "revise": "covered by gallery bad-candidate example",
+      "retrieve": "external_required for source expansion, citation resolution, and claim verification",
+      "ask": "covered by policy for unclear source boundaries or insufficient evidence",
+      "refuse": "covered by policy for fabricated citations or evidence",
+      "defer": "external_required for literature review, publication, or high-impact domain review"
+    },
+    "escalation_policy": "Retrieve or defer when the user requests claims beyond available sources; ask when source boundaries are unclear; refuse requests to fabricate citations or evidence; route publication, legal, medical, or financial research outputs to domain review.",
+    "audit_requirements": "Log redacted workflow or agent audit records with adapter id, gate decision, recommended action, violation codes, evidence fingerprints, source-boundary metadata, and candidate/output fingerprints.",
+    "human_review_escalation": [
+      "Escalate publication, legal, medical, financial, policy, or high-impact research claims.",
+      "Escalate conflicting sources, missing provenance, and unverifiable quantitative claims.",
+      "Escalate repeated false accepts for citation, source-boundary, or unsupported-claim violations."
+    ],
+    "production_caveats": [
+      "Does not replace a full citation parser, retrieval system, or human editorial review.",
+      "String-based source checks are narrow and should not be treated as general factual verification.",
+      "Do not use for high-impact research claims without stronger provenance and review."
+    ]
   }
 }

@@ -134,6 +134,27 @@ Agents that work best with HTTP tools can run AANA as a local bridge:
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
+For production-like local use, set `AANA_BRIDGE_TOKEN` before starting the bridge. POST routes then require either `Authorization: Bearer <token>` or `X-AANA-Token: <token>`. The bridge rejects oversized POST bodies by default at `1048576` bytes; use `--max-body-bytes` only when the deployment has a reviewed reason to change that limit.
+
+For audit trails, call `eval_pipeline.agent_api.audit_event_check(event, result)` after `check_event(event)`. The audit record keeps event IDs, adapter IDs, decisions, recommended actions, violation codes, and SHA-256 fingerprints, but excludes raw user requests, planned actions, evidence, and safe responses.
+
+The CLI can append the same redacted audit record to JSONL:
+
+```powershell
+python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/aana-audit.jsonl
+python scripts/aana_cli.py audit-summary --audit-log eval_outputs/audit/aana-audit.jsonl
+```
+
+Before connecting a real agent deployment, validate the selected operating gates:
+
+```powershell
+python scripts/aana_cli.py production-preflight
+python scripts/aana_cli.py validate-deployment --deployment-manifest path/to/your-production-deployment.json
+python scripts/aana_cli.py validate-governance --governance-policy path/to/your-governance-policy.json
+python scripts/aana_cli.py validate-observability --observability-policy examples/observability_policy.json
+python scripts/aana_cli.py release-check --deployment-manifest path/to/your-production-deployment.json --governance-policy path/to/your-governance-policy.json --observability-policy path/to/your-observability-policy.json
+```
+
 If the package is installed locally, the same bridge is available as:
 
 ```powershell

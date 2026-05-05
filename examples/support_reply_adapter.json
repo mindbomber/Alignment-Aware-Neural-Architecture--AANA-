@@ -176,5 +176,44 @@
       "Production use needs integration with authenticated support systems, policy records, audit logs, and privacy review.",
       "The adapter is a narrow support-reply demo, not a complete CRM compliance system."
     ]
+  },
+  "production_readiness": {
+    "status": "prototype",
+    "owner": "AANA maintainers; assign customer-support, privacy, and policy owners before production use.",
+    "evidence_requirements": [
+      "Use structured evidence objects for verified account facts, policy records, refund eligibility, consent state, and secure routing requirements.",
+      "Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text.",
+      "Private account data should be minimized before entering events, logs, or prompt-visible evidence."
+    ],
+    "verifier_fallbacks": [
+      "Use deterministic checks for invented order IDs, unsupported refund promises, private account details, and missing verification paths.",
+      "Use retrieval-backed verification for account facts, refund eligibility, policy records, and consent state.",
+      "Use human review for high-value refunds, privacy-sensitive cases, disputed account status, or policy ambiguity."
+    ],
+    "calibration_notes": [
+      "String-based private-data checks are narrow and not calibrated for full privacy compliance.",
+      "A pass means known demo violations were removed, not that CRM records are correct.",
+      "Missing or unauthenticated account evidence should lower confidence and route to ask or defer."
+    ],
+    "fixture_coverage": {
+      "accept": "covered by repaired final outputs with hard support constraints passing",
+      "revise": "covered by gallery bad-candidate example",
+      "retrieve": "external_required for CRM records, policy records, and refund eligibility",
+      "ask": "covered by missing_facts_route behavior",
+      "refuse": "covered by policy for requests to fabricate status or expose private data",
+      "defer": "external_required for secure support workflow or human review"
+    },
+    "escalation_policy": "Ask or defer when account facts, identity verification, refund eligibility, or policy authority are missing; refuse requests to fabricate account status or expose private data; route high-value refunds and privacy-sensitive cases to human review.",
+    "audit_requirements": "Log redacted agent or workflow audit records with adapter id, gate decision, recommended action, violation codes, evidence fingerprints, candidate/output fingerprints, and human-review routing where applicable.",
+    "human_review_escalation": [
+      "Escalate high-value refunds, account disputes, privacy incidents, and legal or regulatory complaints.",
+      "Escalate any request involving sensitive payment, billing, identity, or authentication data.",
+      "Escalate repeated false accepts for private-data or unsupported-account-fact violations."
+    ],
+    "production_caveats": [
+      "Does not replace authenticated CRM, billing, or policy systems.",
+      "String-based private-data checks are not sufficient for full privacy compliance.",
+      "Do not send customer-facing messages without approved support workflow integration."
+    ]
   }
 }

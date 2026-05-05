@@ -85,6 +85,58 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertIn("error", payload)
 
+    def test_post_body_limit_returns_413(self):
+        status, payload = agent_server.route_request(
+            "POST",
+            "/validate-event",
+            b'{"user_request":"x"}',
+            max_body_bytes=4,
+        )
+
+        self.assertEqual(status, 413)
+        self.assertEqual(payload["error"], "Request body too large.")
+
+    def test_post_auth_token_rejects_missing_credentials(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+
+        status, payload = agent_server.route_request(
+            "POST",
+            "/validate-event",
+            json.dumps(event).encode("utf-8"),
+            auth_token="secret-token",
+        )
+
+        self.assertEqual(status, 401)
+        self.assertEqual(payload["error"], "Unauthorized.")
+
+    def test_post_auth_token_accepts_bearer_credentials(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+
+        status, payload = agent_server.route_request(
+            "POST",
+            "/validate-event",
+            json.dumps(event).encode("utf-8"),
+            headers={"Authorization": "Bearer secret-token"},
+            auth_token="secret-token",
+        )
+
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["valid"])
+
+    def test_post_auth_token_accepts_x_aana_token_header(self):
+        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+
+        status, payload = agent_server.route_request(
+            "POST",
+            "/validate-event",
+            json.dumps(event).encode("utf-8"),
+            headers={"X-AANA-Token": "secret-token"},
+            auth_token="secret-token",
+        )
+
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["valid"])
+
 
 if __name__ == "__main__":
     unittest.main()

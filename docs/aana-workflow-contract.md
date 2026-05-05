@@ -88,6 +88,28 @@ The result includes:
 
 `allowed_actions` is enforced. If an adapter recommends an action that the caller did not allow, AANA selects the safest available fallback action from the caller's list and adds a `recommended_action_not_allowed` violation.
 
+Evidence can be passed as simple strings or as structured objects when provenance matters:
+
+```json
+{
+  "source_id": "source-a",
+  "retrieved_at": "2026-05-05T00:00:00Z",
+  "trust_tier": "verified",
+  "redaction_status": "redacted",
+  "text": "Source A: AANA makes constraints explicit."
+}
+```
+
+Production integrations should prefer structured evidence objects, keep raw private records out of request files when a redacted summary is enough, and treat missing or stale evidence as a reason to `retrieve`, `ask`, or `defer`.
+
+Evidence can be validated against an approved source registry:
+
+```powershell
+python scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json
+python scripts/aana_cli.py validate-workflow-evidence --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary_structured.json --evidence-registry examples/evidence_registry.json --require-structured-evidence
+```
+
 ## Request Shape
 
 Machine-readable example:
@@ -176,6 +198,25 @@ Start the local bridge:
 
 ```powershell
 python scripts/aana_server.py --host 127.0.0.1 --port 8765
+```
+
+For production-like local runs, require POST authentication:
+
+```powershell
+$env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
+```
+
+Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`.
+
+For audit trails, use `aana.audit_workflow_check(workflow_request, result)` or `aana.audit_workflow_batch(batch_request, result)`. These helpers produce redacted records with IDs, gate decisions, recommended actions, violation codes, counts, and SHA-256 fingerprints for checked text. They do not include raw requests, candidates, evidence, constraints, or outputs.
+
+The CLI can append redacted workflow audit records to JSONL:
+
+```powershell
+python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/aana-audit.jsonl
+python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json --audit-log eval_outputs/audit/aana-audit.jsonl
+python scripts/aana_cli.py audit-summary --audit-log eval_outputs/audit/aana-audit.jsonl
 ```
 
 Workflow routes:

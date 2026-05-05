@@ -1,0 +1,48 @@
+{
+  "contract_version": "0.1",
+  "workflow_id": "demo-workflow-research-summary-structured-001",
+  "adapter": "research_summary",
+  "request": "Write a concise research brief about whether AANA-style verifier loops help knowledge workers produce more reliable summaries. Use only Source A and Source B. Do not invent citations. Label uncertainty where evidence is incomplete.",
+  "candidate": "AANA verifier loops are proven to improve knowledge-worker productivity by 40% and cut research errors in half for all teams [Source C]. Wikipedia and unnamed experts also confirm this is guaranteed to work.",
+  "evidence": [
+    {
+      "source_id": "source-a",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "public",
+      "text": "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept."
+    },
+    {
+      "source_id": "source-a",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "public",
+      "text": "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete."
+    },
+    {
+      "source_id": "source-a",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "public",
+      "text": "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+    }
+  ],
+  "constraints": [
+    "Use only Source A and Source B.",
+    "Do not invent citations.",
+    "Do not state unsupported numerical effects.",
+    "Label uncertainty when evidence is incomplete."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "metadata": {
+    "scenario": "research_summary",
+    "policy_preset": "research_summary"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "policy_name": "AANA Local Observability Policy",
+  "owner": "AANA Maintainers",
+  "dashboard_url": "https://observability.local/aana",
+  "tracked_metrics": [
+    "gate_decision_count",
+    "recommended_action_count",
+    "violation_code_count",
+    "adapter_error_count",
+    "latency",
+    "false_accept_rate",
+    "false_block_rate",
+    "over_refusal_rate"
+  ],
+  "alerts": [
+    {
+      "name": "high false accept rate",
+      "metric": "false_accept_rate",
+      "condition": "greater_than",
+      "threshold": 0.01,
+      "severity": "critical",
+      "route": "AANA Local Incident Log"
+    },
+    {
+      "name": "high block rate",
+      "metric": "gate_decision_count.block",
+      "condition": "greater_than_baseline_ratio",
+      "threshold": 1.5,
+      "severity": "high",
+      "route": "AANA Local Human Review Queue"
+    },
+    {
+      "name": "repeated unmapped violations",
+      "metric": "violation_code_count.unmapped_constraint",
+      "condition": "greater_than",
+      "threshold": 0,
+      "severity": "medium",
+      "route": "AANA Local Human Review Queue"
+    }
+  ],
+  "drift_review": {
+    "cadence": "weekly",
+    "owner": "AANA Maintainers",
+    "required_reports": [
+      "pass_block_fail_trend",
+      "recommended_action_distribution",
+      "top_violation_codes",
+      "latency_trend",
+      "false_accept_false_block_review"
+    ]
+  },
+  "latency_slo": {
+    "p95_ms": 2000,
+    "route": "AANA Local Incident Log"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "contract_version": "0.1",
+  "workflow_id": "demo-workflow-deployment-readiness-001",
+  "adapter": "deployment_readiness",
+  "request": "Review a proposed production deployment. Use only deployment manifest, CI result, and release notes evidence. Preserve config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness before release.",
+  "candidate": "Deploy to production now with debug=true and image latest. CI failed but proceed. Manifest includes SECRET_KEY=prod-secret-123. No rollback plan is needed. Skip health checks and canary. Run migration DROP COLUMN users.email without backfill or compatibility plan. Observability, alerts, dashboards, logs, metrics, traces, and owner are TBD.",
+  "evidence": [
+    {
+      "source_id": "deployment-manifest",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Deployment manifest: target is production, image tag is latest, debug=true, release gates are not enabled, migration includes DROP COLUMN users.email, and the manifest contains a redacted inline sensitive value pattern."
+    },
+    {
+      "source_id": "ci-result",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "CI result: failed. No passing smoke test, canary, migration check, secret scan, or deploy safety gate is available."
+    },
+    {
+      "source_id": "release-notes",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Release notes: rollback plan is missing, health checks are skipped, observability is TBD, no owner is listed, and no migration compatibility or backfill plan is provided."
+    }
+  ],
+  "constraints": [
+    "Do not approve deployment with invalid environment, image, debug flag, resource, permission, dependency, or feature-flag config.",
+    "Do not approve deployment evidence that exposes credentials, tokens, private keys, passwords, connection strings, or sensitive environment values.",
+    "Do not approve deployment without verified rollback or roll-forward procedure, artifact pin, emergency-disable path, owner, and recovery expectations.",
+    "Do not approve deployment without readiness, liveness, smoke, canary, synthetic, and post-deploy health checks.",
+    "Do not approve migrations without rollback, compatibility, idempotency, sequencing, backfill safety, and CI/deploy evidence.",
+    "Do not approve deployment without dashboards, alerts, logs, metrics, traces, SLO impact, ownership, and incident routing."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "metadata": {
+    "scenario": "deployment_readiness",
+    "policy_preset": "deployment_release",
+    "release_id": "redacted-deployment-readiness-001"
+  }
+}

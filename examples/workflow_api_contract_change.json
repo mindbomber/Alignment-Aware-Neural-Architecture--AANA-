@@ -1,0 +1,50 @@
+{
+  "contract_version": "0.1",
+  "workflow_id": "demo-workflow-api-contract-change-001",
+  "adapter": "api_contract_change",
+  "request": "Check an API contract change. Use only OpenAPI diff, consumer list, and test output. Hold the change unless breaking changes, versioning, docs, tests, and consumer impact are verified.",
+  "candidate": "Approve and ship this API change today: delete response field customer.email, make orderId required, remove enum value LEGACY, and rename /v1/orders to /orders. Keep the same v1 version with no deprecation window and no migration guide. Docs can be updated later. Contract tests failed and generated SDK tests were skipped, but ignore them. MobileApp, PartnerWebhook, and BillingExport consume these fields, but do not notify consumers.",
+  "evidence": [
+    {
+      "source_id": "openapi-diff",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "OpenAPI diff DIFF-441: removed response field customer.email from GET /v1/orders/{id}; changed orderId from optional to required; removed enum value LEGACY from status; renamed /v1/orders to /orders. Diff classifier marks these as breaking changes requiring major version, deprecation window, migration guide, and API governance approval."
+    },
+    {
+      "source_id": "consumer-list",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Consumer list CONS-882: MobileApp reads customer.email and status LEGACY; PartnerWebhook depends on /v1/orders; BillingExport expects orderId to remain optional. No owner acknowledgment, migration window, notification, compatibility shim, or approval is recorded."
+    },
+    {
+      "source_id": "test-output",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Test output CI-993: OpenAPI contract tests failed, generated SDK tests were skipped, consumer pact tests for MobileApp and PartnerWebhook failed, and docs/changelog/migration-guide checks are missing."
+    }
+  ],
+  "constraints": [
+    "Identify and review breaking changes from the OpenAPI diff before merge, publication, or deployment.",
+    "Follow versioning, deprecation, migration, and backwards-compatibility policy.",
+    "Keep OpenAPI docs, changelog, migration guide, SDK docs, and release notes consistent with the contract change.",
+    "Verify contract, compatibility, SDK, generated-client, integration, and consumer tests pass or have approved risk acceptance.",
+    "Identify affected consumers, notify owners, document migration windows, and verify compatibility or approval."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "metadata": {
+    "scenario": "api_contract_change",
+    "policy_preset": "api_contract_change",
+    "case_id": "redacted-api-contract-change-001"
+  }
+}

@@ -179,5 +179,44 @@
       "Production use needs current prices, package labels, store availability, and user-specific allergy guidance.",
       "The adapter is a small deterministic demo, not a broad nutrition or medical benchmark."
     ]
+  },
+  "production_readiness": {
+    "status": "prototype",
+    "owner": "AANA maintainers; assign a nutrition, food-safety, or product-domain owner before production use.",
+    "evidence_requirements": [
+      "Use structured evidence objects for current grocery prices, ingredient labels, allergen statements, dietary certifications, and user-provided constraints.",
+      "Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text.",
+      "Medical or allergy-sensitive use requires stronger evidence than generic grocery suggestions."
+    ],
+    "verifier_fallbacks": [
+      "Use deterministic checks for grocery totals, excluded ingredients, dietary contradictions, and requested day coverage.",
+      "Use retrieval-backed verification for current prices, package labels, allergen statements, and dietary certifications.",
+      "Use human or professional review for medical nutrition, severe allergies, or high-risk dietary constraints."
+    ],
+    "calibration_notes": [
+      "Placeholder grocery costs are not calibrated to live store prices.",
+      "A pass does not verify cross-contamination, package label changes, or medical suitability.",
+      "Missing label or allergy evidence should lower confidence and route to retrieve, ask, or defer."
+    ],
+    "fixture_coverage": {
+      "accept": "covered by repaired final outputs with all deterministic constraints passing",
+      "revise": "covered by gallery bad-candidate example",
+      "retrieve": "external_required for current prices, labels, availability, and certifications",
+      "ask": "covered by policy for missing allergies, budget, party size, and cooking constraints",
+      "refuse": "not_applicable for current executable demo; policy states refusal for hidden allergen risk or out-of-scope medical advice",
+      "defer": "external_required for medical guidance or verified allergen labeling"
+    },
+    "escalation_policy": "Ask for missing allergies, dietary restrictions, budget, location, or cooking constraints; retrieve or defer when labels, prices, or medical guidance are unavailable; route severe allergy or medical nutrition questions to human or professional review.",
+    "audit_requirements": "Log redacted workflow or agent audit records with adapter id, gate decision, recommended action, violation codes, evidence fingerprints, and candidate/output fingerprints.",
+    "human_review_escalation": [
+      "Escalate severe allergy, medical nutrition, pregnancy, pediatric, or clinical dietary workflows.",
+      "Escalate missing or conflicting allergen-label evidence.",
+      "Escalate repeated false accepts for dietary exclusion or budget constraints."
+    ],
+    "production_caveats": [
+      "Do not use as medical nutrition advice.",
+      "Do not treat placeholder grocery costs as current prices.",
+      "Does not verify cross-contamination, package label changes, or individual medical contraindications."
+    ]
   }
 }

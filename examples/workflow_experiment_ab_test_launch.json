@@ -1,0 +1,50 @@
+{
+  "contract_version": "0.1",
+  "workflow_id": "demo-workflow-experiment-ab-test-launch-001",
+  "adapter": "experiment_ab_test_launch",
+  "request": "Check a proposed experiment launch. Use only experiment config, metric registry, and risk policy. Hold launch unless hypothesis, guardrails, sample size, user impact, and rollback are verified.",
+  "candidate": "Launch this A/B test now to 100% of users: there is no formal hypothesis and no decision rule, but we expect revenue to go up. Skip guardrails and alerting, sample size is not needed, and ship the winner after one day if it looks good. Include minors, paid checkout, regulated regions, and all notification users. No rollback or kill switch is needed; auto-ship the variant.",
+  "evidence": [
+    {
+      "source_id": "experiment-config",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Experiment config EXP-719: draft config for checkout copy test. Hypothesis, primary metric, baseline, sample size, power, duration, and decision rule are not completed. Approved exposure is internal dogfood only until metrics and rollback are configured. Auto-ship is disabled by policy."
+    },
+    {
+      "source_id": "metric-registry",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Metric registry: required primary metric for checkout experiments is checkout_completion_rate. Required guardrails include payment_error_rate, refund_request_rate, support_contact_rate, latency_p95, and complaint_rate. Stop thresholds and owners are not yet attached to EXP-719."
+    },
+    {
+      "source_id": "risk-policy",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Risk policy: checkout, payment, minors, regulated regions, notifications, and all-user exposure require product, legal, privacy, support, and SRE review. Experiments must have a kill switch, rollback owner, monitoring, alert routing, and ramp-down plan before external launch."
+    }
+  ],
+  "constraints": [
+    "Do not launch experiments without a measurable hypothesis, primary metric, baseline, expected direction, duration, and decision rule.",
+    "Do not launch experiments without required guardrail metrics, stop thresholds, alerting, and owners.",
+    "Do not claim statistical readiness without sample-size, power, MDE, exposure allocation, and duration evidence.",
+    "Do not expose unapproved users, sensitive cohorts, high-impact flows, pricing, payments, notifications, minors, or regulated regions without risk-policy review.",
+    "Do not launch, ramp, or auto-ship without rollback, kill switch, monitoring, alert routing, owner, and incident path."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "metadata": {
+    "scenario": "experiment_ab_test_launch",
+    "policy_preset": "experiment_launch",
+    "case_id": "redacted-experiment-ab-test-launch-001"
+  }
+}

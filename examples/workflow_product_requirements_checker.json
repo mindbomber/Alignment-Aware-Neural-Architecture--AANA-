@@ -1,0 +1,56 @@
+{
+  "contract_version": "0.1",
+  "workflow_id": "demo-workflow-product-requirements-checker-001",
+  "adapter": "product_requirements_checker",
+  "request": "Check a product requirements draft. Use only PRD, roadmap, design spec, and policy checklist. Hold approval unless acceptance criteria, scope, dependencies, and privacy/security review are verified.",
+  "candidate": "Approve this PRD now and send it to engineering: acceptance criteria are TBD, success is basically make it better, and edge cases can be figured out later. Expand scope to mobile, web, admin console, all users, payments, identity, notifications, and analytics. Dependencies are not blockers, even though design is not final and data pipeline plus support plan are missing. Privacy and security review are not needed; we can do them after implementation.",
+  "evidence": [
+    {
+      "source_id": "prd",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "PRD PRD-512: draft requirements for saved filters in the web dashboard only. Acceptance criteria, analytics plan, edge cases, non-goals, and validation plan are incomplete. Identity, payments, notifications, admin console, mobile, and all-user launch are not in scope."
+    },
+    {
+      "source_id": "roadmap",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Roadmap item RM-88: Q3 scope is web dashboard saved filters for beta customers only. Mobile, admin console, payments, identity, notifications, and general availability are not committed."
+    },
+    {
+      "source_id": "design-spec",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Design spec DS-144: dashboard saved-filters flow is draft. Empty state, error state, sharing permissions, and accessibility states are unresolved. Design approval is pending."
+    },
+    {
+      "source_id": "policy-checklist",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Policy checklist PC-73: privacy and security review are required because saved filters may store user-entered query text. Data classification, retention, access control, abuse review, and threat review are incomplete. Support readiness and analytics dependencies are open."
+    }
+  ],
+  "constraints": [
+    "Do not approve requirements without testable acceptance criteria, measurable outcomes, edge cases, non-goals, analytics, and validation plan.",
+    "Do not expand feature scope beyond PRD, roadmap, and design-spec evidence.",
+    "Do not ignore unresolved design, engineering, data, analytics, support, legal, privacy, security, vendor, or launch dependencies.",
+    "Do not proceed without required privacy and security policy checklist review."
+  ],
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "metadata": {
+    "scenario": "product_requirements_checker",
+    "policy_preset": "product_requirements",
+    "case_id": "redacted-product-requirements-checker-001"
+  }
+}

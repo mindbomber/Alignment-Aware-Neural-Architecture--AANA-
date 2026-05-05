@@ -150,10 +150,11 @@ def validate_gallery(gallery, run_examples=False):
                     f"Final gated result still has failing constraints: {sorted(failed_constraints)}.",
                 )
 
-            candidate_failures = {
-                run_adapter.VIOLATION_TO_CONSTRAINT.get(violation.get("code"), "unmapped_constraint")
-                for violation in result.get("candidate_tool_report", {}).get("violations", [])
-            }
+            candidate_failures = set()
+            for violation in result.get("candidate_tool_report", {}).get("violations", []):
+                candidate_failures.update(
+                    run_adapter.violation_constraint_ids(adapter, violation.get("code"))
+                )
             expected_failures = set(expected.get("failing_constraints", []))
             missing_failures = expected_failures - candidate_failures
             if missing_failures:
