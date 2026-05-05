@@ -71,6 +71,7 @@ For OpenClaw agents, that means the plugin should be used before higher-risk ste
 
 Before enabling this plugin, inspect:
 
+- `package.json`
 - `openclaw.plugin.json`
 - `skills/`
 - each bundled skill's `manifest.json`

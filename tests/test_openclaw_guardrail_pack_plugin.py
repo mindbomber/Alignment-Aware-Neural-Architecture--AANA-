@@ -7,6 +7,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "examples" / "openclaw" / "aana-guardrail-pack-plugin"
 MANIFEST = PLUGIN / "openclaw.plugin.json"
+PACKAGE = PLUGIN / "package.json"
 EXPECTED_SKILLS = {
     "aana-workflow-readiness-check",
     "aana-task-scope-guardrail",
@@ -25,6 +26,27 @@ EXPECTED_SKILLS = {
 
 
 class OpenClawGuardrailPackPluginTests(unittest.TestCase):
+    def test_package_metadata_has_clawhub_required_openclaw_fields(self):
+        package = json.loads(PACKAGE.read_text(encoding="utf-8"))
+
+        self.assertEqual(package["name"], "aana-guardrail-pack")
+        self.assertEqual(package["version"], "0.1.0")
+        self.assertEqual(package["type"], "module")
+        self.assertEqual(package["license"], "MIT")
+        self.assertNotIn("scripts", package)
+        self.assertNotIn("dependencies", package)
+        self.assertNotIn("devDependencies", package)
+        self.assertEqual(
+            package["files"],
+            ["openclaw.plugin.json", "README.md", "skills/"],
+        )
+
+        openclaw = package["openclaw"]
+        self.assertEqual(openclaw["compat"]["pluginApi"], ">=2026.3.24-beta.2")
+        self.assertEqual(openclaw["compat"]["minGatewayVersion"], "2026.3.24-beta.2")
+        self.assertEqual(openclaw["build"]["openclawVersion"], "2026.3.24-beta.2")
+        self.assertEqual(openclaw["build"]["pluginSdkVersion"], "2026.3.24-beta.2")
+
     def test_plugin_manifest_is_reviewable_no_code_pack(self):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         documented_fields = {

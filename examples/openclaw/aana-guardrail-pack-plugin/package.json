@@ -1,0 +1,22 @@
+{
+  "name": "aana-guardrail-pack",
+  "version": "0.1.0",
+  "description": "A no-code OpenClaw plugin that bundles instruction-only AANA guardrail skills.",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "openclaw.plugin.json",
+    "README.md",
+    "skills/"
+  ],
+  "openclaw": {
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  }
+}
