@@ -7,6 +7,14 @@ The OpenClaw guardrail skill in this repository is an instruction-only integrati
 - It must not run shell commands, install packages, execute local scripts, infer checker paths, or write event files on its own.
 - AANA checks should run only through a separately reviewed interface configured by the user or administrator.
 
+## Guardrail Pack Plugin
+
+A no-code OpenClaw plugin is available at `examples/openclaw/aana-guardrail-pack-plugin/`.
+
+The plugin bundles 13 instruction-only AANA skills behind one `openclaw.plugin.json` manifest: workflow readiness, task scope, tool use, human review, private data, file operations, data export, email send, message send, publication, evidence-first answering, code-change review, and decision logging.
+
+The plugin package is intentionally text-only. It does not bundle executable code, install dependencies, run scripts, call services, write files, write event files, persist memory, or require a local helper path. Host agents should treat the bundled skills as advisory or approval-gated procedures according to the plugin configuration and the user's installation policy.
+
 ## Provenance Boundary
 
 For standalone skill installation, do not rely on a relative script path or a helper that is absent from the reviewed package. If a deployment wants live AANA checks, configure one reviewed interface outside the skill:

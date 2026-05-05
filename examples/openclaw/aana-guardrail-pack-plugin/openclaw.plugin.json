@@ -1,0 +1,62 @@
+{
+  "id": "aana-guardrail-pack",
+  "name": "AANA Guardrail Pack",
+  "version": "0.1.0",
+  "description": "A no-code OpenClaw plugin that bundles core instruction-only AANA guardrail skills for workflow readiness, scope, tool use, privacy, files, sends, publishing, evidence, code review, and decision logging.",
+  "skills": [
+    "skills"
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "advisory",
+          "approval_gated",
+          "review_required"
+        ],
+        "default": "advisory",
+        "description": "How strongly host agents should treat AANA guardrail outputs."
+      },
+      "log_decisions": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether host agents should create compact redacted decision notes when appropriate."
+      },
+      "require_explicit_approval_for_external_actions": {
+        "type": "boolean",
+        "default": true,
+        "description": "Require explicit user approval before sends, publishes, exports, file changes, bookings, purchases, or other external state changes."
+      }
+    },
+    "additionalProperties": false
+  },
+  "aana_marketplace_boundary": {
+    "instruction_only": true,
+    "bundled_code": false,
+    "installs_dependencies": false,
+    "executes_commands": false,
+    "writes_files": false,
+    "writes_event_files": false,
+    "persists_memory": false,
+    "calls_services": false,
+    "network_access": false,
+    "bundled_skill_count": 13
+  },
+  "bundled_skills": [
+    "aana-workflow-readiness-check",
+    "aana-task-scope-guardrail",
+    "aana-tool-use-gate",
+    "aana-human-review-router",
+    "aana-private-data-guardrail",
+    "aana-file-operation-guardrail",
+    "aana-data-export-guardrail",
+    "aana-email-send-guardrail",
+    "aana-message-send-guardrail",
+    "aana-publication-check",
+    "aana-evidence-first-answering",
+    "aana-code-change-review",
+    "aana-decision-log"
+  ]
+}
