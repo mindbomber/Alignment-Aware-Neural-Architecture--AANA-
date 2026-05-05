@@ -38,10 +38,11 @@ class OpenClawGuardrailPackPluginTests(unittest.TestCase):
         self.assertNotIn("devDependencies", package)
         self.assertEqual(
             package["files"],
-            ["openclaw.plugin.json", "README.md", "skills/"],
+            ["openclaw.plugin.json", "README.md", "dist/", "skills/"],
         )
 
         openclaw = package["openclaw"]
+        self.assertEqual(openclaw["extensions"], ["./dist/index.js"])
         self.assertEqual(openclaw["compat"]["pluginApi"], ">=2026.3.24-beta.2")
         self.assertEqual(openclaw["compat"]["minGatewayVersion"], "2026.3.24-beta.2")
         self.assertEqual(openclaw["build"]["openclawVersion"], "2026.3.24-beta.2")
@@ -85,7 +86,7 @@ class OpenClawGuardrailPackPluginTests(unittest.TestCase):
         self.assertEqual(EXPECTED_SKILLS, set(slug_to_dir))
 
     def test_plugin_package_contains_only_text_review_artifacts(self):
-        allowed_suffixes = {".json", ".md"}
+        allowed_suffixes = {".json", ".md", ".js"}
         files = [path for path in PLUGIN.rglob("*") if path.is_file()]
 
         self.assertGreater(len(files), 20)
@@ -93,6 +94,31 @@ class OpenClawGuardrailPackPluginTests(unittest.TestCase):
             self.assertIn(path.suffix.lower(), allowed_suffixes, path)
             self.assertNotIn("__pycache__", path.parts, path)
             self.assertNotEqual(path.suffix.lower(), ".pyc", path)
+            if path.suffix.lower() == ".js":
+                self.assertEqual(path.relative_to(PLUGIN).as_posix(), "dist/index.js")
+
+    def test_runtime_entrypoint_is_inert_loader_only(self):
+        runtime = (PLUGIN / "dist" / "index.js").read_text(encoding="utf-8")
+
+        self.assertIn('id: "aana-guardrail-pack"', runtime)
+        self.assertIn("register()", runtime)
+        forbidden = [
+            "fetch(",
+            "XMLHttpRequest",
+            "WebSocket",
+            "child_process",
+            "fs.",
+            "writeFile",
+            "readFile",
+            "process.env",
+            "setInterval",
+            "setTimeout",
+            "registerTool",
+            "registerChannel",
+            "registerProvider",
+        ]
+        for token in forbidden:
+            self.assertNotIn(token, runtime)
 
     def test_plugin_package_avoids_scanner_risky_patterns(self):
         risky_patterns = [

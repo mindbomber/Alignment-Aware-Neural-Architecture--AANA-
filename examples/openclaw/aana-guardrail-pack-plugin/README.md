@@ -2,9 +2,9 @@
 
 Marketplace slug: `aana-guardrail-pack`
 
-This is the first AANA OpenClaw plugin package. It bundles the core AANA guardrail skills as one no-code pack for agents that need practical safety checks before they act.
+This is the first AANA OpenClaw plugin package. It bundles the core AANA guardrail skills as one minimal-runtime pack for agents that need practical safety checks before they act.
 
-The plugin is intentionally instruction-only. It does not install dependencies, run scripts, call services, write files, store memory, or create review payloads. Host agents can use the bundled skills as decision procedures, review checklists, and approval gates.
+The plugin behavior is intentionally instruction-only. It includes a tiny OpenClaw runtime entrypoint only so ClawHub can load the package as a native plugin. That entrypoint registers no tools, starts no services, installs no dependencies, writes no files, stores no memory, and creates no review payloads. Host agents can use the bundled skills as decision procedures, review checklists, and approval gates.
 
 ## Included Skills
 
@@ -39,6 +39,7 @@ The plugin is intentionally instruction-only. It does not install dependencies, 
 - It does not call an AANA server.
 - It does not write logs, memories, files, or event payloads.
 - It does not replace user approval, expert review, or domain-specific policy.
+- Its runtime entrypoint does not register tools, channels, providers, services, memory, or background work.
 
 ## Safety Model
 
@@ -56,8 +57,10 @@ For OpenClaw agents, that means the plugin should be used before higher-risk ste
 
 ## Marketplace Boundary
 
-- `instruction_only`: true
-- `bundled_code`: false
+- `instruction_only_behavior`: true
+- `runtime_entrypoint`: `dist/index.js`
+- `runtime_registers_capabilities`: false
+- `bundled_code`: minimal inert runtime entrypoint only
 - `installs_dependencies`: false
 - `executes_commands`: false
 - `writes_files`: false
@@ -73,6 +76,7 @@ Before enabling this plugin, inspect:
 
 - `package.json`
 - `openclaw.plugin.json`
+- `dist/index.js`
 - `skills/`
 - each bundled skill's `manifest.json`
 - each bundled skill's `SKILL.md`
