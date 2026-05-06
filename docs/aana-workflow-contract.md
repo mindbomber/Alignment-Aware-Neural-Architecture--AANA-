@@ -120,6 +120,7 @@ The result includes:
 - `candidate_aix`: candidate Alignment Index when a candidate was supplied
 - `violations`: verifier findings against the candidate
 - `output`: the accepted or repaired output
+- `audit_summary`: redacted decision metadata safe for logs and dashboards
 - `raw_result`: the underlying adapter and agent-check result
 
 AIx is an additional decision surface, not a gate replacement. Do not proceed when `aix.hard_blockers` is non-empty. In correction flows, `candidate_aix` may be low while final `aix` is acceptable after the adapter repairs or routes the answer.
@@ -154,6 +155,18 @@ python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_
 For batch validation, use `workflow-batch --evidence-registry ... --require-structured-evidence` only with batches whose every item uses structured evidence. AANA reports source/freshness/structured-evidence findings per item with paths such as `$.requests[0].evidence[0].source_id`.
 
 ## Request Shape
+
+Stable field reference:
+
+- `workflow_request` version: `contract_version: "0.1"`.
+- Required request fields: `adapter`, `request`.
+- Optional request fields: `contract_version`, `workflow_id`, `candidate`, `evidence`, `constraints`, `allowed_actions`, and `metadata`.
+- `workflow_result` version: `contract_version: "0.1"`.
+- Required result fields: `contract_version`, `adapter`, `gate_decision`, `recommended_action`, `output`, and `audit_summary`.
+- Public result shape: `gate_decision`, `recommended_action`, `violations`, `aix`, `candidate_aix`, `audit_summary`, and safe output in `output`.
+- Adapter IDs are the catalog IDs exposed by the adapter gallery, such as `support_reply`, `crm_support_reply`, `email_send_guardrail`, `ticket_update_checker`, and `research_summary`.
+- Evidence may be a string or a structured object. Structured evidence requires `text`; `source_id`, `retrieved_at`, `trust_tier`, and `redaction_status` are optional but recommended for pilot and production-like integrations.
+- `runtime.py`, `legacy_runner.py`, verifier modules, adapter JSON internals, repair policies, and runner helper functions are implementation details. Do not import them as integration APIs.
 
 Machine-readable example:
 

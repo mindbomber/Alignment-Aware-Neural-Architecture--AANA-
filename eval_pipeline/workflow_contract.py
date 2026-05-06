@@ -55,6 +55,7 @@ class WorkflowResult:
     aix: dict | None = None
     candidate_aix: dict | None = None
     violations: list[dict] = field(default_factory=list)
+    audit_summary: dict = field(default_factory=dict)
     raw_result: dict = field(default_factory=dict)
     contract_version: str = WORKFLOW_CONTRACT_VERSION
 
@@ -71,6 +72,7 @@ class WorkflowResult:
             aix=data.get("aix"),
             candidate_aix=data.get("candidate_aix"),
             violations=data.get("violations", []),
+            audit_summary=data.get("audit_summary", {}),
             output=data.get("output"),
             raw_result=data.get("raw_result", {}),
         )
@@ -221,7 +223,7 @@ WORKFLOW_RESULT_SCHEMA = {
     "title": "AANA Workflow Result",
     "description": "The AANA gate result returned for a workflow request.",
     "type": "object",
-    "required": ["contract_version", "adapter", "gate_decision", "recommended_action", "output"],
+    "required": ["contract_version", "adapter", "gate_decision", "recommended_action", "output", "audit_summary"],
     "properties": {
         "contract_version": {"type": "string"},
         "workflow_id": {"type": ["string", "null"]},
@@ -234,6 +236,7 @@ WORKFLOW_RESULT_SCHEMA = {
         "candidate_aix": aix.AIX_SCHEMA,
         "violations": {"type": "array", "items": {"type": "object"}},
         "output": {"type": ["string", "null"]},
+        "audit_summary": {"type": "object"},
         "raw_result": {"type": "object"},
     },
     "additionalProperties": True,

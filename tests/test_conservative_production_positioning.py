@@ -7,8 +7,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 class ConservativeProductionPositioningTests(unittest.TestCase):
     def test_primary_public_surfaces_state_production_boundary(self):
-        expected = "not production-certified by itself"
-        required_gates = "live evidence connectors, domain owner signoff, audit retention, observability, and human review paths"
+        expected = "not production-certified by local tests alone"
+        allowed_statuses = "demo-ready, pilot-ready, or production-candidate"
+        required_gates = "live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results"
         paths = [
             ROOT / "README.md",
             ROOT / "docs" / "production-certification.md",
@@ -21,9 +22,11 @@ class ConservativeProductionPositioningTests(unittest.TestCase):
 
         for path in paths:
             text = path.read_text(encoding="utf-8")
+            normalized = " ".join(text.split())
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
-                self.assertIn(expected, text)
-                self.assertIn(required_gates, " ".join(text.split()))
+                self.assertIn(expected, normalized)
+                self.assertIn(allowed_statuses, normalized)
+                self.assertIn(required_gates, normalized)
 
     def test_readme_warns_local_checks_do_not_certify_production_safety(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

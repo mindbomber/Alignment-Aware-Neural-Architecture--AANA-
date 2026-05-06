@@ -28,6 +28,7 @@ from eval_pipeline import (
     pilot_certification,
     production,
     production_certification,
+    support_aix_calibration,
 )
 from eval_pipeline import agent_api
 
@@ -138,6 +139,15 @@ def cli_command_matrix():
             "writes": [],
             "dry_run": False,
             "example": "python scripts/aana_cli.py aix-tuning --json",
+        },
+        {
+            "command": "support-aix-calibration",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["--support-fixtures", "--calibration-fixtures"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py support-aix-calibration --json",
         },
         {
             "command": "run",
@@ -718,6 +728,35 @@ def command_aix_tuning(args):
         )
         for issue in item["issues"]:
             print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_support_aix_calibration(args):
+    report = support_aix_calibration.evaluate_support_calibration(
+        support_fixture_path=args.support_fixtures,
+        calibration_fixture_path=args.calibration_fixtures,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+
+    status = "valid" if report["valid"] else "invalid"
+    metrics = report["metrics"]
+    print(f"AANA support AIx calibration report: {status} ({metrics['case_count']} case(s)).")
+    print(f"- passed: {metrics['passed_count']}/{metrics['case_count']}")
+    print(f"- over-acceptance: {metrics['over_acceptance_count']} ({metrics['over_acceptance_rate']})")
+    print(f"- over-refusal: {metrics['over_refusal_count']} ({metrics['over_refusal_rate']})")
+    print(f"- correction success: {metrics['correction_success_rate']}")
+    print(f"- human-review precision: {metrics['human_review_precision']}")
+    print(f"- false blocker rate: {metrics['false_blocker_rate']}")
+    print(f"- evidence-missing behavior: {metrics['evidence_missing_behavior_rate']}")
+    for item in report["cases"]:
+        observed = item["observed"]
+        print(
+            f"- {item['id']}: passed={item['passed']} tier={item['risk_tier']} "
+            f"action={observed['recommended_action']} candidate_gate={observed['candidate_gate']} "
+            f"candidate_aix={observed['candidate_aix_score']}"
+        )
     return 0 if report["valid"] else 1
 
 
@@ -2134,6 +2173,20 @@ def build_parser():
     aix_tuning_parser = subparsers.add_parser("aix-tuning", help="Report adapter AIx risk tiers and tuning thresholds.")
     aix_tuning_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     aix_tuning_parser.set_defaults(func=command_aix_tuning)
+
+    support_aix_parser = subparsers.add_parser("support-aix-calibration", help="Run support-specific AIx calibration cases.")
+    support_aix_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    support_aix_parser.add_argument(
+        "--support-fixtures",
+        default=str(ROOT / "examples" / "support_workflow_contract_examples.json"),
+        help="Path to canonical support workflow fixtures.",
+    )
+    support_aix_parser.add_argument(
+        "--calibration-fixtures",
+        default=str(ROOT / "examples" / "support_aix_calibration_cases.json"),
+        help="Path to support AIx calibration fixture labels.",
+    )
+    support_aix_parser.set_defaults(func=command_support_aix_calibration)
 
     doctor_parser = subparsers.add_parser("doctor", help="Check local AANA platform readiness.")
     doctor_parser.add_argument("--json", action="store_true", help="Emit JSON.")

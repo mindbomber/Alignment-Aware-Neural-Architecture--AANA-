@@ -1,0 +1,161 @@
+{
+  "baseline_version": "0.1",
+  "baseline_id": "aana-first-deployable-support-runtime-baseline",
+  "title": "AANA First Deployable Support Runtime Baseline",
+  "current_status": "not_reached_external_evidence_required",
+  "positioning": "This repository defines and validates the first deployable support runtime baseline boundary. It does not claim the baseline is reached until external signoff and measured pilot evidence are attached.",
+  "support_adapters": [
+    "support_reply",
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "invoice_billing_reply"
+  ],
+  "required_criteria": [
+    {
+      "id": "support_contract_paths",
+      "requirement": "Support adapters run through Workflow Contract and Agent Event Contract paths.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "tests/test_runtime_boundary_cleanup.py",
+        "tests/test_support_workflow_contract_examples.py",
+        "examples/support_workflow_contract_examples.json"
+      ],
+      "release_gate": "unit_tests"
+    },
+    {
+      "id": "registry_driven_runtime_routing",
+      "requirement": "Runtime routing is registry-driven.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "eval_pipeline/adapter_runner/registry.py",
+        "eval_pipeline/adapter_runner/verifier_catalog.py",
+        "tests/test_runtime_boundary_cleanup.py"
+      ],
+      "release_gate": "unit_tests"
+    },
+    {
+      "id": "support_evidence_connectors",
+      "requirement": "Live or approved support evidence connector boundaries exist for CRM, orders, refund policy, ticket history, recipient verification, attachments, account verification, billing redaction, and support policy.",
+      "status": "repo_local_approved_fixture_boundary",
+      "evidence": [
+        "examples/evidence_registry.json",
+        "examples/evidence_mock_connector_fixtures.json",
+        "tests/test_evidence_integrations.py"
+      ],
+      "release_gate": "production_profiles"
+    },
+    {
+      "id": "audit_safe_records",
+      "requirement": "Audit-safe records are emitted without raw support content.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "eval_pipeline/audit.py",
+        "tests/test_support_audit_logging.py",
+        "scripts/aana_cli.py audit-validate"
+      ],
+      "release_gate": "audit_validate"
+    },
+    {
+      "id": "human_review_paths",
+      "requirement": "Human review paths are wired for defer/refuse/hard-blocker and support escalation triggers.",
+      "status": "repo_local_validated_external_staffing_required",
+      "evidence": [
+        "examples/human_governance_policy_internal_pilot.json",
+        "tests/test_support_audit_logging.py",
+        "docs/support-domain-owner-signoff.md"
+      ],
+      "release_gate": "production_profiles"
+    },
+    {
+      "id": "golden_outputs",
+      "requirement": "Golden outputs pass for support reply, CRM support, email send, ticket update, invoice/billing, and candidate AIx refusal cases.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "tests/test_adapter_runner_golden_outputs.py",
+        "tests/test_support_golden_regression_gates.py",
+        "scripts/compare_adapter_runner_baseline.py"
+      ],
+      "release_gate": "golden_outputs"
+    },
+    {
+      "id": "gallery_validation",
+      "requirement": "Adapter gallery validation passes and support adapters are cataloged.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "examples/adapter_gallery.json",
+        "scripts/validate_adapter_gallery.py",
+        "tests/test_adapter_gallery.py"
+      ],
+      "release_gate": "gallery_metadata"
+    },
+    {
+      "id": "release_gate",
+      "requirement": "Full release gate passes.",
+      "status": "repo_local_validated",
+      "evidence": [
+        "scripts/dev.py release-gate",
+        "tests/test_dev_script.py"
+      ],
+      "release_gate": "release_gate"
+    },
+    {
+      "id": "security_privacy_review",
+      "requirement": "Security/privacy review is complete for repo-local controls and declares external deployment blockers.",
+      "status": "repo_local_validated_external_approval_required",
+      "evidence": [
+        "examples/security_privacy_review_support.json",
+        "scripts/validate_security_privacy_review.py",
+        "tests/test_security_privacy_review.py"
+      ],
+      "release_gate": "security_privacy_review"
+    },
+    {
+      "id": "support_domain_owner_signoff",
+      "requirement": "Support domain owner signs off on policy interpretation, verification requirements, escalation paths, safe response language, human review triggers, audit retention, customer-facing language boundaries, and allowed automation scope.",
+      "status": "pending_external_approval",
+      "evidence": [
+        "examples/support_domain_owner_signoff_template.json",
+        "scripts/validate_support_domain_signoff.py",
+        "docs/support-domain-owner-signoff.md"
+      ],
+      "release_gate": "support_domain_signoff"
+    },
+    {
+      "id": "internal_pilot_metrics",
+      "requirement": "Internal pilot shows acceptable over-acceptance, over-refusal, latency, and correction metrics.",
+      "status": "pending_measured_pilot_results",
+      "evidence": [
+        "examples/support_aix_calibration_cases.json",
+        "eval_pipeline/support_aix_calibration.py",
+        "docs/internal-pilot.md"
+      ],
+      "release_gate": "internal_pilot_plan",
+      "acceptance_thresholds": {
+        "max_over_acceptance_count": 0,
+        "max_over_refusal_count": 0,
+        "max_p95_latency_ms": 5000,
+        "min_correction_success_rate": 1.0
+      }
+    }
+  ],
+  "baseline_reached_policy": {
+    "all_required_criteria_must_be_reached": true,
+    "external_evidence_required": [
+      "live or approved support evidence connector manifest",
+      "approved support domain owner signoff artifact",
+      "measured internal pilot metrics report with over-acceptance, over-refusal, latency, and correction metrics"
+    ],
+    "repo_local_statuses_that_do_not_count_as_reached": [
+      "pending_external_approval",
+      "pending_measured_pilot_results",
+      "repo_local_validated_external_approval_required",
+      "repo_local_validated_external_staffing_required"
+    ]
+  },
+  "release_gate": {
+    "script": "scripts/validate_first_deployable_baseline.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

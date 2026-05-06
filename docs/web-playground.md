@@ -30,6 +30,14 @@ Open a specific adapter from the gallery:
 http://localhost:8765/playground?adapter=email_send_guardrail
 ```
 
+Support adapter deep links:
+
+```text
+http://localhost:8765/playground?adapter=support_reply
+http://localhost:8765/playground?adapter=crm_support_reply
+http://localhost:8765/playground?adapter=ticket_update_checker
+```
+
 For the curated everyday-action demo surface, open:
 
 ```text

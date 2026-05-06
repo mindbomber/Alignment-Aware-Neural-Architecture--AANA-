@@ -33,14 +33,38 @@ Use a running HTTP bridge:
 import os
 import aana
 
-client = aana.client(
+client = aana.SupportAANAClient(
     base_url="http://127.0.0.1:8765",
     token=os.environ["AANA_BRIDGE_TOKEN"],
     shadow_mode=True,
 )
 
-result = client.agent_check(
-    adapter_id="support_reply",
+workflow = client.workflow_request(
+    adapter="crm",
+    request="Draft a refund reply using only verified account facts.",
+    candidate="Hi Maya, order #A1842 is eligible for a full refund and your card ending 4242 will be credited in 3 days.",
+    evidence=[
+        client.evidence_object(
+            "CRM record: customer name is Maya Chen. Order ID and refund eligibility are unavailable.",
+            source_id="crm-record",
+            retrieved_at="2026-05-05T00:00:00Z",
+        ),
+        client.evidence_object(
+            "Support policy: verify refund eligibility before promising credits or timelines.",
+            source_id="support-policy",
+            retrieved_at="2026-05-05T00:00:00Z",
+        ),
+    ],
+)
+
+result = client.workflow_check(workflow)
+```
+
+Agent Event path for an agent framework:
+
+```python
+event = client.agent_event(
+    adapter_id="draft",
     user_request="Draft a support reply with verified account facts.",
     candidate_action="Promise a refund without verified eligibility.",
     available_evidence=client.evidence(
@@ -49,11 +73,14 @@ result = client.agent_check(
         retrieved_at="2026-05-05T00:00:00Z",
     ),
 )
+
+result = client.agent_check(event)
 ```
 
 Public helpers:
 
 - `aana.AANAClient`
+- `aana.SupportAANAClient`
 - `aana.client(...)`
 - `aana.normalize_evidence(...)`
 - `aana.build_workflow_request(...)`
@@ -86,6 +113,9 @@ const request = workflowRequest({
 const result = await client.workflowCheck(request);
 ```
 
+Support aliases are also available through `SupportAANAClient`; `crm`, `draft`,
+`email`, `ticket`, and `billing` resolve to the supported support adapter IDs.
+
 Public helpers:
 
 - `AanaClient`
@@ -96,6 +126,10 @@ Public helpers:
 
 ## Integration Rule
 
+All SDK helpers build either the Workflow Contract or Agent Event Contract and
+call the same runtime paths used by the CLI and HTTP bridge. Do not call
+adapter runner modules or verifier internals from an app integration.
+
 For enforced flows, proceed with the original action only when:
 
 - `gate_decision` is `pass`
@@ -105,4 +139,3 @@ For enforced flows, proceed with the original action only when:
 For early pilots, use shadow mode so AANA observes proposed actions, writes
 redacted telemetry, and reports would-pass/revise/defer/refuse metrics without
 changing production behavior.
-

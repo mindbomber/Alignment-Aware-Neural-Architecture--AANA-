@@ -26,6 +26,7 @@ Each `EvidenceIntegrationStub` declares a stable connector contract:
 
 The hardened core connector families are:
 
+- Support product line: `crm_customer_account`, `order_history`, `refund_policy`, `internal_notes_classifier`, `support_ticket_history`, `email_recipient_verification`, `attachment_metadata`, `account_verification_status`, `billing_payment_redaction`, and `support_policy_registry`.
 - `crm_support`: CRM records, support policy, and order-system facts.
 - `ticketing`: ticket history, sprint status, support policy, and incident context summaries.
 - `email_send`: draft email, recipient metadata, and user approval.
@@ -110,6 +111,8 @@ Production connector implementations must fail closed when:
 - file system
 
 The fixture bundle is intentionally synthetic and redacted. Its job is to prove that connector outputs can be normalized and accepted by `validate_workflow_evidence(..., require_structured=True)`.
+
+Synthetic support fixtures do not allow a production claim by themselves. Support guardrails require every support connector listed above to have either a live production connector manifest or an explicitly approved production fixture. The checked-in mock fixtures are contract fixtures only; they are marked as repository synthetic fixtures and fail the support production-evidence boundary until externally approved.
 
 ## Failure Routing
 

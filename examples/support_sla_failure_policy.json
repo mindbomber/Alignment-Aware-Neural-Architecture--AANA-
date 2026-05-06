@@ -1,0 +1,165 @@
+{
+  "policy_version": "0.1",
+  "policy_id": "aana-support-sla-failure-policy",
+  "title": "AANA Support SLA and Failure Policy",
+  "scope": {
+    "product_line": "support",
+    "adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "surfaces": [
+      "Workflow Contract",
+      "Agent Event Contract",
+      "HTTP bridge",
+      "Python SDK",
+      "CLI"
+    ]
+  },
+  "positioning": "This policy defines what AANA returns when support guardrails cannot decide safely. It is repo-local policy coverage, not production certification.",
+  "allowed_actions": [
+    "accept",
+    "revise",
+    "retrieve",
+    "ask",
+    "defer",
+    "refuse"
+  ],
+  "default_failure_action": "defer",
+  "sla_targets": {
+    "draft_support_reply": {
+      "mode": "advisory_or_enforced_draft",
+      "target_latency_ms": 1500,
+      "max_latency_ms": 5000,
+      "on_timeout": "ask",
+      "notes": "Draft flows may ask for missing details or fall back to advisory mode when enforcement mode allows human continuation."
+    },
+    "crm_support_reply": {
+      "mode": "evidence_bound_draft",
+      "target_latency_ms": 2000,
+      "max_latency_ms": 7000,
+      "on_timeout": "defer",
+      "notes": "CRM-backed drafts must not assert customer-specific facts when CRM evidence is unavailable."
+    },
+    "support_email_send": {
+      "mode": "irreversible_action",
+      "target_latency_ms": 1500,
+      "max_latency_ms": 5000,
+      "on_timeout": "refuse",
+      "notes": "Email sends are irreversible customer-visible actions; timeout or bridge outage fails closed."
+    }
+  },
+  "undecidable_fallbacks": [
+    {
+      "id": "evidence_unavailable",
+      "condition": "Required support evidence is missing, stale, unauthorized, or not yet retrieved.",
+      "default_action": "retrieve",
+      "allowed_actions": [
+        "retrieve",
+        "ask"
+      ],
+      "safe_response": "I need verified support evidence before answering that. Retrieve the approved account, order, policy, ticket, or billing evidence, or ask the customer for the missing non-sensitive detail through the secure support path.",
+      "audit_code": "support_evidence_unavailable",
+      "human_review": false
+    },
+    {
+      "id": "crm_unavailable",
+      "condition": "CRM, customer account, order history, or ticket history connector is unavailable.",
+      "default_action": "defer",
+      "allowed_actions": [
+        "defer"
+      ],
+      "safe_response": "I cannot verify the customer record right now. Hold the customer-specific response and route the case to the support review path until CRM evidence is available.",
+      "audit_code": "support_crm_unavailable",
+      "human_review": true
+    },
+    {
+      "id": "verification_missing",
+      "condition": "Customer identity, account ownership, order ID, recipient, or authorization is missing or ambiguous.",
+      "default_action": "ask",
+      "allowed_actions": [
+        "ask"
+      ],
+      "safe_response": "Ask for the required verification through the approved secure support path before confirming account, order, refund, billing, or send details.",
+      "audit_code": "support_verification_missing",
+      "human_review": false
+    },
+    {
+      "id": "privacy_risk",
+      "condition": "Candidate output or action may expose private account, payment, billing, internal CRM, fraud/risk, attachment, or agent-only information.",
+      "default_action": "refuse",
+      "allowed_actions": [
+        "refuse"
+      ],
+      "safe_response": "Do not send or display the private support data. Remove customer-private, payment, billing, internal-note, and attachment details and route sensitive exposure cases to review.",
+      "audit_code": "support_privacy_risk",
+      "human_review": true
+    },
+    {
+      "id": "policy_ambiguity",
+      "condition": "Refund, billing, cancellation, deletion, escalation, legal/regulatory, or support-policy interpretation is ambiguous or disputed.",
+      "default_action": "defer",
+      "allowed_actions": [
+        "defer"
+      ],
+      "safe_response": "Hold the policy-sensitive response and route it to the domain owner or support human review queue before making a customer-visible commitment.",
+      "audit_code": "support_policy_ambiguity",
+      "human_review": true
+    },
+    {
+      "id": "bridge_unavailable_irreversible",
+      "condition": "HTTP bridge or runtime check is unavailable for an irreversible support action such as email send, refund execution, account closure, deletion, chargeback, cancellation, or data export.",
+      "default_action": "refuse",
+      "allowed_actions": [
+        "refuse",
+        "defer"
+      ],
+      "failure_mode": "fail_closed",
+      "safe_response": "Do not perform the irreversible support action while AANA is unavailable. Hold the action and route to an approved manual review path.",
+      "audit_code": "support_bridge_unavailable_irreversible",
+      "human_review": true
+    },
+    {
+      "id": "bridge_unavailable_draft",
+      "condition": "HTTP bridge or runtime check is unavailable for a draft-only support response.",
+      "default_action": "defer",
+      "allowed_actions": [
+        "ask",
+        "defer"
+      ],
+      "failure_mode": "fail_advisory_when_mode_allows",
+      "safe_response": "Do not claim AANA accepted the draft. Continue only in advisory or shadow mode with human review; otherwise hold the draft until the runtime is available.",
+      "audit_code": "support_bridge_unavailable_draft",
+      "human_review": true
+    }
+  ],
+  "mode_policy": {
+    "shadow": {
+      "enforcement": "observe_only",
+      "bridge_unavailable_draft": "log_runtime_unavailable_when_possible",
+      "bridge_unavailable_irreversible": "do_not_execute_without_existing_manual_control"
+    },
+    "advisory": {
+      "enforcement": "human_decides",
+      "bridge_unavailable_draft": "fail_advisory",
+      "bridge_unavailable_irreversible": "fail_closed"
+    },
+    "enforced": {
+      "enforcement": "runtime_blocks_or_routes",
+      "bridge_unavailable_draft": "defer",
+      "bridge_unavailable_irreversible": "fail_closed"
+    }
+  },
+  "audit_requirements": [
+    "Record adapter_id, workflow_id, gate_decision, recommended_action, fallback_condition_id, audit_code, AIx summary, violation codes, evidence source IDs, fingerprints, execution mode, and human review route.",
+    "Do not record raw customer message, raw candidate response, full CRM record, payment data, internal notes, attachment bodies, secrets, or tokens."
+  ],
+  "release_gate": {
+    "script": "scripts/validate_support_sla_failure_policy.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

@@ -5,848 +5,1485 @@
       "source_id": "aana-example-workflow-evidence",
       "owner": "AANA Maintainers",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "source-a",
       "owner": "AANA Maintainers",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "retrieved-documents",
       "owner": "Research Retrieval",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "citation-index",
       "owner": "Research Retrieval",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "source-registry",
       "owner": "Source Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "crm-record",
       "owner": "Customer Support Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "crm-opportunity",
       "owner": "Sales Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "crm",
       "owner": "Customer Success Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "contract",
       "owner": "Revenue Operations and Legal",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "account-health",
       "owner": "Customer Success and Support Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "invoice",
       "owner": "Billing Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "billing-policy",
       "owner": "Billing Operations and Finance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "payment-metadata",
       "owner": "Payments Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "policy-docs",
       "owner": "Claims Policy Administration",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "claim-file",
       "owner": "Claims Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "triage-policy",
       "owner": "Claims Compliance and Triage Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "program-rules",
       "owner": "Program Administration",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "submitted-docs",
       "owner": "Grant Application Portal",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "grant-rubric",
       "owner": "Review Panel Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "price-book",
       "owner": "Revenue Operations and Finance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "contract-policy",
       "owner": "Legal and Deal Desk",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "support-policy",
       "owner": "Support Policy",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "order-system",
       "owner": "Order Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "draft-email",
       "owner": "Messaging Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "recipient-metadata",
       "owner": "Directory and Identity",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "user-approval",
       "owner": "User Consent and Approval",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "file-metadata",
       "owner": "Workspace Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "requested-action",
       "owner": "Agent Runtime",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "diff-preview",
       "owner": "Workspace Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "backup-status",
       "owner": "Workspace Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "user-confirmation",
       "owner": "User Consent and Approval",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "git-diff",
       "owner": "Engineering Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "test-output",
       "owner": "Engineering Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "iac-diff",
       "owner": "Infrastructure Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "plan-output",
       "owner": "Infrastructure Platform and SRE",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "infrastructure-policy",
       "owner": "Infrastructure Platform, Security, Compliance, and FinOps",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "dag-metadata",
       "owner": "Data Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "schema-registry",
       "owner": "Data Platform and Data Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "lineage-graph",
       "owner": "Data Platform and Analytics Engineering",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "eval-results",
       "owner": "Model Evaluation",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "model-card",
       "owner": "Model Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "release-policy",
       "owner": "Release Management and Model Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "ci-status",
       "owner": "Engineering Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "deployment-manifest",
       "owner": "Release Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "ci-result",
       "owner": "Release Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "release-notes",
       "owner": "Release Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "jurisdiction",
       "owner": "Legal Policy",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "source-law",
       "owner": "Legal Policy",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "policy-limits",
       "owner": "Policy and Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "medical-policy",
       "owner": "Medical Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "verified-medical-sources",
       "owner": "Medical Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "severity-signals",
       "owner": "Medical Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "financial-policy",
       "owner": "Financial Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "financial-source-docs",
       "owner": "Financial Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "financial-user-intent",
       "owner": "Financial Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "live-quote",
       "owner": "Commerce Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "cart",
       "owner": "Commerce Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "payment-policy",
       "owner": "Payments and Commerce",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "calendar-freebusy",
       "owner": "Calendar Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "attendee-list",
       "owner": "Calendar Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "user-instruction",
       "owner": "User Consent and Approval",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "data-classification",
       "owner": "Data Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "access-grants",
       "owner": "Security and IAM",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "export-request",
       "owner": "Data Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "publication-draft",
       "owner": "Editorial and Brand",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "publication-source-list",
       "owner": "Editorial and Brand",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "publication-approval-policy",
       "owner": "Editorial, Brand, and Legal",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "meeting-transcript",
       "owner": "Productivity Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "meeting-attendee-list",
       "owner": "Collaboration Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "meeting-metadata",
       "owner": "Productivity Platform, Privacy, and Records",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "ticket-history",
       "owner": "Support Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "sprint-status",
       "owner": "Engineering and Product",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "incident-timeline",
       "owner": "SRE and Incident Command",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "status-page-policy",
       "owner": "Incident Communications",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "on-call-notes",
       "owner": "SRE and On-Call Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "security-advisory",
       "owner": "Product Security",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted", "public"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted",
+        "public"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "scanner-output",
       "owner": "Security Engineering",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "iam-request",
       "owner": "Identity and Access Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "role-catalog",
       "owner": "Identity and Access Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "approval-record",
       "owner": "Identity Governance",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "migration-diff",
       "owner": "Database Engineering",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "schema-state",
       "owner": "Database Engineering",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "rollout-plan",
       "owner": "Release Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "flag-config",
       "owner": "Feature Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "metrics",
       "owner": "Product Analytics and SRE",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "experiment-config",
       "owner": "Experimentation Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "metric-registry",
       "owner": "Product Analytics",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "risk-policy",
       "owner": "Product Risk",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "prd",
       "owner": "Product Management",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "roadmap",
       "owner": "Product Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "design-spec",
       "owner": "Design",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "policy-checklist",
       "owner": "Product Risk",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "quote",
       "owner": "Procurement",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "vendor-profile",
       "owner": "Procurement",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "dpa-security-docs",
       "owner": "Security and Privacy",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "interview-notes",
       "owner": "Recruiting",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "rubric",
       "owner": "People Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "hiring-policy",
       "owner": "People Operations and Legal",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "review-packet",
       "owner": "People Operations",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "goals",
       "owner": "People Operations and Managers",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "hr-policy",
       "owner": "People Operations, Legal, and Compensation",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "lesson-plan",
       "owner": "Curriculum",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "solution-key",
       "owner": "Curriculum and Assessment",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "learner-profile",
       "owner": "Education Product, Privacy, and Safety",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "openapi-diff",
       "owner": "API Platform",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     },
     {
       "source_id": "consumer-list",
       "owner": "API Platform and Developer Experience",
       "enabled": true,
-      "allowed_trust_tiers": ["verified", "repository_fixture"],
-      "allowed_redaction_statuses": ["redacted"],
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "account-verification-status",
+      "owner": "Support Identity Verification",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "refund-policy",
+      "owner": "Support Policy",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "internal-notes-classification",
+      "owner": "Privacy and Support Operations",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "attachment-metadata",
+      "owner": "Messaging Platform and DLP",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "billing-redaction-metadata",
+      "owner": "Billing Privacy and Payments Platform",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
+      "max_age_hours": null
+    },
+    {
+      "source_id": "support-policy-registry",
+      "owner": "Support Policy Governance",
+      "enabled": true,
+      "allowed_trust_tiers": [
+        "verified",
+        "repository_fixture"
+      ],
+      "allowed_redaction_statuses": [
+        "redacted"
+      ],
       "max_age_hours": null
     }
   ]

@@ -5,6 +5,7 @@ import json
 import mimetypes
 import os
 import pathlib
+import re
 import sys
 import threading
 import time
@@ -26,6 +27,10 @@ DEFAULT_TOKEN_ENV = "AANA_BRIDGE_TOKEN"
 DEFAULT_RATE_LIMIT_PER_MINUTE = 0
 DEFAULT_READ_TIMEOUT_SECONDS = 30
 BRIDGE_VERSION = "0.1"
+SENSITIVE_LOG_PATTERN = re.compile(
+    r"(?i)(authorization=|authorization:\s*|x-aana-token=|x-aana-token:\s*|token=|auth_token=|api_key=|secret=)([^&\s]+)"
+)
+BEARER_LOG_PATTERN = re.compile(r"(?i)(authorization:\s*bearer\s+)([^&\s]+)")
 PLAYGROUND_DIR = ROOT / "web" / "playground"
 DEMOS_DIR = ROOT / "web" / "demos"
 DASHBOARD_DIR = ROOT / "web" / "dashboard"
@@ -84,6 +89,20 @@ def error_payload(status, code, message, details=None):
         payload["details"] = details
         payload.update(details)
     return payload
+
+
+def public_error(status, code, message, exc=None, details=None):
+    safe_details = dict(details or {})
+    if exc is not None:
+        safe_details["exception_type"] = type(exc).__name__
+    return error_payload(status, code, message, safe_details or None)
+
+
+def _redact_log_text(value):
+    text = str(value)
+    text = BEARER_LOG_PATTERN.sub(lambda match: match.group(1) + "[redacted]", text)
+    text = SENSITIVE_LOG_PATTERN.sub(lambda match: match.group(1) + "[redacted]", text)
+    return text.replace("\r", "\\r").replace("\n", "\\n")
 
 
 def _read_token_file(path):
@@ -172,6 +191,18 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                             "description": "Bridge dependency check failed.",
                             "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Readiness"}}},
                         },
+                    },
+                }
+            },
+            "/config": {
+                "get": {
+                    "operationId": "getBridgeConfig",
+                    "summary": "Return safe deployment configuration for the local AANA bridge.",
+                    "responses": {
+                        "200": {
+                            "description": "Redacted bridge deployment configuration.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BridgeConfig"}}},
+                        }
                     },
                 }
             },
@@ -430,6 +461,20 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                         "checks": {"type": "array", "items": {"type": "object"}},
                     },
                 },
+                "BridgeConfig": {
+                    "type": "object",
+                    "properties": {
+                        "bridge_version": {"type": "string"},
+                        "auth_required": {"type": "boolean"},
+                        "auth_token_source": {"type": "string"},
+                        "audit_logging": {"type": "string"},
+                        "max_body_bytes": {"type": "integer"},
+                        "rate_limit_per_minute": {"type": "integer"},
+                        "read_timeout_seconds": {"type": "number"},
+                        "runtime_routes": {"type": "array", "items": {"type": "string"}},
+                        "raw_debug_leakage": {"type": "string"},
+                    },
+                },
                 "PolicyPresets": {
                     "type": "object",
                     "properties": {"policy_presets": {"type": "object"}},
@@ -565,6 +610,35 @@ def dashboard_metrics(audit_log_path=None):
     return payload
 
 
+def bridge_config(
+    max_body_bytes=DEFAULT_MAX_BODY_BYTES,
+    auth_token=None,
+    auth_token_file=None,
+    audit_log_path=None,
+    rate_limit_per_minute=DEFAULT_RATE_LIMIT_PER_MINUTE,
+    read_timeout_seconds=DEFAULT_READ_TIMEOUT_SECONDS,
+):
+    token = _resolved_auth_token(auth_token=auth_token, auth_token_file=auth_token_file)
+    return {
+        "bridge_version": BRIDGE_VERSION,
+        "runtime_integration_point": "http_bridge",
+        "public_contracts": ["agent_event", "workflow_request", "workflow_batch_request"],
+        "runtime_routes": ["/agent-check", "/workflow-check", "/workflow-batch"],
+        "health_routes": ["/health", "/ready", "/config"],
+        "auth_required": bool(token),
+        "auth_token_source": "file" if auth_token_file else "value" if auth_token else "environment" if token else "none",
+        "auth_headers": ["Authorization: Bearer <token>", "X-AANA-Token: <token>"],
+        "audit_logging": "enabled" if audit_log_path else "disabled",
+        "audit_log_configured": bool(audit_log_path),
+        "max_body_bytes": max_body_bytes,
+        "rate_limit_per_minute": rate_limit_per_minute,
+        "read_timeout_seconds": read_timeout_seconds,
+        "structured_errors": True,
+        "raw_debug_leakage": "disabled",
+        "redacted_logs": True,
+    }
+
+
 def _header_value(headers, name):
     if not headers:
         return None
@@ -602,6 +676,35 @@ def _append_workflow_batch_audit(audit_log_path, batch_request, result):
         _append_audit_record(audit_log_path, record)
 
 
+def _result_with_runtime_metadata(result, started_at):
+    if not isinstance(result, dict):
+        return result
+    audit_result = dict(result)
+    metadata = dict(audit_result.get("audit_metadata") or {})
+    metadata["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
+    audit_result["audit_metadata"] = metadata
+    return audit_result
+
+
+def _batch_result_with_runtime_metadata(result, started_at):
+    if not isinstance(result, dict):
+        return result
+    audit_result = dict(result)
+    elapsed_ms = round((time.perf_counter() - started_at) * 1000, 3)
+    results = []
+    for item in result.get("results", []) or []:
+        if isinstance(item, dict):
+            copied = dict(item)
+            metadata = dict(copied.get("audit_metadata") or {})
+            metadata["latency_ms"] = elapsed_ms
+            copied["audit_metadata"] = metadata
+            results.append(copied)
+        else:
+            results.append(item)
+    audit_result["results"] = results
+    return audit_result
+
+
 def readiness_report(gallery_path=agent_api.DEFAULT_GALLERY, audit_log_path=None, auth_token=None, auth_token_file=None):
     checks = []
     try:
@@ -620,8 +723,8 @@ def readiness_report(gallery_path=agent_api.DEFAULT_GALLERY, audit_log_path=None
             {
                 "name": "adapter_gallery",
                 "status": "fail",
-                "message": str(exc),
-                "details": {"gallery_path": str(gallery_path)},
+                "message": "Adapter gallery could not be loaded.",
+                "details": {"gallery_path": str(gallery_path), "exception_type": type(exc).__name__},
             }
         )
 
@@ -700,6 +803,7 @@ def route_request(
     rate_limit_state=None,
     client_id=None,
     shadow_mode=False,
+    read_timeout_seconds=DEFAULT_READ_TIMEOUT_SECONDS,
 ):
     parsed = urlparse(target)
     query = parse_qs(parsed.query)
@@ -742,6 +846,16 @@ def route_request(
         )
         return 200 if report["ready"] else 503, report
 
+    if method == "GET" and parsed.path == "/config":
+        return 200, bridge_config(
+            max_body_bytes=max_body_bytes,
+            auth_token=auth_token,
+            auth_token_file=auth_token_file,
+            audit_log_path=audit_log_path,
+            rate_limit_per_minute=rate_limit_per_minute,
+            read_timeout_seconds=read_timeout_seconds,
+        )
+
     if method == "GET" and parsed.path == "/policy-presets":
         return 200, {"policy_presets": agent_api.list_policy_presets()}
 
@@ -749,20 +863,20 @@ def route_request(
         try:
             return 200, playground_gallery(gallery_path=gallery_path)
         except (OSError, ValueError, json.JSONDecodeError) as exc:
-            return 500, error_payload(500, "playground_gallery_failed", str(exc))
+            return 500, public_error(500, "playground_gallery_failed", "Playground gallery could not be loaded.", exc)
 
     if method == "GET" and parsed.path == "/demos/scenarios":
         try:
             return 200, local_action_demos()
         except (OSError, ValueError, json.JSONDecodeError) as exc:
-            return 500, error_payload(500, "local_action_demos_failed", str(exc))
+            return 500, public_error(500, "local_action_demos_failed", "Local action demos could not be loaded.", exc)
 
     if method == "GET" and parsed.path == "/dashboard/metrics":
         try:
             payload = dashboard_metrics(audit_log_path=audit_log_path)
             return 200, payload
         except (OSError, ValueError, json.JSONDecodeError) as exc:
-            return 500, error_payload(500, "dashboard_metrics_failed", str(exc))
+            return 500, public_error(500, "dashboard_metrics_failed", "Dashboard metrics could not be loaded.", exc)
 
     if method == "GET" and parsed.path == "/openapi.json":
         return 200, openapi_schema()
@@ -797,47 +911,50 @@ def route_request(
             if not isinstance(event, dict):
                 raise ValueError("Request body must be a JSON object.")
             adapter_id = query.get("adapter_id", [None])[0]
+            started_at = time.perf_counter()
             result = agent_api.check_event(event, gallery_path=gallery_path, adapter_id=adapter_id)
             if request_shadow_mode:
                 result = agent_api.apply_shadow_mode(result)
-            _append_audit_record(audit_log_path, agent_api.audit_event_check(event, result))
+            _append_audit_record(audit_log_path, agent_api.audit_event_check(event, _result_with_runtime_metadata(result, started_at)))
             return 200, result
         except AuditLogError as exc:
-            return 500, error_payload(500, "audit_append_failed", str(exc))
+            return 500, public_error(500, "audit_append_failed", "Audit append failed.", exc)
         except (json.JSONDecodeError, OSError, ValueError) as exc:
-            return 400, error_payload(400, "bad_request", str(exc))
+            return 400, public_error(400, "bad_request", "Request could not be processed.", exc)
 
     if method == "POST" and parsed.path == "/validate-event":
         try:
             event = json.loads(body.decode("utf-8") if body else "{}")
             return 200, agent_api.validate_event(event)
         except json.JSONDecodeError as exc:
-            return 400, error_payload(400, "invalid_json", str(exc))
+            return 400, public_error(400, "invalid_json", "Request body must be valid JSON.", exc)
 
     if method == "POST" and parsed.path == "/workflow-check":
         try:
             workflow_request = json.loads(body.decode("utf-8") if body else "{}")
             if not isinstance(workflow_request, dict):
                 raise ValueError("Request body must be a JSON object.")
+            started_at = time.perf_counter()
             result = agent_api.check_workflow_request(workflow_request, gallery_path=gallery_path)
             if request_shadow_mode:
                 result = agent_api.apply_shadow_mode(result)
-            _append_audit_record(audit_log_path, agent_api.audit_workflow_check(workflow_request, result))
+            _append_audit_record(audit_log_path, agent_api.audit_workflow_check(workflow_request, _result_with_runtime_metadata(result, started_at)))
             return 200, result
         except AuditLogError as exc:
-            return 500, error_payload(500, "audit_append_failed", str(exc))
+            return 500, public_error(500, "audit_append_failed", "Audit append failed.", exc)
         except (json.JSONDecodeError, OSError, ValueError) as exc:
-            return 400, error_payload(400, "bad_request", str(exc))
+            return 400, public_error(400, "bad_request", "Request could not be processed.", exc)
 
     if method == "POST" and parsed.path == "/playground/check":
         try:
             workflow_request = json.loads(body.decode("utf-8") if body else "{}")
             if not isinstance(workflow_request, dict):
                 raise ValueError("Request body must be a JSON object.")
+            started_at = time.perf_counter()
             result = agent_api.check_workflow_request(workflow_request, gallery_path=gallery_path)
             if request_shadow_mode:
                 result = agent_api.apply_shadow_mode(result)
-            audit_record = agent_api.audit_workflow_check(workflow_request, result)
+            audit_record = agent_api.audit_workflow_check(workflow_request, _result_with_runtime_metadata(result, started_at))
             _append_audit_record(audit_log_path, audit_record)
             return 200, {
                 "playground_check_version": BRIDGE_VERSION,
@@ -852,38 +969,39 @@ def route_request(
                 "audit_appended": bool(audit_log_path),
             }
         except AuditLogError as exc:
-            return 500, error_payload(500, "audit_append_failed", str(exc))
+            return 500, public_error(500, "audit_append_failed", "Audit append failed.", exc)
         except (json.JSONDecodeError, OSError, ValueError) as exc:
-            return 400, error_payload(400, "bad_request", str(exc))
+            return 400, public_error(400, "bad_request", "Request could not be processed.", exc)
 
     if method == "POST" and parsed.path == "/workflow-batch":
         try:
             batch_request = json.loads(body.decode("utf-8") if body else "{}")
             if not isinstance(batch_request, dict):
                 raise ValueError("Request body must be a JSON object.")
+            started_at = time.perf_counter()
             result = agent_api.check_workflow_batch(batch_request, gallery_path=gallery_path)
             if request_shadow_mode:
                 result = agent_api.apply_shadow_mode(result)
-            _append_workflow_batch_audit(audit_log_path, batch_request, result)
+            _append_workflow_batch_audit(audit_log_path, batch_request, _batch_result_with_runtime_metadata(result, started_at))
             return 200, result
         except AuditLogError as exc:
-            return 500, error_payload(500, "audit_append_failed", str(exc))
+            return 500, public_error(500, "audit_append_failed", "Audit append failed.", exc)
         except (json.JSONDecodeError, OSError, ValueError) as exc:
-            return 400, error_payload(400, "bad_request", str(exc))
+            return 400, public_error(400, "bad_request", "Request could not be processed.", exc)
 
     if method == "POST" and parsed.path == "/validate-workflow":
         try:
             workflow_request = json.loads(body.decode("utf-8") if body else "{}")
             return 200, agent_api.validate_workflow_request(workflow_request)
         except json.JSONDecodeError as exc:
-            return 400, error_payload(400, "invalid_json", str(exc))
+            return 400, public_error(400, "invalid_json", "Request body must be valid JSON.", exc)
 
     if method == "POST" and parsed.path == "/validate-workflow-batch":
         try:
             batch_request = json.loads(body.decode("utf-8") if body else "{}")
             return 200, agent_api.validate_workflow_batch_request(batch_request)
         except json.JSONDecodeError as exc:
-            return 400, error_payload(400, "invalid_json", str(exc))
+            return 400, public_error(400, "invalid_json", "Request body must be valid JSON.", exc)
 
     return 404, error_payload(
         404,
@@ -893,6 +1011,7 @@ def route_request(
             "routes": [
                 "GET /health",
                 "GET /ready",
+                "GET /config",
                 "GET /policy-presets",
                 "GET /playground",
                 "GET /playground/gallery",
@@ -951,12 +1070,19 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
                 auth_token=self.auth_token,
                 auth_token_file=self.auth_token_file,
                 audit_log_path=self.audit_log_path,
+                max_body_bytes=self.max_body_bytes,
+                rate_limit_per_minute=self.rate_limit_per_minute,
+                read_timeout_seconds=self.read_timeout_seconds,
             )
         )
 
     def do_POST(self):
         self.connection.settimeout(self.read_timeout_seconds)
-        length = int(self.headers.get("Content-Length", "0") or "0")
+        try:
+            length = int(self.headers.get("Content-Length", "0") or "0")
+        except ValueError:
+            self.respond(400, public_error(400, "invalid_content_length", "Content-Length must be an integer."))
+            return
         if length > self.max_body_bytes:
             self.respond(
                 413,
@@ -988,6 +1114,7 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
                 rate_limit_state=self.rate_limit_state,
                 client_id=self.client_address[0] if self.client_address else None,
                 shadow_mode=self.shadow_mode,
+                read_timeout_seconds=self.read_timeout_seconds,
             )
         )
 
@@ -999,7 +1126,8 @@ class AanaAgentHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, format, *args):
-        sys.stderr.write("aana_server: " + format % args + "\n")
+        message = format % tuple(_redact_log_text(arg) for arg in args)
+        sys.stderr.write("aana_server: " + message + "\n")
 
     def respond(self, status, payload):
         data = json_bytes(payload)

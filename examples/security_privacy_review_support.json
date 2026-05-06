@@ -1,0 +1,266 @@
+{
+  "review_version": "0.1",
+  "review_id": "aana-support-security-privacy-review-2026-05",
+  "title": "AANA Support Security and Privacy Review",
+  "scope": {
+    "product_boundary": "AANA runtime guardrail layer for support workflows.",
+    "adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "public_surfaces": [
+      "workflow_contract",
+      "agent_event",
+      "http_bridge",
+      "python_sdk",
+      "cli"
+    ],
+    "out_of_scope": [
+      "Production TLS termination",
+      "Customer identity provider enforcement",
+      "Immutable external audit storage",
+      "Live CRM/order/email connector authorization",
+      "Domain-owner production approval"
+    ]
+  },
+  "deployment_position": {
+    "repo_local_status": "demo-ready/pilot-ready/production-candidate",
+    "production_status": "not production-certified by local tests alone",
+    "production_blockers": [
+      "live evidence connector permission review",
+      "domain owner signoff",
+      "audit retention policy approval",
+      "observability approval",
+      "human review staffing and SLA",
+      "security review approval",
+      "deployment manifest approval",
+      "incident response plan approval",
+      "measured pilot results",
+      "rate limit and abuse plan approved by deployment owner"
+    ]
+  },
+  "support_data_flow": [
+    {
+      "step": "agent_candidate",
+      "data": "Raw support prompt, candidate reply/action, adapter id, allowed actions.",
+      "threats": [
+        "raw prompt or candidate leaking to logs",
+        "candidate contains private payment data or internal CRM note"
+      ],
+      "mitigations": [
+        "metadata-only audit records",
+        "support verifier blocks private data and internal CRM leakage",
+        "HTTP bridge structured errors avoid raw exception payload text"
+      ]
+    },
+    {
+      "step": "evidence_retrieval",
+      "data": "CRM, order, policy, ticket, email recipient, attachment metadata, and billing evidence.",
+      "threats": [
+        "over-broad connector permissions",
+        "stale evidence",
+        "unredacted evidence passed to audit"
+      ],
+      "mitigations": [
+        "evidence source IDs and fingerprints are audited instead of raw evidence",
+        "evidence registry declares connector boundaries",
+        "production requires external connector manifests and owner approval"
+      ]
+    },
+    {
+      "step": "runtime_gate",
+      "data": "Verifier report, violations, AIx, correction route, safe output.",
+      "threats": [
+        "unsafe accept",
+        "wrong correction route",
+        "raw safe response stored in audit"
+      ],
+      "mitigations": [
+        "common verifier report shape",
+        "route maps for extracted verifier families",
+        "audit-safe summaries omit raw output text"
+      ]
+    },
+    {
+      "step": "bridge_and_audit",
+      "data": "HTTP request metadata, decision metadata, audit JSONL.",
+      "threats": [
+        "token leakage",
+        "request flood",
+        "audit record stores customer data"
+      ],
+      "mitigations": [
+        "Authorization and X-AANA-Token support",
+        "redacted bridge logs and config route",
+        "body limits, read timeout, and optional per-client rate limit",
+        "audit validation and redaction tests"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "support_data_flow_threat_model",
+      "status": "repo_local_reviewed",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/security_privacy_review_support.json:support_data_flow",
+        "docs/security-privacy-review.md"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_review_manifest_covers_required_controls"
+      ],
+      "residual_risk": "Deployment-specific data stores, identity boundaries, and network paths still require owner review."
+    },
+    {
+      "id": "raw_prompt_candidate_log_leakage",
+      "status": "repo_local_tested",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "eval_pipeline/agent_api.py",
+        "eval_pipeline/agent_server.py",
+        "tests/test_support_audit_logging.py"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_support_audit_omits_raw_prompt_candidate_and_evidence"
+      ],
+      "residual_risk": "External reverse proxies and hosting logs must be configured separately to avoid body logging."
+    },
+    {
+      "id": "token_auth_handling",
+      "status": "repo_local_tested",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "eval_pipeline/agent_server.py:_authorized",
+        "eval_pipeline/agent_server.py:bridge_config",
+        "eval_pipeline/agent_server.py:_redact_log_text"
+      ],
+      "tests_or_gates": [
+        "tests.test_agent_server.AgentServerTests.test_post_auth_token_accepts_bearer_credentials",
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_bridge_security_controls_do_not_expose_tokens"
+      ],
+      "residual_risk": "Production token issuance, rotation cadence, storage, and revocation are deployment responsibilities."
+    },
+    {
+      "id": "evidence_connector_permission_review",
+      "status": "external_required",
+      "owner": "deployment_owner",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/evidence_registry.json",
+        "examples/external_production_evidence_template.json"
+      ],
+      "tests_or_gates": [
+        "scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json",
+        "scripts/aana_cli.py evidence-integrations --evidence-registry examples/evidence_registry.json --mock-fixtures examples/evidence_mock_connector_fixtures.json"
+      ],
+      "residual_risk": "Mock fixtures do not prove least-privilege access to live CRM, order, email, billing, or ticket systems."
+    },
+    {
+      "id": "pii_redaction_review",
+      "status": "repo_local_tested",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "tests/test_support_audit_logging.py",
+        "examples/support_workflow_contract_examples.json"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_support_audit_omits_raw_prompt_candidate_and_evidence"
+      ],
+      "residual_risk": "Live connector payloads must be classified and redacted before runtime use."
+    },
+    {
+      "id": "attachment_metadata_handling",
+      "status": "repo_local_tested",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/support_workflow_contract_examples.json:block_private_export_attachment"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_attachment_private_export_case_blocks_and_audits_metadata_only"
+      ],
+      "residual_risk": "The repo checks metadata and fixture text only; production attachment scanning and malware controls are external."
+    },
+    {
+      "id": "internal_crm_note_exposure_tests",
+      "status": "repo_local_tested",
+      "owner": "platform",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/support_workflow_contract_examples.json:block_internal_crm_note_leakage"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_internal_crm_note_case_blocks_and_audits_metadata_only"
+      ],
+      "residual_risk": "Production CRM note classifiers and agent-only note labels must be validated against live schemas."
+    },
+    {
+      "id": "audit_retention_policy",
+      "status": "external_required",
+      "owner": "deployment_owner",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/production_deployment_template.json",
+        "docs/security-privacy-review.md#audit-retention"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_review_manifest_declares_external_deployment_blockers"
+      ],
+      "residual_risk": "Repo-local JSONL audit validation does not provide immutable retention, deletion, legal hold, or access-control guarantees."
+    },
+    {
+      "id": "support_domain_owner_signoff",
+      "status": "external_required",
+      "owner": "support_leadership_and_policy_owners",
+      "required_before_deployment": true,
+      "evidence": [
+        "examples/support_domain_owner_signoff_template.json",
+        "docs/support-domain-owner-signoff.md"
+      ],
+      "tests_or_gates": [
+        "scripts/validate_support_domain_signoff.py"
+      ],
+      "residual_risk": "The repo defines the signoff shape only; named support, policy, privacy, and audit owners must approve an environment-specific artifact before enforced support use."
+    },
+    {
+      "id": "secrets_scanning",
+      "status": "plan_required",
+      "owner": "deployment_owner",
+      "required_before_deployment": true,
+      "evidence": [
+        "docs/security-privacy-review.md#secrets-scanning"
+      ],
+      "tests_or_gates": [
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_review_manifest_declares_external_deployment_blockers"
+      ],
+      "residual_risk": "This repo contains synthetic secret-like strings in tests and fixtures; production scanning must use an allowlist and fail on unapproved findings."
+    },
+    {
+      "id": "rate_limiting_plan",
+      "status": "repo_local_tested_external_required",
+      "owner": "platform_and_deployment_owner",
+      "required_before_deployment": true,
+      "evidence": [
+        "eval_pipeline/agent_server.py:check_rate_limit",
+        "eval_pipeline/agent_server.py:--rate-limit-per-minute"
+      ],
+      "tests_or_gates": [
+        "tests.test_agent_server.AgentServerTests.test_post_rate_limit_returns_429",
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_bridge_rate_limit_control_blocks_after_limit"
+      ],
+      "residual_risk": "Production rate limits must be tuned per deployment and enforced at the edge as well as the bridge."
+    }
+  ],
+  "release_gate": {
+    "script": "scripts/validate_security_privacy_review.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

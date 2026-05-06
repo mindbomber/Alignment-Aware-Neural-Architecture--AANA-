@@ -2,9 +2,9 @@
 
 This plan converts the current AANA prototype into a production-capable platform without overstating what the repository can guarantee by itself. AANA remains a verifier-grounded correction architecture; production readiness means the platform has clear contracts, audited evidence flow, observable gates, secure integration boundaries, and repeatable release controls.
 
-Current positioning: this repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+Current positioning: this repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
-`production-certify` is a boundary checker, not a guarantee. It can show that repo-local artifacts are coherent, but deployment readiness requires explicit external evidence: connector manifests, shadow-mode logs, an audit retention policy, an escalation policy, and owner approval.
+`production-certify` is a boundary checker, not a guarantee. It can show that repo-local artifacts are coherent, but deployment readiness requires explicit external evidence: live connector manifests, shadow-mode logs, an audit retention policy, observability, human review path and escalation policy, security review, deployment manifest, incident response plan, measured pilot results, and owner approval.
 
 ## Milestone 1: Stable Platform Contract
 

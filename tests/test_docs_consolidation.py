@@ -9,8 +9,8 @@ class DocsConsolidationTests(unittest.TestCase):
     def test_three_primary_doc_entrypoints_exist(self):
         entrypoints = {
             "docs/try-demo/index.md": ["Hosted demo", "Adapter gallery", "Production positioning"],
-            "docs/integrate-runtime/index.md": ["Workflow Contract", "Agent Event Contract", "Production Boundary"],
-            "docs/build-adapter/index.md": ["Domain adapter template", "Adapter gallery", "Keep the claim narrow"],
+            "docs/integrate-runtime/index.md": ["Product boundary", "Workflow Contract", "Agent Event Contract", "Production Boundary"],
+            "docs/build-adapter/index.md": ["Product boundary", "Domain adapter template", "Adapter gallery", "Keep the claim narrow"],
         }
 
         for relative_path, expected_text in entrypoints.items():
@@ -45,6 +45,7 @@ class DocsConsolidationTests(unittest.TestCase):
             "docs/getting-started.md": "Canonical entry point: [Try Demo]",
             "docs/hosted-demo.md": "Canonical entry point: [Try Demo]",
             "docs/integration-recipes.md": "Canonical entry point: [Integrate Runtime]",
+            "docs/product-boundary.md": "Canonical entry point: [Integrate Runtime]",
             "docs/aana-workflow-contract.md": "Canonical entry point: [Integrate Runtime]",
             "docs/agent-integration.md": "Canonical entry point: [Integrate Runtime]",
             "docs/domain-adapter-template.md": "Canonical entry point: [Build Adapter]",
@@ -72,6 +73,33 @@ class DocsConsolidationTests(unittest.TestCase):
                 self.assertIn("eval workflows", text.lower())
                 for command in expected_commands:
                     self.assertIn(command, text)
+
+    def test_product_boundary_defines_support_runtime_scope(self):
+        boundary = (ROOT / "docs/product-boundary.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        for text in [boundary, readme]:
+            with self.subTest(source="boundary" if text == boundary else "readme"):
+                self.assertIn("runtime guardrail layer", text)
+                self.assertIn("Workflow Contract", text)
+                self.assertIn("Agent Event", text)
+                self.assertIn("accept", text)
+                self.assertIn("revise", text)
+                self.assertIn("retrieve", text)
+                self.assertIn("ask", text)
+                self.assertIn("defer", text)
+                self.assertIn("refuse", text)
+
+        support_scope = [
+            "Draft support reply guardrail",
+            "CRM support reply guardrail",
+            "Refund/account fact boundary checker",
+            "Email-send guardrail for support communications",
+            "Ticket/customer-visible update checker",
+            "Invoice/billing reply checker",
+        ]
+        for item in support_scope:
+            self.assertIn(item, boundary)
 
 
 if __name__ == "__main__":

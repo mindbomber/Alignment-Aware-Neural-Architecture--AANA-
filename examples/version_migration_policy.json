@@ -1,0 +1,122 @@
+{
+  "policy_version": "0.1",
+  "policy_id": "aana-versioning-and-migration-policy",
+  "title": "AANA Versioning and Migration Policy",
+  "versioned_surfaces": {
+    "adapter_version": {
+      "current": "1.0",
+      "source": "examples/*_adapter.json:version",
+      "breaking_change_requires": [
+        "adapter version bump",
+        "golden-output update or compatibility fixture",
+        "migration note"
+      ]
+    },
+    "workflow_contract_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.workflow_contract.WORKFLOW_CONTRACT_VERSION",
+      "breaking_change_requires": [
+        "contract version bump",
+        "schema compatibility test",
+        "migration note"
+      ]
+    },
+    "agent_event_contract_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.agent_contract.AGENT_EVENT_VERSION",
+      "breaking_change_requires": [
+        "event version bump",
+        "schema compatibility test",
+        "migration note"
+      ]
+    },
+    "verifier_module_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.adapter_runner.verifier_modules.VERIFIER_MODULE_VERSIONS",
+      "breaking_change_requires": [
+        "verifier module version bump",
+        "focused verifier tests",
+        "golden-output compatibility check",
+        "migration note"
+      ]
+    },
+    "route_map_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.adapter_runner.verifier_modules.ROUTE_MAP_VERSIONS",
+      "breaking_change_requires": [
+        "route map version bump",
+        "correction-route compatibility test",
+        "migration note"
+      ]
+    },
+    "aix_tuning_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.aix.AIX_VERSION",
+      "breaking_change_requires": [
+        "AIx tuning version bump",
+        "AIx calibration compatibility test",
+        "migration note"
+      ]
+    },
+    "evidence_connector_manifest_version": {
+      "current": "0.1",
+      "source": "examples/evidence_registry.json:registry_version and eval_pipeline.evidence_integrations.CONNECTOR_CONTRACT_VERSION",
+      "breaking_change_requires": [
+        "evidence connector manifest version bump",
+        "connector fixture compatibility test",
+        "migration note"
+      ]
+    },
+    "audit_schema_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.audit.AUDIT_RECORD_VERSION",
+      "breaking_change_requires": [
+        "audit schema version bump",
+        "audit redaction compatibility test",
+        "migration note"
+      ]
+    },
+    "runtime_version": {
+      "current": "0.1",
+      "source": "eval_pipeline.runtime.RUNTIME_API_VERSION",
+      "breaking_change_requires": [
+        "runtime version bump",
+        "public runtime API compatibility test",
+        "migration note"
+      ]
+    }
+  },
+  "compatibility_tests": [
+    "tests.test_public_api_freeze",
+    "tests.test_runtime_api",
+    "tests.test_runtime_boundary_cleanup",
+    "tests.test_adapter_runner_golden_outputs",
+    "tests.test_support_golden_regression_gates",
+    "tests.test_evidence_integrations",
+    "tests.test_support_audit_logging",
+    "tests.test_versioning_migration"
+  ],
+  "migration_notes": [
+    {
+      "version": "0.1",
+      "date": "2026-05-05",
+      "breaking": false,
+      "summary": "Initial platform-core version inventory for adapters, contracts, verifier modules, route maps, AIx, evidence connector manifests, audit records, and runtime API.",
+      "compatibility_tests": [
+        "tests.test_versioning_migration"
+      ],
+      "migration": "No migration required for the initial version inventory."
+    }
+  ],
+  "breaking_change_policy": {
+    "requires_migration_note": true,
+    "requires_compatibility_test": true,
+    "requires_version_bump": true,
+    "release_gate": "scripts/validate_versioning_migration.py"
+  },
+  "release_gate": {
+    "script": "scripts/validate_versioning_migration.py",
+    "category": "api",
+    "blocks_release": true
+  }
+}

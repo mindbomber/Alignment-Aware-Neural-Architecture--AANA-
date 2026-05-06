@@ -10,6 +10,7 @@ These recipes are copyable starting points for using AANA around real workflows 
 | --- | --- | --- |
 | [Use AANA with GitHub Actions](recipes/use-aana-with-github-actions.md) | Add PR and release guardrails to CI. | `examples/github-actions/aana-guardrails.yml` |
 | [Use AANA with a local agent](recipes/use-aana-with-a-local-agent.md) | Put AANA around a local agent/tool call. | `examples/agent_event_support_reply.json` |
+| [Use AANA with support agents](recipes/use-aana-with-support-agents.md) | Integrate support reply, CRM, email-send, ticket update, and billing reply guardrails through one contract path. | `examples/support_workflow_contract_examples.json` |
 | [Use AANA with CRM support drafts](recipes/use-aana-with-crm-support-drafts.md) | Check customer support replies against account facts, policy, privacy, and tone. | `examples/workflow_crm_support_reply.json` |
 | [Use AANA for deployment reviews](recipes/use-aana-for-deployment-reviews.md) | Review production release readiness before deploy. | `examples/workflow_deployment_readiness.json` |
 | [Use AANA in shadow mode](recipes/use-aana-in-shadow-mode.md) | Observe would-block/would-revise behavior without changing production behavior. | `examples/workflow_batch_productive_work.json` |

@@ -15,6 +15,7 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         self.assertEqual(payload["published_gallery_version"], "0.1")
         self.assertEqual(payload["adapter_count"], 43)
         self.assertIn("not production certification", payload["production_positioning"])
+        self.assertIn("support", payload["product_lines"])
         self.assertEqual(
             set(payload["filters"]["risk_tiers"]),
             {"standard", "elevated", "high", "strict"},
@@ -33,11 +34,18 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         required_fields = {
             "id",
             "title",
+            "product_line",
             "workflow",
             "readiness_status",
             "risk_tier",
             "aix",
+            "aix_tuning",
             "required_evidence",
+            "evidence_requirements",
+            "verifier_behavior",
+            "correction_policy_summary",
+            "human_review_path",
+            "human_review_requirements",
             "supported_surfaces",
             "families",
             "roles",
@@ -58,11 +66,15 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
             self.assertIn(card["readiness"]["try"], {"ready", "partial"}, card["id"])
             self.assertIn(card["readiness"]["pilot"], {"ready", "not_packaged"}, card["id"])
             self.assertIn("beta", card["aix"], card["id"])
+            self.assertIn("beta", card["aix_tuning"], card["id"])
             self.assertIsInstance(card["aix"]["layer_weights"], dict, card["id"])
             self.assertIsInstance(card["aix"]["thresholds"], dict, card["id"])
             self.assertTrue(card["example_inputs"]["prompt"], card["id"])
             self.assertTrue(card["example_inputs"]["bad_candidate"], card["id"])
             self.assertIn("gate_decision", card["example_outputs"]["expected"], card["id"])
+            if card["product_line"] == "support":
+                self.assertIn("expected_actions", card["example_outputs"], card["id"])
+                self.assertTrue(card["human_review_requirements"], card["id"])
             self.assertNotIn("\\", card["adapter_path"], card["id"])
 
     def test_high_value_adapter_cards_have_expected_evidence_surfaces_and_aix(self):
@@ -79,6 +91,17 @@ class PublishedAdapterGalleryTests(unittest.TestCase):
         self.assertIn("Enterprise starter/pilot pack", email["supported_surfaces"])
         self.assertIn("Personal productivity starter/pilot pack", email["supported_surfaces"])
         self.assertIn("support", email["roles"])
+        self.assertEqual(email["product_line"], "support")
+        self.assertIn("Agent Event Contract", email["supported_surfaces"])
+        self.assertIn("Python SDK", email["supported_surfaces"])
+        self.assertTrue(email["verifier_behavior"])
+        self.assertTrue(email["correction_policy_summary"])
+        self.assertTrue(email["human_review_path"])
+        self.assertTrue(email["human_review_requirements"])
+        self.assertEqual(
+            set(email["example_outputs"]["expected_actions"]["allowed_actions"]),
+            {"accept", "revise", "retrieve", "ask", "defer", "refuse"},
+        )
         self.assertIn("personal_productivity", email["families"])
         self.assertEqual(email["readiness"]["try"], "ready")
 

@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import json
 import pathlib
+import re
 
 from eval_pipeline import adapter_gallery
 
@@ -39,6 +40,75 @@ PROHIBITED_AUDIT_FIELDS = {
     "safe_response",
     "output",
 }
+SUPPORT_REVIEW_ROUTE_CODES = {
+    "missing_account_verification_path": "support_verification_review",
+    "wrong_or_unverified_recipient": "support_security_review",
+    "broad_or_bcc_recipient": "support_security_review",
+    "broad_or_hidden_recipient": "support_security_review",
+    "unsafe_attachment": "support_security_review",
+    "unsafe_email_attachment": "support_security_review",
+    "irreversible_send_without_approval": "support_security_review",
+    "private_account_detail": "support_privacy_review",
+    "private_payment_data": "support_privacy_review",
+    "internal_crm_detail": "support_privacy_review",
+    "internal_crm_leakage": "support_privacy_review",
+    "unsupported_refund_promise": "support_policy_review",
+    "invented_order_id": "support_policy_review",
+    "bypass_verification": "support_verification_review",
+}
+HUMAN_REVIEW_TRIGGER_CODES = {
+    "refund_exception": {"refund_exception"},
+    "unsupported_refund_promise": {"refund_exception", "policy_ambiguity"},
+    "billing_credit_promise_unauthorized": {"refund_exception", "policy_ambiguity"},
+    "private_account_detail": {"payment_billing_data_exposure"},
+    "private_payment_data": {"payment_billing_data_exposure"},
+    "private_email_data": {"payment_billing_data_exposure"},
+    "billing_payment_data_exposed": {"payment_billing_data_exposure"},
+    "internal_crm_detail": {"internal_fraud_risk_note_exposure"},
+    "internal_crm_leakage": {"internal_fraud_risk_note_exposure"},
+    "renewal_private_notes_exposed": {"internal_fraud_risk_note_exposure"},
+    "legal_jurisdiction_unverified": {"legal_regulatory_request"},
+    "legal_policy_limit_erasure": {"legal_regulatory_request", "account_closure_deletion_request"},
+    "high_stakes_legal_without_review": {"legal_regulatory_request"},
+    "public_records_private_info_exposed": {"legal_regulatory_request"},
+    "privacy_public_records_leak": {"legal_regulatory_request"},
+    "account_closure_request": {"account_closure_deletion_request"},
+    "account_deletion_request": {"account_closure_deletion_request"},
+    "data_deletion_request": {"account_closure_deletion_request"},
+    "missing_account_verification_path": {"identity_uncertainty"},
+    "bypass_verification": {"identity_uncertainty"},
+    "wrong_or_unverified_recipient": {"identity_uncertainty"},
+    "broad_or_hidden_recipient": {"identity_uncertainty", "policy_ambiguity"},
+    "broad_or_bcc_recipient": {"identity_uncertainty", "policy_ambiguity"},
+    "irreversible_send_without_approval": {"policy_ambiguity"},
+    "unsafe_email_attachment": {"payment_billing_data_exposure"},
+    "unsafe_attachment": {"payment_billing_data_exposure"},
+    "vendor_identity_unverified": {"identity_uncertainty"},
+    "high_value_customer_escalation": {"high_value_customer_escalation"},
+    "policy_ambiguity": {"policy_ambiguity"},
+    "recommended_action_not_allowed": {"policy_ambiguity"},
+}
+HUMAN_REVIEW_TRIGGER_PRIORITY = {
+    "payment_billing_data_exposure": "critical",
+    "internal_fraud_risk_note_exposure": "critical",
+    "legal_regulatory_request": "critical",
+    "account_closure_deletion_request": "critical",
+    "aix_hard_blocker": "critical",
+    "recommended_action_defer": "critical",
+    "identity_uncertainty": "high",
+    "refund_exception": "high",
+    "high_value_customer_escalation": "high",
+    "policy_ambiguity": "high",
+}
+ACTION_REVIEW_ROUTES = {
+    "accept": ("none", False),
+    "revise": ("agent_revision", False),
+    "retrieve": ("evidence_retrieval", False),
+    "ask": ("human_verification_review", True),
+    "defer": ("human_review_queue", True),
+    "refuse": ("blocked_action_review", True),
+}
+SOURCE_ID_PATTERN = re.compile(r"\bsource_id=([A-Za-z0-9_.:-]+)")
 
 
 def _utc_now():
@@ -61,6 +131,23 @@ def _fingerprint_list(values):
     return [_fingerprint(item) for item in values]
 
 
+def _evidence_source_ids(evidence):
+    source_ids = []
+    seen = set()
+    for item in evidence or []:
+        value = None
+        if isinstance(item, dict):
+            value = item.get("source_id")
+        elif isinstance(item, str):
+            match = SOURCE_ID_PATTERN.search(item)
+            if match:
+                value = match.group(1)
+        if isinstance(value, str) and value and value not in seen:
+            seen.add(value)
+            source_ids.append(value)
+    return source_ids
+
+
 def _violation_codes(violations):
     codes = []
     for violation in violations or []:
@@ -78,6 +165,147 @@ def _violation_severities(violations):
         severity = violation.get("severity", "unknown")
         counts[severity] = counts.get(severity, 0) + 1
     return counts
+
+
+def _safe_code(value):
+    return str(value).strip().replace(" ", "_").replace("/", "_") if value is not None else ""
+
+
+def _normalized_failure_items(values, default_code="failure"):
+    items = []
+    for value in values or []:
+        if isinstance(value, str):
+            code = _safe_code(value)
+            if code:
+                items.append(code)
+            continue
+        if not isinstance(value, dict):
+            continue
+        source = value.get("source_id") or value.get("connector_id") or value.get("id") or "unknown"
+        code = value.get("code") or value.get("status") or value.get("failure") or default_code
+        normalized = ":".join(part for part in (_safe_code(source), _safe_code(code)) if part)
+        if normalized:
+            items.append(normalized)
+    return sorted(set(items))
+
+
+def _evidence_observability(evidence):
+    connector_failures = []
+    freshness_failures = []
+    for item in evidence or []:
+        if not isinstance(item, dict):
+            continue
+        source_id = item.get("source_id") or item.get("connector_id") or "unknown"
+        connector_status = str(item.get("connector_status") or item.get("status") or "").lower()
+        if connector_status in {"fail", "failed", "error", "unavailable", "unauthorized"}:
+            connector_failures.append({"source_id": source_id, "code": connector_status})
+        freshness_status = str(item.get("freshness_status") or item.get("freshness") or "").lower()
+        if freshness_status in {"fail", "failed", "stale", "expired"}:
+            freshness_failures.append({"source_id": source_id, "code": freshness_status})
+    return {
+        "connector_failures": _normalized_failure_items(connector_failures, default_code="connector_failure"),
+        "evidence_freshness_failures": _normalized_failure_items(freshness_failures, default_code="stale_evidence"),
+    }
+
+
+def _operational_metadata(result, evidence=None):
+    result = result if isinstance(result, dict) else {}
+    metadata = {}
+    for key in ("audit_metadata", "observability", "runtime_metadata"):
+        value = result.get(key)
+        if isinstance(value, dict):
+            metadata.update(value)
+    evidence_metadata = _evidence_observability(evidence)
+
+    latency_ms = metadata.get("latency_ms")
+    if not isinstance(latency_ms, (int, float)):
+        latency_ms = result.get("latency_ms")
+    adapter_version = metadata.get("adapter_version") or result.get("adapter_version")
+    connector_failures = []
+    connector_failures.extend(metadata.get("connector_failures", []) or [])
+    connector_failures.extend(result.get("connector_failures", []) or [])
+    connector_failures.extend(evidence_metadata["connector_failures"])
+    freshness_failures = []
+    freshness_failures.extend(metadata.get("evidence_freshness_failures", []) or [])
+    freshness_failures.extend(metadata.get("freshness_failures", []) or [])
+    freshness_failures.extend(result.get("evidence_freshness_failures", []) or [])
+    freshness_failures.extend(evidence_metadata["evidence_freshness_failures"])
+
+    return {
+        "latency_ms": round(float(latency_ms), 3) if isinstance(latency_ms, (int, float)) and latency_ms >= 0 else None,
+        "adapter_version": str(adapter_version) if adapter_version else None,
+        "connector_failures": _normalized_failure_items(connector_failures, default_code="connector_failure"),
+        "evidence_freshness_failures": _normalized_failure_items(freshness_failures, default_code="stale_evidence"),
+    }
+
+
+def _review_triggers(result):
+    result = result if isinstance(result, dict) else {}
+    triggers = set()
+    codes = _violation_codes(result.get("violations", []))
+    for code in codes:
+        triggers.update(HUMAN_REVIEW_TRIGGER_CODES.get(code, set()))
+
+    aix = result.get("aix") if isinstance(result.get("aix"), dict) else {}
+    hard_blockers = [str(item) for item in aix.get("hard_blockers", []) or [] if item]
+    if hard_blockers:
+        triggers.add("aix_hard_blocker")
+    if result.get("recommended_action") == "defer":
+        triggers.add("recommended_action_defer")
+    return sorted(triggers)
+
+
+def _review_priority(triggers):
+    priorities = [HUMAN_REVIEW_TRIGGER_PRIORITY.get(trigger, "standard") for trigger in triggers]
+    if "critical" in priorities:
+        return "critical"
+    if "high" in priorities:
+        return "high"
+    return "standard"
+
+
+def _human_review_route(result):
+    result = result if isinstance(result, dict) else {}
+    action = result.get("recommended_action")
+    route, required = ACTION_REVIEW_ROUTES.get(action, ("human_review_queue", True))
+    reason = f"recommended_action:{action}" if action else "recommended_action:unknown"
+
+    codes = _violation_codes(result.get("violations", []))
+    for code in codes:
+        support_route = SUPPORT_REVIEW_ROUTE_CODES.get(code)
+        if support_route:
+            return {
+                "required": True,
+                "route": support_route,
+                "reason": f"violation:{code}",
+            }
+
+    aix = result.get("aix") if isinstance(result.get("aix"), dict) else {}
+    hard_blockers = [str(item) for item in aix.get("hard_blockers", []) or [] if item]
+    if hard_blockers and not required:
+        route = "hard_blocker_review"
+        required = True
+        reason = "aix_hard_blocker"
+
+    return {
+        "required": required,
+        "route": route,
+        "reason": reason,
+    }
+
+
+def _human_review_queue(result):
+    route = _human_review_route(result)
+    triggers = _review_triggers(result)
+    required = bool(route.get("required") or triggers)
+    return {
+        "required": required,
+        "queue": "support_human_review" if required else "none",
+        "route": route.get("route"),
+        "priority": _review_priority(triggers) if required else "none",
+        "triggers": triggers,
+        "reason": route.get("reason"),
+    }
 
 
 def _add_issue(issues, level, path, message):
@@ -155,6 +383,7 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
     evidence = event.get("available_evidence", []) if isinstance(event, dict) else []
     if not isinstance(evidence, list):
         evidence = []
+    metadata = event.get("metadata", {}) if isinstance(event, dict) and isinstance(event.get("metadata"), dict) else {}
     candidate = None
     if isinstance(event, dict):
         candidate = event.get("candidate_action")
@@ -164,6 +393,9 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
             candidate = event.get("draft_response")
 
     violations = result.get("violations", []) if isinstance(result, dict) else []
+    aix_summary = _aix_summary(result)
+    human_review_queue = _human_review_queue(result)
+    operations = _operational_metadata(result, evidence=evidence)
     record = {
         "audit_record_version": AUDIT_RECORD_VERSION,
         "created_at": created_at or _utc_now(),
@@ -171,16 +403,30 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
         "event_version": event.get("event_version") if isinstance(event, dict) else None,
         "event_id": event.get("event_id") if isinstance(event, dict) else None,
         "agent": result.get("agent") if isinstance(result, dict) else None,
-        "adapter_id": result.get("adapter_id") if isinstance(result, dict) else None,
+        "adapter_id": (result.get("adapter_id") if isinstance(result, dict) else None)
+        or (event.get("adapter_id") if isinstance(event, dict) else None),
+        "workflow_id": (result.get("workflow_id") if isinstance(result, dict) else None) or metadata.get("workflow_id"),
         "workflow": result.get("workflow") if isinstance(result, dict) else None,
+        "adapter_version": operations["adapter_version"],
         "gate_decision": result.get("gate_decision") if isinstance(result, dict) else None,
         "recommended_action": result.get("recommended_action") if isinstance(result, dict) else None,
         "candidate_gate": result.get("candidate_gate") if isinstance(result, dict) else None,
-        "aix": _aix_summary(result),
+        "aix": aix_summary,
+        "hard_blockers": (aix_summary or {}).get("hard_blockers", []),
         "violation_count": len(violations),
         "violation_codes": _violation_codes(violations),
         "violation_severities": _violation_severities(violations),
+        "evidence_source_ids": _evidence_source_ids(evidence),
+        "latency_ms": operations["latency_ms"],
+        "connector_failures": operations["connector_failures"],
+        "evidence_freshness_failures": operations["evidence_freshness_failures"],
         "allowed_actions": list(event.get("allowed_actions", [])) if isinstance(event, dict) else [],
+        "human_review_route": {
+            "required": human_review_queue["required"],
+            "route": human_review_queue["route"],
+            "reason": human_review_queue["reason"],
+        },
+        "human_review_queue": human_review_queue,
         "input_fingerprints": {
             "user_request": _fingerprint(event.get("user_request") or event.get("prompt")) if isinstance(event, dict) else None,
             "candidate": _fingerprint(candidate),
@@ -194,6 +440,7 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
 def workflow_audit_record(workflow_request, result, created_at=None, shadow_mode=False):
     """Create a redacted audit record for a Workflow Contract check."""
 
+    workflow_request = workflow_request if isinstance(workflow_request, dict) else {}
     evidence = workflow_request.get("evidence", []) if isinstance(workflow_request, dict) else []
     if isinstance(evidence, str):
         evidence = [evidence]
@@ -206,24 +453,40 @@ def workflow_audit_record(workflow_request, result, created_at=None, shadow_mode
         constraints = []
 
     violations = result.get("violations", []) if isinstance(result, dict) else []
+    aix_summary = _aix_summary(result)
+    human_review_queue = _human_review_queue(result)
+    operations = _operational_metadata(result, evidence=evidence)
     record = {
         "audit_record_version": AUDIT_RECORD_VERSION,
         "created_at": created_at or _utc_now(),
         "record_type": "workflow_check",
         "contract_version": workflow_request.get("contract_version") if isinstance(workflow_request, dict) else None,
-        "workflow_id": result.get("workflow_id") if isinstance(result, dict) else None,
+        "workflow_id": (result.get("workflow_id") if isinstance(result, dict) else None) or workflow_request.get("workflow_id"),
         "adapter": result.get("adapter") if isinstance(result, dict) else None,
+        "adapter_id": (result.get("adapter") if isinstance(result, dict) else None) or workflow_request.get("adapter"),
         "workflow": result.get("workflow") if isinstance(result, dict) else None,
+        "adapter_version": operations["adapter_version"],
         "gate_decision": result.get("gate_decision") if isinstance(result, dict) else None,
         "recommended_action": result.get("recommended_action") if isinstance(result, dict) else None,
         "candidate_gate": result.get("candidate_gate") if isinstance(result, dict) else None,
-        "aix": _aix_summary(result),
+        "aix": aix_summary,
+        "hard_blockers": (aix_summary or {}).get("hard_blockers", []),
         "violation_count": len(violations),
         "violation_codes": _violation_codes(violations),
         "violation_severities": _violation_severities(violations),
+        "evidence_source_ids": _evidence_source_ids(evidence),
+        "latency_ms": operations["latency_ms"],
+        "connector_failures": operations["connector_failures"],
+        "evidence_freshness_failures": operations["evidence_freshness_failures"],
         "allowed_actions": list(workflow_request.get("allowed_actions", [])) if isinstance(workflow_request, dict) else [],
         "constraint_count": len(constraints),
         "evidence_count": len(evidence),
+        "human_review_route": {
+            "required": human_review_queue["required"],
+            "route": human_review_queue["route"],
+            "reason": human_review_queue["reason"],
+        },
+        "human_review_queue": human_review_queue,
         "input_fingerprints": {
             "request": _fingerprint(workflow_request.get("request")) if isinstance(workflow_request, dict) else None,
             "candidate": _fingerprint(workflow_request.get("candidate")) if isinstance(workflow_request, dict) else None,
@@ -299,6 +562,16 @@ def validate_audit_record(record, path="$"):
         _add_issue(issues, "error", f"{path}.gate_decision", "gate_decision must be a string or null.")
     if "recommended_action" in record and record.get("recommended_action") is not None and not isinstance(record.get("recommended_action"), str):
         _add_issue(issues, "error", f"{path}.recommended_action", "recommended_action must be a string or null.")
+    if "adapter_version" in record and record.get("adapter_version") is not None and not isinstance(record.get("adapter_version"), str):
+        _add_issue(issues, "error", f"{path}.adapter_version", "adapter_version must be a string or null.")
+    if "latency_ms" in record and record.get("latency_ms") is not None and not isinstance(record.get("latency_ms"), (int, float)):
+        _add_issue(issues, "error", f"{path}.latency_ms", "latency_ms must be numeric or null.")
+    for field in ("connector_failures", "evidence_freshness_failures"):
+        if field in record and (
+            not isinstance(record.get(field), list)
+            or not all(isinstance(item, str) for item in record.get(field))
+        ):
+            _add_issue(issues, "error", f"{path}.{field}", f"{field} must be an array of strings.")
     if record.get("execution_mode") is not None and record.get("execution_mode") not in EXECUTION_MODES:
         _add_issue(issues, "error", f"{path}.execution_mode", f"execution_mode must be one of {sorted(EXECUTION_MODES)}.")
     if record.get("execution_mode") == "shadow":
@@ -316,6 +589,46 @@ def validate_audit_record(record, path="$"):
         _add_issue(issues, "error", f"{path}.violation_count", "violation_count must be an integer.")
     if "violation_codes" in record and not isinstance(record.get("violation_codes"), list):
         _add_issue(issues, "error", f"{path}.violation_codes", "violation_codes must be an array.")
+    if "hard_blockers" in record and not isinstance(record.get("hard_blockers"), list):
+        _add_issue(issues, "error", f"{path}.hard_blockers", "hard_blockers must be an array.")
+    if "evidence_source_ids" in record:
+        source_ids = record.get("evidence_source_ids")
+        if not isinstance(source_ids, list) or not all(isinstance(item, str) for item in source_ids):
+            _add_issue(issues, "error", f"{path}.evidence_source_ids", "evidence_source_ids must be an array of strings.")
+    if "human_review_route" in record:
+        route = record.get("human_review_route")
+        if not isinstance(route, dict):
+            _add_issue(issues, "error", f"{path}.human_review_route", "human_review_route must be an object.")
+        else:
+            if not isinstance(route.get("required"), bool):
+                _add_issue(issues, "error", f"{path}.human_review_route.required", "human_review_route.required must be boolean.")
+            if not isinstance(route.get("route"), str) or not route.get("route"):
+                _add_issue(issues, "error", f"{path}.human_review_route.route", "human_review_route.route must be a non-empty string.")
+            if "reason" in route and route.get("reason") is not None and not isinstance(route.get("reason"), str):
+                _add_issue(issues, "error", f"{path}.human_review_route.reason", "human_review_route.reason must be a string or null.")
+    if "human_review_queue" in record:
+        queue = record.get("human_review_queue")
+        if not isinstance(queue, dict):
+            _add_issue(issues, "error", f"{path}.human_review_queue", "human_review_queue must be an object.")
+        else:
+            if not isinstance(queue.get("required"), bool):
+                _add_issue(issues, "error", f"{path}.human_review_queue.required", "human_review_queue.required must be boolean.")
+            if not isinstance(queue.get("queue"), str) or not queue.get("queue"):
+                _add_issue(issues, "error", f"{path}.human_review_queue.queue", "human_review_queue.queue must be a non-empty string.")
+            if "route" in queue and queue.get("route") is not None and not isinstance(queue.get("route"), str):
+                _add_issue(issues, "error", f"{path}.human_review_queue.route", "human_review_queue.route must be a string or null.")
+            if "priority" in queue and queue.get("priority") not in {"none", "standard", "high", "critical"}:
+                _add_issue(
+                    issues,
+                    "error",
+                    f"{path}.human_review_queue.priority",
+                    "human_review_queue.priority must be none, standard, high, or critical.",
+                )
+            triggers = queue.get("triggers")
+            if not isinstance(triggers, list) or not all(isinstance(item, str) for item in triggers):
+                _add_issue(issues, "error", f"{path}.human_review_queue.triggers", "human_review_queue.triggers must be an array of strings.")
+            if "reason" in queue and queue.get("reason") is not None and not isinstance(queue.get("reason"), str):
+                _add_issue(issues, "error", f"{path}.human_review_queue.reason", "human_review_queue.reason must be a string or null.")
     aix = record.get("aix")
     if aix is not None:
         if not isinstance(aix, dict):
@@ -325,6 +638,8 @@ def validate_audit_record(record, path="$"):
                 _add_issue(issues, "error", f"{path}.aix.score", "aix.score must be numeric or null.")
             if "decision" in aix and aix.get("decision") is not None and not isinstance(aix.get("decision"), str):
                 _add_issue(issues, "error", f"{path}.aix.decision", "aix.decision must be a string or null.")
+            if "components" in aix and not isinstance(aix.get("components"), dict):
+                _add_issue(issues, "error", f"{path}.aix.components", "aix.components must be an object.")
             if "hard_blockers" in aix and not isinstance(aix.get("hard_blockers"), list):
                 _add_issue(issues, "error", f"{path}.aix.hard_blockers", "aix.hard_blockers must be an array.")
 
@@ -407,11 +722,24 @@ def validate_metrics_export(metrics_export):
         _add_issue(issues, "error", "$.unavailable_metrics", "unavailable_metrics must be an array.")
 
     metrics = metrics_export.get("metrics", {}) if isinstance(metrics_export.get("metrics"), dict) else {}
-    for required in ("audit_records_total", "gate_decision_count", "recommended_action_count", "adapter_check_count"):
+    for required in (
+        "audit_records_total",
+        "gate_decision_count",
+        "recommended_action_count",
+        "adapter_check_count",
+        "human_review_rate",
+        "refusal_defer_rate",
+        "connector_failure_count",
+        "evidence_freshness_failure_count",
+        "drift_by_adapter_version_count",
+    ):
         if required not in metrics:
             _add_issue(issues, "error", f"$.metrics.{required}", "Required audit metric is missing.")
     if "aix_score_average" in metrics and not isinstance(metrics.get("aix_score_average"), (int, float)):
         _add_issue(issues, "error", "$.metrics.aix_score_average", "aix_score_average must be numeric when present.")
+    for numeric in ("human_review_rate", "refusal_defer_rate"):
+        if numeric in metrics and not isinstance(metrics.get(numeric), (int, float)):
+            _add_issue(issues, "error", f"$.metrics.{numeric}", f"{numeric} must be numeric.")
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")
@@ -428,6 +756,12 @@ def summarize_records(records):
     record_types = {}
     execution_modes = {}
     shadow_routes = {}
+    human_review_queues = {}
+    human_review_triggers = {}
+    connector_failures = {}
+    evidence_freshness_failures = {}
+    adapter_versions = {}
+    latency_ms = []
     aix_scores = []
     aix_decisions = {}
     aix_hard_blockers = {}
@@ -445,17 +779,33 @@ def summarize_records(records):
         adapter = record.get("adapter") or record.get("adapter_id")
         if adapter:
             adapters[adapter] = adapters.get(adapter, 0) + 1
+            version = record.get("adapter_version") or "unknown"
+            adapter_version_counts = adapter_versions.setdefault(adapter, {})
+            adapter_version_counts[version] = adapter_version_counts.get(version, 0) + 1
             for family in _adapter_families(adapter):
                 families[family] = families.get(family, 0) + 1
             for role in _adapter_roles(adapter):
                 roles[role] = roles.get(role, 0) + 1
         for code in record.get("violation_codes", []) or []:
             violation_codes[code] = violation_codes.get(code, 0) + 1
+        review_queue = record.get("human_review_queue") if isinstance(record.get("human_review_queue"), dict) else {}
+        if review_queue.get("required"):
+            queue_name = review_queue.get("queue") or "human_review_queue"
+            human_review_queues[queue_name] = human_review_queues.get(queue_name, 0) + 1
+            for trigger in review_queue.get("triggers", []) or []:
+                human_review_triggers[trigger] = human_review_triggers.get(trigger, 0) + 1
         if execution_mode == "shadow":
             shadow = record.get("shadow_observation") if isinstance(record.get("shadow_observation"), dict) else {}
             route = shadow.get("would_route") or shadow_route_from_action(record.get("recommended_action"), gate_decision=record.get("gate_decision"))
             if route:
                 shadow_routes[route] = shadow_routes.get(route, 0) + 1
+        for failure in record.get("connector_failures", []) or []:
+            connector_failures[failure] = connector_failures.get(failure, 0) + 1
+        for failure in record.get("evidence_freshness_failures", []) or []:
+            evidence_freshness_failures[failure] = evidence_freshness_failures.get(failure, 0) + 1
+        latency = record.get("latency_ms")
+        if isinstance(latency, (int, float)) and latency >= 0:
+            latency_ms.append(float(latency))
         aix = record.get("aix")
         if isinstance(aix, dict):
             score = aix.get("score")
@@ -477,6 +827,12 @@ def summarize_records(records):
         "families": families,
         "roles": roles,
         "violation_codes": dict(sorted(violation_codes.items(), key=lambda item: (-item[1], item[0]))),
+        "human_review_queues": human_review_queues,
+        "human_review_triggers": dict(sorted(human_review_triggers.items(), key=lambda item: (-item[1], item[0]))),
+        "connector_failures": dict(sorted(connector_failures.items(), key=lambda item: (-item[1], item[0]))),
+        "evidence_freshness_failures": dict(sorted(evidence_freshness_failures.items(), key=lambda item: (-item[1], item[0]))),
+        "adapter_versions": {adapter: dict(sorted(versions.items())) for adapter, versions in sorted(adapter_versions.items())},
+        "latency": _latency_stats(latency_ms),
     }
     if shadow_routes:
         summary["shadow"] = {
@@ -488,6 +844,7 @@ def summarize_records(records):
             "average_score": round(sum(aix_scores) / len(aix_scores), 4),
             "min_score": round(min(aix_scores), 4),
             "max_score": round(max(aix_scores), 4),
+            "score_distribution": _aix_score_distribution(aix_scores),
             "decisions": aix_decisions,
             "hard_blockers": dict(sorted(aix_hard_blockers.items(), key=lambda item: (-item[1], item[0]))),
         }
@@ -539,6 +896,59 @@ def _record_has_missing_evidence(record):
     return False
 
 
+def _rate(count, total):
+    return round(count / total, 4) if total else 0.0
+
+
+def _latency_stats(values):
+    if not values:
+        return {"count": 0, "average_ms": None, "min_ms": None, "max_ms": None, "p50_ms": None, "p95_ms": None, "buckets": {}}
+    ordered = sorted(float(value) for value in values)
+
+    def percentile(fraction):
+        index = min(len(ordered) - 1, max(0, int(round((len(ordered) - 1) * fraction))))
+        return round(ordered[index], 3)
+
+    buckets = {
+        "le_100ms": sum(1 for value in ordered if value <= 100),
+        "le_250ms": sum(1 for value in ordered if value <= 250),
+        "le_500ms": sum(1 for value in ordered if value <= 500),
+        "le_1000ms": sum(1 for value in ordered if value <= 1000),
+        "gt_1000ms": sum(1 for value in ordered if value > 1000),
+    }
+    return {
+        "count": len(ordered),
+        "average_ms": round(sum(ordered) / len(ordered), 3),
+        "min_ms": round(ordered[0], 3),
+        "max_ms": round(ordered[-1], 3),
+        "p50_ms": percentile(0.50),
+        "p95_ms": percentile(0.95),
+        "buckets": buckets,
+    }
+
+
+def _aix_score_distribution(scores):
+    buckets = {
+        "lt_0_50": 0,
+        "gte_0_50_lt_0_70": 0,
+        "gte_0_70_lt_0_85": 0,
+        "gte_0_85_lt_0_95": 0,
+        "gte_0_95": 0,
+    }
+    for score in scores:
+        if score < 0.50:
+            buckets["lt_0_50"] += 1
+        elif score < 0.70:
+            buckets["gte_0_50_lt_0_70"] += 1
+        elif score < 0.85:
+            buckets["gte_0_70_lt_0_85"] += 1
+        elif score < 0.95:
+            buckets["gte_0_85_lt_0_95"] += 1
+        else:
+            buckets["gte_0_95"] += 1
+    return buckets
+
+
 def export_metrics(records, audit_log_path=None, created_at=None):
     """Export flat dashboard-friendly metrics from redacted audit records."""
 
@@ -551,7 +961,19 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         "adapter_check_count": _sum_counts(summary["adapters"]),
         "family_check_count": _sum_counts(summary.get("families", {})),
         "role_check_count": _sum_counts(summary.get("roles", {})),
+        "human_review_queue_count": _sum_counts(summary.get("human_review_queues", {})),
+        "human_review_trigger_count": _sum_counts(summary.get("human_review_triggers", {})),
+        "connector_failure_count": _sum_counts(summary.get("connector_failures", {})),
+        "evidence_freshness_failure_count": _sum_counts(summary.get("evidence_freshness_failures", {})),
     }
+    total = summary["total"]
+    defer_count = summary["recommended_actions"].get("defer", 0)
+    refuse_count = summary["recommended_actions"].get("refuse", 0)
+    human_review_count = metrics["human_review_queue_count"]
+    metrics["human_review_rate"] = _rate(human_review_count, total)
+    metrics["defer_rate"] = _rate(defer_count, total)
+    metrics["refusal_rate"] = _rate(refuse_count, total)
+    metrics["refusal_defer_rate"] = _rate(refuse_count + defer_count, total)
 
     for record_type, count in summary["record_types"].items():
         metrics[_metric_key("audit_record_type_count", record_type)] = count
@@ -579,6 +1001,23 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         metrics[_metric_key("role_check_count", role)] = count
     for code, count in summary["violation_codes"].items():
         metrics[_metric_key("violation_code_count", code)] = count
+    for queue, count in summary.get("human_review_queues", {}).items():
+        metrics[_metric_key("human_review_queue_count", queue)] = count
+    for trigger, count in summary.get("human_review_triggers", {}).items():
+        metrics[_metric_key("human_review_trigger_count", trigger)] = count
+    for failure, count in summary.get("connector_failures", {}).items():
+        metrics[_metric_key("connector_failure_count", failure)] = count
+    for failure, count in summary.get("evidence_freshness_failures", {}).items():
+        metrics[_metric_key("evidence_freshness_failure_count", failure)] = count
+    drift_by_adapter_version = 0
+    for adapter, versions in summary.get("adapter_versions", {}).items():
+        distinct_versions = len(versions)
+        metrics[_metric_key("adapter_version_distinct_count", adapter)] = distinct_versions
+        if distinct_versions > 1:
+            drift_by_adapter_version += 1
+        for version, count in versions.items():
+            metrics[_metric_key("adapter_version_check_count", f"{adapter}.{version}")] = count
+    metrics["drift_by_adapter_version_count"] = drift_by_adapter_version
 
     shadow = summary.get("shadow", {})
     shadow_routes = shadow.get("would_routes", {}) if isinstance(shadow, dict) else {}
@@ -589,7 +1028,19 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         metrics[_metric_key("shadow_would_action_count", route)] = count
         metrics[f"shadow_would_{route}_count"] = count
 
-    unavailable_metrics = ["latency"]
+    latency = summary.get("latency", {})
+    unavailable_metrics = []
+    if latency.get("count"):
+        metrics["latency_count"] = latency["count"]
+        metrics["latency_average_ms"] = latency["average_ms"]
+        metrics["latency_min_ms"] = latency["min_ms"]
+        metrics["latency_max_ms"] = latency["max_ms"]
+        metrics["latency_p50_ms"] = latency["p50_ms"]
+        metrics["latency_p95_ms"] = latency["p95_ms"]
+        for bucket, count in latency.get("buckets", {}).items():
+            metrics[_metric_key("latency_bucket_count", bucket)] = count
+    else:
+        unavailable_metrics.append("latency")
     aix = summary.get("aix")
     if aix:
         metrics["aix_score_average"] = aix["average_score"]
@@ -597,6 +1048,8 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         metrics["aix_score_max"] = aix["max_score"]
         metrics["aix_decision_count"] = _sum_counts(aix["decisions"])
         metrics["aix_hard_blocker_count"] = _sum_counts(aix["hard_blockers"])
+        for bucket, count in aix.get("score_distribution", {}).items():
+            metrics[_metric_key("aix_score_bucket_count", bucket)] = count
         for decision, count in aix["decisions"].items():
             metrics[_metric_key("aix_decision_count", decision)] = count
         for blocker, count in aix["hard_blockers"].items():
@@ -669,6 +1122,12 @@ def _empty_breakdown_item(item_id):
         "hard_blocker_total": 0,
         "human_review_escalations": 0,
         "evidence_missing": 0,
+        "connector_failures": {},
+        "connector_failure_total": 0,
+        "evidence_freshness_failures": {},
+        "evidence_freshness_failure_total": 0,
+        "adapter_versions": {},
+        "latency_ms": [],
         "shadow_routes": {},
         "shadow_records": 0,
         "shadow_would_block": 0,
@@ -678,8 +1137,10 @@ def _empty_breakdown_item(item_id):
 
 def _finalize_breakdown_item(item):
     scores = item.pop("aix_scores", [])
+    latencies = item.pop("latency_ms", [])
     shadow_records = item.get("shadow_records", 0)
     item["aix"] = _aix_stats(scores)
+    item["latency"] = _latency_stats(latencies)
     item["shadow_would_block_rate"] = round(item["shadow_would_block"] / shadow_records, 4) if shadow_records else 0.0
     item["shadow_would_intervene_rate"] = round(item["shadow_would_intervene"] / shadow_records, 4) if shadow_records else 0.0
     item["safety_intervention_rate"] = round(
@@ -692,8 +1153,14 @@ def _finalize_breakdown_item(item):
     item["refuse_rate"] = round(item["recommended_actions"].get("refuse", 0) / item["total"], 4) if item["total"] else 0.0
     item["human_review_escalation_rate"] = round(item["human_review_escalations"] / item["total"], 4) if item["total"] else 0.0
     item["evidence_missing_rate"] = round(item["evidence_missing"] / item["total"], 4) if item["total"] else 0.0
+    item["connector_failure_rate"] = round(item["connector_failure_total"] / item["total"], 4) if item["total"] else 0.0
+    item["evidence_freshness_failure_rate"] = round(item["evidence_freshness_failure_total"] / item["total"], 4) if item["total"] else 0.0
+    item["adapter_version_drift"] = len(item["adapter_versions"]) > 1
     item["violation_codes"] = dict(sorted(item["violation_codes"].items(), key=lambda pair: (-pair[1], pair[0])))
     item["hard_blockers"] = dict(sorted(item["hard_blockers"].items(), key=lambda pair: (-pair[1], pair[0])))
+    item["connector_failures"] = dict(sorted(item["connector_failures"].items(), key=lambda pair: (-pair[1], pair[0])))
+    item["evidence_freshness_failures"] = dict(sorted(item["evidence_freshness_failures"].items(), key=lambda pair: (-pair[1], pair[0])))
+    item["adapter_versions"] = dict(sorted(item["adapter_versions"].items()))
     return item
 
 
@@ -741,6 +1208,17 @@ def dashboard_payload(records, audit_log_path=None, created_at=None):
                 item["human_review_escalations"] += 1
             if missing_evidence:
                 item["evidence_missing"] += 1
+            for failure in record.get("connector_failures", []) or []:
+                _increment(item["connector_failures"], failure)
+                item["connector_failure_total"] += 1
+            for failure in record.get("evidence_freshness_failures", []) or []:
+                _increment(item["evidence_freshness_failures"], failure)
+                item["evidence_freshness_failure_total"] += 1
+            version = record.get("adapter_version") or "unknown"
+            _increment(item["adapter_versions"], version)
+            latency = record.get("latency_ms")
+            if isinstance(latency, (int, float)) and latency >= 0:
+                item["latency_ms"].append(float(latency))
             for code in record.get("violation_codes", []) or []:
                 _increment(item["violation_codes"], code)
             aix = record.get("aix") if isinstance(record.get("aix"), dict) else {}
@@ -807,11 +1285,21 @@ def dashboard_payload(records, audit_log_path=None, created_at=None):
             "refused": summary.get("recommended_actions", {}).get("refuse", 0),
             "violation_total": metrics.get("violation_code_count", 0),
             "hard_blocker_total": hard_blocker_total,
+            "human_review_rate": metrics.get("human_review_rate", 0.0),
+            "refusal_defer_rate": metrics.get("refusal_defer_rate", 0.0),
+            "latency_p95_ms": metrics.get("latency_p95_ms"),
+            "connector_failure_total": metrics.get("connector_failure_count", 0),
+            "evidence_freshness_failure_total": metrics.get("evidence_freshness_failure_count", 0),
+            "adapter_version_drift": metrics.get("drift_by_adapter_version_count", 0),
             "shadow_records": shadow_records,
             "shadow_would_block_rate": round(shadow_would_block / shadow_records, 4) if shadow_records else 0.0,
             "shadow_would_intervene_rate": round(shadow_would_intervene / shadow_records, 4) if shadow_records else 0.0,
         },
         "aix": _aix_stats(global_scores),
+        "latency": summary.get("latency", {}),
+        "connector_failures": summary.get("connector_failures", {}),
+        "evidence_freshness_failures": summary.get("evidence_freshness_failures", {}),
+        "adapter_versions": summary.get("adapter_versions", {}),
         "gate_decisions": summary.get("gate_decisions", {}),
         "recommended_actions": summary.get("recommended_actions", {}),
         "violation_trends": trend_series,

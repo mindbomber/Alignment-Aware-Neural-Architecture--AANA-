@@ -650,6 +650,14 @@ def evidence_integration_coverage(registry=None):
     return evidence_integrations.integration_coverage_report(registry=registry)
 
 
+def support_evidence_boundary(registry=None, external_evidence=None, fixtures=None):
+    return evidence_integrations.support_evidence_boundary_report(
+        registry=registry,
+        external_evidence=external_evidence,
+        fixtures=fixtures,
+    )
+
+
 def load_evidence_mock_fixtures(path=evidence_integrations.DEFAULT_MOCK_FIXTURES_PATH):
     return evidence_integrations.load_mock_connector_fixtures(path)
 

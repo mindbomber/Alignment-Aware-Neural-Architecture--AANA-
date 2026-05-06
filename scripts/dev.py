@@ -151,6 +151,36 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Validate frozen Workflow Contract and Agent Event Contract compatibility boundaries.",
         ),
         ReleaseGate(
+            "versioning_migration",
+            "api",
+            [PYTHON, "scripts/validate_versioning_migration.py"],
+            "Validate versioned runtime surfaces and migration-note requirements for breaking changes.",
+        ),
+        ReleaseGate(
+            "verifier_boundaries",
+            "adapter",
+            [PYTHON, "scripts/validate_verifier_boundaries.py"],
+            "Ensure verifier report functions are owned by verifier_modules.",
+        ),
+        ReleaseGate(
+            "golden_outputs",
+            "adapter",
+            [
+                PYTHON,
+                "-m",
+                "unittest",
+                "tests.test_adapter_runner_golden_outputs",
+                "tests.test_support_golden_regression_gates",
+            ],
+            "Fail on drift in core adapter, support reply, CRM support, email send, ticket update, invoice/billing, and candidate AIx refusal golden outputs.",
+        ),
+        ReleaseGate(
+            "adapter_baseline_comparison",
+            "adapter",
+            [PYTHON, "scripts/compare_adapter_runner_baseline.py", "--ref", "HEAD"],
+            "Compare current adapter runner support and core decision surfaces against the selected baseline ref.",
+        ),
+        ReleaseGate(
             "gallery_metadata",
             "catalog",
             [PYTHON, "scripts/aana_cli.py", "validate-gallery"],
@@ -161,12 +191,6 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "adapter",
             [PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"],
             "Run executable gallery examples and expected gate/action/AIx outcomes.",
-        ),
-        ReleaseGate(
-            "docs_bundle",
-            "docs",
-            [PYTHON, "scripts/aana_cli.py", "pilot-certify"],
-            "Validate public docs bundle, entrypoints, integration docs, and pilot-facing readiness surfaces.",
         ),
         ReleaseGate(
             "audit_redaction",
@@ -181,10 +205,58 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Validate audit schema and redaction rules for generated audit records.",
         ),
         ReleaseGate(
+            "aix_tuning",
+            "catalog",
+            [PYTHON, "scripts/aana_cli.py", "aix-tuning"],
+            "Validate adapter AIx risk-tier tuning, beta, layer weights, and thresholds.",
+        ),
+        ReleaseGate(
             "production_profiles",
-            "production_profile",
+            "production-profile",
             production_profile_command,
             "Validate production profiles, audit artifacts, release checks, and deployment boundary inputs.",
+        ),
+        ReleaseGate(
+            "security_privacy_review",
+            "production-profile",
+            [PYTHON, "scripts/validate_security_privacy_review.py"],
+            "Validate support security/privacy deployment review controls and external production blockers.",
+        ),
+        ReleaseGate(
+            "support_domain_signoff",
+            "production-profile",
+            [PYTHON, "scripts/validate_support_domain_signoff.py"],
+            "Validate support domain-owner signoff coverage before advisory or enforced support phases.",
+        ),
+        ReleaseGate(
+            "production_readiness_boundary",
+            "production-profile",
+            [PYTHON, "scripts/validate_production_readiness_boundary.py"],
+            "Validate conservative production readiness positioning and external deployment gates.",
+        ),
+        ReleaseGate(
+            "support_sla_failure_policy",
+            "production-profile",
+            [PYTHON, "scripts/validate_support_sla_failure_policy.py"],
+            "Validate support-specific SLA targets and undecidable fallback routing.",
+        ),
+        ReleaseGate(
+            "first_deployable_baseline",
+            "production-profile",
+            [PYTHON, "scripts/validate_first_deployable_baseline.py"],
+            "Validate the first deployable support runtime baseline boundary and remaining external evidence.",
+        ),
+        ReleaseGate(
+            "internal_pilot_plan",
+            "production-profile",
+            [PYTHON, "scripts/validate_internal_pilot_plan.py"],
+            "Validate staged internal pilot rollout starts in shadow mode before narrow enforcement.",
+        ),
+        ReleaseGate(
+            "docs_link_validation",
+            "docs",
+            [PYTHON, "scripts/validate_adapter_gallery.py"],
+            "Validate catalog documentation links and docs-backed adapter catalog references.",
         ),
     ]
 
@@ -237,8 +309,14 @@ def production_profiles(audit_log=None, metrics_output=None, drift_output=None, 
         run([PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"])
         run([PYTHON, "scripts/aana_cli.py", "pilot-certify"])
         run([PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"])
+        run([PYTHON, "scripts/validate_versioning_migration.py"])
         run([PYTHON, "scripts/aana_cli.py", "aix-tuning"])
         run([PYTHON, "scripts/aana_cli.py", "validate-deployment", "--deployment-manifest", "examples/production_deployment_internal_pilot.json"])
+        run([PYTHON, "scripts/validate_internal_pilot_plan.py"])
+        run([PYTHON, "scripts/validate_support_domain_signoff.py"])
+        run([PYTHON, "scripts/validate_production_readiness_boundary.py"])
+        run([PYTHON, "scripts/validate_support_sla_failure_policy.py"])
+        run([PYTHON, "scripts/validate_first_deployable_baseline.py"])
         run([PYTHON, "scripts/aana_cli.py", "validate-governance", "--governance-policy", "examples/human_governance_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-observability", "--observability-policy", "examples/observability_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-evidence-registry", "--evidence-registry", "examples/evidence_registry.json"])
@@ -262,6 +340,7 @@ def production_profiles(audit_log=None, metrics_output=None, drift_output=None, 
                 "examples/agent_event_support_reply.json",
                 "--audit-log",
                 str(audit_log_path),
+                "--shadow-mode",
             ]
         )
         run(

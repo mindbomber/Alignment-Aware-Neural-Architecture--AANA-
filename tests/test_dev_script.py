@@ -35,15 +35,26 @@ class DevScriptTests(unittest.TestCase):
                 "compile",
                 "unit_tests",
                 "contract_freeze",
+                "versioning_migration",
+                "verifier_boundaries",
+                "golden_outputs",
+                "adapter_baseline_comparison",
                 "gallery_metadata",
                 "adapter_examples",
-                "docs_bundle",
                 "audit_redaction",
                 "audit_validate",
+                "aix_tuning",
                 "production_profiles",
+                "security_privacy_review",
+                "support_domain_signoff",
+                "production_readiness_boundary",
+                "support_sla_failure_policy",
+                "first_deployable_baseline",
+                "internal_pilot_plan",
+                "docs_link_validation",
             ],
         )
-        self.assertTrue({"api", "adapter", "catalog", "audit", "docs", "production_profile"}.issubset(categories))
+        self.assertTrue({"api", "adapter", "catalog", "audit", "docs", "production-profile"}.issubset(categories))
         production_command = next(gate.command for gate in gates if gate.name == "production_profiles")
         self.assertIn("--audit-log", production_command)
         self.assertIn("eval_outputs/audit/test/aana-audit.jsonl", production_command)
@@ -85,12 +96,23 @@ class DevScriptTests(unittest.TestCase):
                 "compile",
                 "unit_tests",
                 "contract_freeze",
+                "versioning_migration",
+                "verifier_boundaries",
+                "golden_outputs",
+                "adapter_baseline_comparison",
                 "gallery_metadata",
                 "adapter_examples",
-                "docs_bundle",
                 "audit_redaction",
                 "audit_validate",
+                "aix_tuning",
                 "production_profiles",
+                "security_privacy_review",
+                "support_domain_signoff",
+                "production_readiness_boundary",
+                "support_sla_failure_policy",
+                "first_deployable_baseline",
+                "internal_pilot_plan",
+                "docs_link_validation",
             ],
         )
 
@@ -116,13 +138,20 @@ class DevScriptTests(unittest.TestCase):
         self.assertTrue(any("validate-gallery --run-examples" in command for command in joined))
         self.assertTrue(any("pilot-certify" in command for command in joined))
         self.assertTrue(any("contract-freeze --evidence-registry examples/evidence_registry.json" in command for command in joined))
+        self.assertTrue(any("scripts/validate_versioning_migration.py" in command for command in joined))
         self.assertTrue(any("aix-tuning" in command for command in joined))
         self.assertTrue(any("validate-deployment --deployment-manifest examples/production_deployment_internal_pilot.json" in command for command in joined))
+        self.assertTrue(any("scripts/validate_internal_pilot_plan.py" in command for command in joined))
+        self.assertTrue(any("scripts/validate_support_domain_signoff.py" in command for command in joined))
+        self.assertTrue(any("scripts/validate_production_readiness_boundary.py" in command for command in joined))
+        self.assertTrue(any("scripts/validate_support_sla_failure_policy.py" in command for command in joined))
+        self.assertTrue(any("scripts/validate_first_deployable_baseline.py" in command for command in joined))
         self.assertTrue(any("validate-governance --governance-policy examples/human_governance_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-observability --observability-policy examples/observability_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-evidence-registry --evidence-registry examples/evidence_registry.json" in command for command in joined))
         self.assertTrue(any("evidence-integrations --evidence-registry examples/evidence_registry.json --mock-fixtures examples/evidence_mock_connector_fixtures.json" in command for command in joined))
         self.assertTrue(any("agent-check --event examples/agent_event_support_reply.json" in command for command in joined))
+        self.assertTrue(any("agent-check --event examples/agent_event_support_reply.json" in command and "--shadow-mode" in command for command in joined))
         self.assertTrue(any("audit-validate --audit-log" in command for command in joined))
         self.assertTrue(any("audit-metrics --audit-log" in command for command in joined))
         self.assertTrue(any("audit-drift --audit-log" in command for command in joined))

@@ -339,6 +339,21 @@
           &quot;revise&quot;: 0.72
         }
       },
+      &quot;aix_tuning&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
       &quot;best_for&quot;: [
         &quot;vendor approval&quot;,
         &quot;procurement review&quot;,
@@ -372,6 +387,7 @@
           &quot;DPA/security docs&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for quote, vendor profile, DPA, security docs, contract review, sanctions screening, data classification, subprocessor list, security questionnaire, compliance reports, incident history, risk exception, and business-owner approval.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, vendor id, quote id, contract id, DPA id, security review id, data categories, approver identity, approval timestamp, and checked text or a redacted fact summary.&quot;,
@@ -400,7 +416,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;vendor_identity_unverified&quot;,
@@ -415,13 +432,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;procurement_vendor_risk&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate new vendors, high spend, regulated data, customer data, production access, nonstandard terms, cross-border transfers, subprocessors, model-training rights, missing DPA, security exceptions, and sanctions-screening uncertainty.&quot;,
           &quot;Escalate any case with vendor-identity uncertainty, quote mismatch, contract-term ambiguity, data-sharing disagreement, security-review uncertainty, or approval mismatch.&quot;,
@@ -456,11 +476,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Procurement/Vendor Risk&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check procurement and vendor-risk decisions before purchase, approval, onboarding, contract execution, renewal, or data sharing while preserving vendor identity, price, contract terms, data-sharing, and security-review constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/grant_application_review_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.15,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.1,
+          &quot;C&quot;: 1.1,
+          &quot;F&quot;: 0.85,
+          &quot;P&quot;: 1.05
+        },
+        &quot;risk_tier&quot;: &quot;elevated&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.88,
+          &quot;defer&quot;: 0.52,
+          &quot;revise&quot;: 0.68
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.15,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.1,
@@ -506,6 +542,7 @@
           &quot;rubric&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for program eligibility rules, applicant profile, submission timestamp, deadline rules, required document checklist, submitted materials, rubric version, reviewer notes, conflict checks, panel status, award authority, and customer-visible draft.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, program id, application id, applicant id, rule version, rubric version, document checklist version, review stage, draft version, checked text, and redacted fact summary.&quot;,
@@ -533,7 +570,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;grant_eligibility_claim_unsupported&quot;,
@@ -547,13 +585,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;grant_application_review&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate eligibility disputes, late submissions, deadline exceptions, missing required materials, appeals, conflicts of interest, high-value awards, and panel disagreements.&quot;,
           &quot;Escalate any case with sensitive applicant data, legal/regulatory concerns, financial irregularities, scoring ambiguity, or award-authority uncertainty.&quot;,
@@ -589,11 +630,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Grant/Application Review&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check grant and application review replies, pre-screen decisions, and reviewer notes while preserving eligibility boundaries, deadline handling, required-document completeness, and rubric-scoring limits.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/public_records_privacy_redaction_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.5,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.4,
+          &quot;C&quot;: 1.35,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;strict&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.94,
+          &quot;defer&quot;: 0.62,
+          &quot;revise&quot;: 0.78
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.5,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.4,
@@ -641,6 +698,7 @@
           &quot;retention policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence for request scope, source law, exemptions, data classification, redaction state, authorization, destination, retention, and audit policy.&quot;
       ],
@@ -667,7 +725,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;public_records_scope_expansion&quot;,
@@ -682,13 +741,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;public_records_privacy_redaction&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate protected data, exemption ambiguity, appeals, high-profile requests, law-enforcement records, and conflicting source-law evidence.&quot;
         ],
@@ -724,11 +786,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Public Records Privacy Redaction&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check public-records release packages before data export, disclosure, or publication while preserving scope, privacy redaction, destination, authorization, and retention constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/policy_memo_grounding_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.3,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.25,
@@ -775,6 +853,7 @@
           &quot;source law&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence for retrieved documents, citation index, source registry, jurisdiction, source law, policy limits, and reviewer approval.&quot;
       ],
@@ -801,7 +880,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;policy_citation_unverified&quot;,
@@ -816,13 +896,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;policy_memo_grounding&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate legal interpretation, fiscal impact, benefits eligibility, privacy, civil-rights, emergency, and public-commitment claims.&quot;
         ],
@@ -858,11 +941,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Policy Memo Grounding&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check policy memos before review, publication, or decision support while preserving citations, source boundaries, supported claims, uncertainty, and source-registry policy.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/insurance_claim_triage_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.3,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.25,
@@ -909,6 +1008,7 @@
           &quot;triage policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for policy declarations, endorsements, exclusions, claim file, loss facts, jurisdiction, required documents, document status, triage policy, escalation triggers, adjuster notes, approval state, and customer-visible draft.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, policy id, claim id, jurisdiction, triage-policy version, document checklist version, escalation id, draft version, checked text, and redacted fact summary.&quot;,
@@ -936,7 +1036,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;insurance_coverage_claim_unsupported&quot;,
@@ -950,13 +1051,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;insurance_claim_triage&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate coverage disputes, high-value claims, injuries, liability questions, suspected fraud, legal threats, regulator contacts, catastrophe claims, and vulnerable claimant cases.&quot;,
           &quot;Escalate any case with missing required documents, conflicting policy and claim evidence, jurisdiction uncertainty, licensing uncertainty, or state-rule ambiguity.&quot;,
@@ -991,11 +1095,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Insurance Claim Triage&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check insurance claim triage replies and routing decisions while preserving coverage boundaries, required document collection, jurisdiction rules, and escalation requirements.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/publication_check_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.15,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.1,
+          &quot;C&quot;: 1.1,
+          &quot;F&quot;: 0.85,
+          &quot;P&quot;: 1.05
+        },
+        &quot;risk_tier&quot;: &quot;elevated&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.88,
+          &quot;defer&quot;: 0.52,
+          &quot;revise&quot;: 0.68
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.15,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.1,
@@ -1044,6 +1164,7 @@
           &quot;approval policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for draft text, source list, approval policy, channel, audience, review status, source approval, citation mapping, and private-info classification.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, and checked text or a redacted fact summary.&quot;,
@@ -1072,7 +1193,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;unsupported_publication_claim&quot;,
@@ -1089,14 +1211,17 @@
         &quot;Personal Productivity&quot;,
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;publication_check&quot;,
       &quot;packs&quot;: [
         &quot;personal_productivity&quot;,
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate legal-risk content, regulated claims, health/financial/safety claims, paid ads, press releases, investor content, competitor comparisons, customer stories, crisis communications, and confidential material.&quot;,
           &quot;Escalate any case with source mismatch, citation uncertainty, privacy uncertainty, trademark/endorsement concerns, defamation risk, or approval-policy ambiguity.&quot;,
@@ -1132,11 +1257,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Publication Check&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check draft content before publishing, posting, releasing, scheduling, or sending it while preserving claim support, citation, private-info, brand/legal, and approval-policy constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/casework_response_checker_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.3,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.25,
@@ -1183,6 +1324,7 @@
           &quot;program rules&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence for case history, ticket history, program status, consent, support policy, program rules, and private-data classification.&quot;
       ],
@@ -1209,7 +1351,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;case_status_unverified&quot;,
@@ -1224,13 +1367,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;casework_response_checker&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate eligibility decisions, legal implications, benefits determinations, appeals, vulnerable-person cases, and private-data uncertainty.&quot;
         ],
@@ -1264,11 +1410,27 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Casework Response Checker&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check constituent or casework responses before sending while preserving verified case facts, commitment boundaries, public wording, private-data minimization, and policy compliance.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/foia_public_records_response_checker_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.5,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.4,
+          &quot;C&quot;: 1.35,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;strict&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.94,
+          &quot;defer&quot;: 0.62,
+          &quot;revise&quot;: 0.78
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.5,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.4,
@@ -1316,6 +1478,7 @@
           &quot;retention policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence for request scope, source law, exemptions, redaction state, requester identity, destination, retention, appeal status, and approval.&quot;
       ],
@@ -1342,7 +1505,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;foia_scope_expansion&quot;,
@@ -1357,13 +1521,16 @@
       &quot;family_labels&quot;: [
         &quot;Government/Civic&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;foia_public_records_response_checker&quot;,
       &quot;packs&quot;: [
         &quot;government_civic&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate exemptions, appeals, law-enforcement sensitivity, protected data, high-profile requests, and source-law conflicts.&quot;
         ],
@@ -1398,6 +1565,7 @@
         &quot;Government/civic starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;FOIA/Public Records Response Checker&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check FOIA or public-records response packets before release while preserving request scope, redaction, destination, authorization, retention, and audit constraints.&quot;
     }
   ],

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aana-bridge-config
+  namespace: aana-runtime
+  labels:
+    aana.openai.local/profile: production-template
+data:
+  AANA_BRIDGE_HOST: "0.0.0.0"
+  AANA_BRIDGE_PORT: "8765"
+  AANA_ADAPTER_GALLERY: "examples/adapter_gallery.json"
+  AANA_AUDIT_LOG: "replace-with-append-only-audit-sink-mounted-path"
+  AANA_MAX_BODY_BYTES: "1048576"
+  AANA_RATE_LIMIT_PER_MINUTE: "120"
+  AANA_READ_TIMEOUT_SECONDS: "30"
+  AANA_EVIDENCE_REGISTRY: "replace-with-approved-evidence-registry"
+  AANA_DEPLOYMENT_MANIFEST: "examples/production_deployment_template.json"
+  AANA_GOVERNANCE_POLICY: "examples/human_governance_policy_template.json"
+  AANA_OBSERVABILITY_POLICY: "examples/observability_policy.json"
+  AANA_REVIEW_ROUTE: "replace-with-production-human-review-queue"
+  AANA_PROFILE_STATUS: "requires-external-evidence-and-owner-signoff"

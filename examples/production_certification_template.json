@@ -27,7 +27,10 @@
     "minimum_aix_score_average": 0.85,
     "minimum_aix_score_min": 0.5,
     "maximum_aix_hard_blockers": 0,
-    "allowed_aix_decisions": ["accept", "revise"]
+    "allowed_aix_decisions": [
+      "accept",
+      "revise"
+    ]
   },
   "human_review": {
     "required_for": [
@@ -50,7 +53,17 @@
       "deployment",
       "billing",
       "data_export",
-      "workspace_files"
+      "workspace_files",
+      "crm_customer_account",
+      "order_history",
+      "refund_policy",
+      "internal_notes_classifier",
+      "support_ticket_history",
+      "email_recipient_verification",
+      "attachment_metadata",
+      "account_verification_status",
+      "billing_payment_redaction",
+      "support_policy_registry"
     ],
     "auth_boundary_required": true,
     "freshness_slo_required": true,

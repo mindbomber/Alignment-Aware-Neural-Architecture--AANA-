@@ -125,6 +125,7 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(payload["openapi"], "3.1.0")
         self.assertIn("/agent-check", payload["paths"])
         self.assertIn("/ready", payload["paths"])
+        self.assertIn("/config", payload["paths"])
         self.assertIn("/validate-event", payload["paths"])
         self.assertIn("/workflow-check", payload["paths"])
         self.assertIn("/workflow-batch", payload["paths"])
@@ -137,7 +138,32 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("AgentEvent", payload["components"]["schemas"])
         self.assertIn("WorkflowRequest", payload["components"]["schemas"])
         self.assertIn("WorkflowBatchRequest", payload["components"]["schemas"])
+        self.assertIn("BridgeConfig", payload["components"]["schemas"])
         self.assertIn("error_code", payload["components"]["schemas"]["Error"]["properties"])
+
+    def test_config_route_returns_redacted_deployment_config(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            status, payload = agent_server.route_request(
+                "GET",
+                "/config",
+                auth_token="secret-token",
+                audit_log_path=pathlib.Path(temp_dir) / "audit.jsonl",
+                max_body_bytes=2048,
+                rate_limit_per_minute=12,
+                read_timeout_seconds=3.5,
+            )
+
+            self.assertEqual(status, 200)
+            self.assertTrue(payload["auth_required"])
+            self.assertEqual(payload["auth_token_source"], "value")
+            self.assertEqual(payload["audit_logging"], "enabled")
+            self.assertEqual(payload["max_body_bytes"], 2048)
+            self.assertEqual(payload["rate_limit_per_minute"], 12)
+            self.assertEqual(payload["read_timeout_seconds"], 3.5)
+            self.assertEqual(payload["runtime_routes"], ["/agent-check", "/workflow-check", "/workflow-batch"])
+            self.assertEqual(payload["raw_debug_leakage"], "disabled")
+            self.assertTrue(payload["redacted_logs"])
+            self.assertNotIn("secret-token", json.dumps(payload))
 
     def test_readiness_route_reports_ready_dependencies(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -229,6 +255,8 @@ class AgentServerTests(unittest.TestCase):
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0]["record_type"], "agent_check")
             self.assertEqual(records[0]["adapter_id"], "support_reply")
+            self.assertIsInstance(records[0]["latency_ms"], (int, float))
+            self.assertGreaterEqual(records[0]["latency_ms"], 0)
             self.assertNotIn("Hi Maya", audit_log.read_text(encoding="utf-8"))
 
     def test_unauthorized_agent_check_does_not_append_audit_record(self):
@@ -348,6 +376,31 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("error", payload)
         self.assertEqual(payload["error_code"], "bad_request")
         self.assertEqual(payload["status"], 400)
+        self.assertEqual(payload["error"], "Request could not be processed.")
+        self.assertEqual(payload["details"]["exception_type"], "JSONDecodeError")
+
+    def test_bad_request_error_does_not_leak_raw_payload_text(self):
+        workflow_request = {
+            "contract_version": "0.1",
+            "workflow_id": "private-error-test",
+            "request": "Customer says the card ending 4242 was charged twice.",
+            "candidate": "Expose token sk_live_private and CRM fraud note.",
+        }
+
+        status, payload = agent_server.route_request(
+            "POST",
+            "/workflow-check",
+            json.dumps(workflow_request).encode("utf-8"),
+        )
+        serialized = json.dumps(payload, sort_keys=True)
+
+        self.assertEqual(status, 400)
+        self.assertEqual(payload["error_code"], "bad_request")
+        self.assertEqual(payload["error"], "Request could not be processed.")
+        self.assertIn("exception_type", payload["details"])
+        self.assertNotIn("4242", serialized)
+        self.assertNotIn("sk_live_private", serialized)
+        self.assertNotIn("fraud note", serialized)
 
     def test_post_body_limit_returns_413(self):
         status, payload = agent_server.route_request(
@@ -402,6 +455,17 @@ class AgentServerTests(unittest.TestCase):
 
         self.assertEqual(status, 200)
         self.assertTrue(payload["valid"])
+
+    def test_bridge_log_redacts_tokens_and_control_characters(self):
+        text = agent_server._redact_log_text(
+            "POST /workflow-check?token=secret-token&x=1\r\nAuthorization: Bearer abc123 X-AANA-Token: xyz"
+        )
+
+        self.assertNotIn("secret-token", text)
+        self.assertNotIn("abc123", text)
+        self.assertNotIn("xyz", text)
+        self.assertIn("token=[redacted]", text)
+        self.assertIn("\\r\\n", text)
 
     def test_auth_token_file_supports_rotation(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")

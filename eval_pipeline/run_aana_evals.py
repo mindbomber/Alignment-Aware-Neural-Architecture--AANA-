@@ -106,7 +106,7 @@ def normalize_verifier(raw):
     return normalized
 
 
-def apply_tool_report(verifier, tool_report):
+def apply_constraint_tool_output(verifier, tool_report):
     if not tool_report["violations"]:
         verifier["tool_report"] = tool_report
         return verifier
@@ -183,7 +183,7 @@ def verify_candidate(task, prompt, candidate, model, max_output_tokens, use_tool
             ),
         }
     if tool_report:
-        verifier = apply_tool_report(verifier, tool_report)
+        verifier = apply_constraint_tool_output(verifier, tool_report)
     return verifier, payload.get("id", "")
 
 

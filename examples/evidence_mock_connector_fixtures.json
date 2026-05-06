@@ -5,7 +5,11 @@
   "description": "Redacted mock connector outputs for production evidence integration contract tests.",
   "connectors": {
     "crm_support": {
-      "auth_scopes": ["crm.account.read", "support.policy.read", "orders.read"],
+      "auth_scopes": [
+        "crm.account.read",
+        "support.policy.read",
+        "orders.read"
+      ],
       "records": {
         "crm-record": {
           "record_id": "crm-001",
@@ -31,7 +35,11 @@
       }
     },
     "ticketing": {
-      "auth_scopes": ["ticket.history.read", "sprint.status.read", "support.policy.read"],
+      "auth_scopes": [
+        "ticket.history.read",
+        "sprint.status.read",
+        "support.policy.read"
+      ],
       "records": {
         "ticket-history": {
           "record_id": "ticket-history-001",
@@ -57,7 +65,11 @@
       }
     },
     "email_send": {
-      "auth_scopes": ["email.draft.read", "directory.recipient.read", "approval.read"],
+      "auth_scopes": [
+        "email.draft.read",
+        "directory.recipient.read",
+        "approval.read"
+      ],
       "records": {
         "draft-email": {
           "record_id": "draft-001",
@@ -83,7 +95,11 @@
       }
     },
     "calendar": {
-      "auth_scopes": ["calendar.freebusy.read", "calendar.attendees.read", "user_instruction.read"],
+      "auth_scopes": [
+        "calendar.freebusy.read",
+        "calendar.attendees.read",
+        "user_instruction.read"
+      ],
       "records": {
         "calendar-freebusy": {
           "record_id": "freebusy-001",
@@ -109,7 +125,11 @@
       }
     },
     "iam": {
-      "auth_scopes": ["iam.request.read", "iam.role_catalog.read", "iam.approval.read"],
+      "auth_scopes": [
+        "iam.request.read",
+        "iam.role_catalog.read",
+        "iam.approval.read"
+      ],
       "records": {
         "iam-request": {
           "record_id": "iam-request-001",
@@ -135,7 +155,11 @@
       }
     },
     "ci": {
-      "auth_scopes": ["repo.diff.read", "ci.logs.read", "ci.status.read"],
+      "auth_scopes": [
+        "repo.diff.read",
+        "ci.logs.read",
+        "ci.status.read"
+      ],
       "records": {
         "git-diff": {
           "record_id": "diff-001",
@@ -161,7 +185,11 @@
       }
     },
     "deployment": {
-      "auth_scopes": ["deployment.manifest.read", "ci.result.read", "release_notes.read"],
+      "auth_scopes": [
+        "deployment.manifest.read",
+        "ci.result.read",
+        "release_notes.read"
+      ],
       "records": {
         "deployment-manifest": {
           "record_id": "deployment-manifest-001",
@@ -187,7 +215,11 @@
       }
     },
     "billing": {
-      "auth_scopes": ["billing.invoice.read", "billing.policy.read", "payment.metadata.read"],
+      "auth_scopes": [
+        "billing.invoice.read",
+        "billing.policy.read",
+        "payment.metadata.read"
+      ],
       "records": {
         "invoice": {
           "record_id": "invoice-001",
@@ -213,7 +245,11 @@
       }
     },
     "data_export": {
-      "auth_scopes": ["data.classification.read", "iam.access_grants.read", "data.export_request.read"],
+      "auth_scopes": [
+        "data.classification.read",
+        "iam.access_grants.read",
+        "data.export_request.read"
+      ],
       "records": {
         "data-classification": {
           "record_id": "classification-001",
@@ -239,7 +275,11 @@
       }
     },
     "workspace_files": {
-      "auth_scopes": ["filesystem.metadata.read", "filesystem.diff_preview.read", "approval.read"],
+      "auth_scopes": [
+        "filesystem.metadata.read",
+        "filesystem.diff_preview.read",
+        "approval.read"
+      ],
       "records": {
         "file-metadata": {
           "record_id": "file-metadata-001",
@@ -279,7 +319,11 @@
       }
     },
     "browser_cart_quote": {
-      "auth_scopes": ["browser.quote.read", "browser.cart.read", "payment.policy.read"],
+      "auth_scopes": [
+        "browser.quote.read",
+        "browser.cart.read",
+        "payment.policy.read"
+      ],
       "records": {
         "live-quote": {
           "record_id": "live-quote-001",
@@ -305,7 +349,11 @@
       }
     },
     "citation_source_registry": {
-      "auth_scopes": ["research.documents.read", "research.citation_index.read", "research.source_registry.read"],
+      "auth_scopes": [
+        "research.documents.read",
+        "research.citation_index.read",
+        "research.source_registry.read"
+      ],
       "records": {
         "retrieved-documents": {
           "record_id": "retrieved-documents-001",
@@ -331,7 +379,9 @@
       }
     },
     "local_approval": {
-      "auth_scopes": ["approval.read"],
+      "auth_scopes": [
+        "approval.read"
+      ],
       "records": {
         "user-approval": {
           "record_id": "user-approval-001",
@@ -343,7 +393,11 @@
       }
     },
     "civic_program_rules": {
-      "auth_scopes": ["civic.program_rules.read", "civic.submitted_docs.read", "civic.rubric.read"],
+      "auth_scopes": [
+        "civic.program_rules.read",
+        "civic.submitted_docs.read",
+        "civic.rubric.read"
+      ],
       "records": {
         "program-rules": {
           "record_id": "program-rules-001",
@@ -369,7 +423,11 @@
       }
     },
     "civic_vendor_profiles": {
-      "auth_scopes": ["procurement.quote.read", "procurement.vendor.read", "procurement.security_docs.read"],
+      "auth_scopes": [
+        "procurement.quote.read",
+        "procurement.vendor.read",
+        "procurement.security_docs.read"
+      ],
       "records": {
         "quote": {
           "record_id": "quote-001",
@@ -395,7 +453,11 @@
       }
     },
     "public_law_policy_sources": {
-      "auth_scopes": ["law.jurisdiction.read", "law.source.read", "policy.limits.read"],
+      "auth_scopes": [
+        "law.jurisdiction.read",
+        "law.source.read",
+        "policy.limits.read"
+      ],
       "records": {
         "jurisdiction": {
           "record_id": "jurisdiction-001",
@@ -421,7 +483,11 @@
       }
     },
     "redaction_classification_registry": {
-      "auth_scopes": ["records.classification.read", "records.request.read", "records.access_grants.read"],
+      "auth_scopes": [
+        "records.classification.read",
+        "records.request.read",
+        "records.access_grants.read"
+      ],
       "records": {
         "data-classification": {
           "record_id": "records-data-classification-001",
@@ -447,7 +513,11 @@
       }
     },
     "civic_case_history": {
-      "auth_scopes": ["case.history.read", "case.policy.read", "civic.program_rules.read"],
+      "auth_scopes": [
+        "case.history.read",
+        "case.policy.read",
+        "civic.program_rules.read"
+      ],
       "records": {
         "ticket-history": {
           "record_id": "case-ticket-history-001",
@@ -473,7 +543,11 @@
       }
     },
     "benefits_claims": {
-      "auth_scopes": ["benefits.policy.read", "benefits.claim.read", "benefits.triage_policy.read"],
+      "auth_scopes": [
+        "benefits.policy.read",
+        "benefits.claim.read",
+        "benefits.triage_policy.read"
+      ],
       "records": {
         "policy-docs": {
           "record_id": "benefits-policy-docs-001",
@@ -499,7 +573,11 @@
       }
     },
     "civic_source_registry": {
-      "auth_scopes": ["civic.documents.read", "civic.citation_index.read", "civic.source_registry.read"],
+      "auth_scopes": [
+        "civic.documents.read",
+        "civic.citation_index.read",
+        "civic.source_registry.read"
+      ],
       "records": {
         "retrieved-documents": {
           "record_id": "civic-retrieved-documents-001",
@@ -521,6 +599,207 @@
           "trust_tier": "verified",
           "redaction_status": "redacted",
           "text": "Civic source registry summary: use official public sources and retrieved documents only."
+        }
+      }
+    },
+    "crm_customer_account": {
+      "auth_scopes": [
+        "crm.account.read",
+        "support.account_verification.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "crm-record": {
+          "record_id": "support-crm-record-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "CRM customer account summary: active account, support tier standard, no raw internal notes or payment fields included."
+        },
+        "account-verification-status": {
+          "record_id": "support-account-verification-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Account verification summary: customer identity verification is incomplete and secure verification is required before account-specific promises."
+        }
+      }
+    },
+    "order_history": {
+      "auth_scopes": [
+        "orders.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "order-system": {
+          "record_id": "support-order-history-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Order history summary: order exists, fulfillment complete, refund eligibility requires refund-policy validation."
+        }
+      }
+    },
+    "refund_policy": {
+      "auth_scopes": [
+        "support.refund_policy.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "refund-policy": {
+          "record_id": "support-refund-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Refund policy summary: refund promises require order eligibility and approved refund authority; uncertain cases route to human review."
+        }
+      }
+    },
+    "internal_notes_classifier": {
+      "auth_scopes": [
+        "support.internal_notes.classify"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "internal-notes-classification": {
+          "record_id": "support-internal-notes-classification-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Internal notes classifier summary: candidate contains no customer-visible internal note text; risk tags and employee comments must remain internal."
+        }
+      }
+    },
+    "support_ticket_history": {
+      "auth_scopes": [
+        "ticket.history.read",
+        "support.policy.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "ticket-history": {
+          "record_id": "support-ticket-history-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support ticket history summary: latest customer-visible status is investigating; no refund, SLA credit, or resolution commitment is approved."
+        },
+        "support-policy": {
+          "record_id": "support-ticket-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support policy summary: customer-visible updates must avoid private data, unsupported commitments, blame, and unapproved refunds."
+        }
+      }
+    },
+    "email_recipient_verification": {
+      "auth_scopes": [
+        "directory.recipient.read",
+        "approval.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "recipient-metadata": {
+          "record_id": "support-recipient-metadata-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Recipient verification summary: intended recipient domain is verified; distribution list expansion and send approval remain pending."
+        },
+        "user-approval": {
+          "record_id": "support-email-approval-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "User approval summary: drafting is approved but irreversible send approval has not been granted."
+        }
+      }
+    },
+    "attachment_metadata": {
+      "auth_scopes": [
+        "email.attachment_metadata.read",
+        "data.classification.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "attachment-metadata": {
+          "record_id": "support-attachment-metadata-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Attachment metadata summary: no approved attachment is present; any attachment requires DLP classification and recipient approval."
+        }
+      }
+    },
+    "account_verification_status": {
+      "auth_scopes": [
+        "support.account_verification.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "account-verification-status": {
+          "record_id": "support-account-verification-002",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Account verification status summary: identity verification is pending; account-specific changes and promises require secure verification."
+        }
+      }
+    },
+    "billing_payment_redaction": {
+      "auth_scopes": [
+        "billing.redaction.read",
+        "payment.metadata.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "billing-redaction-metadata": {
+          "record_id": "support-billing-redaction-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Billing redaction metadata summary: payment instrument, processor token, bank, CVV, tax identifier, and decline-code fields are not customer-visible."
+        },
+        "payment-metadata": {
+          "record_id": "support-payment-metadata-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Payment metadata summary: payment state can be summarized, but sensitive payment details are excluded from prompts and customer replies."
+        }
+      }
+    },
+    "support_policy_registry": {
+      "auth_scopes": [
+        "support.policy_registry.read",
+        "support.policy.read"
+      ],
+      "fixture_scope": "repository_synthetic_fixture",
+      "production_fixture_approved": false,
+      "records": {
+        "support-policy-registry": {
+          "record_id": "support-policy-registry-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support policy registry summary: active policy versions define customer-visible wording, escalation paths, refund authority, and human-review routing."
+        },
+        "support-policy": {
+          "record_id": "support-policy-registry-policy-001",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Support policy summary: unsupported promises, private-data exposure, and policy exceptions must route to human review."
         }
       }
     }

@@ -1,0 +1,230 @@
+{
+  "signoff_version": "0.1",
+  "signoff_id": "aana-support-domain-owner-signoff-template",
+  "title": "AANA Support Domain Owner Signoff",
+  "scope": {
+    "product_line": "support",
+    "adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "pilot_phase_boundary": "Required before advisory mode promotion and before any enforced support phase.",
+    "production_boundary": "Required again with live connector evidence before production use."
+  },
+  "overall_status": "pending_external_approval",
+  "production_claim": "not production-approved by this repository artifact",
+  "required_approvers": [
+    {
+      "role": "support_leadership",
+      "name": "TBD",
+      "approval_status": "pending",
+      "approval_uri": null,
+      "approved_at": null
+    },
+    {
+      "role": "support_policy_owner",
+      "name": "TBD",
+      "approval_status": "pending",
+      "approval_uri": null,
+      "approved_at": null
+    },
+    {
+      "role": "privacy_or_audit_owner",
+      "name": "TBD",
+      "approval_status": "pending",
+      "approval_uri": null,
+      "approved_at": null
+    }
+  ],
+  "required_signoff_areas": [
+    {
+      "id": "refund_policy_interpretation",
+      "title": "Refund Policy Interpretation",
+      "owner_role": "support_policy_owner",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "expanded_support_workflows"
+      ],
+      "review_scope": "Approve how support adapters interpret refund eligibility, refund timelines, exceptions, and unsupported refund promises.",
+      "evidence_required": [
+        "approved refund policy source",
+        "refund exception policy",
+        "sample accepted and blocked refund replies"
+      ],
+      "repo_references": [
+        "examples/support_workflow_contract_examples.json",
+        "examples/adapter_gallery.json",
+        "docs/support-adapter-product-line.md"
+      ],
+      "residual_risk": "Fixture policy text does not prove the current live refund policy or exception handling."
+    },
+    {
+      "id": "verification_requirements",
+      "title": "Verification Requirements",
+      "owner_role": "support_leadership",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "enforced_email_send_guardrail"
+      ],
+      "review_scope": "Approve when the guardrail must ask for secure verification instead of answering with account, order, billing, or payment facts.",
+      "evidence_required": [
+        "account verification policy",
+        "identity uncertainty escalation rule",
+        "approved secure verification path"
+      ],
+      "repo_references": [
+        "examples/support_workflow_contract_examples.json",
+        "docs/security-privacy-review.md"
+      ],
+      "residual_risk": "Live identity and account verification behavior depends on deployment-specific systems."
+    },
+    {
+      "id": "escalation_paths",
+      "title": "Escalation Paths",
+      "owner_role": "support_leadership",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "expanded_support_workflows"
+      ],
+      "review_scope": "Approve queues and handoff paths for refund exceptions, legal/regulatory requests, account closure/deletion, identity uncertainty, policy ambiguity, and high-value customer escalation.",
+      "evidence_required": [
+        "support human review queue",
+        "queue ownership",
+        "SLA",
+        "handoff instructions"
+      ],
+      "repo_references": [
+        "examples/human_governance_policy_internal_pilot.json",
+        "examples/production_deployment_internal_pilot.json"
+      ],
+      "residual_risk": "The repo declares queue shape only; staffed reviewer coverage is external."
+    },
+    {
+      "id": "safe_response_language",
+      "title": "Safe Response Language",
+      "owner_role": "support_policy_owner",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts"
+      ],
+      "review_scope": "Approve safe response language for revise, ask, defer, and refuse routes, including uncertainty language and secure verification wording.",
+      "evidence_required": [
+        "approved support macros",
+        "tone guidelines",
+        "sample safe responses"
+      ],
+      "repo_references": [
+        "examples/support_workflow_contract_examples.json",
+        "eval_pipeline/adapter_runner/verifier_modules/support_product.py"
+      ],
+      "residual_risk": "Safe-response text may need localization, brand, legal, and accessibility review."
+    },
+    {
+      "id": "human_review_triggers",
+      "title": "Human Review Triggers",
+      "owner_role": "support_leadership",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "enforced_email_send_guardrail"
+      ],
+      "review_scope": "Approve trigger mapping for refund exceptions, payment/billing data exposure, internal fraud or risk note exposure, legal/regulatory requests, account closure/deletion, identity uncertainty, policy ambiguity, hard blockers, and defer routes.",
+      "evidence_required": [
+        "human review trigger map",
+        "queue priority policy",
+        "reviewer playbook"
+      ],
+      "repo_references": [
+        "tests/test_support_audit_logging.py",
+        "examples/human_governance_policy_internal_pilot.json"
+      ],
+      "residual_risk": "Trigger precision must be calibrated against live support volume before enforcement expansion."
+    },
+    {
+      "id": "audit_retention",
+      "title": "Audit Retention",
+      "owner_role": "privacy_or_audit_owner",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "enforced_email_send_guardrail",
+        "expanded_support_workflows"
+      ],
+      "review_scope": "Approve retention period, immutable storage, deletion/legal hold, access controls, and reviewer access for metadata-only audit records.",
+      "evidence_required": [
+        "audit retention policy",
+        "audit access policy",
+        "legal hold process",
+        "redaction validation report"
+      ],
+      "repo_references": [
+        "docs/security-privacy-review.md",
+        "examples/security_privacy_review_support.json"
+      ],
+      "residual_risk": "Repo-local JSONL checks do not create immutable or compliant production retention."
+    },
+    {
+      "id": "customer_facing_language_boundaries",
+      "title": "Customer-Facing Language Boundaries",
+      "owner_role": "support_policy_owner",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "expanded_support_workflows"
+      ],
+      "review_scope": "Approve boundaries for customer-visible claims, tone, uncertainty, refund promises, billing statements, and internal-policy disclosure.",
+      "evidence_required": [
+        "customer communications policy",
+        "approved tone guide",
+        "prohibited language list"
+      ],
+      "repo_references": [
+        "docs/support-adapter-product-line.md",
+        "examples/support_workflow_contract_examples.json"
+      ],
+      "residual_risk": "Brand, legal, and regional language constraints may require additional owner review."
+    },
+    {
+      "id": "allowed_automation_scope",
+      "title": "Allowed Automation Scope",
+      "owner_role": "support_leadership",
+      "approval_status": "pending",
+      "required_before": [
+        "advisory_mode",
+        "enforced_support_drafts",
+        "enforced_email_send_guardrail",
+        "expanded_support_workflows"
+      ],
+      "review_scope": "Approve exactly which support workflows may run in shadow, advisory, and enforced modes. Full autonomous enforcement is out of scope.",
+      "evidence_required": [
+        "pilot phase approval",
+        "adapter scope list",
+        "human approval path for irreversible actions"
+      ],
+      "repo_references": [
+        "examples/production_deployment_internal_pilot.json",
+        "docs/internal-pilot.md"
+      ],
+      "residual_risk": "Automation scope must be re-approved before any new adapter, connector, or enforcement phase is added."
+    }
+  ],
+  "approval_rules": {
+    "allow_repo_local_template": true,
+    "allow_pending_for_demo_or_shadow": true,
+    "require_all_areas_approved_before_enforced_support": true,
+    "require_live_evidence_before_production": true
+  }
+}

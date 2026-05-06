@@ -4,7 +4,7 @@ Canonical entry point: [Build Adapter](build-adapter/index.md). The gallery is t
 
 The adapter gallery is the shortest path from "AANA works in one demo" to "I can copy this pattern into my own domain."
 
-Catalog status is not production certification. This repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+Catalog status is not production certification. This repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
 Open the searchable published gallery:
 
@@ -18,6 +18,7 @@ run the AANA check from the browser.
 It lists each runnable domain adapter with:
 
 - the adapter JSON file,
+- product line, when the adapter is part of a deployable product set,
 - risk tier,
 - required evidence,
 - supported surfaces,
@@ -33,6 +34,8 @@ Machine-readable gallery:
 
 - [`examples/adapter_gallery.json`](../examples/adapter_gallery.json)
 - [`docs/adapter-gallery/data.json`](adapter-gallery/data.json)
+
+Support adapters are productized as a named catalog line. See [`support-adapter-product-line.md`](support-adapter-product-line.md) for the deployable support set, required surfaces, metadata contract, and later roadmap.
 
 Rebuild the published gallery data after adapter changes:
 

@@ -120,7 +120,7 @@ AGENT_CHECK_RESULT_SCHEMA = {
     "title": "AANA Agent Check Result",
     "description": "The AANA gate result returned after checking an agent event.",
     "type": "object",
-    "required": ["agent_check_version", "adapter_id", "gate_decision", "recommended_action", "safe_response"],
+    "required": ["agent_check_version", "adapter_id", "gate_decision", "recommended_action", "safe_response", "audit_summary"],
     "properties": {
         "agent_check_version": {"type": "string"},
         "agent": {"type": "string"},
@@ -134,6 +134,7 @@ AGENT_CHECK_RESULT_SCHEMA = {
         "candidate_aix": aix.AIX_SCHEMA,
         "violations": {"type": "array", "items": {"type": "object"}},
         "safe_response": {"type": ["string", "null"]},
+        "audit_summary": {"type": "object"},
         "adapter_result": {"type": "object"},
     },
     "additionalProperties": True,

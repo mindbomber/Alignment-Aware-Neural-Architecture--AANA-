@@ -100,11 +100,24 @@ class InternalPilotRunnerTests(unittest.TestCase):
                 1_048_576,
                 "secret-token",
                 pathlib.Path("eval_outputs/audit/pilot.jsonl"),
+                shadow_mode=True,
             )
 
         command = popen.call_args.args[0]
         self.assertIn("--audit-log", command)
         self.assertIn("eval_outputs\\audit\\pilot.jsonl", command)
+        self.assertIn("--shadow-mode", command)
+
+    def test_pilot_rollout_defaults_to_shadow_mode(self):
+        manifest = run_internal_pilot.load_json(run_internal_pilot.DEFAULT_MANIFEST)
+
+        rollout = run_internal_pilot.pilot_rollout(manifest)
+        phase = run_internal_pilot.pilot_phase(manifest)
+
+        self.assertEqual(rollout["default_phase"], "shadow_mode")
+        self.assertFalse(rollout["autonomous_enforcement_allowed"])
+        self.assertEqual(phase["phase"], "shadow_mode")
+        self.assertTrue(run_internal_pilot.phase_shadow_mode_enabled(phase))
 
     def test_run_pilot_writes_integrity_manifest_and_metrics_export(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -115,6 +128,18 @@ class InternalPilotRunnerTests(unittest.TestCase):
             deployment_manifest.write_text(
                 json.dumps(
                     {
+                        "pilot_rollout": {
+                            "default_phase": "shadow_mode",
+                            "autonomous_enforcement_allowed": False,
+                            "phase_sequence": [
+                                {
+                                    "phase": "shadow_mode",
+                                    "order": 1,
+                                    "mode": "shadow",
+                                    "enforcement": "observe_only",
+                                }
+                            ],
+                        },
                         "bridge": {"host": "127.0.0.1", "max_body_bytes": 2048},
                         "audit": {"sink": f"jsonl://{audit_log}"},
                     }
@@ -163,6 +188,7 @@ class InternalPilotRunnerTests(unittest.TestCase):
                 max_body_bytes=None,
                 require_env_token=False,
                 timeout=1,
+                pilot_phase=None,
                 json=False,
             )
             process = FakeProcess()
@@ -172,6 +198,9 @@ class InternalPilotRunnerTests(unittest.TestCase):
                 result = run_internal_pilot.run_pilot(args)
 
             self.assertEqual(result["status"], "pass")
+            self.assertEqual(result["pilot_phase"]["phase"], "shadow_mode")
+            self.assertTrue(result["pilot_phase"]["shadow_mode"])
+            self.assertFalse(result["pilot_phase"]["autonomous_enforcement_allowed"])
             self.assertTrue(process.terminated)
             self.assertTrue(pathlib.Path(result["runtime"]["integrity_manifest"]).exists())
             self.assertEqual(result["runtime"]["metrics"], str(metrics_output))

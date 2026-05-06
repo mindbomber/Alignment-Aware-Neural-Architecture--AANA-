@@ -53,6 +53,13 @@ export interface AanaClientResult {
 }
 
 export const FAMILY_ADAPTER_ALIASES = {
+  support: {
+    draft: "support_reply",
+    crm: "crm_support_reply",
+    email: "email_send_guardrail",
+    ticket: "ticket_update_checker",
+    billing: "invoice_billing_reply"
+  },
   enterprise: {
     access: "access_permission_change",
     code_review: "code_change_review",
@@ -319,6 +326,12 @@ export class FamilyAanaClient extends AanaClient {
 export class EnterpriseAANAClient extends FamilyAanaClient {
   constructor(options: AanaClientOptions) {
     super({ ...options, familyId: "enterprise", adapterAliases: FAMILY_ADAPTER_ALIASES.enterprise });
+  }
+}
+
+export class SupportAANAClient extends FamilyAanaClient {
+  constructor(options: AanaClientOptions) {
+    super({ ...options, familyId: "support", adapterAliases: FAMILY_ADAPTER_ALIASES.support });
   }
 }
 

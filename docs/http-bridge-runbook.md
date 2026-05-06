@@ -34,6 +34,7 @@ Read-only routes:
 
 - `GET /health`: liveness check for the process.
 - `GET /ready`: dependency readiness for gallery loading, auth configuration, and audit-log parent directory.
+- `GET /config`: redacted deployment configuration, including auth-required state, body limit, rate limit, read timeout, runtime routes, and audit-log enabled/disabled status.
 - `GET /policy-presets`: starter policy presets for agent integrations.
 - `GET /openapi.json`: machine-readable HTTP contract.
 - `GET /schemas`: full schema catalog.
@@ -79,6 +80,8 @@ Errors use a stable JSON shape while preserving the legacy `error` string:
 }
 ```
 
+Public error messages are intentionally generic. Details may include an exception class for operator triage, but the bridge must not echo raw request bodies, candidate text, evidence, tokens, secrets, or internal debug traces into HTTP error responses.
+
 Common codes:
 
 - `unauthorized`
@@ -90,6 +93,11 @@ Common codes:
 - `bad_request`
 - `audit_append_failed`
 - `unknown_route`
+- `invalid_content_length`
+
+## Logs
+
+Server access logs are metadata-only. They include the HTTP request line, status, and response size, and redact token-like query/header fragments before writing to stderr. Do not rely on these logs for audit evidence; use `--audit-log`, which writes redacted AANA audit records.
 
 ## Audit
 

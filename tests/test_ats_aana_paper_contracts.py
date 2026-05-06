@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT / "eval_pipeline"))
 
 from constraint_tools import run_constraint_tools
 from run_aana_evals import (
-    apply_tool_report,
+    apply_constraint_tool_output,
     deterministic_repair,
     normalize_verifier,
     run_aana_loop,
@@ -71,7 +71,7 @@ class ATSAANAPaperContractTests(unittest.TestCase):
             }
         )
 
-        updated = apply_tool_report(verifier, tool_report)
+        updated = apply_constraint_tool_output(verifier, tool_report)
 
         self.assertEqual(updated["action"], "revise")
         self.assertLessEqual(updated["scores"]["C"], 0.35)

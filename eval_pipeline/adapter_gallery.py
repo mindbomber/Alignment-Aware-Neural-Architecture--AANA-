@@ -10,9 +10,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 PUBLISHED_GALLERY_VERSION = "0.1"
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
 PRODUCTION_POSITIONING = (
-    "Catalog status is not production certification. This repository is demo-ready and pilot-ready "
-    "for controlled evaluation, but production readiness requires live evidence connectors, domain "
-    "owner signoff, audit retention, observability, and human review paths."
+    "Catalog status is not production certification. This repository can be demo-ready, pilot-ready, "
+    "or production-candidate for controlled evaluation, but it is not production-certified by local "
+    "tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit "
+    "retention, observability, human review path, security review, deployment manifest, incident "
+    "response plan, and measured pilot results."
 )
 
 GITHUB_ACTION_ADAPTERS = {
@@ -182,8 +184,12 @@ def _constraint_summary(adapter):
 
 def _supported_surfaces(adapter_id):
     surfaces = [
+        "CLI",
+        "Python SDK",
+        "HTTP bridge",
         "CLI adapter runner",
         "Workflow Contract",
+        "Agent Event Contract",
         "HTTP bridge /workflow-check",
         "Web playground",
         "Published adapter gallery",
@@ -292,6 +298,7 @@ def _adapter_card(entry, adapter, root=ROOT):
     return {
         "id": adapter_id,
         "title": entry.get("title"),
+        "product_line": entry.get("product_line"),
         "status": entry.get("status"),
         "workflow": entry.get("workflow") or domain.get("user_workflow"),
         "best_for": entry.get("best_for", []) if isinstance(entry.get("best_for"), list) else [],
@@ -304,8 +311,22 @@ def _adapter_card(entry, adapter, root=ROOT):
             "layer_weights": aix.get("layer_weights", {}) if isinstance(aix.get("layer_weights"), dict) else {},
             "thresholds": aix.get("thresholds", {}) if isinstance(aix.get("thresholds"), dict) else {},
         },
+        "aix_tuning": entry.get("aix_tuning") if isinstance(entry.get("aix_tuning"), dict) else {
+            "risk_tier": aix.get("risk_tier", "unspecified"),
+            "beta": aix.get("beta"),
+            "layer_weights": aix.get("layer_weights", {}) if isinstance(aix.get("layer_weights"), dict) else {},
+            "thresholds": aix.get("thresholds", {}) if isinstance(aix.get("thresholds"), dict) else {},
+        },
         "required_evidence": constraints["required_evidence"],
         "evidence_requirements": evidence_requirements,
+        "verifier_behavior": entry.get("verifier_behavior", []) if isinstance(entry.get("verifier_behavior"), list) else [],
+        "correction_policy_summary": entry.get("correction_policy_summary", [])
+        if isinstance(entry.get("correction_policy_summary"), list)
+        else [],
+        "human_review_path": entry.get("human_review_path", []) if isinstance(entry.get("human_review_path"), list) else [],
+        "human_review_requirements": entry.get("human_review_requirements", [])
+        if isinstance(entry.get("human_review_requirements"), list)
+        else [],
         "supported_surfaces": supported_surfaces,
         "packs": packs,
         "families": declared_families,
@@ -318,6 +339,9 @@ def _adapter_card(entry, adapter, root=ROOT):
         },
         "example_outputs": {
             "expected": entry.get("expected", {}) if isinstance(entry.get("expected"), dict) else {},
+            "expected_actions": entry.get("expected_actions", {})
+            if isinstance(entry.get("expected_actions"), dict)
+            else {},
             "copy_command": entry.get("copy_command"),
             "caveats": entry.get("caveats", []) if isinstance(entry.get("caveats"), list) else [],
         },
@@ -369,6 +393,7 @@ def published_gallery(gallery_path=DEFAULT_GALLERY, root=ROOT):
         "source_gallery_version": gallery.get("version"),
         "description": "Searchable AANA adapter gallery for choosing guardrails by workflow, evidence, risk tier, surface, and AIx tuning.",
         "production_positioning": PRODUCTION_POSITIONING,
+        "product_lines": gallery.get("product_lines", {}) if isinstance(gallery.get("product_lines"), dict) else {},
         "adapter_count": len(adapters),
         "risk_tier_counts": dict(sorted(risk_tier_counts.items())),
         "readiness_status_counts": dict(sorted(readiness_status_counts.items())),

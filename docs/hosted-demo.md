@@ -4,7 +4,7 @@ Canonical entry point: [Try Demo](try-demo/index.md).
 
 The hosted demo is a static GitHub Pages surface for trying AANA without cloning the repository or running the local bridge.
 
-The repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. The hosted demo is also not a certification surface. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+The repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. The hosted demo is also not a certification surface. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
 Open:
 

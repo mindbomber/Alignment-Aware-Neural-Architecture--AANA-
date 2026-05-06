@@ -50,6 +50,53 @@ REQUIRED_PUBLIC_SURFACES = {
     "HTTP bridge /workflow-check",
     "Published adapter gallery",
 }
+SUPPORT_PRODUCT_LINE_ID = "support"
+SUPPORT_PRODUCT_ADAPTERS = {
+    "support_reply",
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "invoice_billing_reply",
+}
+SUPPORT_LATER_ADAPTERS = {
+    "refunds",
+    "account_closure",
+    "chargeback",
+    "cancellation",
+    "escalation",
+    "retention_deletion_request",
+}
+REQUIRED_SUPPORT_SURFACES = {
+    "CLI",
+    "Python SDK",
+    "HTTP bridge",
+    "Workflow Contract",
+    "Agent Event Contract",
+}
+SUPPORT_ENTRY_FIELDS = [
+    "product_line",
+    "expected_actions",
+    "aix_tuning",
+    "verifier_behavior",
+    "correction_policy_summary",
+    "human_review_path",
+    "human_review_requirements",
+]
+SUPPORT_CATALOG_CONTRACT_FIELDS = {
+    "readiness",
+    "family",
+    "risk_tier",
+    "evidence_requirements",
+    "supported_surfaces",
+    "expected_actions",
+    "aix_tuning",
+    "caveats",
+    "production_status",
+    "docs_links",
+    "copy_command",
+    "human_review_requirements",
+}
+SUPPORT_ALLOWED_ACTIONS = {"accept", "revise", "retrieve", "ask", "defer", "refuse"}
 COMPLETENESS_FIELDS = [
     "id",
     "title",
@@ -134,6 +181,14 @@ def _entry_completeness(entry):
             present.append(field)
         else:
             missing.append(field)
+    if entry.get("product_line") == SUPPORT_PRODUCT_LINE_ID:
+        for field in ("expected_actions", "human_review_requirements"):
+            value = entry.get(field)
+            ok = has_text(value) or nonempty_list(value) or isinstance(value, dict)
+            if ok:
+                present.append(field)
+            else:
+                missing.append(field)
     expected = entry.get("expected") if isinstance(entry.get("expected"), dict) else {}
     for field in EXPECTED_FIELDS:
         if has_text(expected.get(field)) or nonempty_list(expected.get(field)):
@@ -232,6 +287,121 @@ def validate_entry_shape(entry, index, issues):
 
     if "failing_constraints" in expected and not nonempty_list(expected.get("failing_constraints")):
         add_issue(issues, "error", f"{base}.expected.failing_constraints", "Expected failing constraints must be a non-empty list.")
+
+
+def validate_support_product_line(gallery, entries, issues):
+    product_lines = gallery.get("product_lines")
+    if not isinstance(product_lines, dict):
+        add_issue(issues, "error", "product_lines", "Gallery must define product_lines for productized adapter lines.")
+        return
+
+    support = product_lines.get(SUPPORT_PRODUCT_LINE_ID)
+    if not isinstance(support, dict):
+        add_issue(issues, "error", "product_lines.support", "Gallery must define the support adapter product line.")
+        return
+
+    adapter_ids = set(support.get("adapter_ids", []) if isinstance(support.get("adapter_ids"), list) else [])
+    missing_adapters = SUPPORT_PRODUCT_ADAPTERS - adapter_ids
+    if missing_adapters:
+        add_issue(
+            issues,
+            "error",
+            "product_lines.support.adapter_ids",
+            f"Support product line is missing required adapters: {sorted(missing_adapters)}.",
+        )
+
+    later_adapters = set(support.get("later_adapters", []) if isinstance(support.get("later_adapters"), list) else [])
+    missing_later = SUPPORT_LATER_ADAPTERS - later_adapters
+    if missing_later:
+        add_issue(
+            issues,
+            "error",
+            "product_lines.support.later_adapters",
+            f"Support product line is missing later-roadmap adapters: {sorted(missing_later)}.",
+        )
+
+    for field in ("title", "boundary", "primary_goal"):
+        if not has_text(support.get(field)):
+            add_issue(issues, "error", f"product_lines.support.{field}", "Field must be a non-empty string.")
+    if not has_text(support.get("source_of_truth")):
+        add_issue(
+            issues,
+            "error",
+            "product_lines.support.source_of_truth",
+            "Support product line must declare the catalog source of truth.",
+        )
+    catalog_contract = set(
+        support.get("catalog_contract", []) if isinstance(support.get("catalog_contract"), list) else []
+    )
+    missing_contract_fields = SUPPORT_CATALOG_CONTRACT_FIELDS - catalog_contract
+    if missing_contract_fields:
+        add_issue(
+            issues,
+            "error",
+            "product_lines.support.catalog_contract",
+            f"Support catalog contract is missing required fields: {sorted(missing_contract_fields)}.",
+        )
+
+    by_id = {entry.get("id"): entry for entry in entries if isinstance(entry, dict)}
+    for adapter_id in sorted(SUPPORT_PRODUCT_ADAPTERS):
+        entry = by_id.get(adapter_id)
+        if not entry:
+            add_issue(issues, "error", f"product_lines.support.adapter_ids.{adapter_id}", "Support adapter is not present in the gallery.")
+            continue
+        base = f"adapters.{adapter_id}"
+        if entry.get("product_line") != SUPPORT_PRODUCT_LINE_ID:
+            add_issue(issues, "error", f"{base}.product_line", "Support adapters must declare product_line='support'.")
+        for field in SUPPORT_ENTRY_FIELDS:
+            value = entry.get(field)
+            if not (has_text(value) or nonempty_list(value) or isinstance(value, dict)):
+                add_issue(issues, "error", f"{base}.{field}", "Support product entries must declare this field.")
+        expected = entry.get("expected") if isinstance(entry.get("expected"), dict) else {}
+        expected_actions = entry.get("expected_actions") if isinstance(entry.get("expected_actions"), dict) else {}
+        allowed_actions = set(
+            expected_actions.get("allowed_actions", [])
+            if isinstance(expected_actions.get("allowed_actions"), list)
+            else []
+        )
+        if allowed_actions != SUPPORT_ALLOWED_ACTIONS:
+            add_issue(
+                issues,
+                "error",
+                f"{base}.expected_actions.allowed_actions",
+                f"Support expected actions must declare exactly {sorted(SUPPORT_ALLOWED_ACTIONS)}.",
+            )
+        expected_action_pairs = {
+            "golden_candidate_gate": "candidate_gate",
+            "golden_recommended_action": "recommended_action",
+            "golden_candidate_aix_decision": "candidate_aix_decision",
+        }
+        for expected_action_field, expected_field in expected_action_pairs.items():
+            if expected_actions.get(expected_action_field) != expected.get(expected_field):
+                add_issue(
+                    issues,
+                    "error",
+                    f"{base}.expected_actions.{expected_action_field}",
+                    f"Support expected action must match expected.{expected_field}.",
+                )
+        aix_tuning = entry.get("aix_tuning") if isinstance(entry.get("aix_tuning"), dict) else {}
+        if aix_tuning.get("risk_tier") != entry.get("risk_tier"):
+            add_issue(
+                issues,
+                "error",
+                f"{base}.aix_tuning.risk_tier",
+                "Support AIx tuning risk tier must match gallery risk_tier.",
+            )
+        surfaces = set(entry.get("supported_surfaces", []) if isinstance(entry.get("supported_surfaces"), list) else [])
+        missing_surfaces = REQUIRED_SUPPORT_SURFACES - surfaces
+        if missing_surfaces:
+            add_issue(
+                issues,
+                "error",
+                f"{base}.supported_surfaces",
+                f"Support adapters must include product runtime surfaces: {sorted(missing_surfaces)}.",
+            )
+        production_status = entry.get("production_status") if isinstance(entry.get("production_status"), dict) else {}
+        if not has_text(production_status.get("claim")):
+            add_issue(issues, "error", f"{base}.production_status.claim", "Support adapters must declare a conservative production claim.")
 
 
 def validate_gallery(gallery, run_examples=False):
@@ -380,6 +550,8 @@ def validate_gallery(gallery, run_examples=False):
                     "aix_decision": aix_decision,
                 }
             )
+
+    validate_support_product_line(gallery, entries if isinstance(entries, list) else [], issues)
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")

@@ -46,6 +46,18 @@ Agents can call AANA with one small review object. Keep it redacted and specific
 
 The exact local event schema is available from the checked-in schemas and HTTP bridge, but standalone skills should avoid copying private records, secrets, or full candidate content when a redacted summary is enough.
 
+Stable field reference:
+
+- `agent_event` version: `event_version: "0.1"`.
+- Required event fields: `user_request` plus either `adapter_id` or `workflow`.
+- Optional event fields: `event_version`, `event_id`, `agent`, `candidate_action`, `candidate_answer`, `draft_response`, `available_evidence`, `allowed_actions`, and `metadata`.
+- `agent_check_result` version: `agent_check_version: "0.1"`.
+- Required result fields: `agent_check_version`, `adapter_id`, `gate_decision`, `recommended_action`, `safe_response`, and `audit_summary`.
+- Public result shape: `gate_decision`, `recommended_action`, `violations`, `aix`, `candidate_aix`, `audit_summary`, and safe output in `safe_response`.
+- Adapter IDs are the catalog IDs exposed by the adapter gallery, such as `support_reply`, `crm_support_reply`, `email_send_guardrail`, `ticket_update_checker`, and `research_summary`.
+- Evidence may be a string or a structured object. Structured evidence requires `text`; `source_id`, `retrieved_at`, `trust_tier`, and `redaction_status` are optional but recommended for pilot and production-like integrations.
+- `runtime.py`, `legacy_runner.py`, verifier modules, adapter JSON internals, repair policies, and runner helper functions are implementation details. Agent integrations should call the Agent Event or Workflow Contract surfaces instead.
+
 The hardened Agent Event Contract validates:
 
 - `candidate_action`, `candidate_answer`, and `draft_response` shape and ambiguity.
@@ -77,11 +89,12 @@ The output includes:
 - `candidate_aix`
 - `violations`
 - `safe_response`
+- `audit_summary`
 - the full adapter result
 
 `aix` is the score-derived Alignment Index for the final gated output. `candidate_aix` is the same score block for the proposed candidate when a candidate was supplied. Treat `aix.decision=accept` as actionable only when `gate_decision` is `pass`, `recommended_action` permits proceeding, and `aix.hard_blockers` is empty.
 
-Agent, Workflow, SDK, CLI, HTTP bridge, and playground surfaces all route through the same contract runtime. Agent surfaces return Agent Check fields such as `safe_response`; workflow surfaces return Workflow Result fields such as `output`. The decision fields are intentionally aligned across both: `gate_decision`, `recommended_action`, `candidate_gate`, `aix`, `candidate_aix`, and `violations`.
+Agent, Workflow, SDK, CLI, HTTP bridge, and playground surfaces all route through the same contract runtime. Agent surfaces return Agent Check fields such as `safe_response`; workflow surfaces return Workflow Result fields such as `output`. The decision fields are intentionally aligned across both: `gate_decision`, `recommended_action`, `candidate_gate`, `aix`, `candidate_aix`, `violations`, and `audit_summary`.
 
 Print the versioned schemas when you need to wire another agent framework:
 

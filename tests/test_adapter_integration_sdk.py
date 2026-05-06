@@ -40,10 +40,17 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertEqual(event["event_id"], "sdk-event-001")
 
     def test_family_sdk_clients_attach_family_metadata_and_aliases(self):
+        support = aana.SupportAANAClient()
         enterprise = aana.EnterpriseAANAClient()
         personal = aana.PersonalAANAClient()
         civic = aana.CivicAANAClient()
 
+        support_workflow = support.workflow_request(
+            adapter="crm",
+            request="Draft a support reply.",
+            candidate="Promise a refund without verified order facts.",
+            evidence=[aana.evidence_object("Refund eligibility is unknown.", source_id="support-policy")],
+        )
         workflow = enterprise.workflow_request(
             adapter="deployment",
             request="Review deployment.",
@@ -57,6 +64,9 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
             available_evidence=["Eligibility unknown."],
         )
 
+        self.assertEqual(support_workflow["adapter"], "crm_support_reply")
+        self.assertEqual(support_workflow["metadata"]["aana_family"], "support")
+        self.assertEqual(support.resolve_adapter("email"), "email_send_guardrail")
         self.assertEqual(workflow["adapter"], "deployment_readiness")
         self.assertEqual(workflow["metadata"]["aana_family"], "enterprise")
         self.assertEqual(event["adapter_id"], "grant_application_review")
@@ -139,6 +149,7 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertEqual(package["name"], "@aana/integration-sdk")
         self.assertIn("export class AanaClient", source)
         self.assertIn("export class EnterpriseAANAClient", source)
+        self.assertIn("export class SupportAANAClient", source)
         self.assertIn("export class PersonalAANAClient", source)
         self.assertIn("export class CivicAANAClient", source)
         self.assertIn("export function normalizeEvidence", source)

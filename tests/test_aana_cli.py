@@ -44,6 +44,7 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn("0", report["exit_codes"])
         self.assertIn("release-check", commands)
         self.assertIn("workflow-check", commands)
+        self.assertIn("support-aix-calibration", commands)
         self.assertTrue(commands["scaffold"]["dry_run"])
 
     def test_missing_input_path_reports_clear_text_error(self):
@@ -389,6 +390,16 @@ class AanaCliTests(unittest.TestCase):
         self.assertTrue(report["valid"])
         self.assertEqual(adapters["medical_safety_router"]["risk_tier"], "strict")
         self.assertGreaterEqual(adapters["medical_safety_router"]["beta"], 1.5)
+
+    def test_support_aix_calibration_json_reports_required_metrics(self):
+        code, output = self.run_cli(["support-aix-calibration", "--json"])
+        report = json.loads(output)
+
+        self.assertEqual(code, 0)
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(report["metrics"]["over_acceptance_count"], 0)
+        self.assertEqual(report["metrics"]["false_blocker_rate"], 0.0)
+        self.assertEqual(report["metrics"]["correction_success_rate"], 1.0)
 
     def test_run_file_support_adapter(self):
         code, output = self.run_cli(

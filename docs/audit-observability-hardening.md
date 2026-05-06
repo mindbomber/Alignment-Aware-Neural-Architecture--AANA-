@@ -25,6 +25,8 @@ python scripts/aana_cli.py audit-reviewer-report --audit-log eval_outputs/audit/
 - declares `audit_record_version`,
 - uses a known `record_type`,
 - has `created_at`, gate/action fields, AIx summary, and input fingerprints,
+- allows metadata-only operational fields such as `adapter_version`,
+  `latency_ms`, `connector_failures`, and `evidence_freshness_failures`,
 - does not include raw prompt, request, candidate, evidence, constraints, safe response, or output fields.
 
 The audit record may preserve fingerprints, text lengths, adapter IDs, gate decisions, recommended actions, violation codes, AIx scores, AIx decisions, and hard blockers.
@@ -33,15 +35,25 @@ The audit record may preserve fingerprints, text lengths, adapter IDs, gate deci
 
 `audit-metrics` converts redacted records into stable dashboard keys:
 
+- checks per adapter, family, and role,
 - gate/action counts,
 - violation counts,
-- adapter counts,
 - record-type counts,
 - AIx average/min/max score,
+- AIx score bucket counts,
 - AIx decision counts,
-- AIx hard-blocker counts.
+- AIx hard-blocker counts,
+- human review rate,
+- refusal/defer rate,
+- latency average/min/max/p50/p95 and buckets when bridge telemetry is present,
+- connector failure counts,
+- evidence freshness failure counts,
+- adapter-version drift counts.
 
-Latency remains unavailable from audit JSONL unless runtime telemetry adds it.
+The HTTP bridge writes `latency_ms` into redacted audit records for
+`/agent-check`, `/workflow-check`, `/playground/check`, and `/workflow-batch`.
+Evidence connector failures and freshness failures are stored only as source IDs
+and failure codes. Raw connector output still must remain outside the audit log.
 
 ## AIx Drift
 

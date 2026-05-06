@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import datetime
 import json
+import os
 import pathlib
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field, replace
 
 
@@ -46,6 +49,25 @@ CIVIC_CONNECTOR_CONTRACT_IDS = (
     "civic_case_history",
     "benefits_claims",
     "civic_source_registry",
+)
+SUPPORT_CONNECTOR_CONTRACT_IDS = (
+    "crm_customer_account",
+    "order_history",
+    "refund_policy",
+    "internal_notes_classifier",
+    "support_ticket_history",
+    "email_recipient_verification",
+    "attachment_metadata",
+    "account_verification_status",
+    "billing_payment_redaction",
+    "support_policy_registry",
+)
+SUPPORT_ADAPTER_IDS = (
+    "support_reply",
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "invoice_billing_reply",
 )
 
 
@@ -421,7 +443,310 @@ class EvidenceIntegrationStub:
         )
 
 
+@dataclass(frozen=True)
+class LiveEvidenceConnectorManifest:
+    """Deployment-owned manifest for a live, read-only evidence connector."""
+
+    connector_id: str
+    endpoint_url: str
+    environment: str
+    owner: str
+    auth_token_env: str | None = None
+    approval_status: str = "pending"
+    source_mode: str = "live"
+    timeout_seconds: int = 10
+
+    @classmethod
+    def from_value(cls, value):
+        if isinstance(value, cls):
+            return value
+        if not isinstance(value, dict):
+            raise EvidenceConnectorError("Live connector manifest must be an object.")
+        connector_id = value.get("connector_id") or value.get("integration_id")
+        endpoint_url = value.get("endpoint_url") or value.get("manifest_uri")
+        environment = value.get("environment")
+        owner = value.get("owner")
+        if not isinstance(connector_id, str) or not connector_id.strip():
+            raise EvidenceConnectorError("Live connector manifest requires connector_id.")
+        if not isinstance(endpoint_url, str) or not endpoint_url.strip():
+            raise EvidenceConnectorError(f"Live connector manifest for {connector_id!r} requires endpoint_url.")
+        if not endpoint_url.startswith("https://"):
+            raise EvidenceConnectorError(f"Live connector {connector_id!r} must use an HTTPS endpoint_url.")
+        if not isinstance(environment, str) or not environment.strip():
+            raise EvidenceConnectorError(f"Live connector {connector_id!r} requires environment.")
+        if not isinstance(owner, str) or not owner.strip():
+            raise EvidenceConnectorError(f"Live connector {connector_id!r} requires owner.")
+        return cls(
+            connector_id=connector_id.strip(),
+            endpoint_url=endpoint_url.strip(),
+            environment=environment.strip(),
+            owner=owner.strip(),
+            auth_token_env=value.get("auth_token_env"),
+            approval_status=value.get("approval_status") or "pending",
+            source_mode=value.get("source_mode") or "live",
+            timeout_seconds=int(value.get("timeout_seconds") or 10),
+        )
+
+    @property
+    def live_approved(self):
+        return self.source_mode == "live" and self.approval_status in {"live_approved", "approved"}
+
+    def to_dict(self):
+        return {
+            "connector_id": self.connector_id,
+            "endpoint_url": self.endpoint_url,
+            "environment": self.environment,
+            "owner": self.owner,
+            "auth_token_env": self.auth_token_env,
+            "approval_status": self.approval_status,
+            "source_mode": self.source_mode,
+            "timeout_seconds": self.timeout_seconds,
+            "live_approved": self.live_approved,
+        }
+
+
+@dataclass
+class LiveHTTPJSONEvidenceConnector:
+    """HTTPS JSON connector for production support evidence retrieval.
+
+    The upstream endpoint must return a JSON object with an ``evidence`` array.
+    Each evidence item is normalized through the same contract as fixtures.
+    """
+
+    stub: EvidenceIntegrationStub
+    manifest: LiveEvidenceConnectorManifest
+    retriever: object | None = None
+
+    def collect(self, source_ids=None, auth_scopes=None, request=None):
+        fetch_request = EvidenceFetchRequest.from_value(
+            request,
+            integration_id=self.stub.integration_id,
+            source_ids=source_ids or self.stub.required_source_ids,
+            auth=auth_scopes,
+        )
+        if fetch_request.integration_id != self.stub.integration_id:
+            raise EvidenceConnectorError(
+                f"Fetch request integration_id {fetch_request.integration_id!r} does not match connector {self.stub.integration_id!r}."
+            )
+
+        failures = []
+        failures.extend(self.stub.validate_auth_context(fetch_request.auth))
+        requested = list(fetch_request.source_ids or self.stub.required_source_ids)
+        failures.extend(self.stub.validate_requested_sources(requested))
+        if not self.manifest.live_approved:
+            failures.append(
+                _failure(
+                    "connector_unavailable",
+                    None,
+                    f"Live connector {self.stub.integration_id!r} is not live-approved.",
+                )
+            )
+        if failures:
+            return EvidenceConnectorResult(
+                integration_id=self.stub.integration_id,
+                requested_source_ids=tuple(requested),
+                required_source_ids=tuple(self.stub.required_source_ids),
+                failures=tuple(failures),
+                request=fetch_request,
+            ).to_dict()
+
+        try:
+            payload = self._retrieve(fetch_request)
+            evidence_items = self._normalize_payload(payload, requested)
+        except EvidenceConnectorError as exc:
+            return EvidenceConnectorResult(
+                integration_id=self.stub.integration_id,
+                requested_source_ids=tuple(requested),
+                required_source_ids=tuple(self.stub.required_source_ids),
+                failures=(_failure("connector_unavailable", None, str(exc)),),
+                request=fetch_request,
+            ).to_dict()
+
+        return EvidenceConnectorResult(
+            integration_id=self.stub.integration_id,
+            requested_source_ids=tuple(requested),
+            required_source_ids=tuple(self.stub.required_source_ids),
+            evidence=tuple(evidence_items),
+            request=fetch_request,
+        ).to_dict()
+
+    def fetch_evidence(self, source_ids=None, auth_scopes=None, request=None):
+        report = self.collect(source_ids=source_ids, auth_scopes=auth_scopes, request=request)
+        if not report["valid"]:
+            messages = "; ".join(f"{failure['code']}: {failure['message']}" for failure in report["failures"])
+            raise EvidenceConnectorError(messages)
+        return report["evidence"]
+
+    def _retrieve(self, fetch_request):
+        if self.retriever is not None:
+            return self.retriever(fetch_request, self.manifest)
+
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        if self.manifest.auth_token_env:
+            token = os.environ.get(self.manifest.auth_token_env)
+            if not token:
+                raise EvidenceConnectorError(
+                    f"Missing auth token environment variable {self.manifest.auth_token_env!r} for {self.stub.integration_id}."
+                )
+            headers["Authorization"] = f"Bearer {token}"
+        body = json.dumps(fetch_request.to_dict()).encode("utf-8")
+        request = urllib.request.Request(self.manifest.endpoint_url, data=body, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=self.manifest.timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (OSError, urllib.error.URLError, json.JSONDecodeError) as exc:
+            raise EvidenceConnectorError(f"Live connector request failed for {self.stub.integration_id}: {exc}") from exc
+
+    def _normalize_payload(self, payload, requested):
+        if not isinstance(payload, dict) or not isinstance(payload.get("evidence"), list):
+            raise EvidenceConnectorError("Live connector response must be an object with an evidence array.")
+        evidence_by_source = {}
+        for item in payload["evidence"]:
+            if not isinstance(item, dict):
+                raise EvidenceConnectorError("Live connector evidence items must be objects.")
+            source_id = item.get("source_id")
+            evidence_by_source[source_id] = self.stub.normalize_evidence(
+                source_id=source_id,
+                text=item.get("text"),
+                retrieved_at=item.get("retrieved_at"),
+                trust_tier=item.get("trust_tier", "verified"),
+                redaction_status=item.get("redaction_status", "redacted"),
+                metadata={
+                    **dict(item.get("metadata") or {}),
+                    "source_mode": "live",
+                    "connector_environment": self.manifest.environment,
+                    "connector_owner": self.manifest.owner,
+                    "connector_approval_status": self.manifest.approval_status,
+                },
+                raw_record_id=item.get("record_id") or item.get("raw_record_id"),
+            )
+        missing = [source_id for source_id in requested if source_id not in evidence_by_source]
+        if missing:
+            raise EvidenceConnectorError(f"Live connector response missing requested source(s): {', '.join(missing)}.")
+        return [evidence_by_source[source_id] for source_id in requested]
+
+
 INTEGRATION_STUBS = (
+    EvidenceIntegrationStub(
+        integration_id="crm_customer_account",
+        title="CRM Customer Account Record Evidence",
+        system_type="crm_account",
+        adapter_ids=("support_reply", "crm_support_reply"),
+        required_source_ids=("crm-record", "account-verification-status"),
+        optional_source_ids=("crm", "account-health"),
+        operations=("read_customer_account_record", "read_account_verification_status"),
+        auth_boundary="Use support-scoped read credentials for the current customer account only; account mutation remains outside AANA.",
+        redaction_policy="Return verified account facts and verification state without raw CRM notes, payment details, authentication secrets, or unrelated account history.",
+        required_auth_scopes=("crm.account.read", "support.account_verification.read"),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="order_history",
+        title="Order History Evidence",
+        system_type="order_history",
+        adapter_ids=("support_reply", "crm_support_reply"),
+        required_source_ids=("order-system",),
+        optional_source_ids=("invoice",),
+        operations=("read_order_history", "read_order_status", "read_order_eligibility_context"),
+        auth_boundary="Use order-system read credentials scoped to the current customer and case; refunds, credits, shipments, or account actions require separate approval.",
+        redaction_policy="Return order status, fulfillment state, and eligibility summaries without full payment instruments, addresses, or unrelated order history.",
+        required_auth_scopes=("orders.read",),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="refund_policy",
+        title="Refund Policy Evidence",
+        system_type="support_policy",
+        adapter_ids=("support_reply", "crm_support_reply", "ticket_update_checker", "invoice_billing_reply"),
+        required_source_ids=("refund-policy",),
+        optional_source_ids=("support-policy", "billing-policy"),
+        operations=("read_refund_policy", "read_refund_eligibility_rules"),
+        auth_boundary="Use policy-library read credentials; refund execution, credits, and concessions remain outside the evidence connector.",
+        redaction_policy="Return policy version, eligibility criteria, approval boundaries, and escalation rules without internal deliberation notes.",
+        required_auth_scopes=("support.refund_policy.read",),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="internal_notes_classifier",
+        title="Agent-Only and Internal Notes Classifier Evidence",
+        system_type="privacy_classifier",
+        adapter_ids=("support_reply", "crm_support_reply", "ticket_update_checker", "invoice_billing_reply"),
+        required_source_ids=("internal-notes-classification",),
+        optional_source_ids=("data-classification",),
+        operations=("classify_internal_notes", "classify_agent_only_fields", "classify_customer_visible_text"),
+        auth_boundary="Use read-only classifier output; never expose raw internal notes to prompts or customer-visible drafts.",
+        redaction_policy="Return classification labels and redaction decisions only; raw internal notes, risk tags, and employee comments stay in source systems.",
+        required_auth_scopes=("support.internal_notes.classify",),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="support_ticket_history",
+        title="Support Ticket History Evidence",
+        system_type="ticketing",
+        adapter_ids=("support_reply", "crm_support_reply", "ticket_update_checker"),
+        required_source_ids=("ticket-history", "support-policy"),
+        optional_source_ids=("sprint-status", "incident-timeline", "status-page-policy"),
+        operations=("read_support_ticket_history", "read_customer_visible_updates", "read_ticket_policy_context"),
+        auth_boundary="Use ticket-scoped read credentials and preserve internal/customer visibility boundaries; posting updates requires separate authorization.",
+        redaction_policy="Return ticket status and customer-visible history summaries without internal-only notes, secrets, private account data, or employee blame.",
+        required_auth_scopes=("ticket.history.read", "support.policy.read"),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="email_recipient_verification",
+        title="Email Recipient Verification Evidence",
+        system_type="directory_email",
+        adapter_ids=("email_send_guardrail",),
+        required_source_ids=("recipient-metadata", "user-approval"),
+        optional_source_ids=("draft-email",),
+        operations=("read_recipient_metadata", "verify_recipient_identity", "read_send_approval"),
+        auth_boundary="Use directory and approval read credentials; sending email remains outside the evidence connector.",
+        redaction_policy="Return recipient identity, domain, alias, distribution-list, and approval summaries without raw mailbox content.",
+        required_auth_scopes=("directory.recipient.read", "approval.read"),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="attachment_metadata",
+        title="Attachment Metadata Evidence",
+        system_type="attachment_manifest",
+        adapter_ids=("email_send_guardrail",),
+        required_source_ids=("attachment-metadata",),
+        optional_source_ids=("draft-email", "data-classification"),
+        operations=("read_attachment_manifest", "read_attachment_classification", "read_attachment_approval"),
+        auth_boundary="Use attachment metadata and classification read credentials only; file transfer or email send requires separate approval.",
+        redaction_policy="Return filename class, MIME type, size, classification, approval, and DLP summary without raw attachment contents.",
+        required_auth_scopes=("email.attachment_metadata.read", "data.classification.read"),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="account_verification_status",
+        title="Account Verification Status Evidence",
+        system_type="identity_verification",
+        adapter_ids=("support_reply", "crm_support_reply", "invoice_billing_reply"),
+        required_source_ids=("account-verification-status",),
+        optional_source_ids=("crm-record",),
+        operations=("read_account_verification_status", "read_identity_check_summary"),
+        auth_boundary="Use identity-verification read credentials scoped to the current case; authentication or account changes require separate systems.",
+        redaction_policy="Return verification status and allowed support action summary without authentication secrets, documents, or identity artifacts.",
+        required_auth_scopes=("support.account_verification.read",),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="billing_payment_redaction",
+        title="Billing and Payment Redaction Metadata Evidence",
+        system_type="billing_payment_privacy",
+        adapter_ids=("invoice_billing_reply", "support_reply", "crm_support_reply"),
+        required_source_ids=("billing-redaction-metadata", "payment-metadata"),
+        optional_source_ids=("invoice", "billing-policy"),
+        operations=("read_billing_redaction_metadata", "read_payment_visibility_rules", "read_payment_state_summary"),
+        auth_boundary="Use payment metadata read credentials for redaction and visibility only; payment collection, refund, credit, or billing mutation remains outside AANA.",
+        redaction_policy="Return redaction labels, visibility decisions, payment state, and secure-portal routing without card, bank, token, CVV, raw processor, or tax identifier data.",
+        required_auth_scopes=("billing.redaction.read", "payment.metadata.read"),
+    ),
+    EvidenceIntegrationStub(
+        integration_id="support_policy_registry",
+        title="Support Policy Registry Evidence",
+        system_type="support_policy_registry",
+        adapter_ids=SUPPORT_ADAPTER_IDS,
+        required_source_ids=("support-policy-registry", "support-policy"),
+        optional_source_ids=("refund-policy", "billing-policy"),
+        operations=("read_support_policy_registry", "read_customer_visible_policy", "read_human_review_routing"),
+        auth_boundary="Use read-only support policy registry credentials; policy overrides, approvals, and customer actions require domain-owner workflows.",
+        redaction_policy="Return active policy versions, allowed customer-visible claims, escalation routes, and human-review requirements without internal deliberation notes.",
+        required_auth_scopes=("support.policy_registry.read", "support.policy.read"),
+    ),
     EvidenceIntegrationStub(
         integration_id="crm_support",
         title="CRM and Support Account Evidence",
@@ -736,6 +1061,8 @@ def _source_ids(stub):
 def _connector_families(stub):
     adapter_ids = set(stub.adapter_ids)
     families = set()
+    if stub.integration_id in SUPPORT_CONNECTOR_CONTRACT_IDS or adapter_ids & set(SUPPORT_ADAPTER_IDS):
+        families.add("support")
     if adapter_ids & {
         "crm_support_reply",
         "support_reply",
@@ -772,6 +1099,121 @@ def _connector_families(stub):
     }:
         families.add("government_civic")
     return sorted(families or {"cross_family"})
+
+
+def _live_connector_manifests(external_evidence):
+    manifests = external_evidence.get("connector_manifests", []) if isinstance(external_evidence, dict) else []
+    if not isinstance(manifests, list):
+        return {}
+    parsed = {}
+    for item in manifests:
+        if not isinstance(item, dict):
+            continue
+        connector_id = item.get("connector_id") or item.get("integration_id")
+        if not isinstance(connector_id, str) or not connector_id.strip():
+            continue
+        try:
+            parsed[connector_id] = LiveEvidenceConnectorManifest.from_value(item)
+        except EvidenceConnectorError:
+            parsed[connector_id] = {
+                "connector_id": connector_id,
+                "live_approved": False,
+                "invalid_manifest": True,
+            }
+    return parsed
+
+
+def _manifest_connector_ids(external_evidence):
+    return set(_live_connector_manifests(external_evidence))
+
+
+def _live_approved_connector_ids(external_evidence):
+    approved = set()
+    for connector_id, manifest in _live_connector_manifests(external_evidence).items():
+        if isinstance(manifest, LiveEvidenceConnectorManifest) and manifest.live_approved:
+            approved.add(connector_id)
+    return approved
+
+
+def _approved_fixture_connector_ids(fixtures):
+    if not isinstance(fixtures, dict) or fixtures.get("production_fixtures_approved") is not True:
+        return set()
+    connectors = fixtures.get("connectors", {})
+    if not isinstance(connectors, dict):
+        return set()
+    approved = set()
+    for connector_id, connector in connectors.items():
+        if not isinstance(connector, dict):
+            continue
+        if connector.get("production_fixture_approved") is True or connector.get("fixture_scope") == "approved_production_fixture":
+            approved.add(connector_id)
+    return approved
+
+
+def support_evidence_boundary_report(registry=None, external_evidence=None, fixtures=None):
+    """Report whether support production evidence exists as live manifests or approved fixtures."""
+
+    registry_sources = source_ids_from_registry(registry or {}) if registry is not None else set()
+    live_manifests = _live_connector_manifests(external_evidence)
+    live_connector_ids = set(live_manifests)
+    live_approved_connector_ids = _live_approved_connector_ids(external_evidence)
+    approved_fixture_ids = _approved_fixture_connector_ids(fixtures)
+    connector_reports = []
+    for connector_id in SUPPORT_CONNECTOR_CONTRACT_IDS:
+        stub = find_integration_stub(connector_id)
+        required_sources = set(stub.required_source_ids)
+        missing_registry_sources = sorted(required_sources - registry_sources) if registry is not None else []
+        has_live_connector = connector_id in live_connector_ids
+        has_live_approved_connector = connector_id in live_approved_connector_ids
+        has_approved_fixture = connector_id in approved_fixture_ids
+        connector_reports.append(
+            {
+                "connector_id": connector_id,
+                "title": stub.title,
+                "adapter_ids": list(stub.adapter_ids),
+                "required_source_ids": list(stub.required_source_ids),
+                "missing_registry_source_ids": missing_registry_sources,
+                "live_connector_manifest": has_live_connector,
+                "live_connector_approved": has_live_approved_connector,
+                "approved_production_fixture": has_approved_fixture,
+                "source_mode": "live" if has_live_approved_connector else "approved_fixture" if has_approved_fixture else "repository_fixture",
+                "production_evidence_available": has_live_approved_connector or has_approved_fixture,
+                "status": "pass" if not missing_registry_sources and (has_live_approved_connector or has_approved_fixture) else "fail",
+            }
+        )
+    missing_evidence = [
+        item["connector_id"]
+        for item in connector_reports
+        if not item["production_evidence_available"]
+    ]
+    missing_registry = {
+        item["connector_id"]: item["missing_registry_source_ids"]
+        for item in connector_reports
+        if item["missing_registry_source_ids"]
+    }
+    valid = not missing_evidence and not missing_registry
+    return {
+        "support_evidence_boundary_version": CONNECTOR_CONTRACT_VERSION,
+        "valid": valid,
+        "production_evidence_ready": valid,
+        "production_claim_allowed": valid,
+        "support_adapter_ids": list(SUPPORT_ADAPTER_IDS),
+        "required_connectors": list(SUPPORT_CONNECTOR_CONTRACT_IDS),
+        "summary": {
+            "required_connectors": len(SUPPORT_CONNECTOR_CONTRACT_IDS),
+            "live_connector_manifests": len(live_connector_ids & set(SUPPORT_CONNECTOR_CONTRACT_IDS)),
+            "live_approved_connector_manifests": len(live_approved_connector_ids & set(SUPPORT_CONNECTOR_CONTRACT_IDS)),
+            "approved_production_fixtures": len(approved_fixture_ids & set(SUPPORT_CONNECTOR_CONTRACT_IDS)),
+            "missing_evidence_connectors": missing_evidence,
+            "missing_registry_sources": missing_registry,
+        },
+        "production_positioning": (
+            "Support guardrails are not production-ready until every required support evidence connector "
+            "has either a live production connector manifest or an approved production fixture, plus domain "
+            "owner signoff, audit retention, observability, and human review paths."
+        ),
+        "connectors": connector_reports,
+    }
 
 
 def connector_marketplace_card(stub):
@@ -894,6 +1336,47 @@ def load_mock_connector_fixtures(path=DEFAULT_MOCK_FIXTURES_PATH):
     return fixture
 
 
+def live_support_connector_manifests(external_evidence):
+    """Return parsed support live connector manifests keyed by connector ID."""
+
+    manifests = _live_connector_manifests(external_evidence)
+    return {
+        connector_id: manifest
+        for connector_id, manifest in manifests.items()
+        if connector_id in SUPPORT_CONNECTOR_CONTRACT_IDS and isinstance(manifest, LiveEvidenceConnectorManifest)
+    }
+
+
+def build_live_support_connectors(external_evidence, retrievers=None):
+    """Build live HTTPS JSON connectors for the support product line.
+
+    ``retrievers`` is an optional test hook mapping connector_id to a callable
+    with ``(fetch_request, manifest) -> {"evidence": [...]}``.
+    """
+
+    retrievers = retrievers or {}
+    connectors = {}
+    for connector_id, manifest in live_support_connector_manifests(external_evidence).items():
+        connectors[connector_id] = LiveHTTPJSONEvidenceConnector(
+            stub=find_integration_stub(connector_id),
+            manifest=manifest,
+            retriever=retrievers.get(connector_id),
+        )
+    return connectors
+
+
+def run_live_support_connector(integration_id, external_evidence, auth_scopes=None, now=None, source_ids=None, request=None, retriever=None):
+    manifests = live_support_connector_manifests(external_evidence)
+    manifest = manifests.get(integration_id)
+    if manifest is None:
+        raise EvidenceConnectorError(f"No live support connector manifest found for {integration_id!r}.")
+    stub = find_integration_stub(integration_id)
+    connector = LiveHTTPJSONEvidenceConnector(stub=stub, manifest=manifest, retriever=retriever)
+    if request is None:
+        request = stub.fetch_request(source_ids=source_ids, auth=auth_scopes, now=now)
+    return connector.collect(request=request)
+
+
 @dataclass
 class MockEvidenceConnector:
     """Fixture-backed connector that enforces the production evidence contract."""
@@ -999,6 +1482,11 @@ class MockEvidenceConnector:
                             )
                         )
                         continue
+                fixture_scope = connector.get("fixture_scope") or (
+                    "approved_production_fixture"
+                    if connector.get("production_fixture_approved") is True and self.fixture.get("production_fixtures_approved") is True
+                    else "repository_fixture"
+                )
                 evidence_items.append(
                     self.stub.normalize_evidence(
                         source_id=source_id,
@@ -1006,7 +1494,11 @@ class MockEvidenceConnector:
                         retrieved_at=retrieved_at,
                         trust_tier=record.get("trust_tier", "verified"),
                         redaction_status=record.get("redaction_status", "redacted"),
-                        metadata=record.get("metadata", {}),
+                        metadata={
+                            **dict(record.get("metadata", {})),
+                            "source_mode": fixture_scope,
+                            "fixture_approved": fixture_scope == "approved_production_fixture",
+                        },
                         raw_record_id=record.get("record_id"),
                     )
                 )

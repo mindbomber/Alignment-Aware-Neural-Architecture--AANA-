@@ -1,0 +1,82 @@
+{
+  "boundary_version": "0.1",
+  "boundary_id": "aana-production-readiness-boundary",
+  "title": "AANA Production Readiness Boundary",
+  "allowed_repo_statuses": [
+    "demo-ready",
+    "pilot-ready",
+    "production-candidate"
+  ],
+  "forbidden_claims": [
+    "production-certified by local tests alone",
+    "production-ready by repository tests alone",
+    "safe for autonomous production enforcement without external evidence"
+  ],
+  "repo_local_positioning": "This repository can be demo-ready, pilot-ready, or production-candidate. It is not production-certified by local tests alone.",
+  "production_readiness_requires": [
+    {
+      "id": "live_evidence_connectors",
+      "title": "Live evidence connectors",
+      "description": "Approved connectors for CRM, ticketing, email, billing, policy, audit, and other source systems with auth, freshness, and redaction boundaries."
+    },
+    {
+      "id": "domain_owner_signoff",
+      "title": "Domain owner signoff",
+      "description": "Named owners approve adapter scope, policy interpretation, safe responses, escalation paths, and allowed automation."
+    },
+    {
+      "id": "audit_retention",
+      "title": "Audit retention",
+      "description": "Metadata-only audit records have approved retention, immutable or append-only storage, access control, deletion/legal-hold handling, and integrity checks."
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "description": "Dashboards and alerts track gate decisions, actions, violations, AIx, hard blockers, latency, connector failures, human review rate, and drift."
+    },
+    {
+      "id": "human_review_path",
+      "title": "Human review path",
+      "description": "Staffed queues, reviewer instructions, SLAs, priorities, and escalation routes exist for defer/refuse/hard-blocker and ambiguous cases."
+    },
+    {
+      "id": "security_review",
+      "title": "Security review",
+      "description": "Threat model, token handling, connector permissions, PII redaction, attachment handling, secrets scanning, and rate limiting are approved."
+    },
+    {
+      "id": "deployment_manifest",
+      "title": "Deployment manifest",
+      "description": "Environment-specific manifest declares bridge auth, TLS, network boundary, audit sink, evidence sources, observability, owners, and rollout phase."
+    },
+    {
+      "id": "incident_response_plan",
+      "title": "Incident response plan",
+      "description": "Owners, severity levels, rollback triggers, notification paths, audit review, and remediation workflow are defined."
+    },
+    {
+      "id": "measured_pilot_results",
+      "title": "Measured pilot results",
+      "description": "Shadow/advisory pilot results show false accepts, false blocks, over-refusal, correction success, reviewer load, latency, and evidence failures."
+    }
+  ],
+  "local_test_boundary": {
+    "local_tests_can_prove": [
+      "schema compatibility",
+      "deterministic fixture behavior",
+      "golden output stability",
+      "metadata-only audit shape",
+      "release-gate wiring"
+    ],
+    "local_tests_cannot_prove": [
+      "live connector permissions or freshness",
+      "domain owner approval",
+      "retained audit evidence in the deployment",
+      "deployed observability and alert response",
+      "human review staffing",
+      "security approval for the target environment",
+      "incident response readiness",
+      "measured pilot performance on live traffic"
+    ]
+  }
+}

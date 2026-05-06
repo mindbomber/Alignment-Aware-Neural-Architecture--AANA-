@@ -46,8 +46,14 @@ def normalize_verifier_report(
 class VerifierModule:
     name: str
     report_function: object
+    family: str = "uncategorized"
+    supported_adapters: object = None
     adapter_predicate: object = None
+    safe_response_function: object = None
+    detection_function: object = None
+    route_policy: object = None
     correction_routes: object = None
+    fallback_action: str = "revise"
 
     def run(self, prompt, answer):
         return self.report_function(prompt, answer)
@@ -57,12 +63,30 @@ class VerifierRegistry:
     def __init__(self, modules=()):
         self._modules = {module.name: module for module in modules}
 
-    def register(self, name, report_function, adapter_predicate=None, correction_routes=None):
+    def register(
+        self,
+        name,
+        report_function,
+        family="uncategorized",
+        supported_adapters=None,
+        adapter_predicate=None,
+        safe_response_function=None,
+        detection_function=None,
+        route_policy=None,
+        correction_routes=None,
+        fallback_action="revise",
+    ):
         self._modules[name] = VerifierModule(
             name=name,
             report_function=report_function,
+            family=family,
+            supported_adapters=supported_adapters or (),
             adapter_predicate=adapter_predicate,
+            safe_response_function=safe_response_function,
+            detection_function=detection_function,
+            route_policy=route_policy,
             correction_routes=correction_routes,
+            fallback_action=fallback_action,
         )
 
     def names(self):
@@ -74,6 +98,11 @@ class VerifierRegistry:
 
 def build_verifier_registry(modules):
     registry = VerifierRegistry()
-    for name, report_function in modules.items():
-        registry.register(name, report_function)
+    for name, spec in modules.items():
+        if callable(spec):
+            registry.register(name, spec)
+            continue
+        spec = dict(spec)
+        report_function = spec.pop("report_function")
+        registry.register(name, report_function, **spec)
     return registry

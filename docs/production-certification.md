@@ -2,7 +2,7 @@
 
 Production certification is the line between trying AANA and letting AANA enforce decisions in front of real user or business actions. The `production-certify` command is a boundary checker, not a guarantee: it separates repo-local readiness from deployment readiness and reports whether required evidence exists for a production-readiness review.
 
-This repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+This repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
 Run the certification command with real operating artifacts:
 
@@ -39,10 +39,15 @@ The command still sets `production_certified` to `false`; final certification re
 
 The command fails deployment readiness unless it receives explicit external evidence for production claims:
 
-- connector manifests
+- live connector manifests
 - shadow-mode logs
 - audit retention policy
-- escalation policy
+- observability
+- human review path and escalation policy
+- security review
+- deployment manifest
+- incident response plan
+- measured pilot results
 - owner approval
 
 Use [`examples/external_production_evidence_template.json`](../examples/external_production_evidence_template.json) only as a shape template. It intentionally uses `evidence_scope: template`; a real deployment manifest must use `evidence_scope: external_deployment` and point to environment-owned artifacts.
@@ -55,7 +60,7 @@ Use [`examples/external_production_evidence_template.json`](../examples/external
 | Pilot | Synthetic, public, or tightly scoped redacted data | Shadow or advisory mode preferred | Measures value and friction without broad production enforcement. |
 | Production | Authorized production evidence | Enforcement may block or route live workflows | Requires shadow evidence, metrics, human review, connector evidence, and audit retention. |
 
-Demo-ready and pilot-ready do not imply production certification. Production boundary checks are intentionally stricter than `pilot-certify`, `release-check`, or local tests, because those checks cannot prove live connector freshness, domain owner approval, retained audit evidence, deployed observability, or human review operations.
+Demo-ready, pilot-ready, and production-candidate do not imply production certification. Production boundary checks are intentionally stricter than `pilot-certify`, `release-check`, or local tests, because those checks cannot prove live connector freshness, domain owner approval, retained audit evidence, deployed observability, human review operations, security approval, deployment readiness, incident response readiness, or measured pilot results.
 
 ## Required Gates
 
@@ -69,6 +74,7 @@ Production certification requires:
 - Connector evidence contracts for auth boundary, freshness SLO, redaction, and failure modes.
 - Audit retention for at least 365 days, with immutable or append-only storage and redaction required.
 - Domain owner, security, and governance signoff.
+- Deployment manifest, incident response plan, and measured pilot results.
 
 ## Shadow Mode Evidence
 

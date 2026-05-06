@@ -17,6 +17,21 @@ validate_adapter_gallery = load_script(
     "validate_adapter_gallery", ROOT / "scripts" / "validate_adapter_gallery.py"
 )
 
+SUPPORT_ADAPTERS = {
+    "support_reply",
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "invoice_billing_reply",
+}
+REQUIRED_SUPPORT_SURFACES = {
+    "CLI",
+    "Python SDK",
+    "HTTP bridge",
+    "Workflow Contract",
+    "Agent Event Contract",
+}
+
 
 class AdapterGalleryTests(unittest.TestCase):
     def test_gallery_entries_declare_product_catalog_metadata(self):
@@ -37,6 +52,65 @@ class AdapterGalleryTests(unittest.TestCase):
             self.assertTrue(entry["evidence_requirements"], entry["id"])
             self.assertTrue(entry["supported_surfaces"], entry["id"])
             self.assertEqual(entry["production_status"]["level"], entry["readiness"], entry["id"])
+
+    def test_support_adapters_are_productized_catalog_entries(self):
+        gallery = validate_adapter_gallery.load_gallery(ROOT / "examples" / "adapter_gallery.json")
+        support_line = gallery["product_lines"]["support"]
+        entries = {entry["id"]: entry for entry in gallery["adapters"]}
+
+        self.assertEqual(set(support_line["adapter_ids"]), SUPPORT_ADAPTERS)
+        self.assertEqual(
+            set(support_line["later_adapters"]),
+            {"refunds", "account_closure", "chargeback", "cancellation", "escalation", "retention_deletion_request"},
+        )
+        self.assertIn("source-of-truth", support_line["source_of_truth"])
+        self.assertTrue(
+            {
+                "readiness",
+                "family",
+                "risk_tier",
+                "evidence_requirements",
+                "supported_surfaces",
+                "expected_actions",
+                "aix_tuning",
+                "caveats",
+                "production_status",
+                "docs_links",
+                "copy_command",
+                "human_review_requirements",
+            }.issubset(support_line["catalog_contract"])
+        )
+        self.assertIn("customer-visible", support_line["boundary"])
+        for adapter_id in SUPPORT_ADAPTERS:
+            entry = entries[adapter_id]
+            self.assertEqual(entry["product_line"], "support", adapter_id)
+            self.assertTrue(entry["title"], adapter_id)
+            self.assertTrue(REQUIRED_SUPPORT_SURFACES.issubset(entry["supported_surfaces"]), adapter_id)
+            self.assertIn("support", entry["family"], adapter_id)
+            self.assertEqual(entry["aix_tuning"]["risk_tier"], entry["risk_tier"], adapter_id)
+            self.assertIn(entry["risk_tier"], {"standard", "elevated", "high", "strict"}, adapter_id)
+            self.assertEqual(
+                set(entry["expected_actions"]["allowed_actions"]),
+                {"accept", "revise", "retrieve", "ask", "defer", "refuse"},
+                adapter_id,
+            )
+            self.assertEqual(
+                entry["expected_actions"]["golden_recommended_action"],
+                entry["expected"]["recommended_action"],
+                adapter_id,
+            )
+            self.assertEqual(
+                entry["expected_actions"]["golden_candidate_aix_decision"],
+                entry["expected"]["candidate_aix_decision"],
+                adapter_id,
+            )
+            self.assertTrue(entry["evidence_requirements"], adapter_id)
+            self.assertTrue(entry["verifier_behavior"], adapter_id)
+            self.assertTrue(entry["correction_policy_summary"], adapter_id)
+            self.assertTrue(entry["human_review_path"], adapter_id)
+            self.assertTrue(entry["human_review_requirements"], adapter_id)
+            self.assertTrue(entry["caveats"], adapter_id)
+            self.assertIn(entry["production_status"]["level"], {"demo_adapter", "pilot_ready", "production_candidate"}, adapter_id)
 
     def test_gallery_validates_and_runs_examples(self):
         gallery = validate_adapter_gallery.load_gallery(ROOT / "examples" / "adapter_gallery.json")

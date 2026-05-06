@@ -12,6 +12,7 @@ services:
       AANA_MAX_BODY_BYTES: "${AANA_MAX_BODY_BYTES:-1048576}"
       AANA_RATE_LIMIT_PER_MINUTE: "${AANA_RATE_LIMIT_PER_MINUTE:-0}"
       AANA_READ_TIMEOUT_SECONDS: "${AANA_READ_TIMEOUT_SECONDS:-30}"
+      AANA_EVIDENCE_REGISTRY: "${AANA_EVIDENCE_REGISTRY:-examples/evidence_registry.json}"
     command:
       - /bin/sh
       - -c

@@ -13,6 +13,10 @@ This repository contains a small Python evaluation pipeline for testing Alignmen
 
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
 
+Platform boundary: AANA is a runtime guardrail layer that sits between an agent and consequential outputs or actions. It receives a Workflow Contract or Agent Event, checks the candidate output/action against adapter-specific constraints, applies verifier-grounded correction policy, returns `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, and emits audit-safe metadata. See [docs/product-boundary.md](docs/product-boundary.md).
+
+First deployable support boundary: draft support replies, CRM support replies, refund/account-fact checks, support email-send checks, and customer-visible ticket updates. Invoice/billing replies are an adjacent later adapter family.
+
 Start with the path that matches what you are doing:
 
 - **Try Demo**: [docs/try-demo/index.md](docs/try-demo/index.md)
@@ -21,7 +25,7 @@ Start with the path that matches what you are doing:
 
 Try the hosted synthetic demo without cloning the repo: [AANA hosted demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/). It uses precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
 
-Production positioning: this repository is demo-ready and pilot-ready for controlled evaluation, but it is not production-certified by itself. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, and human review paths.
+Production positioning: this repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
 ## Why this matters
 
@@ -131,7 +135,7 @@ python scripts/aana_cli.py pilot-certify --json
 
 The command prints a public readiness score across the CLI, Python API, HTTP bridge, adapters, evidence, audit/metrics, docs, contracts, and skills/plugins. Details are in [docs/pilot-surface-certification.md](docs/pilot-surface-certification.md).
 
-Passing `pilot-certify`, `release-check`, or local tests does not certify production safety. Those checks prove repo-local behavior and release hygiene; live deployment still needs external evidence, owner approval, retained audit records, observability, and human review.
+Passing `pilot-certify`, `release-check`, or local tests does not certify production safety. Those checks prove repo-local behavior and release hygiene; live deployment still needs live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
 Define the line between demo, pilot, and production certification:
 
@@ -141,7 +145,7 @@ python scripts/aana_cli.py production-certify --json --certification-policy exam
 
 That command reports `repo_local_not_ready`, `external_evidence_required`, or `deployment_ready` depending on which boundary has been satisfied. See [docs/production-certification.md](docs/production-certification.md).
 
-`production-certify` is a boundary checker, not a production guarantee. It separates repo-local readiness from deployment readiness and requires explicit external evidence for production claims: connector manifests, shadow-mode logs, audit retention policy, escalation policy, and owner approval.
+`production-certify` is a boundary checker, not a production guarantee. It separates repo-local readiness from deployment readiness and requires explicit external evidence for production claims: live connector manifests, shadow-mode logs, audit retention policy, observability, escalation policy, security review, deployment manifest, incident response plan, measured pilot results, and owner approval.
 
 Or run the same platform contract from the CLI:
 

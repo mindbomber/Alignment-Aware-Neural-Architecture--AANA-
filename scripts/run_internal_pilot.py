@@ -23,6 +23,7 @@ DEFAULT_MANIFEST = ROOT / "examples" / "production_deployment_internal_pilot.jso
 DEFAULT_EVENT = ROOT / "examples" / "agent_event_support_reply.json"
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
 DEFAULT_PORT = 8765
+DEFAULT_PILOT_PHASE = "shadow_mode"
 
 
 class PilotRunnerError(RuntimeError):
@@ -89,7 +90,30 @@ def resolve_token(require_env_token=False):
     return secrets.token_urlsafe(32), True
 
 
-def start_bridge(host, port, gallery, max_body_bytes, token, audit_log):
+def pilot_rollout(manifest):
+    rollout = manifest.get("pilot_rollout", {})
+    phases = sorted(rollout.get("phase_sequence", []), key=lambda item: item.get("order", 0))
+    return {
+        "default_phase": rollout.get("default_phase", DEFAULT_PILOT_PHASE),
+        "autonomous_enforcement_allowed": bool(rollout.get("autonomous_enforcement_allowed", False)),
+        "phases": phases,
+    }
+
+
+def pilot_phase(manifest, requested_phase=None):
+    rollout = pilot_rollout(manifest)
+    phase_name = requested_phase or rollout["default_phase"]
+    for phase in rollout["phases"]:
+        if phase.get("phase") == phase_name:
+            return phase
+    raise PilotRunnerError(f"Unknown pilot phase: {phase_name}")
+
+
+def phase_shadow_mode_enabled(phase):
+    return phase.get("mode") == "shadow" or phase.get("enforcement") == "observe_only"
+
+
+def start_bridge(host, port, gallery, max_body_bytes, token, audit_log, shadow_mode=False):
     env = os.environ.copy()
     env["AANA_BRIDGE_TOKEN"] = token
     command = [
@@ -106,6 +130,8 @@ def start_bridge(host, port, gallery, max_body_bytes, token, audit_log):
         "--audit-log",
         str(audit_log),
     ]
+    if shadow_mode:
+        command.append("--shadow-mode")
     return subprocess.Popen(
         command,
         cwd=ROOT,
@@ -138,6 +164,8 @@ def collect_process_output(process):
 
 def run_pilot(args):
     manifest = load_json(args.deployment_manifest)
+    phase = pilot_phase(manifest, args.pilot_phase)
+    shadow_mode = phase_shadow_mode_enabled(phase)
     bridge = manifest.get("bridge", {})
     host = args.host or bridge.get("host") or "127.0.0.1"
     port = args.port
@@ -147,7 +175,7 @@ def run_pilot(args):
     token, generated_token = resolve_token(args.require_env_token)
     base_url = f"http://{host}:{port}"
 
-    process = start_bridge(host, port, args.gallery, max_body_bytes, token, paths["audit_log"])
+    process = start_bridge(host, port, args.gallery, max_body_bytes, token, paths["audit_log"], shadow_mode=shadow_mode)
     try:
         try:
             pilot_smoke_test.wait_for_health(base_url, timeout_seconds=args.timeout)
@@ -185,6 +213,13 @@ def run_pilot(args):
         )
         return {
             "status": "pass",
+            "pilot_phase": {
+                "phase": phase.get("phase"),
+                "mode": phase.get("mode"),
+                "enforcement": phase.get("enforcement"),
+                "shadow_mode": shadow_mode,
+                "autonomous_enforcement_allowed": pilot_rollout(manifest)["autonomous_enforcement_allowed"],
+            },
             "base_url": base_url,
             "generated_process_token": generated_token,
             "runtime": {
@@ -216,6 +251,7 @@ def parse_args(argv=None):
     parser.add_argument("--max-body-bytes", type=int, default=None, help="Override max POST body size.")
     parser.add_argument("--require-env-token", action="store_true", help="Require AANA_BRIDGE_TOKEN instead of generating a process-local token.")
     parser.add_argument("--timeout", type=float, default=10, help="Bridge health and HTTP timeout in seconds.")
+    parser.add_argument("--pilot-phase", default=None, help="Pilot rollout phase. Defaults to the manifest default_phase.")
     parser.add_argument("--json", action="store_true", help="Print full JSON result.")
     return parser.parse_args(argv)
 
@@ -232,6 +268,12 @@ def main(argv=None):
         print(json.dumps(result, indent=2, sort_keys=True))
     else:
         print("AANA internal pilot runner: PASS")
+        print(
+            "- Pilot phase: "
+            f"{result['pilot_phase']['phase']} "
+            f"mode={result['pilot_phase']['mode']} "
+            f"enforcement={result['pilot_phase']['enforcement']}"
+        )
         print(f"- Bridge: {result['base_url']}")
         print(f"- Generated process-local token: {result['generated_process_token']}")
         print(f"- Audit log: {result['runtime']['audit_log']}")

@@ -193,6 +193,192 @@ class EvidenceIntegrationTests(unittest.TestCase):
             self.assertIn("stale_evidence", contract["failure_routing"])
             self.assertIn("unredacted_evidence", contract["failure_routing"])
 
+    def test_support_connectors_define_production_evidence_boundary(self):
+        expected = {
+            "crm_customer_account",
+            "order_history",
+            "refund_policy",
+            "internal_notes_classifier",
+            "support_ticket_history",
+            "email_recipient_verification",
+            "attachment_metadata",
+            "account_verification_status",
+            "billing_payment_redaction",
+            "support_policy_registry",
+        }
+
+        self.assertEqual(set(evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS), expected)
+        for integration_id in evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS:
+            stub = evidence_integrations.find_integration_stub(integration_id)
+            contract = stub.connector_contract()
+
+            self.assertTrue(set(stub.adapter_ids) & set(evidence_integrations.SUPPORT_ADAPTER_IDS), integration_id)
+            self.assertFalse(contract["auth"]["action_execution_allowed"], integration_id)
+            self.assertTrue(contract["auth"]["required_scopes"], integration_id)
+            self.assertTrue(contract["freshness"]["requires_retrieved_at"], integration_id)
+            self.assertFalse(contract["redaction"]["raw_records_allowed_in_aana"], integration_id)
+            self.assertIn("redacted", contract["redaction"]["allowed_redaction_statuses"], integration_id)
+
+    def test_support_mock_connectors_normalize_but_do_not_allow_production_claim(self):
+        fixtures = evidence_integrations.load_mock_connector_fixtures("examples/evidence_mock_connector_fixtures.json")
+        registry = agent_api.load_evidence_registry("examples/evidence_registry.json")
+
+        matrix = evidence_integrations.mock_connector_matrix(
+            fixtures=fixtures,
+            integration_ids=evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS,
+            now="2026-05-05T01:00:00Z",
+        )
+        boundary = evidence_integrations.support_evidence_boundary_report(
+            registry=registry,
+            fixtures=fixtures,
+        )
+
+        self.assertTrue(matrix["valid"], matrix)
+        self.assertFalse(boundary["production_evidence_ready"], boundary)
+        self.assertFalse(boundary["production_claim_allowed"], boundary)
+        self.assertEqual(
+            set(boundary["summary"]["missing_evidence_connectors"]),
+            set(evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS),
+        )
+
+    def test_support_boundary_allows_live_manifests_or_approved_production_fixtures(self):
+        registry = agent_api.load_evidence_registry("examples/evidence_registry.json")
+        live_manifest = {
+            "connector_manifests": [
+                {
+                    "connector_id": connector_id,
+                    "endpoint_url": f"https://connectors.example.internal/{connector_id}",
+                    "environment": "production",
+                    "owner": "Support Operations",
+                    "approval_status": "live_approved",
+                    "source_mode": "live",
+                }
+                for connector_id in evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS
+            ]
+        }
+        approved_fixtures = {
+            "production_fixtures_approved": True,
+            "connectors": {
+                connector_id: {"production_fixture_approved": True}
+                for connector_id in evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS
+            },
+        }
+
+        live_report = evidence_integrations.support_evidence_boundary_report(
+            registry=registry,
+            external_evidence=live_manifest,
+        )
+        fixture_report = evidence_integrations.support_evidence_boundary_report(
+            registry=registry,
+            fixtures=approved_fixtures,
+        )
+
+        self.assertTrue(live_report["production_claim_allowed"], live_report)
+        self.assertTrue(fixture_report["production_claim_allowed"], fixture_report)
+        self.assertEqual(
+            live_report["summary"]["live_approved_connector_manifests"],
+            len(evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS),
+        )
+        self.assertIn("support guardrails are not production-ready", live_report["production_positioning"].lower())
+
+    def test_support_boundary_rejects_unapproved_live_manifests(self):
+        registry = agent_api.load_evidence_registry("examples/evidence_registry.json")
+        external_evidence = {
+            "connector_manifests": [
+                {
+                    "connector_id": connector_id,
+                    "endpoint_url": f"https://connectors.example.internal/{connector_id}",
+                    "environment": "production",
+                    "owner": "Support Operations",
+                    "approval_status": "pending",
+                    "source_mode": "live",
+                }
+                for connector_id in evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS
+            ]
+        }
+
+        report = evidence_integrations.support_evidence_boundary_report(
+            registry=registry,
+            external_evidence=external_evidence,
+        )
+
+        self.assertFalse(report["production_evidence_ready"], report)
+        self.assertEqual(report["summary"]["live_connector_manifests"], len(evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS))
+        self.assertEqual(report["summary"]["live_approved_connector_manifests"], 0)
+        self.assertEqual(
+            set(report["summary"]["missing_evidence_connectors"]),
+            set(evidence_integrations.SUPPORT_CONNECTOR_CONTRACT_IDS),
+        )
+
+    def test_live_support_connector_normalizes_https_response(self):
+        external_evidence = {
+            "connector_manifests": [
+                {
+                    "connector_id": "crm_customer_account",
+                    "endpoint_url": "https://connectors.example.internal/crm_customer_account",
+                    "environment": "production",
+                    "owner": "Support Operations",
+                    "approval_status": "live_approved",
+                    "source_mode": "live",
+                }
+            ]
+        }
+        stub = evidence_integrations.find_integration_stub("crm_customer_account")
+
+        def retriever(fetch_request, manifest):
+            return {
+                "evidence": [
+                    {
+                        "source_id": source_id,
+                        "retrieved_at": "2026-05-05T00:00:00Z",
+                        "trust_tier": "verified",
+                        "redaction_status": "redacted",
+                        "text": f"Live redacted support evidence for {source_id}.",
+                    }
+                    for source_id in fetch_request.source_ids
+                ]
+            }
+
+        report = evidence_integrations.run_live_support_connector(
+            "crm_customer_account",
+            external_evidence,
+            auth_scopes=stub.required_auth_scopes,
+            now="2026-05-05T01:00:00Z",
+            retriever=retriever,
+        )
+
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(len(report["evidence"]), len(stub.required_source_ids))
+        for item in report["evidence"]:
+            self.assertEqual(item["metadata"]["source_mode"], "live")
+            self.assertEqual(item["metadata"]["connector_approval_status"], "live_approved")
+
+    def test_live_support_connector_requires_live_approval(self):
+        external_evidence = {
+            "connector_manifests": [
+                {
+                    "connector_id": "refund_policy",
+                    "endpoint_url": "https://connectors.example.internal/refund_policy",
+                    "environment": "staging",
+                    "owner": "Support Policy",
+                    "approval_status": "pending",
+                    "source_mode": "live",
+                }
+            ]
+        }
+        stub = evidence_integrations.find_integration_stub("refund_policy")
+
+        report = evidence_integrations.run_live_support_connector(
+            "refund_policy",
+            external_evidence,
+            auth_scopes=stub.required_auth_scopes,
+            now="2026-05-05T01:00:00Z",
+            retriever=lambda _request, _manifest: {"evidence": []},
+        )
+
+        self.assertFalse(report["valid"])
+        self.assertIn("connector_unavailable", {failure["code"] for failure in report["failures"]})
+
     def test_fetch_request_enforces_auth_and_source_scope(self):
         fixtures = evidence_integrations.load_mock_connector_fixtures("examples/evidence_mock_connector_fixtures.json")
         stub = evidence_integrations.find_integration_stub("workspace_files")

@@ -9,6 +9,14 @@ from scripts import aana_cli
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PUBLIC_DECISION_FIELDS = {
+    "gate_decision",
+    "recommended_action",
+    "violations",
+    "aix",
+    "candidate_aix",
+    "audit_summary",
+}
 
 
 def decision_surface(result):
@@ -20,6 +28,16 @@ def decision_surface(result):
         "candidate_aix_decision": result.get("candidate_aix", {}).get("decision"),
         "violation_codes": [item.get("code") for item in result.get("violations", [])],
     }
+
+
+def assert_public_decision_shape(testcase, result, safe_output_field):
+    for field in PUBLIC_DECISION_FIELDS:
+        testcase.assertIn(field, result)
+    testcase.assertIn(safe_output_field, result)
+    testcase.assertIsInstance(result["violations"], list)
+    testcase.assertIsInstance(result["aix"], dict)
+    testcase.assertIsInstance(result["candidate_aix"], dict)
+    testcase.assertIsInstance(result["audit_summary"], dict)
 
 
 class RuntimeBoundaryCleanupTests(unittest.TestCase):
@@ -35,6 +53,7 @@ class RuntimeBoundaryCleanupTests(unittest.TestCase):
         self.assertIn("raw_result", result)
         self.assertIn("agent_check_version", result["raw_result"])
         self.assertNotIn("final_answer", result)
+        assert_public_decision_shape(self, result, "output")
 
     def test_cli_gallery_run_matches_workflow_api_decision_surface(self):
         gallery = aana_cli.load_gallery(aana_cli.DEFAULT_GALLERY)
@@ -45,6 +64,8 @@ class RuntimeBoundaryCleanupTests(unittest.TestCase):
         api_result = agent_api.check_workflow_request(workflow_request)
 
         self.assertEqual(decision_surface(cli_result), decision_surface(api_result))
+        assert_public_decision_shape(self, cli_result, "output")
+        assert_public_decision_shape(self, api_result, "output")
 
     def test_python_sdk_and_http_workflow_route_return_same_decision_surface(self):
         workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
@@ -58,6 +79,8 @@ class RuntimeBoundaryCleanupTests(unittest.TestCase):
 
         self.assertEqual(status, 200)
         self.assertEqual(decision_surface(sdk_result), decision_surface(http_result))
+        assert_public_decision_shape(self, sdk_result, "output")
+        assert_public_decision_shape(self, http_result, "output")
 
     def test_playground_check_wraps_canonical_workflow_result_and_audit_preview(self):
         workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
@@ -81,6 +104,7 @@ class RuntimeBoundaryCleanupTests(unittest.TestCase):
         self.assertEqual(payload["audit_record"]["gate_decision"], payload["result"]["gate_decision"])
         self.assertEqual(payload["audit_record"]["recommended_action"], payload["result"]["recommended_action"])
         self.assertEqual(payload["audit_record"]["aix"]["decision"], payload["result"]["aix"]["decision"])
+        assert_public_decision_shape(self, payload["result"], "output")
 
     def test_agent_event_and_workflow_contract_surfaces_share_adapter_decisions(self):
         workflow_request = agent_api.load_json_file(ROOT / "examples" / "workflow_research_summary.json")
@@ -106,6 +130,19 @@ class RuntimeBoundaryCleanupTests(unittest.TestCase):
         self.assertEqual(workflow_result["candidate_gate"], event_result["candidate_gate"])
         self.assertEqual(workflow_result["recommended_action"], event_result["recommended_action"])
         self.assertEqual(workflow_result["aix"]["decision"], event_result["aix"]["decision"])
+        assert_public_decision_shape(self, workflow_result, "output")
+        assert_public_decision_shape(self, event_result, "safe_response")
+
+    def test_workflow_batch_items_keep_public_decision_shape(self):
+        batch_request = agent_api.load_json_file(ROOT / "examples" / "workflow_batch_productive_work.json")
+
+        batch_result = aana.check_batch(batch_request)
+
+        self.assertEqual(batch_result["contract_version"], "0.1")
+        self.assertIn("summary", batch_result)
+        self.assertGreater(len(batch_result["results"]), 0)
+        for result in batch_result["results"]:
+            assert_public_decision_shape(self, result, "output")
 
 
 if __name__ == "__main__":

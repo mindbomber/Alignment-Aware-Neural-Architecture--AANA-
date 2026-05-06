@@ -337,6 +337,21 @@
           &quot;revise&quot;: 0.68
         }
       },
+      &quot;aix_tuning&quot;: {
+        &quot;beta&quot;: 1.15,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.1,
+          &quot;C&quot;: 1.1,
+          &quot;F&quot;: 0.85,
+          &quot;P&quot;: 1.05
+        },
+        &quot;risk_tier&quot;: &quot;elevated&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.88,
+          &quot;defer&quot;: 0.52,
+          &quot;revise&quot;: 0.68
+        }
+      },
       &quot;best_for&quot;: [
         &quot;CRM support replies&quot;,
         &quot;refund eligibility triage&quot;,
@@ -378,6 +393,11 @@
           &quot;escalation matrix&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [
+        &quot;accept only CRM-backed and policy-bounded replies&quot;,
+        &quot;revise removable overclaims, private data, unsafe tone, or unsupported promises&quot;,
+        &quot;defer high-value, legal, privacy-sensitive, disputed, or ambiguous support cases&quot;
+      ],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for CRM account facts, order-system status, refund eligibility, support policy, approved macros, identity verification state, and escalation authority.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text or a redacted fact summary.&quot;,
@@ -406,6 +426,19 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
+        },
+        &quot;expected_actions&quot;: {
+          &quot;allowed_actions&quot;: [
+            &quot;accept&quot;,
+            &quot;revise&quot;,
+            &quot;retrieve&quot;,
+            &quot;ask&quot;,
+            &quot;defer&quot;,
+            &quot;refuse&quot;
+          ],
+          &quot;golden_candidate_aix_decision&quot;: &quot;refuse&quot;,
+          &quot;golden_candidate_gate&quot;: &quot;block&quot;,
+          &quot;golden_recommended_action&quot;: &quot;revise&quot;
         }
       },
       &quot;failure_modes&quot;: [
@@ -416,18 +449,32 @@
         &quot;missing_secure_verification_path&quot;
       ],
       &quot;families&quot;: [
-        &quot;enterprise&quot;
+        &quot;enterprise&quot;,
+        &quot;support&quot;
       ],
       &quot;family_labels&quot;: [
-        &quot;Enterprise&quot;
+        &quot;Enterprise&quot;,
+        &quot;support&quot;
+      ],
+      &quot;human_review_path&quot;: [
+        &quot;Escalate high-value refunds, chargebacks, legal threats, regulatory complaints, privacy incidents, fraud/risk flags, and account disputes.&quot;,
+        &quot;Escalate any reply that depends on sensitive identity, billing, payment, risk, or internal CRM notes.&quot;,
+        &quot;Escalate repeated false accepts for private-data, refund-policy, account-fact, or policy-promise violations.&quot;
+      ],
+      &quot;human_review_requirements&quot;: [
+        &quot;Human review is required for high-value refunds, chargebacks, legal threats, regulatory complaints, privacy incidents, fraud/risk flags, and account disputes.&quot;,
+        &quot;Human review is required when a reply depends on sensitive identity, billing, payment, risk, or internal CRM notes.&quot;,
+        &quot;Human review is required after repeated false accepts for private-data, refund-policy, account-fact, or policy-promise violations.&quot;
       ],
       &quot;id&quot;: &quot;crm_support_reply&quot;,
       &quot;packs&quot;: [
-        &quot;enterprise&quot;
+        &quot;enterprise&quot;,
+        &quot;support&quot;
       ],
+      &quot;product_line&quot;: &quot;support&quot;,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate high-value refunds, chargebacks, legal threats, regulatory complaints, privacy incidents, fraud/risk flags, and account disputes.&quot;,
           &quot;Escalate any reply that depends on sensitive identity, billing, payment, risk, or internal CRM notes.&quot;,
@@ -459,7 +506,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support pilot_ready ready ready external_required elevated&quot;,
+      &quot;search_text&quot;: &quot;crm_support_reply crm support reply draft crm-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries. crm support replies refund eligibility triage customer-visible account communications policy-bounded support macros crm customer record order system record support ticket history refund policy record order eligibility service support escalation matrix secure customer-support workflow identity verification policy support policy record approved macros escalation matrix crm_reply_invents_account_facts refund_policy_overpromise private_crm_data_leak unsafe_or_uncalibrated_tone missing_secure_verification_path enterprise support support pilot_ready ready ready external_required elevated&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -467,14 +514,37 @@
         &quot;HTTP bridge /workflow-check&quot;,
         &quot;Web playground&quot;,
         &quot;Published adapter gallery&quot;,
-        &quot;Enterprise starter/pilot pack&quot;
+        &quot;Enterprise starter/pilot pack&quot;,
+        &quot;CLI&quot;,
+        &quot;Python SDK&quot;,
+        &quot;HTTP bridge&quot;,
+        &quot;Agent Event Contract&quot;
       ],
       &quot;title&quot;: &quot;CRM Support Reply&quot;,
+      &quot;verifier_behavior&quot;: [
+        &quot;Checks CRM/order facts, refund eligibility, policy promise boundaries, private-data minimization, tone, and secure verification routing.&quot;,
+        &quot;Treats missing, stale, or conflicting CRM evidence as a retrieve, ask, or defer condition.&quot;
+      ],
       &quot;workflow&quot;: &quot;Draft CRM-backed support replies while preserving verified account facts, refund eligibility, private data minimization, safe tone, and policy-promise boundaries.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/email_send_guardrail_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.55,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.45,
+          &quot;C&quot;: 1.3,
+          &quot;F&quot;: 1.0,
+          &quot;P&quot;: 1.15
+        },
+        &quot;risk_tier&quot;: &quot;strict&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.94,
+          &quot;defer&quot;: 0.62,
+          &quot;revise&quot;: 0.78
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.55,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.45,
@@ -523,6 +593,11 @@
           &quot;attachment manifest&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [
+        &quot;accept only when recipient, body, attachment, timing, and approval evidence all support the send&quot;,
+        &quot;revise drafts that can be made safe without sending&quot;,
+        &quot;ask, defer, or refuse when approval, recipient confidence, DLP, or attachment evidence is missing or unsafe&quot;
+      ],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for draft email, recipient metadata, approval state, attachment manifest, thread context, DLP labels, and send timing.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text or a redacted fact summary.&quot;,
@@ -551,6 +626,19 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
+        },
+        &quot;expected_actions&quot;: {
+          &quot;allowed_actions&quot;: [
+            &quot;accept&quot;,
+            &quot;revise&quot;,
+            &quot;retrieve&quot;,
+            &quot;ask&quot;,
+            &quot;defer&quot;,
+            &quot;refuse&quot;
+          ],
+          &quot;golden_candidate_aix_decision&quot;: &quot;refuse&quot;,
+          &quot;golden_candidate_gate&quot;: &quot;block&quot;,
+          &quot;golden_recommended_action&quot;: &quot;revise&quot;
         }
       },
       &quot;failure_modes&quot;: [
@@ -562,20 +650,34 @@
       ],
       &quot;families&quot;: [
         &quot;enterprise&quot;,
-        &quot;personal_productivity&quot;
+        &quot;personal_productivity&quot;,
+        &quot;support&quot;
       ],
       &quot;family_labels&quot;: [
         &quot;Enterprise&quot;,
-        &quot;Personal Productivity&quot;
+        &quot;Personal Productivity&quot;,
+        &quot;support&quot;
+      ],
+      &quot;human_review_path&quot;: [
+        &quot;Escalate broad external sends, reply-all to large lists, Bcc use, legal/HR/finance content, regulated data, credentials, secrets, and sensitive attachments.&quot;,
+        &quot;Escalate conflicting recipient metadata, lookalike domains, stale aliases, uncertain approval state, and distribution-list expansion failures.&quot;,
+        &quot;Escalate repeated false accepts for wrong-recipient, private-data, attachment, or irreversible-send violations.&quot;
+      ],
+      &quot;human_review_requirements&quot;: [
+        &quot;Human review is required for broad external sends, reply-all to large lists, Bcc use, legal/HR/finance content, regulated data, credentials, secrets, and sensitive attachments.&quot;,
+        &quot;Human review is required for conflicting recipient metadata, lookalike domains, stale aliases, uncertain approval state, and distribution-list expansion failures.&quot;,
+        &quot;Human review is required after repeated false accepts for wrong-recipient, private-data, attachment, or irreversible-send violations.&quot;
       ],
       &quot;id&quot;: &quot;email_send_guardrail&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;,
-        &quot;personal_productivity&quot;
+        &quot;personal_productivity&quot;,
+        &quot;support&quot;
       ],
+      &quot;product_line&quot;: &quot;support&quot;,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate broad external sends, reply-all to large lists, Bcc use, legal/HR/finance content, regulated data, credentials, secrets, and sensitive attachments.&quot;,
           &quot;Escalate conflicting recipient metadata, lookalike domains, stale aliases, uncertain approval state, and distribution-list expansion failures.&quot;,
@@ -600,7 +702,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support pilot_ready ready ready external_required strict&quot;,
+      &quot;search_text&quot;: &quot;email_send_guardrail email send guardrail check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send. email send approval recipient verification attachment safety private-data leakage prevention irreversible agent actions draft email recipient metadata user approval attachment manifest wrong_or_unverified_recipient intent_drift private_data_leak unsafe_attachment_send irreversible_send_without_approval enterprise personal_productivity support support pilot_ready ready ready external_required strict&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -610,14 +712,37 @@
         &quot;Published adapter gallery&quot;,
         &quot;Local desktop/browser demo&quot;,
         &quot;Enterprise starter/pilot pack&quot;,
-        &quot;Personal productivity starter/pilot pack&quot;
+        &quot;Personal productivity starter/pilot pack&quot;,
+        &quot;CLI&quot;,
+        &quot;Python SDK&quot;,
+        &quot;HTTP bridge&quot;,
+        &quot;Agent Event Contract&quot;
       ],
       &quot;title&quot;: &quot;Email Send Guardrail&quot;,
+      &quot;verifier_behavior&quot;: [
+        &quot;Checks recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit irreversible-send approval.&quot;,
+        &quot;Blocks or escalates wrong-recipient, broad-recipient, Bcc/reply-all, DLP, attachment, and missing-approval risks.&quot;
+      ],
       &quot;workflow&quot;: &quot;Check proposed email send actions while preserving recipient accuracy, approved intent, private-data minimization, attachment safety, and explicit approval before irreversible send.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/ticket_update_checker_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.15,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.1,
+          &quot;C&quot;: 1.1,
+          &quot;F&quot;: 0.85,
+          &quot;P&quot;: 1.05
+        },
+        &quot;risk_tier&quot;: &quot;elevated&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.88,
+          &quot;defer&quot;: 0.52,
+          &quot;revise&quot;: 0.68
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.15,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.1,
@@ -664,6 +789,11 @@
           &quot;support policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [
+        &quot;accept only verified, policy-bounded customer-visible updates&quot;,
+        &quot;revise unsafe updates into scoped hold/status language when possible&quot;,
+        &quot;retrieve, ask, defer, or refuse for unverified status, fabricated commitments, private data, or policy bypass&quot;
+      ],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for ticket history, linked issue or bug state, sprint status, support policy, customer visibility, commitment approval, refund eligibility, SLA-credit eligibility, escalation state, and redacted private-data classifications.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, ticket or issue identifiers, status confidence, policy version, and checked text or a redacted fact summary.&quot;,
@@ -692,6 +822,19 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
+        },
+        &quot;expected_actions&quot;: {
+          &quot;allowed_actions&quot;: [
+            &quot;accept&quot;,
+            &quot;revise&quot;,
+            &quot;retrieve&quot;,
+            &quot;ask&quot;,
+            &quot;defer&quot;,
+            &quot;refuse&quot;
+          ],
+          &quot;golden_candidate_aix_decision&quot;: &quot;refuse&quot;,
+          &quot;golden_candidate_gate&quot;: &quot;block&quot;,
+          &quot;golden_recommended_action&quot;: &quot;revise&quot;
         }
       },
       &quot;failure_modes&quot;: [
@@ -702,18 +845,32 @@
         &quot;ticket_support_policy_bypassed&quot;
       ],
       &quot;families&quot;: [
-        &quot;enterprise&quot;
+        &quot;enterprise&quot;,
+        &quot;support&quot;
       ],
       &quot;family_labels&quot;: [
-        &quot;Enterprise&quot;
+        &quot;Enterprise&quot;,
+        &quot;support&quot;
+      ],
+      &quot;human_review_path&quot;: [
+        &quot;Escalate outage communications, security incidents, legal threats, enterprise customer updates, refunds, SLA credits, executive escalations, sensitive customers, disputed status, and policy exceptions.&quot;,
+        &quot;Escalate any case with status uncertainty, commitment ambiguity, entitlement uncertainty, private-data uncertainty, customer-visible wording risk, or policy-version ambiguity.&quot;,
+        &quot;Escalate repeated false accepts for status claims, commitments, wording, internal/private data, or support-policy violations.&quot;
+      ],
+      &quot;human_review_requirements&quot;: [
+        &quot;Human review is required for outage communications, security incidents, legal threats, enterprise customer updates, refunds, SLA credits, executive escalations, sensitive customers, disputed status, and policy exceptions.&quot;,
+        &quot;Human review is required for status uncertainty, commitment ambiguity, entitlement uncertainty, private-data uncertainty, customer-visible wording risk, or policy-version ambiguity.&quot;,
+        &quot;Human review is required after repeated false accepts for status claims, commitments, wording, internal/private data, or support-policy violations.&quot;
       ],
       &quot;id&quot;: &quot;ticket_update_checker&quot;,
       &quot;packs&quot;: [
-        &quot;enterprise&quot;
+        &quot;enterprise&quot;,
+        &quot;support&quot;
       ],
+      &quot;product_line&quot;: &quot;support&quot;,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate outage communications, security incidents, legal threats, enterprise customer updates, refunds, SLA credits, executive escalations, sensitive customers, disputed status, and policy exceptions.&quot;,
           &quot;Escalate any case with status uncertainty, commitment ambiguity, entitlement uncertainty, private-data uncertainty, customer-visible wording risk, or policy-version ambiguity.&quot;,
@@ -737,7 +894,7 @@
       &quot;roles&quot;: [
         &quot;support&quot;
       ],
-      &quot;search_text&quot;: &quot;ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support pilot_ready ready ready external_required elevated&quot;,
+      &quot;search_text&quot;: &quot;ticket_update_checker ticket update checker check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints. customer-visible ticket updates ticket status verification eta and commitment checks support-policy enforcement internal and private data removal ticket history sprint status support policy ticket_status_unverified ticket_commitment_unsupported ticket_customer_visible_wording_unsafe ticket_internal_private_data_exposed ticket_support_policy_bypassed enterprise support support pilot_ready ready ready external_required elevated&quot;,
       &quot;status&quot;: &quot;executable&quot;,
       &quot;supported_surfaces&quot;: [
         &quot;CLI adapter runner&quot;,
@@ -745,14 +902,37 @@
         &quot;HTTP bridge /workflow-check&quot;,
         &quot;Web playground&quot;,
         &quot;Published adapter gallery&quot;,
-        &quot;Enterprise starter/pilot pack&quot;
+        &quot;Enterprise starter/pilot pack&quot;,
+        &quot;CLI&quot;,
+        &quot;Python SDK&quot;,
+        &quot;HTTP bridge&quot;,
+        &quot;Agent Event Contract&quot;
       ],
       &quot;title&quot;: &quot;Ticket Update Checker&quot;,
+      &quot;verifier_behavior&quot;: [
+        &quot;Checks status claims, commitments, customer-visible wording, internal/private data exposure, and support-policy authorization.&quot;,
+        &quot;Routes uncertain status, ETA, refund, SLA-credit, security, outage, or executive-escalation cases to stronger evidence or human review.&quot;
+      ],
       &quot;workflow&quot;: &quot;Check customer-visible ticket updates before posting, sending, or syncing them while preserving status-claim, commitment, customer-visible wording, private-data, and support-policy constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/data_export_guardrail_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.55,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.45,
+          &quot;C&quot;: 1.3,
+          &quot;F&quot;: 1.0,
+          &quot;P&quot;: 1.15
+        },
+        &quot;risk_tier&quot;: &quot;strict&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.94,
+          &quot;defer&quot;: 0.62,
+          &quot;revise&quot;: 0.78
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.55,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.45,
@@ -800,6 +980,7 @@
           &quot;data classification&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for data classification, access grants, export request, destination approval, requester identity, recipient scope, data fields, retention policy, and legal-hold status.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, and checked text or a redacted fact summary.&quot;,
@@ -828,7 +1009,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;export_scope_expansion&quot;,
@@ -843,13 +1025,16 @@
       &quot;family_labels&quot;: [
         &quot;Enterprise&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;data_export_guardrail&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate regulated data, customer data, employee data, health or financial data, credentials, bulk exports, public links, external destinations, and cross-border transfers.&quot;,
           &quot;Escalate any case with authorization mismatch, legal-hold uncertainty, DLP uncertainty, destination mismatch, retention ambiguity, or unusual recipient scope.&quot;,
@@ -884,11 +1069,27 @@
         &quot;Enterprise starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Data Export Guardrail&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check data export actions before preparing, transmitting, sharing, or storing exported data while preserving scope, private-data, destination, authorization, and retention constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/access_permission_change_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.3,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.25,
@@ -936,6 +1137,7 @@
           &quot;role catalog&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for IAM request, requester identity, access subject, resource owner, role catalog, policy simulator, data classification, current entitlements, approval record, expiration policy, and revocation workflow.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, request id, subject id, requester id, role id, resource id, environment, approver identity, approval timestamp, expiration, and checked text or a redacted fact summary.&quot;,
@@ -964,7 +1166,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;access_requester_authority_unverified&quot;,
@@ -979,13 +1182,16 @@
       &quot;family_labels&quot;: [
         &quot;Enterprise&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;access_permission_change&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate privileged production access, admin/owner roles, wildcard roles, break-glass roles, service accounts, customer data, regulated systems, cross-account trust, approval conflicts, and permanent access requests.&quot;,
           &quot;Escalate any case with requester-authority uncertainty, least-privilege disagreement, scope mismatch, missing owner approval, expiration ambiguity, or inherited-permission uncertainty.&quot;,
@@ -1020,11 +1226,27 @@
         &quot;Enterprise starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Access Permission Change&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check IAM access changes before granting, modifying, escalating, or extending permissions while preserving requester authority, least privilege, scope, approval, and expiration constraints.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/code_change_review_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.3,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.25,
+          &quot;C&quot;: 1.2,
+          &quot;F&quot;: 0.9,
+          &quot;P&quot;: 1.1
+        },
+        &quot;risk_tier&quot;: &quot;high&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.91,
+          &quot;defer&quot;: 0.56,
+          &quot;revise&quot;: 0.72
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.3,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.25,
@@ -1075,6 +1297,7 @@
           &quot;requested change&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for git diff, requested change, test output, CI status, secret scan output, migration plan, dependency impact, and reviewer approval.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text or a redacted fact summary.&quot;,
@@ -1103,7 +1326,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;tests_missing_or_failing&quot;,
@@ -1120,14 +1344,17 @@
         &quot;Enterprise&quot;,
         &quot;Developer Tooling&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;code_change_review&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;,
         &quot;developer_tooling&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate migrations, destructive commands, auth, payments, privacy, infrastructure, production data, secret exposure, broad refactors, dependency updates, and deployment changes.&quot;,
           &quot;Escalate failing or missing CI, stale test output, conflicting test signals, unknown code-owner status, and migration rollback gaps.&quot;,
@@ -1164,11 +1391,27 @@
         &quot;Enterprise starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Code Change Review&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Review proposed code changes while preserving test and CI requirements, diff scope, secret absence, destructive-command safety, and migration-risk handling.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/deployment_readiness_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.55,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.45,
+          &quot;C&quot;: 1.3,
+          &quot;F&quot;: 1.0,
+          &quot;P&quot;: 1.15
+        },
+        &quot;risk_tier&quot;: &quot;strict&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.94,
+          &quot;defer&quot;: 0.62,
+          &quot;revise&quot;: 0.78
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.55,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.45,
@@ -1219,6 +1462,7 @@
           &quot;release notes&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for deployment manifest, CI result, release notes, rollback plan, migration plan, health-check report, secret-scan output, observability policy, and service ownership.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text or a redacted fact summary.&quot;,
@@ -1248,7 +1492,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;deployment_config_invalid&quot;,
@@ -1266,14 +1511,17 @@
         &quot;Enterprise&quot;,
         &quot;Developer Tooling&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;deployment_readiness&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;,
         &quot;developer_tooling&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate migrations, data deletion, auth, payments, privacy, infrastructure, broad config changes, disabled safety gates, sensitive-value exposure, and release-window exceptions.&quot;,
           &quot;Escalate failed or missing CI, missing rollback, missing health checks, missing observability, conflicting release notes, and unknown service ownership.&quot;,
@@ -1309,11 +1557,27 @@
         &quot;Enterprise starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Deployment Readiness&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Review production deployments while preserving config validity, sensitive-value protection, rollback readiness, health-check coverage, migration safety, and observability readiness.&quot;
     },
     {
       &quot;adapter_path&quot;: &quot;examples/incident_response_update_adapter.json&quot;,
       &quot;aix&quot;: {
+        &quot;beta&quot;: 1.15,
+        &quot;layer_weights&quot;: {
+          &quot;B&quot;: 1.1,
+          &quot;C&quot;: 1.1,
+          &quot;F&quot;: 0.85,
+          &quot;P&quot;: 1.05
+        },
+        &quot;risk_tier&quot;: &quot;elevated&quot;,
+        &quot;thresholds&quot;: {
+          &quot;accept&quot;: 0.88,
+          &quot;defer&quot;: 0.52,
+          &quot;revise&quot;: 0.68
+        }
+      },
+      &quot;aix_tuning&quot;: {
         &quot;beta&quot;: 1.15,
         &quot;layer_weights&quot;: {
           &quot;B&quot;: 1.1,
@@ -1361,6 +1625,7 @@
           &quot;status page policy&quot;
         ]
       },
+      &quot;correction_policy_summary&quot;: [],
       &quot;evidence_requirements&quot;: [
         &quot;Use structured evidence objects for incident timeline, severity declaration, affected services, affected regions, customer-impact metrics, mitigation steps, on-call notes, ETA approval, status-page policy, communications approval, and publication channel.&quot;,
         &quot;Evidence must include source_id, retrieval timestamp, trust tier, redaction status, source freshness, incident id, timeline event ids, approver identity, status-page policy version, and checked text or a redacted fact summary.&quot;,
@@ -1389,7 +1654,8 @@
           ],
           &quot;gate_decision&quot;: &quot;pass&quot;,
           &quot;recommended_action&quot;: &quot;revise&quot;
-        }
+        },
+        &quot;expected_actions&quot;: {}
       },
       &quot;failure_modes&quot;: [
         &quot;incident_severity_overstated_or_understated&quot;,
@@ -1404,13 +1670,16 @@
       &quot;family_labels&quot;: [
         &quot;Enterprise&quot;
       ],
+      &quot;human_review_path&quot;: [],
+      &quot;human_review_requirements&quot;: [],
       &quot;id&quot;: &quot;incident_response_update&quot;,
       &quot;packs&quot;: [
         &quot;enterprise&quot;
       ],
+      &quot;product_line&quot;: null,
       &quot;production&quot;: {
         &quot;adapter_readiness&quot;: &quot;production_candidate&quot;,
-        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, and human review paths.&quot;,
+        &quot;claim&quot;: &quot;Pilot-ready catalog entry: suitable for controlled pilots with audit logging, live evidence connectors or approved fixtures, domain owner signoff, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results before production use.&quot;,
         &quot;human_review_escalation&quot;: [
           &quot;Escalate SEV-1, SEV-2, security, privacy, data-loss, regulated-customer, legal, executive, media, public-status-page, and disputed-impact incident updates.&quot;,
           &quot;Escalate any case with severity uncertainty, customer-impact uncertainty, ETA ambiguity, mitigation disagreement, root-cause uncertainty, or approval ambiguity.&quot;,
@@ -1445,6 +1714,7 @@
         &quot;Enterprise starter/pilot pack&quot;
       ],
       &quot;title&quot;: &quot;Incident Response Update&quot;,
+      &quot;verifier_behavior&quot;: [],
       &quot;workflow&quot;: &quot;Check incident response updates before posting, sending, or syncing them while preserving severity, customer-impact, mitigation-status, ETA, and communications-approval constraints.&quot;
     }
   ],

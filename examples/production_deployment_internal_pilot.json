@@ -1,6 +1,105 @@
 {
   "deployment_name": "aana-single-node-internal-pilot",
   "environment": "internal-pilot",
+  "pilot_rollout": {
+    "default_phase": "shadow_mode",
+    "autonomous_enforcement_allowed": false,
+    "phase_sequence": [
+      {
+        "phase": "shadow_mode",
+        "order": 1,
+        "mode": "shadow",
+        "description": "Agent proceeds normally while AANA logs would-have-blocked and would-have-intervened decisions.",
+        "enforcement": "observe_only",
+        "adapters": [
+          "support_reply",
+          "crm_support_reply",
+          "email_send_guardrail",
+          "ticket_update_checker",
+          "invoice_billing_reply"
+        ],
+        "required_exit_evidence": [
+          "redacted audit log with shadow records",
+          "would-route metrics by adapter",
+          "human review sample of would-block decisions",
+          "no raw prompt/candidate/evidence leakage in audit"
+        ],
+        "promotion_gate": "Shadow metrics reviewed by support owner and platform owner."
+      },
+      {
+        "phase": "advisory_mode",
+        "order": 2,
+        "mode": "advisory",
+        "description": "AANA suggests revise, ask, defer, or refuse; human reviewers decide whether the agent output proceeds.",
+        "enforcement": "human_decides",
+        "adapters": [
+          "support_reply",
+          "crm_support_reply",
+          "ticket_update_checker"
+        ],
+        "required_exit_evidence": [
+          "human-review decisions recorded",
+          "false accept and false block review",
+          "support owner signoff",
+          "calibration review for high-volume violations"
+        ],
+        "promotion_gate": "Advisory precision and reviewer workload accepted by support owner."
+      },
+      {
+        "phase": "enforced_support_drafts",
+        "order": 3,
+        "mode": "enforced",
+        "description": "Enforce narrow support draft checks only; no irreversible external action is sent by AANA.",
+        "enforcement": "narrow_support_draft_blocking",
+        "adapters": [
+          "support_reply",
+          "crm_support_reply",
+          "ticket_update_checker"
+        ],
+        "required_exit_evidence": [
+          "clean golden support output stability",
+          "calibrated support AIx thresholds",
+          "human review route active for defer/refuse",
+          "support owner signoff"
+        ],
+        "promotion_gate": "Narrow support draft enforcement has clean audit and accepted false-block rate."
+      },
+      {
+        "phase": "enforced_email_send_guardrail",
+        "order": 4,
+        "mode": "enforced",
+        "description": "Enforce email-send guardrail only after support draft enforcement is stable.",
+        "enforcement": "irreversible_email_send_blocking",
+        "adapters": [
+          "email_send_guardrail"
+        ],
+        "required_exit_evidence": [
+          "recipient verification connector approved",
+          "attachment metadata controls tested",
+          "human approval path for irreversible send",
+          "email owner signoff"
+        ],
+        "promotion_gate": "Email send enforcement approved with recipient and attachment evidence controls."
+      },
+      {
+        "phase": "expanded_support_workflows",
+        "order": 5,
+        "mode": "enforced",
+        "description": "Expand support workflow coverage only after calibration and owner signoff.",
+        "enforcement": "expanded_support_blocking",
+        "adapters": [
+          "invoice_billing_reply"
+        ],
+        "required_exit_evidence": [
+          "billing evidence connector approved",
+          "billing/payment redaction reviewed",
+          "expanded support calibration report",
+          "billing owner signoff"
+        ],
+        "promotion_gate": "Expanded workflows require calibration, connector approval, and owner signoff."
+      }
+    ]
+  },
   "bridge": {
     "host": "127.0.0.1",
     "public_base_url": "https://aana.internal.example",

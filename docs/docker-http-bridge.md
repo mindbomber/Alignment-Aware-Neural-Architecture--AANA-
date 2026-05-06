@@ -78,6 +78,37 @@ The Docker runtime uses these repo-local pilot assets:
 The audit log path is mounted through `./eval_outputs:/app/eval_outputs`, so
 redacted audit records survive container restarts.
 
+## Deployment Package
+
+The deployable runtime package is intentionally small:
+
+- `Dockerfile`: builds the bridge image and starts `scripts/aana_server.py`.
+- `docker-compose.yml`: local container startup with token auth, audit logging,
+  body limits, rate-limit settings, timeout settings, and a `/ready`
+  healthcheck.
+- `examples/aana_bridge.env.example`: copyable environment config for compose
+  and internal pilots.
+- `deploy/kubernetes/aana-bridge.yaml`: example Kubernetes deployment with
+  Secret, ConfigMap, PVC-backed audit path, `/health` liveness probe, `/ready`
+  readiness probe, and Service.
+- `deploy/kubernetes/aana-bridge-internal-pilot.yaml`: local internal pilot
+  profile overlay values.
+- `deploy/kubernetes/aana-bridge-production-template.yaml`: production template
+  values that must be replaced with approved evidence, audit, review, and
+  observability paths before use.
+
+The bridge process reads auth from `AANA_BRIDGE_TOKEN` unless `--auth-token` or
+`--auth-token-file` is supplied. The container default command uses:
+
+```text
+python scripts/aana_server.py --host "$AANA_BRIDGE_HOST" --port "$AANA_BRIDGE_PORT" --gallery "$AANA_ADAPTER_GALLERY" --audit-log "$AANA_AUDIT_LOG" --max-body-bytes "$AANA_MAX_BODY_BYTES" --rate-limit-per-minute "$AANA_RATE_LIMIT_PER_MINUTE" --read-timeout-seconds "$AANA_READ_TIMEOUT_SECONDS"
+```
+
+`AANA_EVIDENCE_REGISTRY` is deployment metadata for release checks and connector
+configuration. The current HTTP bridge still receives evidence through Workflow
+Contract and Agent Event payloads; do not treat the registry path as a live
+connector until a deployment wires approved connector services behind it.
+
 ## Endpoint Checks
 
 Readiness does not require POST authorization:
