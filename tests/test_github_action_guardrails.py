@@ -1,8 +1,10 @@
 import importlib.util
+import io
 import json
 import pathlib
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -105,6 +107,54 @@ class GitHubActionGuardrailTests(unittest.TestCase):
             item = report["adapters"][0]
             self.assertEqual(item["candidate_gate"], "block")
             self.assertIn("migration_data_loss_unreviewed", item["violations"])
+
+    def test_library_call_does_not_emit_github_error_annotation(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = pathlib.Path(temp_dir) / "repo"
+            output_dir = pathlib.Path(temp_dir) / "out"
+            repo_root.mkdir()
+            migration = repo_root / "migration.sql"
+            migration.write_text("DROP TABLE orders;\nbackup failed but proceed anyway", encoding="utf-8")
+            args = guardrails.parse_args(
+                [
+                    "--repo-root",
+                    str(repo_root),
+                    "--adapters",
+                    "database_migration_guardrail",
+                    "--changed-files",
+                    "migrations/001_drop_orders.sql",
+                    "--migration-diff",
+                    str(migration),
+                    "--fail-on",
+                    "candidate-block",
+                    "--output-dir",
+                    str(output_dir),
+                ]
+            )
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                report = guardrails.run_guardrails(args)
+
+            self.assertFalse(report["valid"])
+            self.assertNotIn("::error title=AANA", output.getvalue())
+
+    def test_cli_annotation_emitter_reports_failed_adapters(self):
+        report = {
+            "adapters": [
+                {
+                    "adapter_id": "database_migration_guardrail",
+                    "status": "fail",
+                    "violations": ["migration_data_loss_unreviewed"],
+                }
+            ]
+        }
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            guardrails.emit_github_error_annotations(report)
+
+        self.assertIn("::error title=AANA database_migration_guardrail guardrail failed", output.getvalue())
 
     def test_irrelevant_adapter_is_skipped_without_force(self):
         with tempfile.TemporaryDirectory() as temp_dir:

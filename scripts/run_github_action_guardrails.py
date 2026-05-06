@@ -479,9 +479,13 @@ def run_guardrails(args):
         with pathlib.Path(step_summary).open("a", encoding="utf-8") as handle:
             handle.write(summary_md)
             handle.write("\n")
-    for item in failed_reports:
-        print(f"::error title=AANA {item['adapter_id']} guardrail failed::{item.get('violations', [])}")
     return report
+
+
+def emit_github_error_annotations(report):
+    for item in report.get("adapters", []):
+        if item.get("status") == "fail":
+            print(f"::error title=AANA {item['adapter_id']} guardrail failed::{item.get('violations', [])}")
 
 
 def parse_args(argv=None):
@@ -533,6 +537,7 @@ def main(argv=None):
         print(f"- Audit log: {report['audit_log']}")
         print(f"- Metrics JSON: {report['metrics_output']}")
         print(f"- Summary: {report['summary_markdown']}")
+    emit_github_error_annotations(report)
     return 0 if report["valid"] else 1
 
 
