@@ -82,6 +82,37 @@ class EvidenceRegistryTests(unittest.TestCase):
         self.assertFalse(report["production_ready"])
         self.assertEqual(report["warnings"], 1)
 
+    def test_validate_evidence_registry_binding_accepts_known_source_contract(self):
+        item = self.workflow()["evidence"][0]
+        item["retrieval_url"] = "aana://evidence/source-a"
+
+        report = evidence.validate_evidence_registry_binding(
+            [item],
+            self.registry(),
+            now=datetime.datetime(2026, 5, 5, 1, tzinfo=datetime.timezone.utc),
+        )
+
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(report["resolved_source_ids"], ["source-a"])
+        self.assertEqual(report["source_contracts"][0]["owner"], "AANA Maintainers")
+
+    def test_validate_evidence_registry_binding_rejects_unknown_source_contract(self):
+        item = self.workflow()["evidence"][0]
+        item["source_id"] = "unknown"
+        item["retrieval_url"] = "aana://evidence/unknown"
+
+        report = evidence.validate_evidence_registry_binding([item], self.registry())
+
+        self.assertFalse(report["valid"])
+        self.assertEqual(report["unresolved_source_ids"], ["unknown"])
+        self.assertTrue(any("known source contract" in issue["message"] for issue in report["issues"]))
+
+    def test_validate_evidence_registry_binding_requires_provenance_link(self):
+        report = evidence.validate_evidence_registry_binding([self.workflow()["evidence"][0]], self.registry())
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("citation_url or retrieval_url" in issue["message"] for issue in report["issues"]))
+
 
 if __name__ == "__main__":
     unittest.main()

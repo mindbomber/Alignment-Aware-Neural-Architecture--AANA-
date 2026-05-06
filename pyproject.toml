@@ -25,7 +25,21 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = []
+dependencies = [
+  "jsonschema>=4.22",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.2",
+]
+dev = [
+  "build>=1.2",
+  "check-jsonschema>=0.29",
+  "pytest>=8.2",
+  "pytest-cov>=5.0",
+  "ruff>=0.6",
+]
 
 [project.urls]
 Homepage = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
@@ -35,6 +49,7 @@ Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AAN
 [project.scripts]
 aana = "scripts.aana_cli:main"
 aana-server = "eval_pipeline.agent_server:main"
+aana-validate-mi-contracts = "scripts.validate_mi_contracts:main"
 
 [tool.setuptools.packages.find]
 include = ["aana*", "eval_pipeline*", "scripts*"]

@@ -1,0 +1,56 @@
+{
+  "active_interoperability_schema_version": "0.1",
+  "breaking_change_rules": [
+    "Adding a required top-level field requires a new contract version and migration notes.",
+    "Removing, renaming, or changing the meaning of a required field is breaking.",
+    "Narrowing an enum, changing decision semantics, or tightening redaction requirements is breaking.",
+    "Changing AIx, evidence, audit, dashboard, or readiness version compatibility is breaking for CI artifacts.",
+    "Additive optional fields are non-breaking when old readers can ignore them safely."
+  ],
+  "compatibility_matrix": {
+    "0.1": {
+      "audit_jsonl": {
+        "compatible_versions": [
+          "0.1"
+        ],
+        "field": "mi_audit_record_version"
+      },
+      "dashboard": {
+        "compatible_versions": [
+          "0.1"
+        ],
+        "field": "mi_observability_dashboard_version"
+      },
+      "mi_pilot": {
+        "compatible_versions": [
+          "0.1"
+        ],
+        "field": "mi_pilot_version"
+      },
+      "pilot_handoffs": {
+        "compatible_versions": [
+          "0.1"
+        ],
+        "field": "contract_version"
+      },
+      "production_readiness": {
+        "compatible_versions": [
+          "0.1"
+        ],
+        "field": "production_mi_readiness_version"
+      },
+      "schema": {
+        "contract_version": "0.1",
+        "schema_id_suffix": "interoperability_contract.schema.json"
+      }
+    }
+  },
+  "migration_notes": {
+    "0.1": [
+      "Initial MI handoff contract for recipient-relative constraint checking.",
+      "Pilot handoffs, redacted MI audit records, dashboard payloads, and production readiness payloads are compatible at version 0.1.",
+      "Future breaking versions must include a migration path for pilot fixtures, audit JSONL readers, dashboard exporters, and readiness gates."
+    ]
+  },
+  "schema_versioning_policy_version": "0.1"
+}

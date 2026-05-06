@@ -56,6 +56,26 @@
           <span>Shadow would block</span>
           <strong id="shadow-block-rate">0%</strong>
         </article>
+        <article class="metric-card mi-card">
+          <span>MI pass / fail</span>
+          <strong id="mi-pass-fail">0% / 0%</strong>
+        </article>
+        <article class="metric-card mi-card">
+          <span>Propagated errors</span>
+          <strong id="mi-propagated-error">0%</strong>
+        </article>
+        <article class="metric-card mi-card">
+          <span>Correction success</span>
+          <strong id="mi-correction-success">0%</strong>
+        </article>
+        <article class="metric-card mi-card">
+          <span>False accept / refusal</span>
+          <strong id="mi-false-routes">0% / 0%</strong>
+        </article>
+        <article class="metric-card mi-card">
+          <span>Global AIx drift</span>
+          <strong id="mi-aix-drift">0%</strong>
+        </article>
       </section>
 
       <section class="dashboard-grid">
@@ -90,6 +110,24 @@
         <article class="panel wide">
           <h2>Hard Blockers</h2>
           <div id="blocker-chart" class="bar-list"></div>
+        </article>
+        <article class="panel wide mi-panel">
+          <h2>Mechanistic Interoperability</h2>
+          <div id="mi-status" class="panel-note">Loading MI observability payload.</div>
+          <div class="mi-panel-grid">
+            <div>
+              <h3>Handoff Health</h3>
+              <div id="mi-handoff-chart" class="bar-list"></div>
+            </div>
+            <div>
+              <h3>Correction Signals</h3>
+              <div id="mi-correction-chart" class="bar-list"></div>
+            </div>
+          </div>
+        </article>
+        <article class="panel wide mi-panel">
+          <h2>MI Workflow Rows</h2>
+          <div id="mi-workflow-table" class="table-wrap"></div>
         </article>
       </section>
     </main>

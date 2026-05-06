@@ -35,6 +35,14 @@ GET /dashboard/metrics
 
 It returns `audit_dashboard_version`, `cards`, `aix`, `gate_decisions`, `recommended_actions`, `violation_trends`, `top_violations`, `hard_blockers`, `adapter_breakdown`, `family_breakdown`, `role_breakdown`, `shadow_mode`, and the underlying redacted `metrics_export`.
 
+The MI observability feed is:
+
+```text
+GET /dashboard/mi-metrics
+```
+
+It reads `eval_outputs/mi_pilot/research_citation/mi_dashboard.json` and returns pass/fail rate, propagated error rate, correction success rate, false accept/refusal rates, global AIx drift, and workflow rows for the Mechanistic Interoperability panel.
+
 If the bridge was not started with `--audit-log`, the dashboard returns a waiting state with zero counts. Once checks append redacted audit records, refresh the page to review pilot behavior.
 
 ## Review Interpretation

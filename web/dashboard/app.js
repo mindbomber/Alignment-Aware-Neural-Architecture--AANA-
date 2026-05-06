@@ -17,6 +17,15 @@ const els = {
   adapterTable: document.getElementById("adapter-table"),
   familyTable: document.getElementById("family-table"),
   blockerChart: document.getElementById("blocker-chart"),
+  miPassFail: document.getElementById("mi-pass-fail"),
+  miPropagatedError: document.getElementById("mi-propagated-error"),
+  miCorrectionSuccess: document.getElementById("mi-correction-success"),
+  miFalseRoutes: document.getElementById("mi-false-routes"),
+  miAixDrift: document.getElementById("mi-aix-drift"),
+  miStatus: document.getElementById("mi-status"),
+  miHandoffChart: document.getElementById("mi-handoff-chart"),
+  miCorrectionChart: document.getElementById("mi-correction-chart"),
+  miWorkflowTable: document.getElementById("mi-workflow-table"),
 };
 
 function pct(value) {
@@ -219,6 +228,87 @@ function renderFamilyTable(rows) {
   els.familyTable.appendChild(table);
 }
 
+function renderMiWorkflowTable(rows) {
+  els.miWorkflowTable.innerHTML = "";
+  if (!rows || rows.length === 0) {
+    clearNode(els.miWorkflowTable, "No MI workflow rows yet.");
+    return;
+  }
+  const table = document.createElement("table");
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Workflow</th>
+        <th>Detection</th>
+        <th>Handoffs</th>
+        <th>Propagated risk</th>
+        <th>Corrections</th>
+        <th>Global AIx drift</th>
+      </tr>
+    </thead>
+  `;
+  const body = document.createElement("tbody");
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    const cells = [
+      row.workflow_id || "-",
+      row.global_detected ? "detected" : "not detected",
+      `${row.handoff_blocked || 0} blocked / ${row.handoff_total || 0} total`,
+      String(row.propagated_risk_count || 0),
+      String(row.shared_correction_action_count || 0),
+      String(row.workflow_max_drop ?? "-"),
+    ];
+    for (const value of cells) {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  }
+  table.appendChild(body);
+  els.miWorkflowTable.appendChild(table);
+}
+
+function renderMiDashboard(payload) {
+  const metrics = payload.metrics || {};
+  const panels = payload.panels || {};
+  const handoff = panels.handoff_health || {};
+  const correction = panels.correction || {};
+  const classification = panels.classification_quality || {};
+  const drift = panels.global_aix_drift || {};
+
+  els.miStatus.textContent =
+    payload.status === "ok"
+      ? `${payload.source || "MI"} loaded from ${payload.mi_dashboard_path || "mi_dashboard.json"}`
+      : payload.message || "MI observability payload is not available yet.";
+  els.miPassFail.textContent = `${pct(metrics.handoff_pass_rate)} / ${pct(metrics.handoff_fail_rate)}`;
+  els.miPropagatedError.textContent = pct(metrics.propagated_error_rate);
+  els.miCorrectionSuccess.textContent = pct(metrics.correction_success_rate);
+  els.miFalseRoutes.textContent = `${pct(metrics.false_accept_rate)} / ${pct(metrics.false_refusal_rate)}`;
+  els.miAixDrift.textContent = `${Math.round((Number(metrics.global_aix_drift_max_drop) || 0) * 100)}%`;
+
+  renderBars(
+    els.miHandoffChart,
+    [
+      { label: "pass", count: Math.round((Number(handoff.pass_rate) || 0) * 100) },
+      { label: "fail", count: Math.round((Number(handoff.fail_rate) || 0) * 100), className: "warn" },
+      { label: "propagated", count: Math.round((Number(metrics.propagated_error_rate) || 0) * 100), className: "danger" },
+    ],
+    { empty: "No MI handoff metrics yet." }
+  );
+  renderBars(
+    els.miCorrectionChart,
+    [
+      { label: "correction success", count: Math.round((Number(correction.success_rate) || 0) * 100) },
+      { label: "false accept", count: Math.round((Number(classification.false_accept_rate) || 0) * 100), className: "danger" },
+      { label: "false refusal", count: Math.round((Number(classification.false_refusal_rate) || 0) * 100), className: "warn" },
+      { label: "AIx max drop", count: Math.round((Number(drift.max_drop) || 0) * 100), className: "alt" },
+    ],
+    { empty: "No MI correction metrics yet." }
+  );
+  renderMiWorkflowTable(payload.workflow_rows || []);
+}
+
 function render(payload) {
   const cards = payload.cards || {};
   const aix = payload.aix || {};
@@ -280,5 +370,26 @@ async function loadMetrics() {
   }
 }
 
+async function loadMiMetrics() {
+  try {
+    const response = await fetch("/dashboard/mi-metrics", { cache: "no-store" });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || `MI metrics request failed: HTTP ${response.status}`);
+    renderMiDashboard(payload);
+  } catch (error) {
+    els.miStatus.textContent = error.message;
+    els.miPassFail.textContent = "0% / 0%";
+    els.miPropagatedError.textContent = "0%";
+    els.miCorrectionSuccess.textContent = "0%";
+    els.miFalseRoutes.textContent = "0% / 0%";
+    els.miAixDrift.textContent = "0%";
+    clearNode(els.miHandoffChart, "MI metrics are unavailable.");
+    clearNode(els.miCorrectionChart, "MI metrics are unavailable.");
+    clearNode(els.miWorkflowTable, "MI workflow rows are unavailable.");
+  }
+}
+
 els.refresh.addEventListener("click", loadMetrics);
+els.refresh.addEventListener("click", loadMiMetrics);
 loadMetrics();
+loadMiMetrics();

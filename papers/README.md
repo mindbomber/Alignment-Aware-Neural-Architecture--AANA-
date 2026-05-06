@@ -18,3 +18,10 @@ Note: this is an early research manuscript. It includes theoretical framing, arc
 Note: this paper frames the capability-alignment gap, invisible divergence, hidden constraint layers, and pressure-sensitive alignment dynamics that motivate the evaluation pipeline. Its pilot results are a small real-output directional test, not a final benchmark claim.
 
 The ATS dynamical-alignment manuscript provides the broader formal framing for pressure-sensitive divergence, finite constraint representation, feedback fidelity, and correction capacity. It is included here because the constraint-reasoning comparison in `docs/constraint-reasoning-aana-report.md` tests the same design claim in this repository's evaluation pipeline.
+
+## Mechanistic interoperability paper
+
+- `ATS_AANA_MI_NeurIPS_CameraReady.pdf` - Alignment-Aware Neural Architectures and Mechanistic Interoperability: A Dynamical Theory of Constraint-Coherent Systems Under Scaling.
+- `ats_aana_mi_neurips_overleaf/ats_aana_neurips_overleaf/main.tex` - editable Overleaf source for the AANA and mechanistic interoperability manuscript.
+
+Note: this paper extends the AANA framing from single-output correction to network-level alignment coupling. It is included here because it motivates platform work on constraint-coherent handoffs, MI boundary gates, handoff-level AIx scoring, propagated-error tracking, and global workflow alignment checks.

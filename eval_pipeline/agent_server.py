@@ -17,7 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from eval_pipeline import agent_api, agent_contract, aix, workflow_contract
+from eval_pipeline import agent_api, agent_contract, aix, workflow_contract  # noqa: E402
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -34,6 +34,7 @@ BEARER_LOG_PATTERN = re.compile(r"(?i)(authorization:\s*bearer\s+)([^&\s]+)")
 PLAYGROUND_DIR = ROOT / "web" / "playground"
 DEMOS_DIR = ROOT / "web" / "demos"
 DASHBOARD_DIR = ROOT / "web" / "dashboard"
+DEFAULT_MI_DASHBOARD = ROOT / "eval_outputs" / "mi_pilot" / "research_citation" / "mi_dashboard.json"
 ADAPTER_GALLERY_DIR = ROOT / "docs" / "adapter-gallery"
 FAMILY_ASSET_DIR = ROOT / "docs" / "families"
 ENTERPRISE_DIR = ROOT / "docs" / "enterprise"
@@ -434,6 +435,16 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/dashboard/mi-metrics": {
+                "get": {
+                    "operationId": "getMiObservabilityDashboard",
+                    "summary": "Return MI observability metrics from mi_dashboard.json.",
+                    "responses": {
+                        "200": {"description": "MI observability dashboard metrics."},
+                        "404": {"description": "MI dashboard JSON is not present."},
+                    },
+                }
+            },
         },
         "components": {
             "schemas": {
@@ -607,6 +618,37 @@ def dashboard_metrics(audit_log_path=None):
         }
     payload = agent_api.audit_dashboard_file(audit_path)
     payload["status"] = "ok"
+    return payload
+
+
+def mi_dashboard_metrics(path=DEFAULT_MI_DASHBOARD):
+    dashboard_path = pathlib.Path(path)
+    if not dashboard_path.exists():
+        return {
+            "mi_observability_dashboard_version": "0.1",
+            "status": "mi_dashboard_not_found",
+            "message": f"MI dashboard JSON does not exist yet: {dashboard_path}",
+            "source": "missing",
+            "metrics": {
+                "handoff_pass_rate": 0.0,
+                "handoff_fail_rate": 0.0,
+                "propagated_error_rate": 0.0,
+                "correction_success_rate": 0.0,
+                "false_accept_rate": 0.0,
+                "false_refusal_rate": 0.0,
+                "global_aix_drift_max_drop": 0.0,
+            },
+            "panels": {},
+            "workflow_rows": [],
+            "mi_dashboard_path": str(dashboard_path),
+        }
+    with dashboard_path.open(encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError("MI dashboard payload must be a JSON object.")
+    payload = dict(payload)
+    payload["status"] = "ok"
+    payload["mi_dashboard_path"] = str(dashboard_path)
     return payload
 
 
@@ -878,6 +920,13 @@ def route_request(
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             return 500, public_error(500, "dashboard_metrics_failed", "Dashboard metrics could not be loaded.", exc)
 
+    if method == "GET" and parsed.path == "/dashboard/mi-metrics":
+        try:
+            payload = mi_dashboard_metrics()
+            return 200, payload
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            return 500, public_error(500, "mi_dashboard_metrics_failed", "MI dashboard metrics could not be loaded.", exc)
+
     if method == "GET" and parsed.path == "/openapi.json":
         return 200, openapi_schema()
 
@@ -1025,6 +1074,7 @@ def route_request(
                 "GET /demos/scenarios",
                 "GET /dashboard",
                 "GET /dashboard/metrics",
+                "GET /dashboard/mi-metrics",
                 "GET /openapi.json",
                 "GET /schemas",
                 "GET /schemas/agent-event.schema.json",
@@ -1204,7 +1254,7 @@ def run_server(
     print(f"Rate limit: {'disabled' if not rate_limit_per_minute else str(rate_limit_per_minute) + ' POST request(s)/minute/client'}")
     print(f"Read timeout: {read_timeout_seconds} seconds")
     print(f"Shadow mode: {'enabled (observe only)' if shadow_mode else 'disabled'}")
-    print("Routes: GET /health, GET /ready, GET /policy-presets, GET /playground, GET /playground/gallery, GET /adapter-gallery, GET /adapter-gallery/data.json, GET /enterprise, GET /personal-productivity, GET /government-civic, GET /families/data.json, GET /demos, GET /demos/scenarios, GET /dashboard, GET /dashboard/metrics, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /playground/check, POST /validate-workflow-batch, POST /workflow-batch")
+    print("Routes: GET /health, GET /ready, GET /policy-presets, GET /playground, GET /playground/gallery, GET /adapter-gallery, GET /adapter-gallery/data.json, GET /enterprise, GET /personal-productivity, GET /government-civic, GET /families/data.json, GET /demos, GET /demos/scenarios, GET /dashboard, GET /dashboard/metrics, GET /dashboard/mi-metrics, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /playground/check, POST /validate-workflow-batch, POST /workflow-batch")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

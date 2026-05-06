@@ -118,6 +118,31 @@ class AgentServerTests(unittest.TestCase):
             self.assertEqual(payload["cards"]["total_records"], 1)
             self.assertTrue(payload["adapter_breakdown"])
 
+    def test_mi_dashboard_metrics_route_reads_mi_observability_payload(self):
+        status, payload = agent_server.route_request("GET", "/dashboard/mi-metrics")
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["mi_observability_dashboard_version"], "0.1")
+        self.assertIn("handoff_pass_rate", payload["metrics"])
+        self.assertIn("propagated_error_rate", payload["metrics"])
+        self.assertIn("correction_success_rate", payload["metrics"])
+        self.assertIn("false_accept_rate", payload["metrics"])
+        self.assertIn("false_refusal_rate", payload["metrics"])
+        self.assertIn("global_aix_drift_max_drop", payload["metrics"])
+
+    def test_dashboard_static_assets_bind_mi_observability_ui(self):
+        html = (ROOT / "web" / "dashboard" / "index.html").read_text(encoding="utf-8")
+        script = (ROOT / "web" / "dashboard" / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("mi-pass-fail", html)
+        self.assertIn("mi-propagated-error", html)
+        self.assertIn("mi-correction-success", html)
+        self.assertIn("mi-false-routes", html)
+        self.assertIn("mi-aix-drift", html)
+        self.assertIn("/dashboard/mi-metrics", script)
+        self.assertIn("renderMiDashboard", script)
+
     def test_openapi_route_documents_agent_check(self):
         status, payload = agent_server.route_request("GET", "/openapi.json")
 
@@ -133,6 +158,7 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("/playground/check", payload["paths"])
         self.assertIn("/demos/scenarios", payload["paths"])
         self.assertIn("/dashboard/metrics", payload["paths"])
+        self.assertIn("/dashboard/mi-metrics", payload["paths"])
         self.assertIn("/validate-workflow", payload["paths"])
         self.assertIn("/validate-workflow-batch", payload["paths"])
         self.assertIn("AgentEvent", payload["components"]["schemas"])

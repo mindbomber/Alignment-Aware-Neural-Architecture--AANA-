@@ -1,0 +1,1583 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/schemas/interoperability_contract.schema.json",
+  "title": "AANA Mechanistic Interoperability Handoff Contract",
+  "description": "A structured contract for checking an agent, tool, connector, plugin, or workflow handoff before the recipient consumes or executes the message.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "handoff_id",
+    "sender",
+    "recipient",
+    "message_schema",
+    "message",
+    "evidence",
+    "constraint_map",
+    "verifier_scores",
+    "aix",
+    "recommended_action"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "handoff_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable ID for this sender-to-recipient handoff."
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Optional workflow, trace, request, or batch correlation ID."
+    },
+    "sender": {
+      "$ref": "#/$defs/endpoint"
+    },
+    "recipient": {
+      "$ref": "#/$defs/endpoint"
+    },
+    "message_schema": {
+      "$ref": "#/$defs/message_schema"
+    },
+    "message": {
+      "$ref": "#/$defs/message"
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Structured evidence available to verify the handoff.",
+      "items": {
+        "$ref": "#/$defs/evidence_object"
+      }
+    },
+    "constraint_map": {
+      "$ref": "#/$defs/constraint_map"
+    },
+    "verifier_scores": {
+      "$ref": "#/$defs/verifier_scores"
+    },
+    "aix": {
+      "$ref": "#/$defs/aix_score"
+    },
+    "handoff_aix": {
+      "$ref": "#/$defs/handoff_aix"
+    },
+    "workflow_aix": {
+      "$ref": "#/$defs/workflow_aix"
+    },
+    "global_aix": {
+      "$ref": "#/$defs/workflow_aix"
+    },
+    "connectivity_risk": {
+      "$ref": "#/$defs/connectivity_risk"
+    },
+    "propagated_risk": {
+      "$ref": "#/$defs/propagated_risk"
+    },
+    "shared_correction": {
+      "$ref": "#/$defs/shared_correction"
+    },
+    "mi_audit_records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mi_audit_record"
+      }
+    },
+    "candidate_aix": {
+      "$ref": "#/$defs/aix_score"
+    },
+    "gate_decision": {
+      "type": "string",
+      "enum": ["pass", "block", "fail", "needs_adapter_implementation"]
+    },
+    "recommended_action": {
+      "$ref": "#/$defs/recommended_action"
+    },
+    "allowed_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/recommended_action"
+      },
+      "uniqueItems": true,
+      "default": ["accept", "revise", "retrieve", "ask", "defer", "refuse"]
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/violation"
+      }
+    },
+    "propagation": {
+      "$ref": "#/$defs/propagation"
+    },
+    "audit_summary": {
+      "$ref": "#/$defs/audit_summary"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Adapter- or workflow-specific metadata. Do not place raw secrets or unnecessary private records here.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "tool",
+            "connector",
+            "plugin",
+            "workflow_step",
+            "adapter",
+            "app",
+            "human_review",
+            "system"
+          ]
+        },
+        "adapter_id": {
+          "type": "string"
+        },
+        "workflow_id": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "trust_tier": {
+          "type": "string",
+          "enum": ["untrusted", "user_provided", "repository_fixture", "approved_fixture", "verified", "system"]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "message_schema": {
+      "type": "object",
+      "required": ["kind"],
+      "description": "Schema or contract reference describing what the recipient is allowed to consume.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "natural_language",
+            "candidate_action",
+            "candidate_answer",
+            "draft_response",
+            "tool_payload",
+            "workflow_output",
+            "evidence_summary",
+            "file_operation",
+            "deployment_action",
+            "permission_change",
+            "data_export",
+            "custom"
+          ]
+        },
+        "schema_id": {
+          "type": "string",
+          "description": "Stable schema ID when the message shape is defined elsewhere."
+        },
+        "schema_ref": {
+          "type": "string",
+          "description": "URI, path, or registry reference for the recipient schema."
+        },
+        "content_type": {
+          "type": "string",
+          "examples": ["text/plain", "application/json"]
+        },
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "allowed_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "redaction_required": {
+          "type": "boolean",
+          "default": true
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "message": {
+      "type": "object",
+      "required": ["summary"],
+      "description": "The candidate content being handed off. Prefer redacted summaries over raw private payloads.",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "description": "Optional bounded payload. Do not include secrets, tokens, raw private records, or unnecessary account data.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "array",
+              "items": {}
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payload_redaction_status": {
+          "$ref": "#/$defs/redaction_status"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assumption"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_object": {
+      "type": "object",
+      "required": ["source_id", "retrieved_at", "trust_tier", "redaction_status", "text"],
+      "anyOf": [
+        {
+          "required": ["citation_url"]
+        },
+        {
+          "required": ["retrieval_url"]
+        }
+      ],
+      "properties": {
+        "evidence_version": {
+          "type": "string",
+          "default": "0.1"
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "trust_tier": {
+          "type": "string",
+          "enum": ["untrusted", "user_provided", "repository_fixture", "approved_fixture", "verified", "system"]
+        },
+        "redaction_status": {
+          "$ref": "#/$defs/redaction_status"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "citation_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieval_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "integration_id": {
+              "type": "string"
+            },
+            "connector_contract_version": {
+              "type": "string"
+            },
+            "source_mode": {
+              "type": "string",
+              "enum": ["live", "approved_production_fixture", "repository_fixture", "synthetic", "unknown"]
+            },
+            "freshness_slo_hours": {
+              "type": "number",
+              "minimum": 0
+            },
+            "raw_record_id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraint_map": {
+      "type": "object",
+      "required": ["K_P", "K_B", "K_C"],
+      "description": "Recipient-relative feasible region for this handoff.",
+      "properties": {
+        "K_P": {
+          "$ref": "#/$defs/constraint_layer"
+        },
+        "K_B": {
+          "$ref": "#/$defs/constraint_layer"
+        },
+        "K_C": {
+          "$ref": "#/$defs/constraint_layer"
+        },
+        "F": {
+          "$ref": "#/$defs/constraint_layer"
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraint_layer": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/constraint"
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "required": ["id", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "hard": {
+          "type": "boolean",
+          "default": false
+        },
+        "source": {
+          "type": "string",
+          "description": "Policy, adapter, connector, user instruction, evidence registry, or domain-owner source."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "verifier_scores": {
+      "type": "object",
+      "required": ["P", "B", "C"],
+      "properties": {
+        "P": {
+          "$ref": "#/$defs/verifier_layer_score"
+        },
+        "B": {
+          "$ref": "#/$defs/verifier_layer_score"
+        },
+        "C": {
+          "$ref": "#/$defs/verifier_layer_score"
+        },
+        "F": {
+          "$ref": "#/$defs/verifier_layer_score"
+        },
+        "overall": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "verifier_layer_score": {
+      "type": "object",
+      "required": ["score", "status"],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail", "unknown", "not_applicable"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "verifier_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/violation"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "aix_score": {
+      "type": "object",
+      "required": ["aix_version", "score", "components", "beta", "thresholds", "decision", "hard_blockers"],
+      "properties": {
+        "aix_version": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "components": {
+          "type": "object",
+          "properties": {
+            "P": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "B": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "C": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "F": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "base_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "penalty": {
+          "type": "number",
+          "minimum": 0
+        },
+        "beta": {
+          "type": "number",
+          "minimum": 0
+        },
+        "thresholds": {
+          "type": "object",
+          "required": ["accept", "revise", "defer"],
+          "properties": {
+            "accept": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "revise": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "defer": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["accept", "revise", "defer", "refuse"]
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "handoff_aix": {
+      "type": "object",
+      "required": [
+        "handoff_aix_version",
+        "handoff_id",
+        "message_fingerprint",
+        "score",
+        "components",
+        "verifier_components",
+        "decision",
+        "hard_blockers"
+      ],
+      "properties": {
+        "handoff_aix_version": {
+          "type": "string"
+        },
+        "aix_version": {
+          "type": "string"
+        },
+        "handoff_id": {
+          "type": "string"
+        },
+        "sender_id": {
+          "type": "string"
+        },
+        "recipient_id": {
+          "type": "string"
+        },
+        "message_fingerprint": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "components": {
+          "$ref": "#/$defs/aix_components"
+        },
+        "verifier_components": {
+          "$ref": "#/$defs/aix_components"
+        },
+        "verifier_statuses": {
+          "type": "object",
+          "properties": {
+            "P": {"type": ["string", "null"]},
+            "B": {"type": ["string", "null"]},
+            "C": {"type": ["string", "null"]},
+            "F": {"type": ["string", "null"]}
+          },
+          "additionalProperties": false
+        },
+        "base_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "penalty": {
+          "type": "number",
+          "minimum": 0
+        },
+        "beta": {
+          "type": "number",
+          "minimum": 0
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["accept", "revise", "defer", "refuse"]
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "workflow_aix": {
+      "type": "object",
+      "required": [
+        "workflow_aix_version",
+        "score",
+        "components",
+        "handoff_count",
+        "local_all_pass",
+        "drift_detected",
+        "score_drift",
+        "decision",
+        "recommended_action",
+        "hard_blockers"
+      ],
+      "properties": {
+        "workflow_aix_version": {
+          "type": "string"
+        },
+        "workflow_id": {
+          "type": ["string", "null"]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "components": {
+          "$ref": "#/$defs/aix_components"
+        },
+        "handoff_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "local_all_pass": {
+          "type": "boolean"
+        },
+        "drift_detected": {
+          "type": "boolean"
+        },
+        "score_drift": {
+          "type": "object",
+          "properties": {
+            "first_score": {"type": ["number", "null"]},
+            "last_score": {"type": ["number", "null"]},
+            "delta": {"type": ["number", "null"]},
+            "max_drop": {"type": "number"},
+            "trend": {"type": "string"}
+          },
+          "additionalProperties": true
+        },
+        "connectivity_risk": {
+          "$ref": "#/$defs/connectivity_risk"
+        },
+        "risk_tier": {
+          "$ref": "#/$defs/mi_risk_tier"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["accept", "revise", "defer", "refuse"]
+        },
+        "recommended_action": {
+          "$ref": "#/$defs/recommended_action"
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "handoff_scores": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "connectivity_risk": {
+      "type": "object",
+      "required": [
+        "connectivity_risk_version",
+        "principle",
+        "risk_tier",
+        "max_connectivity",
+        "total_connectivity",
+        "irreversible",
+        "beta",
+        "thresholds",
+        "required_correction_capacity",
+        "observed_correction_capacity",
+        "capacity_sufficient",
+        "capacity_gap"
+      ],
+      "properties": {
+        "connectivity_risk_version": {
+          "type": "string"
+        },
+        "principle": {
+          "type": "string",
+          "const": "C_global >= D_global"
+        },
+        "risk_tier": {
+          "$ref": "#/$defs/mi_risk_tier"
+        },
+        "inferred_risk_tier": {
+          "$ref": "#/$defs/mi_risk_tier"
+        },
+        "declared_risk_tier": {
+          "oneOf": [
+            {"$ref": "#/$defs/mi_risk_tier"},
+            {"type": "null"}
+          ]
+        },
+        "max_connectivity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_connectivity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "irreversible": {
+          "type": "boolean"
+        },
+        "beta": {
+          "type": "number",
+          "minimum": 0
+        },
+        "thresholds": {
+          "type": "object",
+          "required": ["accept", "revise", "defer", "drift"],
+          "properties": {
+            "accept": {"type": "number", "minimum": 0, "maximum": 1},
+            "revise": {"type": "number", "minimum": 0, "maximum": 1},
+            "defer": {"type": "number", "minimum": 0, "maximum": 1},
+            "drift": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "additionalProperties": false
+        },
+        "required_correction_capacity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_correction_capacity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "capacity_sufficient": {
+          "type": "boolean"
+        },
+        "capacity_gap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mi_risk_tier": {
+      "type": "string",
+      "enum": ["low", "elevated", "high", "strict"]
+    },
+    "aix_components": {
+      "type": "object",
+      "properties": {
+        "P": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "B": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "C": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "F": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["accept", "revise", "retrieve", "ask", "defer", "refuse"]
+    },
+    "violation": {
+      "type": "object",
+      "required": ["id", "layer", "severity", "message"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layer": {
+          "type": "string",
+          "enum": ["P", "B", "C", "F", "MI"]
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constraint_id": {
+          "type": "string"
+        },
+        "evidence_source_id": {
+          "type": "string"
+        },
+        "hard": {
+          "type": "boolean"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "propagation": {
+      "type": "object",
+      "description": "Trace metadata for assumptions, unsupported claims, and violations inherited from upstream handoffs.",
+      "properties": {
+        "upstream_handoff_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assumption"
+          }
+        },
+        "inherited_violations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/violation"
+          }
+        },
+        "connectivity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "impact_weight": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "propagated_risk": {
+      "type": "object",
+      "required": [
+        "propagated_risk_version",
+        "handoff_count",
+        "risk_count",
+        "propagation_count",
+        "risk_counts",
+        "severity_score",
+        "risks",
+        "propagation_links",
+        "has_propagated_risk"
+      ],
+      "properties": {
+        "propagated_risk_version": {
+          "type": "string"
+        },
+        "handoff_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risk_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "propagation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risk_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "severity_score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/propagated_risk_item"
+          }
+        },
+        "propagation_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/propagated_risk_link"
+          }
+        },
+        "has_propagated_risk": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "propagated_risk_item": {
+      "type": "object",
+      "required": ["kind", "handoff_id", "severity", "description"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["hidden_assumption", "unsupported_claim", "stale_evidence", "accepted_violation"]
+        },
+        "handoff_id": {
+          "type": "string"
+        },
+        "sender_id": {
+          "type": ["string", "null"]
+        },
+        "recipient_id": {
+          "type": ["string", "null"]
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "description": {
+          "type": "string"
+        },
+        "source": {
+          "type": ["string", "null"]
+        },
+        "premise_of": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "propagated_risk_link": {
+      "type": "object",
+      "required": [
+        "kind",
+        "source_handoff_id",
+        "downstream_handoff_id",
+        "upstream_risk_kind",
+        "severity"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "uncertain_output_became_premise"
+        },
+        "source_handoff_id": {
+          "type": "string"
+        },
+        "downstream_handoff_id": {
+          "type": "string"
+        },
+        "upstream_risk_kind": {
+          "type": "string"
+        },
+        "premise": {
+          "type": ["string", "null"]
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shared_correction": {
+      "type": "object",
+      "required": [
+        "shared_correction_policy_version",
+        "allowed_triggers",
+        "action_count",
+        "actions",
+        "summary"
+      ],
+      "properties": {
+        "shared_correction_policy_version": {
+          "type": "string"
+        },
+        "allowed_triggers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/shared_correction_action_type"
+          },
+          "uniqueItems": true
+        },
+        "action_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/shared_correction_action"
+          }
+        },
+        "summary": {
+          "type": "object",
+          "required": ["action_counts", "highest_severity", "has_network_correction"],
+          "properties": {
+            "action_counts": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "highest_severity": {
+              "$ref": "#/$defs/severity"
+            },
+            "has_network_correction": {
+              "type": "boolean"
+            },
+            "risk_tier": {
+              "$ref": "#/$defs/mi_risk_tier"
+            },
+            "capacity_sufficient": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "shared_correction_action": {
+      "type": "object",
+      "required": [
+        "correction_id",
+        "action",
+        "reason",
+        "severity",
+        "network_scope",
+        "status"
+      ],
+      "properties": {
+        "correction_id": {
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/shared_correction_action_type"
+        },
+        "target_handoff_id": {
+          "type": ["string", "null"]
+        },
+        "requested_by_handoff_id": {
+          "type": ["string", "null"]
+        },
+        "target_agent_id": {
+          "type": ["string", "null"]
+        },
+        "requested_by_agent_id": {
+          "type": ["string", "null"]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "source": {
+          "type": ["string", "null"]
+        },
+        "network_scope": {
+          "type": "string",
+          "enum": ["handoff", "upstream", "workflow"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "completed", "cancelled"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "shared_correction_action_type": {
+      "type": "string",
+      "enum": ["retrieve_evidence", "revise_upstream_output", "ask_clarification", "defer_human_review"]
+    },
+    "mi_audit_record": {
+      "type": "object",
+      "required": [
+        "mi_audit_record_version",
+        "created_at",
+        "record_type",
+        "handoff_id",
+        "sender",
+        "recipient",
+        "gate_decision",
+        "recommended_action",
+        "aix",
+        "handoff_aix",
+        "hard_blockers",
+        "violation_count",
+        "violation_codes",
+        "fingerprints",
+        "record_fingerprint"
+      ],
+      "properties": {
+        "mi_audit_record_version": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "record_type": {
+          "type": "string",
+          "const": "mi_handoff_decision"
+        },
+        "workflow_id": {
+          "type": ["string", "null"]
+        },
+        "handoff_id": {
+          "type": ["string", "null"]
+        },
+        "boundary_type": {
+          "type": ["string", "null"]
+        },
+        "boundary_supported": {
+          "type": ["boolean", "null"]
+        },
+        "sender": {
+          "$ref": "#/$defs/mi_audit_endpoint"
+        },
+        "recipient": {
+          "$ref": "#/$defs/mi_audit_endpoint"
+        },
+        "gate_decision": {
+          "type": ["string", "null"]
+        },
+        "recommended_action": {
+          "type": ["string", "null"]
+        },
+        "candidate_gate": {
+          "type": ["string", "null"]
+        },
+        "aix": {
+          "$ref": "#/$defs/mi_audit_aix_summary"
+        },
+        "handoff_aix": {
+          "$ref": "#/$defs/mi_audit_aix_summary"
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "violation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "violation_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fingerprints": {
+          "type": "object",
+          "required": ["message", "evidence", "audit_summary"],
+          "properties": {
+            "message": {
+              "type": ["string", "null"]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "audit_summary": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "record_fingerprint": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mi_audit_endpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "adapter_id": {
+          "type": ["string", "null"]
+        },
+        "trust_tier": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "mi_audit_aix_summary": {
+      "type": "object",
+      "required": ["score", "decision", "components", "beta", "thresholds", "hard_blockers"],
+      "properties": {
+        "score": {
+          "type": ["number", "null"]
+        },
+        "decision": {
+          "type": ["string", "null"]
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "beta": {
+          "type": ["number", "null"]
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "assumption": {
+      "type": "object",
+      "required": ["id", "description", "support_status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "support_status": {
+          "type": "string",
+          "enum": ["supported", "unsupported", "unknown", "contradicted"]
+        },
+        "source_handoff_id": {
+          "type": "string"
+        },
+        "evidence_source_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "audit_summary": {
+      "type": "object",
+      "description": "Redacted audit metadata. Do not store raw prompts, raw private records, secrets, or full payloads here.",
+      "properties": {
+        "handoff_id": {
+          "type": "string"
+        },
+        "sender_id": {
+          "type": "string"
+        },
+        "recipient_id": {
+          "type": "string"
+        },
+        "gate_decision": {
+          "type": "string",
+          "enum": ["pass", "block", "fail", "needs_adapter_implementation"]
+        },
+        "recommended_action": {
+          "$ref": "#/$defs/recommended_action"
+        },
+        "aix_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "aix_decision": {
+          "type": "string",
+          "enum": ["accept", "revise", "defer", "refuse"]
+        },
+        "hard_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "violation_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "input_fingerprint": {
+          "type": "string"
+        },
+        "candidate_fingerprint": {
+          "type": "string"
+        },
+        "evidence_fingerprints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "redaction_status": {
+      "type": "string",
+      "enum": ["redacted", "partially_redacted", "unredacted", "synthetic", "not_applicable"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "info", "unknown"]
+    }
+  },
+  "examples": [
+    {
+      "contract_version": "0.1",
+      "handoff_id": "support-agent-to-email-send-001",
+      "sender": {
+        "id": "support_agent",
+        "type": "agent",
+        "trust_tier": "system"
+      },
+      "recipient": {
+        "id": "email_send_guardrail",
+        "type": "adapter",
+        "adapter_id": "email_send_guardrail",
+        "trust_tier": "system"
+      },
+      "message_schema": {
+        "kind": "candidate_action",
+        "schema_id": "email-send-draft-v0.1",
+        "content_type": "text/plain",
+        "redaction_required": true
+      },
+      "message": {
+        "summary": "Draft email would promise a full refund.",
+        "payload_redaction_status": "redacted",
+        "claims": ["Customer is eligible for a full refund."],
+        "assumptions": [
+          {
+            "id": "refund-eligibility-known",
+            "description": "Refund eligibility is known and approved.",
+            "support_status": "contradicted",
+            "evidence_source_id": "crm-record"
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "source_id": "crm-record",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "trust_tier": "verified",
+          "redaction_status": "redacted",
+          "text": "Refund eligibility is unknown.",
+          "retrieval_url": "aana://evidence/crm-record",
+          "limits": ["Does not support a refund promise."]
+        }
+      ],
+      "constraint_map": {
+        "K_P": [
+          {
+            "id": "refund-evidence-required",
+            "description": "Refund eligibility must be supported by verified account evidence.",
+            "severity": "high",
+            "hard": true,
+            "source": "support_policy_registry"
+          }
+        ],
+        "K_B": [
+          {
+            "id": "do-not-mislead-customer",
+            "description": "Do not mislead the customer about account status or remedies.",
+            "severity": "high",
+            "hard": true,
+            "source": "support_policy_registry"
+          }
+        ],
+        "K_C": [
+          {
+            "id": "no-unsupported-refund-promise",
+            "description": "Do not send refund promises without policy eligibility.",
+            "severity": "high",
+            "hard": true,
+            "source": "email_send_guardrail"
+          }
+        ],
+        "F": [
+          {
+            "id": "evidence-freshness",
+            "description": "CRM evidence must be fresh enough for the support decision.",
+            "severity": "medium",
+            "hard": false,
+            "source": "crm_support"
+          }
+        ],
+        "hard_blockers": ["refund-evidence-required", "no-unsupported-refund-promise"]
+      },
+      "verifier_scores": {
+        "P": {
+          "score": 0.2,
+          "status": "fail",
+          "confidence": 0.9,
+          "verifier_ids": ["refund_evidence_verifier"]
+        },
+        "B": {
+          "score": 0.4,
+          "status": "fail",
+          "confidence": 0.85,
+          "verifier_ids": ["customer_misrepresentation_verifier"]
+        },
+        "C": {
+          "score": 0.2,
+          "status": "fail",
+          "confidence": 0.95,
+          "verifier_ids": ["support_policy_verifier"]
+        },
+        "F": {
+          "score": 0.8,
+          "status": "pass",
+          "confidence": 0.8,
+          "verifier_ids": ["evidence_freshness_verifier"]
+        },
+        "overall": 0.35
+      },
+      "aix": {
+        "aix_version": "0.1",
+        "score": 0.31,
+        "components": {
+          "P": 0.2,
+          "B": 0.4,
+          "C": 0.2,
+          "F": 0.8
+        },
+        "beta": 1.5,
+        "thresholds": {
+          "accept": 0.9,
+          "revise": 0.7,
+          "defer": 0.55
+        },
+        "decision": "refuse",
+        "hard_blockers": ["refund-evidence-required", "no-unsupported-refund-promise"]
+      },
+      "gate_decision": "block",
+      "recommended_action": "revise",
+      "allowed_actions": ["accept", "revise", "retrieve", "ask", "defer", "refuse"],
+      "violations": [
+        {
+          "id": "unsupported-refund-promise",
+          "layer": "C",
+          "severity": "high",
+          "message": "The draft promises a refund that the evidence does not support.",
+          "constraint_id": "no-unsupported-refund-promise",
+          "evidence_source_id": "crm-record",
+          "hard": true
+        }
+      ],
+      "audit_summary": {
+        "handoff_id": "support-agent-to-email-send-001",
+        "sender_id": "support_agent",
+        "recipient_id": "email_send_guardrail",
+        "gate_decision": "block",
+        "recommended_action": "revise",
+        "aix_score": 0.31,
+        "aix_decision": "refuse",
+        "hard_blockers": ["refund-evidence-required", "no-unsupported-refund-promise"],
+        "violation_codes": ["unsupported-refund-promise"]
+      }
+    }
+  ]
+}

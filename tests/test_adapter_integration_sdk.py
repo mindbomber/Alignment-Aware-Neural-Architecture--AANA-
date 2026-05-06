@@ -15,6 +15,7 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
             "Source A: The claim is uncertain.",
             source_id="source-a",
             retrieved_at="2026-05-05T00:00:00Z",
+            retrieval_url="aana://evidence/source-a",
         )
         workflow = aana.build_workflow_request(
             adapter="research_summary",
@@ -34,6 +35,7 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
 
         self.assertEqual(evidence[0]["source_id"], "source-a")
         self.assertEqual(evidence[0]["redaction_status"], "redacted")
+        self.assertEqual(evidence[0]["retrieval_url"], "aana://evidence/source-a")
         self.assertEqual(workflow["contract_version"], "0.1")
         self.assertEqual(workflow["workflow_id"], "sdk-workflow-001")
         self.assertEqual(event["event_version"], "0.1")
@@ -49,13 +51,19 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
             adapter="crm",
             request="Draft a support reply.",
             candidate="Promise a refund without verified order facts.",
-            evidence=[aana.evidence_object("Refund eligibility is unknown.", source_id="support-policy")],
+            evidence=[
+                aana.evidence_object(
+                    "Refund eligibility is unknown.",
+                    source_id="support-policy",
+                    retrieval_url="aana://evidence/support-policy",
+                )
+            ],
         )
         workflow = enterprise.workflow_request(
             adapter="deployment",
             request="Review deployment.",
             candidate="Ship now.",
-            evidence=[aana.evidence_object("CI failed.", source_id="ci-result")],
+            evidence=[aana.evidence_object("CI failed.", source_id="ci-result", retrieval_url="aana://evidence/ci-result")],
         )
         event = civic.agent_event(
             adapter_id="grant",

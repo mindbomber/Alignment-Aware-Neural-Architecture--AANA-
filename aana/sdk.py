@@ -77,6 +77,8 @@ def normalize_evidence(
     retrieved_at=None,
     trust_tier="verified",
     redaction_status="redacted",
+    citation_url=None,
+    retrieval_url=None,
     metadata=None,
     raw_record_id=None,
 ):
@@ -101,6 +103,10 @@ def normalize_evidence(
                 }
                 if retrieved_at:
                     payload["retrieved_at"] = retrieved_at
+                if citation_url:
+                    payload["citation_url"] = citation_url
+                if retrieval_url:
+                    payload["retrieval_url"] = retrieval_url
                 if metadata:
                     payload["metadata"] = dict(metadata)
                 if raw_record_id:
@@ -118,6 +124,10 @@ def normalize_evidence(
             payload["source_id"] = source_id
         if retrieved_at and not payload.get("retrieved_at"):
             payload["retrieved_at"] = retrieved_at
+        if citation_url and not payload.get("citation_url"):
+            payload["citation_url"] = citation_url
+        if retrieval_url and not payload.get("retrieval_url"):
+            payload["retrieval_url"] = retrieval_url
         payload.setdefault("trust_tier", trust_tier)
         payload.setdefault("redaction_status", redaction_status)
         if metadata:
@@ -135,6 +145,8 @@ def evidence_object(
     retrieved_at=None,
     trust_tier="verified",
     redaction_status="redacted",
+    citation_url=None,
+    retrieval_url=None,
     metadata=None,
     raw_record_id=None,
 ):
@@ -146,6 +158,8 @@ def evidence_object(
         retrieved_at=retrieved_at,
         trust_tier=trust_tier,
         redaction_status=redaction_status,
+        citation_url=citation_url,
+        retrieval_url=retrieval_url,
         metadata=metadata,
         raw_record_id=raw_record_id,
     )[0]

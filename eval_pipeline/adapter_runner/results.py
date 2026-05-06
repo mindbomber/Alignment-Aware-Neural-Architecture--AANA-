@@ -9,6 +9,11 @@ except ModuleNotFoundError:  # pragma: no cover - used by script-path imports.
 
 from .registry import adapter_summary
 
+try:
+    from release_adapter_integration import attach_deployment_release_readiness
+except ImportError:  # pragma: no cover - package import path fallback
+    from eval_pipeline.release_adapter_integration import attach_deployment_release_readiness
+
 
 def unsupported_result(adapter, prompt, candidate):
     return {
@@ -47,7 +52,7 @@ def attach_runtime_aix(adapter, result, constraint_results_func):
         candidate_constraint_results=candidate_constraints,
     )
     assembled["audit_summary"] = audit_safe_summary(assembled)
-    return assembled
+    return attach_deployment_release_readiness(None, assembled)
 
 
 def violation_codes(violations):
@@ -145,7 +150,7 @@ def assemble_workflow_result(
         "raw_result": agent_result,
     }
     result["audit_summary"] = audit_safe_summary(result)
-    return result
+    return attach_deployment_release_readiness(workflow_request if isinstance(workflow_request, dict) else None, result)
 
 
 def assemble_workflow_failure_result(
