@@ -12,6 +12,12 @@ REQUIRED_TOP_LEVEL = [
     "human_review",
 ]
 
+REQUIRED_DEPLOYMENT_TOP_LEVEL = {
+    "container",
+    "kubernetes",
+    "incident_response",
+}
+
 REQUIRED_GOVERNANCE_TOP_LEVEL = [
     "policy_name",
     "owner",
@@ -26,20 +32,45 @@ REQUIRED_OBSERVABILITY_TOP_LEVEL = [
     "policy_name",
     "owner",
     "dashboard_url",
+    "dashboards",
     "tracked_metrics",
     "alerts",
     "drift_review",
     "latency_slo",
+    "on_call",
 ]
 
 REQUIRED_OBSERVABILITY_METRICS = {
     "aix_decision_count",
     "aix_hard_blocker_count",
     "aix_score_average",
+    "connector_failure_count",
+    "evidence_freshness_failure_count",
     "gate_decision_count",
     "recommended_action_count",
+    "refusal_defer_rate",
     "violation_code_count",
     "latency",
+}
+
+REQUIRED_OBSERVABILITY_ALERTS = {
+    "high_refusal_defer_rate",
+    "connector_failures",
+    "stale_evidence",
+    "latency_spike",
+    "aix_drift",
+    "hard_blocker_spike",
+}
+
+REQUIRED_OBSERVABILITY_DASHBOARD_PANELS = {
+    "gate_decisions",
+    "recommended_actions",
+    "refusal_defer_rate",
+    "connector_failures",
+    "evidence_freshness",
+    "latency",
+    "aix_drift",
+    "hard_blockers",
 }
 
 DEFAULT_ALLOWED_AIX_DECISIONS = {"accept", "revise"}
@@ -71,6 +102,9 @@ def validate_deployment_manifest(manifest):
     for key in REQUIRED_TOP_LEVEL:
         if key not in manifest:
             _add_issue(issues, "error", f"$.{key}", "Required deployment field is missing.")
+    for key in REQUIRED_DEPLOYMENT_TOP_LEVEL:
+        if key not in manifest:
+            _add_issue(issues, "error", f"$.{key}", "Required deployment-hardening field is missing.")
 
     for key in ("deployment_name", "environment"):
         if key in manifest and not _has_text(manifest.get(key)):
@@ -82,13 +116,91 @@ def validate_deployment_manifest(manifest):
             _add_issue(issues, "error", "$.bridge.auth_required", "Production bridge must require authentication.")
         if bridge.get("tls_terminated") is not True:
             _add_issue(issues, "error", "$.bridge.tls_terminated", "Production bridge must run behind TLS termination.")
+        tls = bridge.get("tls", {})
+        if not isinstance(tls, dict):
+            _add_issue(issues, "error", "$.bridge.tls", "TLS assumptions must be an object.")
+        else:
+            for key in ("termination", "ingress_class", "certificate_ref", "minimum_tls_version"):
+                value = tls.get(key)
+                if not _has_text(value) or _is_placeholder(value):
+                    _add_issue(issues, "error", f"$.bridge.tls.{key}", "TLS/ingress assumption must be concrete.")
+            if tls.get("https_only") is not True:
+                _add_issue(issues, "error", "$.bridge.tls.https_only", "Ingress must enforce HTTPS-only access.")
         if not isinstance(bridge.get("max_body_bytes"), int) or bridge.get("max_body_bytes") <= 0:
             _add_issue(issues, "error", "$.bridge.max_body_bytes", "max_body_bytes must be a positive integer.")
         rate_limits = bridge.get("rate_limits", {})
         if not isinstance(rate_limits, dict) or rate_limits.get("enabled") is not True:
             _add_issue(issues, "error", "$.bridge.rate_limits.enabled", "Production bridge must declare enabled rate limits.")
+        else:
+            for key in ("requests_per_minute", "burst"):
+                if not isinstance(rate_limits.get(key), int) or rate_limits.get(key) <= 0:
+                    _add_issue(issues, "error", f"$.bridge.rate_limits.{key}", "Rate limit value must be a positive integer.")
+            if rate_limits.get("runtime_enforced") is not True:
+                _add_issue(issues, "error", "$.bridge.rate_limits.runtime_enforced", "Runtime rate limiting must be enabled.")
+            if rate_limits.get("edge_enforced") is not True:
+                _add_issue(issues, "error", "$.bridge.rate_limits.edge_enforced", "Edge rate limiting must be enabled.")
     elif "bridge" in manifest:
         _add_issue(issues, "error", "$.bridge", "bridge must be an object.")
+
+    container = manifest.get("container", {})
+    if isinstance(container, dict):
+        for key in ("image", "image_pull_policy", "command"):
+            value = container.get(key)
+            if not _has_text(value) or _is_placeholder(value):
+                _add_issue(issues, "error", f"$.container.{key}", "Container deployment field must be concrete.")
+        probes = container.get("probes", {})
+        if not isinstance(probes, dict):
+            _add_issue(issues, "error", "$.container.probes", "Container probes must be an object.")
+        else:
+            for key, expected_path in (("liveness", "/health"), ("readiness", "/ready")):
+                probe = probes.get(key, {})
+                if not isinstance(probe, dict):
+                    _add_issue(issues, "error", f"$.container.probes.{key}", "Probe must be an object.")
+                    continue
+                if probe.get("path") != expected_path:
+                    _add_issue(issues, "error", f"$.container.probes.{key}.path", f"Probe path must be {expected_path}.")
+                if not isinstance(probe.get("period_seconds"), int) or probe.get("period_seconds") <= 0:
+                    _add_issue(issues, "error", f"$.container.probes.{key}.period_seconds", "Probe period must be positive.")
+        resources = container.get("resources", {})
+        if not isinstance(resources, dict):
+            _add_issue(issues, "error", "$.container.resources", "Container resources must be an object.")
+        else:
+            for section in ("requests", "limits"):
+                values = resources.get(section, {})
+                if not isinstance(values, dict):
+                    _add_issue(issues, "error", f"$.container.resources.{section}", "Resource section must be an object.")
+                    continue
+                for key in ("cpu", "memory"):
+                    value = values.get(key)
+                    if not _has_text(value) or _is_placeholder(value):
+                        _add_issue(issues, "error", f"$.container.resources.{section}.{key}", "Resource value must be concrete.")
+    elif "container" in manifest:
+        _add_issue(issues, "error", "$.container", "container must be an object.")
+
+    kubernetes = manifest.get("kubernetes", {})
+    if isinstance(kubernetes, dict):
+        for key in ("manifest", "namespace", "service_name", "ingress_name", "rollback_command"):
+            value = kubernetes.get(key)
+            if not _has_text(value) or _is_placeholder(value):
+                _add_issue(issues, "error", f"$.kubernetes.{key}", "Kubernetes deployment field must be concrete.")
+        if kubernetes.get("health_endpoint") != "/health":
+            _add_issue(issues, "error", "$.kubernetes.health_endpoint", "health_endpoint must be /health.")
+        if kubernetes.get("readiness_endpoint") != "/ready":
+            _add_issue(issues, "error", "$.kubernetes.readiness_endpoint", "readiness_endpoint must be /ready.")
+    elif "kubernetes" in manifest:
+        _add_issue(issues, "error", "$.kubernetes", "kubernetes must be an object.")
+
+    incident_response = manifest.get("incident_response", {})
+    if isinstance(incident_response, dict):
+        for key in ("owner", "incident_channel", "rollback_path", "rollback_trigger", "last_known_good_artifact"):
+            value = incident_response.get(key)
+            if not _has_text(value) or _is_placeholder(value):
+                _add_issue(issues, "error", f"$.incident_response.{key}", "Incident rollback field must be concrete.")
+        steps = incident_response.get("rollback_steps")
+        if not isinstance(steps, list) or not steps:
+            _add_issue(issues, "error", "$.incident_response.rollback_steps", "Rollback steps must be a non-empty list.")
+    elif "incident_response" in manifest:
+        _add_issue(issues, "error", "$.incident_response", "incident_response must be an object.")
 
     audit = manifest.get("audit", {})
     if isinstance(audit, dict):
@@ -274,6 +386,40 @@ def validate_observability_policy(policy):
         if key in policy and (not _has_text(value) or _is_placeholder(value)):
             _add_issue(issues, "error", f"$.{key}", "Observability field must be concrete.")
 
+    dashboards = policy.get("dashboards", [])
+    if not isinstance(dashboards, list) or not dashboards:
+        _add_issue(issues, "error", "$.dashboards", "At least one concrete dashboard definition is required.")
+    else:
+        panel_ids = set()
+        for index, dashboard in enumerate(dashboards):
+            base = f"$.dashboards[{index}]"
+            if not isinstance(dashboard, dict):
+                _add_issue(issues, "error", base, "Dashboard must be an object.")
+                continue
+            for key in ("id", "title", "url", "metrics_source", "owner"):
+                value = dashboard.get(key)
+                if not _has_text(value) or _is_placeholder(value):
+                    _add_issue(issues, "error", f"{base}.{key}", "Dashboard field must be concrete.")
+            panels = dashboard.get("panels")
+            if not isinstance(panels, list) or not panels:
+                _add_issue(issues, "error", f"{base}.panels", "Dashboard must define panels.")
+                continue
+            for panel_index, panel in enumerate(panels):
+                panel_base = f"{base}.panels[{panel_index}]"
+                if not isinstance(panel, dict):
+                    _add_issue(issues, "error", panel_base, "Dashboard panel must be an object.")
+                    continue
+                panel_id = panel.get("id")
+                if _has_text(panel_id):
+                    panel_ids.add(panel_id)
+                for key in ("id", "title", "metric"):
+                    value = panel.get(key)
+                    if not _has_text(value) or _is_placeholder(value):
+                        _add_issue(issues, "error", f"{panel_base}.{key}", "Dashboard panel field must be concrete.")
+        missing_panels = sorted(REQUIRED_OBSERVABILITY_DASHBOARD_PANELS - panel_ids)
+        if missing_panels:
+            _add_issue(issues, "error", "$.dashboards", "dashboards missing required panels: " + ", ".join(missing_panels))
+
     tracked_metrics = policy.get("tracked_metrics", [])
     if not isinstance(tracked_metrics, list) or not tracked_metrics:
         _add_issue(issues, "error", "$.tracked_metrics", "tracked_metrics must be a non-empty list.")
@@ -298,7 +444,7 @@ def validate_observability_policy(policy):
             if not isinstance(alert, dict):
                 _add_issue(issues, "error", base, "Alert must be an object.")
                 continue
-            for key in ("name", "metric", "condition", "severity", "route"):
+            for key in ("id", "name", "metric", "condition", "severity", "route", "owner"):
                 value = alert.get(key)
                 if not _has_text(value) or _is_placeholder(value):
                     _add_issue(issues, "error", f"{base}.{key}", "Alert field must be concrete.")
@@ -306,6 +452,10 @@ def validate_observability_policy(policy):
                 _add_issue(issues, "error", f"{base}.threshold", "Alert threshold is required.")
             elif not isinstance(alert.get("threshold"), (int, float)):
                 _add_issue(issues, "error", f"{base}.threshold", "Alert threshold must be numeric.")
+        alert_ids = {alert.get("id") for alert in alerts if isinstance(alert, dict)}
+        missing_alerts = sorted(REQUIRED_OBSERVABILITY_ALERTS - alert_ids)
+        if missing_alerts:
+            _add_issue(issues, "error", "$.alerts", "alerts missing required operational coverage: " + ", ".join(missing_alerts))
 
     drift_review = policy.get("drift_review", {})
     if isinstance(drift_review, dict):
@@ -334,6 +484,17 @@ def validate_observability_policy(policy):
             _add_issue(issues, "error", "$.latency_slo.route", "Latency route must be concrete.")
     elif "latency_slo" in policy:
         _add_issue(issues, "error", "$.latency_slo", "latency_slo must be an object.")
+
+    on_call = policy.get("on_call", {})
+    if isinstance(on_call, dict):
+        for key in ("primary", "secondary", "schedule", "escalation_policy", "handoff", "incident_channel"):
+            value = on_call.get(key)
+            if not _has_text(value) or _is_placeholder(value):
+                _add_issue(issues, "error", f"$.on_call.{key}", "On-call field must be concrete.")
+        if "page_for" in on_call and (not isinstance(on_call.get("page_for"), list) or not on_call.get("page_for")):
+            _add_issue(issues, "error", "$.on_call.page_for", "page_for must be a non-empty list when present.")
+    elif "on_call" in policy:
+        _add_issue(issues, "error", "$.on_call", "on_call must be an object.")
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")

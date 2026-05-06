@@ -1,0 +1,48 @@
+{
+  "pilot_results_version": "0.1",
+  "pilot_id": "aana-support-enforced-draft-internal-pilot",
+  "environment": "internal-pilot",
+  "measurement_status": "accepted",
+  "mode": "enforced_narrow_support_drafts",
+  "enforcement": "narrow_support_draft_blocking",
+  "enforced_adapters": [
+    "support_reply",
+    "crm_support_reply",
+    "ticket_update_checker"
+  ],
+  "excluded_from_enforcement": [
+    "email_send_guardrail"
+  ],
+  "sample": {
+    "enforced_checks": 12,
+    "skipped_email_send_checks": 6,
+    "support_fixture_checks": 10,
+    "gallery_smoke_checks": 2
+  },
+  "metrics": {
+    "original_candidate_blocked_count": 10,
+    "candidate_allowed_count": 2,
+    "safe_output_available_count": 5,
+    "human_review_required_count": 1,
+    "excluded_email_send_checks": 6,
+    "prohibited_email_enforcement_count": 0,
+    "p95_latency_ms": 2.008
+  },
+  "audit_log_ref": "eval_outputs/audit/support-enforced-draft-internal-pilot.jsonl",
+  "metrics_report_ref": "eval_outputs/pilots/support-enforced-draft-internal-pilot-results.json",
+  "reviewer_report_ref": "eval_outputs/pilots/support-enforced-draft-internal-pilot-reviewer-report.md",
+  "promotion_boundary": {
+    "next_phase": "enforced_email_send_guardrail",
+    "blocked_until": [
+      "recipient verification path is proven",
+      "attachment metadata and DLP path is proven",
+      "explicit user approval path is proven",
+      "bridge-failure fail-closed behavior for irreversible send is proven"
+    ]
+  },
+  "notes": [
+    "This phase enforces only original draft candidates for support_reply, crm_support_reply, and ticket_update_checker.",
+    "Email send remains outside enforcement and must not be promoted from this artifact alone.",
+    "It does not certify production readiness for external customer traffic."
+  ]
+}

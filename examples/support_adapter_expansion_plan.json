@@ -1,0 +1,270 @@
+{
+  "plan_version": "0.1",
+  "plan_id": "aana-support-adapter-expansion-after-enforced-baseline",
+  "title": "AANA Support Adapter Expansion Plan",
+  "positioning": "These are expansion candidates after the first enforced internal support baseline was measured. They are not supported production adapters yet.",
+  "first_enforced_baseline_gate": {
+    "required": true,
+    "status": "passed",
+    "baseline_ref": "examples/first_deployable_support_baseline.internal_pilot.json",
+    "measured_results": [
+      "examples/internal_pilot_enforced_draft_results_support.json",
+      "examples/internal_pilot_enforced_email_results_support.json"
+    ],
+    "required_measurement_status": "accepted",
+    "promotion_rule": "Do not add any expansion adapter to adapter_gallery.product_lines.support.adapter_ids until this gate passes and the adapter has executable fixtures, verifier ownership, evidence requirements, AIx tuning, human review routing, audit-safe examples, and domain-owner signoff."
+  },
+  "candidate_statuses": {
+    "expansion_candidate": "Productized in the expansion roadmap, but not yet a supported executable adapter.",
+    "pilot_candidate": "Executable fixtures and verifier module exist, but enforcement is still shadow/advisory only.",
+    "supported": "Cataloged in adapter_gallery.product_lines.support.adapter_ids with release-gated fixtures and owner signoff."
+  },
+  "candidates": [
+    {
+      "id": "refunds",
+      "title": "Refund Decision Boundary Checker",
+      "status": "expansion_candidate",
+      "family": "support_financial_action",
+      "risk_tier": "strict",
+      "product_boundary": "Check refund eligibility language and refund-action recommendations before customer-visible reply or operational action.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "verified order history",
+        "refund policy version",
+        "refund eligibility evidence",
+        "payment redaction metadata",
+        "domain-owner exception policy"
+      ],
+      "verifier_behavior": [
+        "block invented refund eligibility",
+        "block unsupported refund promises",
+        "block payment detail leakage",
+        "defer refund exceptions and policy ambiguity"
+      ],
+      "correction_policy": {
+        "unsupported_refund_promise": "revise",
+        "missing_order_or_policy_evidence": "retrieve",
+        "payment_detail_exposure": "refuse",
+        "refund_exception": "defer"
+      },
+      "human_review_path": "Refund exception and policy ambiguity queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "workflow and agent event fixtures",
+        "refund verifier module",
+        "golden output coverage",
+        "approved refund policy connector",
+        "support/billing owner signoff"
+      ],
+      "caveats": [
+        "Do not enforce autonomous refunds from this candidate plan.",
+        "Real refund action requires downstream system authorization outside AANA."
+      ]
+    },
+    {
+      "id": "account_closure",
+      "title": "Account Closure Guardrail",
+      "status": "expansion_candidate",
+      "family": "support_account_action",
+      "risk_tier": "strict",
+      "product_boundary": "Check account-closure guidance or action proposals for identity verification, irreversible-action approval, retention obligations, and customer confirmation.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "account verification status",
+        "account ownership evidence",
+        "retention/legal hold status",
+        "open order or dispute status",
+        "closure policy version"
+      ],
+      "verifier_behavior": [
+        "block closure without verified identity",
+        "defer legal hold or open dispute conflicts",
+        "block unsupported statements about deletion",
+        "require explicit human approval for irreversible closure"
+      ],
+      "correction_policy": {
+        "missing_identity_verification": "ask",
+        "legal_hold_or_open_dispute": "defer",
+        "unsupported_deletion_claim": "revise",
+        "irreversible_closure_without_approval": "refuse"
+      },
+      "human_review_path": "Account closure and identity uncertainty queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "identity verification connector",
+        "retention/legal hold connector",
+        "closure policy signoff",
+        "irreversible action approval path",
+        "golden output coverage"
+      ],
+      "caveats": [
+        "Closure must fail closed when identity, retention, or approval evidence is missing."
+      ]
+    },
+    {
+      "id": "chargeback",
+      "title": "Chargeback Support Reply Guardrail",
+      "status": "expansion_candidate",
+      "family": "support_financial_dispute",
+      "risk_tier": "strict",
+      "product_boundary": "Check chargeback-related replies for policy accuracy, dispute status, legal/payment sensitivity, and safe escalation.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "payment dispute status",
+        "chargeback policy version",
+        "billing redaction metadata",
+        "order history",
+        "legal escalation rules"
+      ],
+      "verifier_behavior": [
+        "block invented dispute outcomes",
+        "block payment network or legal promises without evidence",
+        "refuse private payment detail leakage",
+        "defer legal or policy ambiguity"
+      ],
+      "correction_policy": {
+        "invented_dispute_outcome": "revise",
+        "payment_detail_exposure": "refuse",
+        "legal_or_network_claim_without_evidence": "defer",
+        "missing_dispute_status": "retrieve"
+      },
+      "human_review_path": "Billing dispute and legal escalation queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "dispute status connector",
+        "billing/legal owner signoff",
+        "chargeback fixtures",
+        "strict AIx tuning",
+        "human review escalation tests"
+      ],
+      "caveats": [
+        "Chargeback replies may trigger legal or payment-network obligations and require owner approval."
+      ]
+    },
+    {
+      "id": "cancellation",
+      "title": "Cancellation Policy Guardrail",
+      "status": "expansion_candidate",
+      "family": "support_subscription_action",
+      "risk_tier": "high",
+      "product_boundary": "Check cancellation replies and action proposals for verified account state, policy, retention offers, and irreversible cancellation approval.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "subscription status",
+        "cancellation policy version",
+        "account verification status",
+        "open invoice or commitment status",
+        "retention offer policy"
+      ],
+      "verifier_behavior": [
+        "block cancellation without verified account",
+        "revise unsupported fee or effective-date claims",
+        "defer policy exceptions",
+        "block manipulative retention language"
+      ],
+      "correction_policy": {
+        "missing_account_verification": "ask",
+        "unsupported_fee_or_date_claim": "revise",
+        "policy_exception": "defer",
+        "unsafe_retention_pressure": "revise"
+      },
+      "human_review_path": "Cancellation exception and retention review queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "subscription connector",
+        "cancellation policy signoff",
+        "customer-facing language review",
+        "golden output cases",
+        "human review routing"
+      ],
+      "caveats": [
+        "Cancellation action execution remains outside AANA and must require downstream authorization."
+      ]
+    },
+    {
+      "id": "escalation",
+      "title": "Support Escalation Router",
+      "status": "expansion_candidate",
+      "family": "support_human_review",
+      "risk_tier": "high",
+      "product_boundary": "Check whether support replies or ticket updates should escalate to human, fraud, legal, privacy, billing, or manager review before customer-visible output.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "ticket history",
+        "customer tier metadata",
+        "risk/fraud note classifier",
+        "legal/privacy request classifier",
+        "escalation policy version"
+      ],
+      "verifier_behavior": [
+        "defer legal or privacy requests",
+        "defer fraud/risk indicators",
+        "ask for verification when identity is uncertain",
+        "revise unsafe tone or unsupported commitments"
+      ],
+      "correction_policy": {
+        "legal_or_privacy_request": "defer",
+        "fraud_or_risk_indicator": "defer",
+        "identity_uncertainty": "ask",
+        "unsafe_escalation_language": "revise"
+      },
+      "human_review_path": "Support escalation router queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "escalation policy signoff",
+        "risk/privacy/legal classifier evidence",
+        "review queue staffing",
+        "fixtures for each escalation class",
+        "audit-safe route metadata"
+      ],
+      "caveats": [
+        "Escalation routing should bias toward defer when classifier confidence is weak."
+      ]
+    },
+    {
+      "id": "retention_deletion_request",
+      "title": "Retention And Deletion Request Guardrail",
+      "status": "expansion_candidate",
+      "family": "support_privacy_request",
+      "risk_tier": "strict",
+      "product_boundary": "Check replies and action proposals for data retention, deletion, access, or privacy requests before customer-visible response or operational routing.",
+      "supported_surfaces": ["Workflow Contract", "Agent Event Contract", "HTTP bridge", "Python SDK", "CLI"],
+      "evidence_requirements": [
+        "identity verification status",
+        "privacy request type classifier",
+        "retention/legal hold status",
+        "data deletion policy version",
+        "privacy owner escalation path"
+      ],
+      "verifier_behavior": [
+        "block deletion promises without approved policy and identity verification",
+        "defer legal hold or regulated retention conflicts",
+        "refuse private data leakage",
+        "route privacy requests to approved human review"
+      ],
+      "correction_policy": {
+        "missing_identity_verification": "ask",
+        "unsupported_deletion_promise": "defer",
+        "legal_hold_or_retention_conflict": "defer",
+        "private_data_exposure": "refuse"
+      },
+      "human_review_path": "Privacy and retention request queue",
+      "production_status": "not_supported_expansion_candidate",
+      "promotion_requirements": [
+        "privacy owner signoff",
+        "retention/legal hold connector",
+        "privacy request classifier",
+        "strict redaction tests",
+        "customer notification language review"
+      ],
+      "caveats": [
+        "Privacy requests require jurisdiction- and policy-specific handling outside the generic support adapter set."
+      ]
+    }
+  ],
+  "release_gate": {
+    "script": "scripts/validate_support_adapter_expansion.py",
+    "category": "catalog",
+    "blocks_release": true
+  }
+}

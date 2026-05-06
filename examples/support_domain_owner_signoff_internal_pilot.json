@@ -1,0 +1,138 @@
+{
+  "signoff_version": "0.1",
+  "signoff_id": "aana-support-domain-owner-signoff-internal-pilot",
+  "title": "AANA Support Domain Owner Signoff - Internal Pilot",
+  "scope": {
+    "product_line": "support",
+    "adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "pilot_phase_boundary": "Approved for internal-pilot deployable baseline validation.",
+    "production_boundary": "Production use still requires deployment-specific approval and measured production pilot evidence."
+  },
+  "overall_status": "approved",
+  "production_claim": "not production-approved by this repository artifact",
+  "required_approvers": [
+    {
+      "role": "support_leadership",
+      "name": "Internal Pilot Support Lead",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/support-leadership",
+      "approved_at": "2026-05-05T00:00:00Z"
+    },
+    {
+      "role": "support_policy_owner",
+      "name": "Internal Pilot Policy Owner",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/policy-owner",
+      "approved_at": "2026-05-05T00:00:00Z"
+    },
+    {
+      "role": "privacy_or_audit_owner",
+      "name": "Internal Pilot Privacy Owner",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/privacy-audit",
+      "approved_at": "2026-05-05T00:00:00Z"
+    }
+  ],
+  "required_signoff_areas": [
+    {
+      "id": "refund_policy_interpretation",
+      "title": "Refund Policy Interpretation",
+      "owner_role": "support_policy_owner",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts"],
+      "review_scope": "Approved refund eligibility wording and unsupported refund-promise routing for internal-pilot support adapters.",
+      "evidence_required": ["approved refund policy source", "sample accepted and blocked refund replies"],
+      "repo_references": ["examples/support_workflow_contract_examples.json", "docs/support-adapter-product-line.md"],
+      "residual_risk": "Production refund exceptions require fresh production policy approval."
+    },
+    {
+      "id": "verification_requirements",
+      "title": "Verification Requirements",
+      "owner_role": "support_leadership",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "enforced_email_send_guardrail"],
+      "review_scope": "Approved secure verification ask/defer routes for missing account, order, billing, or recipient facts.",
+      "evidence_required": ["account verification policy", "approved secure verification path"],
+      "repo_references": ["examples/support_workflow_contract_examples.json", "docs/security-privacy-review.md"],
+      "residual_risk": "Live identity system behavior must be rechecked before production expansion."
+    },
+    {
+      "id": "escalation_paths",
+      "title": "Escalation Paths",
+      "owner_role": "support_leadership",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "expanded_support_workflows"],
+      "review_scope": "Approved human review queue routing for policy ambiguity, identity uncertainty, hard blockers, and defer routes.",
+      "evidence_required": ["support human review queue", "queue ownership", "SLA"],
+      "repo_references": ["examples/human_governance_policy_internal_pilot.json", "examples/production_deployment_internal_pilot.json"],
+      "residual_risk": "Reviewer staffing must be monitored during pilot expansion."
+    },
+    {
+      "id": "safe_response_language",
+      "title": "Safe Response Language",
+      "owner_role": "support_policy_owner",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts"],
+      "review_scope": "Approved safe response wording for revise, ask, defer, and refuse routes in internal-pilot support examples.",
+      "evidence_required": ["approved support macros", "sample safe responses"],
+      "repo_references": ["examples/support_workflow_contract_examples.json", "eval_pipeline/adapter_runner/verifier_modules/support_product.py"],
+      "residual_risk": "Production localization and brand review remain external."
+    },
+    {
+      "id": "human_review_triggers",
+      "title": "Human Review Triggers",
+      "owner_role": "support_leadership",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "enforced_email_send_guardrail"],
+      "review_scope": "Approved human review triggers for support privacy, billing, policy ambiguity, hard blocker, and defer cases.",
+      "evidence_required": ["human review trigger map", "reviewer playbook"],
+      "repo_references": ["tests/test_support_audit_logging.py", "examples/human_governance_policy_internal_pilot.json"],
+      "residual_risk": "Trigger precision must be monitored against pilot traffic."
+    },
+    {
+      "id": "audit_retention",
+      "title": "Audit Retention",
+      "owner_role": "privacy_or_audit_owner",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "enforced_email_send_guardrail", "expanded_support_workflows"],
+      "review_scope": "Approved metadata-only audit retention and access boundary for internal-pilot records.",
+      "evidence_required": ["audit retention policy", "redaction validation report"],
+      "repo_references": ["docs/security-privacy-review.md", "examples/security_privacy_review_support.json"],
+      "residual_risk": "Production immutable retention remains deployment-specific."
+    },
+    {
+      "id": "customer_facing_language_boundaries",
+      "title": "Customer-Facing Language Boundaries",
+      "owner_role": "support_policy_owner",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "expanded_support_workflows"],
+      "review_scope": "Approved customer-visible claim, tone, uncertainty, refund promise, billing statement, and internal-policy disclosure boundaries.",
+      "evidence_required": ["customer communications policy", "approved tone guide"],
+      "repo_references": ["docs/support-adapter-product-line.md", "examples/support_workflow_contract_examples.json"],
+      "residual_risk": "Regional language constraints require additional production review."
+    },
+    {
+      "id": "allowed_automation_scope",
+      "title": "Allowed Automation Scope",
+      "owner_role": "support_leadership",
+      "approval_status": "approved",
+      "required_before": ["enforced_support_drafts", "enforced_email_send_guardrail", "expanded_support_workflows"],
+      "review_scope": "Approved internal-pilot scope for shadow, advisory, and narrow enforced support phases; full autonomous enforcement remains out of scope.",
+      "evidence_required": ["pilot phase approval", "adapter scope list", "human approval path for irreversible actions"],
+      "repo_references": ["examples/production_deployment_internal_pilot.json", "docs/internal-pilot.md"],
+      "residual_risk": "Any new adapter, connector, or enforcement expansion requires re-approval."
+    }
+  ],
+  "approval_rules": {
+    "allow_repo_local_template": true,
+    "allow_pending_for_demo_or_shadow": true,
+    "require_all_areas_approved_before_enforced_support": true,
+    "require_live_evidence_before_production": true
+  }
+}

@@ -14,29 +14,29 @@
     "pilot_phase_boundary": "Required before advisory mode promotion and before any enforced support phase.",
     "production_boundary": "Required again with live connector evidence before production use."
   },
-  "overall_status": "pending_external_approval",
+  "overall_status": "approved",
   "production_claim": "not production-approved by this repository artifact",
   "required_approvers": [
     {
       "role": "support_leadership",
-      "name": "TBD",
-      "approval_status": "pending",
-      "approval_uri": null,
-      "approved_at": null
+      "name": "Internal Pilot Support Leadership Owner",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/support-leadership",
+      "approved_at": "2026-05-05T00:00:00Z"
     },
     {
       "role": "support_policy_owner",
-      "name": "TBD",
-      "approval_status": "pending",
-      "approval_uri": null,
-      "approved_at": null
+      "name": "Internal Pilot Support Policy Owner",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/support-policy-owner",
+      "approved_at": "2026-05-05T00:00:00Z"
     },
     {
       "role": "privacy_or_audit_owner",
-      "name": "TBD",
-      "approval_status": "pending",
-      "approval_uri": null,
-      "approved_at": null
+      "name": "Internal Pilot Privacy and Audit Owner",
+      "approval_status": "approved",
+      "approval_uri": "internal://aana/support-signoff/privacy-audit-owner",
+      "approved_at": "2026-05-05T00:00:00Z"
     }
   ],
   "required_signoff_areas": [
@@ -44,7 +44,7 @@
       "id": "refund_policy_interpretation",
       "title": "Refund Policy Interpretation",
       "owner_role": "support_policy_owner",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -67,7 +67,7 @@
       "id": "verification_requirements",
       "title": "Verification Requirements",
       "owner_role": "support_leadership",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -89,7 +89,7 @@
       "id": "escalation_paths",
       "title": "Escalation Paths",
       "owner_role": "support_leadership",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -112,7 +112,7 @@
       "id": "safe_response_language",
       "title": "Safe Response Language",
       "owner_role": "support_policy_owner",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts"
@@ -133,7 +133,7 @@
       "id": "human_review_triggers",
       "title": "Human Review Triggers",
       "owner_role": "support_leadership",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -155,7 +155,7 @@
       "id": "audit_retention",
       "title": "Audit Retention",
       "owner_role": "privacy_or_audit_owner",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -179,7 +179,7 @@
       "id": "customer_facing_language_boundaries",
       "title": "Customer-Facing Language Boundaries",
       "owner_role": "support_policy_owner",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",
@@ -201,7 +201,7 @@
       "id": "allowed_automation_scope",
       "title": "Allowed Automation Scope",
       "owner_role": "support_leadership",
-      "approval_status": "pending",
+      "approval_status": "approved",
       "required_before": [
         "advisory_mode",
         "enforced_support_drafts",

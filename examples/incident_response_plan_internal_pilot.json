@@ -1,0 +1,175 @@
+{
+  "plan_version": "0.1",
+  "plan_id": "aana-support-incident-response-internal-pilot",
+  "title": "AANA Support Runtime Incident Response Plan",
+  "scope": {
+    "environment": "internal-pilot",
+    "runtime": "aana support guardrail/http bridge",
+    "adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "production_position": "pilot-ready/production-candidate; not production-certified by local tests alone"
+  },
+  "owners": {
+    "incident_commander": "AANA Platform On-Call",
+    "support_owner": "Support Operations Domain Owner",
+    "security_owner": "Security Operations Reviewer",
+    "privacy_owner": "Privacy Review Owner",
+    "audit_owner": "AANA Audit Reviewers",
+    "customer_impact_owner": "Support Customer Experience Owner"
+  },
+  "severity_levels": [
+    {
+      "id": "sev0",
+      "name": "Critical",
+      "definition": "Confirmed unsafe accept, private-data exposure, unauthorized irreversible action, auth bypass, or audit leakage affecting support workflows.",
+      "response_sla_minutes": 15,
+      "rollback_required": true,
+      "customer_impact_review_required": true,
+      "audit_review_required": true
+    },
+    {
+      "id": "sev1",
+      "name": "High",
+      "definition": "Likely unsafe accept, repeated high-risk false accepts, email-send fail-open behavior, connector permission incident, or hard-blocker spike with user impact risk.",
+      "response_sla_minutes": 30,
+      "rollback_required": true,
+      "customer_impact_review_required": true,
+      "audit_review_required": true
+    },
+    {
+      "id": "sev2",
+      "name": "Medium",
+      "definition": "Elevated false blocks, over-refusal, stale evidence, connector failures, high latency, or human-review backlog that degrades support workflows.",
+      "response_sla_minutes": 120,
+      "rollback_required": false,
+      "customer_impact_review_required": true,
+      "audit_review_required": true
+    },
+    {
+      "id": "sev3",
+      "name": "Low",
+      "definition": "Documentation, dashboard, non-user-impacting alert, or isolated advisory-mode issue without unsafe acceptance.",
+      "response_sla_minutes": 1440,
+      "rollback_required": false,
+      "customer_impact_review_required": false,
+      "audit_review_required": false
+    }
+  ],
+  "rollback_triggers": [
+    {
+      "id": "critical_false_accept",
+      "severity": "sev0",
+      "condition": "AANA returns accept/pass for a support candidate that leaks private data, invents account facts, bypasses verification, or allows unauthorized irreversible send.",
+      "action": "Switch affected support adapters to shadow mode and run kubectl rollout undo deployment/aana-bridge -n aana-runtime."
+    },
+    {
+      "id": "audit_leakage",
+      "severity": "sev0",
+      "condition": "Audit record, bridge log, dashboard payload, or reviewer report contains raw customer message, raw candidate, full CRM record, payment data, internal note, attachment body, secret, or token.",
+      "action": "Stop audit ingestion, revoke exposed credentials if needed, quarantine affected audit artifacts, and roll back to last-known-good runtime."
+    },
+    {
+      "id": "auth_or_connector_permission_incident",
+      "severity": "sev1",
+      "condition": "Bridge auth bypass, token exposure, over-broad connector permission, unauthorized source read, or missing DLP/recipient verification on email send.",
+      "action": "Disable affected connector or email enforcement path, rotate tokens, and roll back if runtime behavior contributed."
+    },
+    {
+      "id": "bridge_unavailable_irreversible_actions",
+      "severity": "sev1",
+      "condition": "Bridge outage or readiness failure could allow irreversible sends, exports, deletes, deployments, or account actions to proceed without AANA.",
+      "action": "Fail closed for irreversible action paths, route drafts to advisory mode, and roll back the bridge deployment if the outage follows a release."
+    },
+    {
+      "id": "sustained_quality_regression",
+      "severity": "sev2",
+      "condition": "Over-refusal, false blocker, latency, connector failure, stale evidence, or hard-blocker spike breaches the observability policy for more than one review window.",
+      "action": "Freeze promotion, keep enforcement narrow, review audit sample, and roll back if the regression started with the current runtime or adapter version."
+    }
+  ],
+  "notification_paths": [
+    {
+      "id": "platform_on_call",
+      "owner": "AANA Platform On-Call",
+      "channel": "AANA Internal Pilot Incident Log",
+      "severities": ["sev0", "sev1", "sev2"],
+      "notify_within_minutes": 15
+    },
+    {
+      "id": "support_owner",
+      "owner": "Support Operations Domain Owner",
+      "channel": "Support Operations Incident Queue",
+      "severities": ["sev0", "sev1", "sev2"],
+      "notify_within_minutes": 30
+    },
+    {
+      "id": "security_privacy",
+      "owner": "Security Operations Reviewer and Privacy Review Owner",
+      "channel": "Security Privacy Incident Queue",
+      "severities": ["sev0", "sev1"],
+      "notify_within_minutes": 30
+    },
+    {
+      "id": "audit_reviewers",
+      "owner": "AANA Audit Reviewers",
+      "channel": "AANA Audit Review Queue",
+      "severities": ["sev0", "sev1", "sev2"],
+      "notify_within_minutes": 60
+    }
+  ],
+  "audit_review_procedure": {
+    "owner": "AANA Audit Reviewers",
+    "start_within_minutes": 60,
+    "records_to_collect": [
+      "redacted audit JSONL records for the incident window",
+      "audit integrity manifest and verification output",
+      "audit metrics and AIx drift report",
+      "affected workflow IDs and adapter IDs",
+      "violation codes, hard blockers, recommended actions, and human review routes",
+      "connector source IDs and evidence freshness metadata"
+    ],
+    "raw_data_policy": "Do not copy raw customer messages, raw candidate responses, CRM records, payment data, internal notes, attachment bodies, secrets, or tokens into the incident record.",
+    "commands": [
+      "python scripts/aana_cli.py audit-validate --audit-log <incident-audit.jsonl>",
+      "python scripts/aana_cli.py audit-metrics --audit-log <incident-audit.jsonl> --output <incident-metrics.json>",
+      "python scripts/aana_cli.py audit-drift --audit-log <incident-audit.jsonl> --output <incident-drift.json>",
+      "python scripts/aana_cli.py audit-verify --manifest <incident-integrity-manifest.json>"
+    ],
+    "outputs": [
+      "incident audit review summary",
+      "redaction verification result",
+      "affected adapter/version list",
+      "rollback or remediation recommendation"
+    ]
+  },
+  "customer_impact_review": {
+    "owner": "Support Customer Experience Owner",
+    "start_within_minutes": 120,
+    "required_for_severities": ["sev0", "sev1", "sev2"],
+    "review_questions": [
+      "Did any customer-visible support reply include invented facts, private data, unsafe refund promise, internal CRM note, or unsupported billing/payment statement?",
+      "Did any irreversible email send, ticket update, account action, refund communication, or escalation proceed without required verification?",
+      "How many customers, tickets, workflows, and adapters were affected?",
+      "Was customer remediation, correction, deletion, notification, refund review, or support follow-up required?",
+      "Did human review agree with the AANA route, and did the reviewer queue meet SLA?"
+    ],
+    "customer_notification_owner": "Support Operations Domain Owner",
+    "remediation_paths": [
+      "correct or retract unsafe support message",
+      "open human-reviewed support follow-up",
+      "route privacy/security issues through approved incident process",
+      "freeze affected adapter enforcement until owner signoff",
+      "record lessons learned and update verifier, route map, AIx tuning, or evidence connector"
+    ]
+  },
+  "release_gate": {
+    "script": "scripts/validate_incident_response_plan.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

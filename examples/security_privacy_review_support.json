@@ -100,6 +100,236 @@
       ]
     }
   ],
+  "bridge_auth_review": {
+    "status": "repo_local_reviewed",
+    "post_auth_required": true,
+    "accepted_headers": [
+      "Authorization: Bearer <token>",
+      "X-AANA-Token: <token>"
+    ],
+    "token_sources": [
+      "env",
+      "file"
+    ],
+    "token_rotation_path": "auth token file is reread per request when --auth-token-file is used",
+    "raw_token_logged": false,
+    "structured_unauthorized_error": true,
+    "evidence": [
+      "eval_pipeline/agent_server.py:_authorized",
+      "eval_pipeline/agent_server.py:_resolved_auth_token",
+      "eval_pipeline/agent_server.py:_redact_log_text"
+    ],
+    "tests_or_gates": [
+      "tests.test_agent_server.AgentServerTests.test_post_auth_token_accepts_bearer_credentials",
+      "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_bridge_security_controls_do_not_expose_tokens"
+    ]
+  },
+  "connector_permission_review": {
+    "status": "internal_pilot_reviewed_external_production_required",
+    "manifest_ref": "examples/external_production_evidence_internal_pilot.json",
+    "connector_manifests": [
+      {
+        "connector_id": "crm_customer_account",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Customer Support Operations",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "customer_account.read.redacted",
+          "customer_verification_status.read"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "customer_account_metadata",
+          "verification_status"
+        ],
+        "reviewed_by": "Customer Support Operations Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      },
+      {
+        "connector_id": "order_history",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Order Operations",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "orders.read.summary",
+          "refund_eligibility.read"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "order_summary",
+          "refund_status"
+        ],
+        "reviewed_by": "Order Operations Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      },
+      {
+        "connector_id": "refund_policy",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Support Policy",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "support_policy.read.published"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "published_policy"
+        ],
+        "reviewed_by": "Support Policy Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      },
+      {
+        "connector_id": "support_ticket_history",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Support Operations",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "tickets.read.redacted_history"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "ticket_metadata",
+          "redacted_ticket_history"
+        ],
+        "reviewed_by": "Support Operations Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      },
+      {
+        "connector_id": "email_recipient_verification",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Messaging Platform",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "email_recipient.verify"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "recipient_verification_metadata"
+        ],
+        "reviewed_by": "Messaging Platform Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      },
+      {
+        "connector_id": "attachment_metadata",
+        "source_mode": "live",
+        "approval_status": "live_approved",
+        "owner": "Messaging Platform and DLP",
+        "permission_model": "least_privilege_readonly",
+        "approved_scopes": [
+          "attachments.metadata.read",
+          "dlp.classification.read"
+        ],
+        "denied_scopes": [
+          "write",
+          "delete",
+          "send",
+          "export_raw",
+          "admin"
+        ],
+        "data_classes": [
+          "attachment_metadata",
+          "dlp_classification"
+        ],
+        "reviewed_by": "DLP Security Reviewer",
+        "reviewed_at": "2026-05-05"
+      }
+    ]
+  },
+  "pii_attachment_review": {
+    "status": "repo_local_tested_external_production_required",
+    "audit_stores_raw_support_data": false,
+    "attachment_body_storage": "none",
+    "metadata_only_fields": [
+      "attachment_id",
+      "filename_hash",
+      "content_type",
+      "size_bytes",
+      "dlp_classification",
+      "source_id",
+      "fingerprint"
+    ],
+    "forbidden_audit_fields": [
+      "raw_customer_message",
+      "raw_candidate_response",
+      "full_crm_record",
+      "payment_data",
+      "internal_notes",
+      "attachment_body",
+      "secrets",
+      "tokens"
+    ],
+    "tests_or_gates": [
+      "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_support_audit_omits_raw_prompt_candidate_and_evidence",
+      "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_attachment_private_export_case_blocks_and_audits_metadata_only"
+    ]
+  },
+  "rate_limiting_review": {
+    "status": "internal_pilot_reviewed_external_production_required",
+    "runtime_rate_limit_enabled": true,
+    "runtime_requests_per_minute": 120,
+    "runtime_config": "eval_pipeline/agent_server.py:--rate-limit-per-minute",
+    "edge_rate_limit_enabled": true,
+    "edge_requests_per_minute": 120,
+    "edge_burst": 30,
+    "edge_config": "deploy/kubernetes/aana-bridge-internal-pilot.yaml",
+    "fail_behavior": "429 structured rate_limited error without raw request body logging",
+    "tests_or_gates": [
+      "tests.test_agent_server.AgentServerTests.test_post_rate_limit_returns_429",
+      "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_bridge_rate_limit_control_blocks_after_limit"
+    ]
+  },
+  "secrets_scan": {
+    "status": "repo_local_completed",
+    "script": "scripts/validate_secrets_scan.py",
+    "allowlist": "examples/secrets_scan_allowlist.json",
+    "scan_scope": [
+      "deploy",
+      "docs",
+      "eval_pipeline",
+      "examples",
+      "scripts",
+      "tests"
+    ],
+    "unapproved_findings": 0,
+    "tests_or_gates": [
+      "scripts/validate_secrets_scan.py",
+      "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_secrets_scan_passes_with_deployment_allowlist"
+    ]
+  },
   "controls": [
     {
       "id": "support_data_flow_threat_model",
@@ -153,7 +383,9 @@
       "required_before_deployment": true,
       "evidence": [
         "examples/evidence_registry.json",
-        "examples/external_production_evidence_template.json"
+        "examples/external_production_evidence_template.json",
+        "examples/external_production_evidence_internal_pilot.json",
+        "examples/security_privacy_review_support.json:connector_permission_review"
       ],
       "tests_or_gates": [
         "scripts/aana_cli.py validate-evidence-registry --evidence-registry examples/evidence_registry.json",
@@ -203,17 +435,19 @@
     },
     {
       "id": "audit_retention_policy",
-      "status": "external_required",
+      "status": "approved_for_internal_pilot_external_production_required",
       "owner": "deployment_owner",
       "required_before_deployment": true,
       "evidence": [
-        "examples/production_deployment_template.json",
+        "examples/audit_retention_policy_internal_pilot.json",
+        "examples/production_deployment_internal_pilot.json#audit",
         "docs/security-privacy-review.md#audit-retention"
       ],
       "tests_or_gates": [
-        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_review_manifest_declares_external_deployment_blockers"
+        "scripts/validate_audit_retention_policy.py",
+        "tests.test_audit_retention_policy.AuditRetentionPolicyTests.test_policy_validates_append_only_immutable_storage"
       ],
-      "residual_risk": "Repo-local JSONL audit validation does not provide immutable retention, deletion, legal hold, or access-control guarantees."
+      "residual_risk": "Internal-pilot policy approves an immutable metadata-only sink; external production still requires environment-specific storage owner approval and evidence that lifecycle/legal-hold controls are active."
     },
     {
       "id": "support_domain_owner_signoff",
@@ -231,25 +465,28 @@
     },
     {
       "id": "secrets_scanning",
-      "status": "plan_required",
+      "status": "external_required",
       "owner": "deployment_owner",
       "required_before_deployment": true,
       "evidence": [
+        "examples/secrets_scan_allowlist.json",
         "docs/security-privacy-review.md#secrets-scanning"
       ],
       "tests_or_gates": [
-        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_review_manifest_declares_external_deployment_blockers"
+        "scripts/validate_secrets_scan.py",
+        "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_secrets_scan_passes_with_deployment_allowlist"
       ],
-      "residual_risk": "This repo contains synthetic secret-like strings in tests and fixtures; production scanning must use an allowlist and fail on unapproved findings."
+      "residual_risk": "Repo-local allowlist-backed scanning is complete for deployment artifacts; production scanning must run in CI with the same allowlist plus environment-specific secret-manager evidence."
     },
     {
-      "id": "rate_limiting_plan",
+      "id": "edge_and_runtime_rate_limiting",
       "status": "repo_local_tested_external_required",
       "owner": "platform_and_deployment_owner",
       "required_before_deployment": true,
       "evidence": [
         "eval_pipeline/agent_server.py:check_rate_limit",
-        "eval_pipeline/agent_server.py:--rate-limit-per-minute"
+        "eval_pipeline/agent_server.py:--rate-limit-per-minute",
+        "deploy/kubernetes/aana-bridge-internal-pilot.yaml"
       ],
       "tests_or_gates": [
         "tests.test_agent_server.AgentServerTests.test_post_rate_limit_returns_429",

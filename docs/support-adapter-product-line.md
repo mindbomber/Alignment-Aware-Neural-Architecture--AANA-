@@ -90,7 +90,9 @@ proof of production calibration on live traffic.
 
 ## Later Adapters
 
-The support roadmap tracks later adapters separately from the first deployable set:
+The support roadmap tracks later adapters separately from the first deployable set. The executable expansion source of truth is `examples/support_adapter_expansion_plan.json`.
+
+These adapters are now productized as expansion candidates only after the internal enforced support baseline was measured and accepted:
 
 - refunds
 - account closure
@@ -99,4 +101,10 @@ The support roadmap tracks later adapters separately from the first deployable s
 - escalation
 - retention/deletion request
 
-These should not be presented as supported product adapters until they have gallery entries, executable fixtures, AIx tuning, evidence requirements, correction policy, and human-review routing.
+They are not supported product adapters yet and must not be added to `adapter_gallery.product_lines.support.adapter_ids` until each candidate has executable Workflow Contract and Agent Event fixtures, verifier ownership, evidence requirements, AIx tuning, correction policy, audit-safe examples, human-review routing, and domain-owner signoff.
+
+Validate the expansion gate with:
+
+```powershell
+python scripts/validate_support_adapter_expansion.py
+```

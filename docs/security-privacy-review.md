@@ -26,18 +26,47 @@ The review tracks these controls:
 - internal CRM note exposure tests
 - audit retention policy
 - secrets scanning
-- rate limiting plan
+- edge and runtime rate limiting
 
 Repo-local tests can prove the local runtime behavior for redaction, audit shape, bridge config, token redaction, fixture-based CRM note blocking, fixture-based attachment blocking, and bridge rate limiting. They cannot prove live connector permissions, immutable audit retention, edge rate limits, identity-provider behavior, or production owner approval.
 
+## Completed Internal-Pilot Review
+
+The internal-pilot security review now has executable sections for:
+
+- Bridge auth/token handling: POST routes require bearer or `X-AANA-Token` credentials when configured, token files are reread for rotation, `/config` reports only token source metadata, and bridge logs redact token-like values.
+- Connector permissions: support connector manifests declare least-privilege read-only scopes, denied write/delete/send/raw-export/admin scopes, reviewed data classes, reviewer, and review date. External production still needs environment-owner evidence for the selected CRM, order, ticket, email, billing, and DLP systems.
+- PII and attachment metadata: audit records remain metadata-only and attachment bodies are not stored. Attachment checks may use `attachment_id`, filename/content fingerprints, content type, size, source id, and DLP classification.
+- Rate limiting: the runtime enforces `--rate-limit-per-minute`; the internal-pilot Kubernetes config declares matching edge limit, burst, and per-authenticated-client scope. Production deployments must enforce both layers.
+- Secrets scanning: `scripts/validate_secrets_scan.py` scans deployment, runtime, docs, examples, scripts, and tests with `examples/secrets_scan_allowlist.json`. The allowlist is limited to synthetic redaction/auth test literals and documentation examples.
+
+Validate the full security review with:
+
+```powershell
+python scripts/validate_security_privacy_review.py
+python scripts/validate_secrets_scan.py
+```
+
 ## Audit Retention
 
-The local audit format is JSONL and intentionally metadata-only. A production deployment must define retention period, storage location, immutable write controls, access policy, deletion/legal-hold behavior, and reviewer access before support traffic is routed through AANA.
+The local audit format is JSONL and intentionally metadata-only. JSONL is a test/export handoff format, not the production audit store.
+
+For the internal pilot, the approved audit-retention policy is `examples/audit_retention_policy_internal_pilot.json`. It requires an append-only immutable sink, at least 365 days of retention, lifecycle deletion only when no legal hold is active, least-privilege reader/admin roles, create-only runtime writer permissions, daily chained SHA-256 integrity manifests, and raw artifact storage set to `none`.
+
+Production support audit records must remain decision metadata only. They may store adapter/workflow IDs, gate/action decisions, violation codes, AIx summaries, hard blockers, evidence source IDs, fingerprints, execution mode, latency, connector/freshness failures, and human-review routes. They must not store raw customer messages, raw candidate responses, full CRM records, payment or billing data, internal notes, attachment bodies, secrets, tokens, raw evidence, or safe-response text.
+
+Validate the policy and redaction proof with:
+
+```powershell
+python scripts/validate_audit_retention_policy.py
+```
+
+This validator generates support Workflow Contract and Agent Event audit records from canonical fixtures, validates the audit schema, and scans the serialized records for raw support request, candidate, evidence, CRM, payment, internal-note, and attachment text.
 
 ## Secrets Scanning
 
-The repository contains synthetic secret-like strings in tests and fixtures to verify redaction behavior. Production secret scanning must use an allowlist for those fixture paths and must fail on unapproved secrets in source, deployment manifests, connector configuration, logs, and audit artifacts.
+The repository contains synthetic secret-like strings in tests and fixtures to verify redaction behavior. The repo-local gate uses `examples/secrets_scan_allowlist.json` and fails on unapproved credential-looking literals in source, deployment manifests, connector configuration, docs, tests, and examples. Production secret scanning must reuse this allowlist, add environment-specific secret-manager evidence, and fail on unapproved findings in deployment manifests, connector configuration, logs, and audit artifacts.
 
 ## Rate Limiting
 
-The HTTP bridge exposes `--rate-limit-per-minute` as a per-client local control. Production deployments should also enforce edge limits, authenticated caller quotas, burst limits, and alerting for repeated `429` responses.
+The HTTP bridge exposes `--rate-limit-per-minute` as a per-client runtime control. The internal-pilot deployment manifest also declares edge limit and burst settings. Production deployments must enforce edge limits, authenticated caller quotas, burst limits, and alerting for repeated `429` responses.

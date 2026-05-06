@@ -26,7 +26,7 @@ class SupportDomainSignoffTests(unittest.TestCase):
         self.assertTrue(report["valid"], report)
         self.assertEqual(set(report["required_areas"]), signoff.REQUIRED_AREAS)
         self.assertEqual(report["area_count"], len(signoff.REQUIRED_AREAS))
-        self.assertEqual(report["overall_status"], "pending_external_approval")
+        self.assertEqual(report["overall_status"], "approved")
 
     def test_signoff_template_keeps_production_claim_conservative(self):
         payload = json.loads(SIGNOFF_PATH.read_text(encoding="utf-8"))
@@ -36,11 +36,21 @@ class SupportDomainSignoffTests(unittest.TestCase):
         self.assertTrue(payload["approval_rules"]["require_live_evidence_before_production"])
         self.assertTrue(payload["approval_rules"]["allow_pending_for_demo_or_shadow"])
 
-    def test_require_approved_fails_for_pending_template(self):
+    def test_require_approved_passes_for_completed_signoff(self):
         report = signoff.validate_support_domain_signoff(SIGNOFF_PATH, require_approved=True)
 
-        self.assertFalse(report["valid"])
-        self.assertTrue(any("approval_status must be approved" in error for error in report["errors"]))
+        self.assertTrue(report["valid"], report)
+
+    def test_completed_signoff_has_named_approvers(self):
+        payload = json.loads(SIGNOFF_PATH.read_text(encoding="utf-8"))
+
+        for approver in payload["required_approvers"]:
+            self.assertNotEqual(approver["name"], "TBD")
+            self.assertEqual(approver["approval_status"], "approved")
+            self.assertTrue(approver["approval_uri"])
+            self.assertTrue(approver["approved_at"])
+        for area in payload["required_signoff_areas"]:
+            self.assertEqual(area["approval_status"], "approved")
 
     def test_validator_rejects_missing_required_approval_area(self):
         payload = json.loads(SIGNOFF_PATH.read_text(encoding="utf-8"))

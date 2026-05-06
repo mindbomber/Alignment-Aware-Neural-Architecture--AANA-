@@ -142,12 +142,16 @@ python scripts/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --token $env
 ## Deployment Checklist
 
 - Bind the Python bridge to `127.0.0.1` behind a reverse proxy unless the deployment environment provides equivalent network isolation.
-- Terminate TLS outside the bridge.
+- Terminate TLS outside the bridge and enforce HTTPS-only ingress. The checked-in production Kubernetes template assumes `nginx-internal`, `TLSv1.2` or newer, a Kubernetes TLS secret, and edge body/rate limits before traffic reaches the bridge.
 - Use `AANA_BRIDGE_TOKEN`, `--auth-token`, or preferably `--auth-token-file`.
 - Rotate tokens through the environment secret manager or token file, then update clients.
 - Set `--max-body-bytes` to the smallest payload size that supports the selected workflows.
 - Set `--rate-limit-per-minute` and enforce external tenant-aware rate limits.
 - Set `--audit-log` to a reviewed local path or adapter that forwards to append-only storage.
 - Monitor `/health`, `/ready`, HTTP status counts, audit append failures, gate decisions, recommended actions, AIx scores, and hard blockers.
+- Set Kubernetes liveness to `/health` and readiness to `/ready`. Do not route traffic to a pod that fails readiness.
+- Set CPU and memory requests/limits and run the container as a non-root user.
+- Keep a tested rollback path. For Kubernetes, use `kubectl rollout undo deployment/aana-bridge -n aana-runtime`, switch enforced adapters to shadow/advisory mode for guardrail incidents, verify `/health` and `/ready`, then rerun the release gate before restoring enforcement.
+- Follow `docs/incident-response-plan.md` for severity assignment, owner notification, audit review, and customer-impact review.
 - Keep caller timeouts shorter than the surrounding workflow timeout, and use the process supervisor for hard execution limits.
 - Treat `revise`, `ask`, `defer`, and `refuse` as action-routing decisions the caller must handle before any irreversible tool call.

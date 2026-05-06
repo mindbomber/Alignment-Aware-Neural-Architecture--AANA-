@@ -19,6 +19,7 @@ def load_script(name, path):
 
 
 security_review = load_script("validate_security_privacy_review", ROOT / "scripts" / "validate_security_privacy_review.py")
+secrets_scan = load_script("validate_secrets_scan", ROOT / "scripts" / "validate_secrets_scan.py")
 
 
 def _review():
@@ -75,8 +76,11 @@ class SecurityPrivacyReviewTests(unittest.TestCase):
 
         controls = {control["id"]: control for control in review["controls"]}
         self.assertEqual(controls["evidence_connector_permission_review"]["status"], "external_required")
-        self.assertEqual(controls["audit_retention_policy"]["status"], "external_required")
-        self.assertEqual(controls["secrets_scanning"]["status"], "plan_required")
+        self.assertEqual(
+            controls["audit_retention_policy"]["status"],
+            "approved_for_internal_pilot_external_production_required",
+        )
+        self.assertEqual(controls["secrets_scanning"]["status"], "external_required")
 
     def test_support_audit_omits_raw_prompt_candidate_and_evidence(self):
         case = _fixture_case("draft_refund_missing_account_facts")
@@ -159,6 +163,39 @@ class SecurityPrivacyReviewTests(unittest.TestCase):
         self.assertEqual(first_status, 200)
         self.assertEqual(second_status, 429)
         self.assertEqual(second_payload["error_code"], "rate_limited")
+
+    def test_review_manifest_completes_security_review_sections(self):
+        review = _review()
+
+        self.assertTrue(review["bridge_auth_review"]["post_auth_required"])
+        self.assertEqual(review["bridge_auth_review"]["token_sources"], ["env", "file"])
+        self.assertFalse(review["bridge_auth_review"]["raw_token_logged"])
+
+        connectors = review["connector_permission_review"]["connector_manifests"]
+        self.assertGreaterEqual(len(connectors), 6)
+        for connector in connectors:
+            self.assertEqual(connector["permission_model"], "least_privilege_readonly")
+            self.assertTrue(connector["approved_scopes"])
+            self.assertGreaterEqual({"write", "delete", "send", "export_raw", "admin"}, set(connector["denied_scopes"]))
+            self.assertTrue(connector["reviewed_by"])
+
+        pii_attachment = review["pii_attachment_review"]
+        self.assertFalse(pii_attachment["audit_stores_raw_support_data"])
+        self.assertEqual(pii_attachment["attachment_body_storage"], "none")
+        self.assertIn("dlp_classification", pii_attachment["metadata_only_fields"])
+
+        rate_limits = review["rate_limiting_review"]
+        self.assertTrue(rate_limits["runtime_rate_limit_enabled"])
+        self.assertTrue(rate_limits["edge_rate_limit_enabled"])
+        self.assertGreater(rate_limits["runtime_requests_per_minute"], 0)
+        self.assertGreater(rate_limits["edge_requests_per_minute"], 0)
+
+    def test_secrets_scan_passes_with_deployment_allowlist(self):
+        report = secrets_scan.scan()
+
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(report["unapproved_findings"], [])
+        self.assertEqual(report["allowlist"], "examples/secrets_scan_allowlist.json")
 
 
 if __name__ == "__main__":

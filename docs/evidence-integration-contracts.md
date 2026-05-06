@@ -1,6 +1,6 @@
 # Evidence Integration Contracts
 
-AANA evidence integrations are connector contracts, not live connectors. They define what production systems must return before adapter decisions can rely on CRM/support, ticketing, email, calendar, IAM, CI/GitHub, deployment, billing, data-export, file-system, or similar records.
+AANA evidence integrations define both connector contracts and the live connector boundary. The checked-in repository still ships synthetic fixtures for local validation, but support production claims require either live-approved connector manifests or externally approved production fixtures.
 
 Run the local contract check with:
 
@@ -58,7 +58,78 @@ The connector must return normalized evidence objects:
 }
 ```
 
-Production connectors should keep raw records in the source system or approved raw-artifact store. AANA workflow checks should receive bounded summaries with source ID, freshness, trust tier, redaction status, and enough text for the verifier stack to check the candidate action.
+Production connectors should keep raw records in the source system or approved raw-artifact store. AANA workflow checks should receive bounded summaries with source ID, freshness, trust tier, redaction status, and enough text for the verifier stack to check the candidate action. Normalized evidence metadata must distinguish `source_mode: live`, `source_mode: approved_production_fixture`, and `source_mode: repository_fixture`.
+
+## Live Support Connectors
+
+The support product line now has a concrete live connector path for:
+
+- `crm_customer_account`
+- `order_history`
+- `refund_policy`
+- `support_ticket_history`
+- `email_recipient_verification`
+- `attachment_metadata`
+
+The adjacent support connectors remain part of the same boundary: `internal_notes_classifier`, `account_verification_status`, `billing_payment_redaction`, and `support_policy_registry`.
+
+Live support connectors are HTTPS JSON connectors. Each deployment-owned manifest must include:
+
+```json
+{
+  "connector_id": "crm_customer_account",
+  "endpoint_url": "https://support.example.internal/aana/evidence/crm-customer-account",
+  "environment": "production",
+  "owner": "Customer Support Operations",
+  "auth_token_env": "AANA_CRM_CUSTOMER_ACCOUNT_TOKEN",
+  "approval_status": "live_approved",
+  "source_mode": "live"
+}
+```
+
+The endpoint receives an `EvidenceFetchRequest` JSON body and returns:
+
+```json
+{
+  "evidence": [
+    {
+      "source_id": "crm-record",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "text": "Redacted CRM account facts for the current ticket."
+    }
+  ]
+}
+```
+
+Use the SDK helpers to build or run live support connectors:
+
+```python
+import aana
+
+external_evidence = {
+    "connector_manifests": [
+        {
+            "connector_id": "crm_customer_account",
+            "endpoint_url": "https://support.example.internal/aana/evidence/crm-customer-account",
+            "environment": "production",
+            "owner": "Customer Support Operations",
+            "auth_token_env": "AANA_CRM_CUSTOMER_ACCOUNT_TOKEN",
+            "approval_status": "live_approved",
+            "source_mode": "live",
+        }
+    ]
+}
+
+report = aana.run_live_support_connector(
+    "crm_customer_account",
+    external_evidence,
+    auth_scopes=("crm.account.read", "support.account_verification.read"),
+)
+```
+
+Only `approval_status: live_approved` or `approval_status: approved` with `source_mode: live` counts as live production evidence. A bare manifest ID is not enough.
 
 ## Connector Request Contract
 
@@ -112,7 +183,7 @@ Production connector implementations must fail closed when:
 
 The fixture bundle is intentionally synthetic and redacted. Its job is to prove that connector outputs can be normalized and accepted by `validate_workflow_evidence(..., require_structured=True)`.
 
-Synthetic support fixtures do not allow a production claim by themselves. Support guardrails require every support connector listed above to have either a live production connector manifest or an explicitly approved production fixture. The checked-in mock fixtures are contract fixtures only; they are marked as repository synthetic fixtures and fail the support production-evidence boundary until externally approved.
+Synthetic support fixtures do not allow a production claim by themselves. Support guardrails require every support connector listed above to have either a live-approved production connector manifest or an explicitly approved production fixture. The checked-in mock fixtures are contract fixtures only; they are marked as repository synthetic fixtures and fail the support production-evidence boundary until externally approved.
 
 ## Failure Routing
 

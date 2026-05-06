@@ -7,6 +7,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BASELINE_PATH = ROOT / "examples" / "first_deployable_support_baseline.json"
+INTERNAL_PILOT_BASELINE_PATH = ROOT / "examples" / "first_deployable_support_baseline.internal_pilot.json"
 
 
 def load_script(name, path):
@@ -46,6 +47,41 @@ class FirstDeployableBaselineTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any("external signoff and measured pilot results" in error for error in report["errors"]))
+
+    def test_internal_pilot_baseline_passes_require_reached(self):
+        report = baseline.validate_first_deployable_baseline(
+            INTERNAL_PILOT_BASELINE_PATH,
+            require_reached=True,
+        )
+
+        self.assertTrue(report["valid"], report)
+        self.assertTrue(report["baseline_reached"], report)
+        self.assertEqual(report["current_status"], "reached")
+
+    def test_internal_pilot_baseline_attaches_required_artifacts(self):
+        payload = json.loads(INTERNAL_PILOT_BASELINE_PATH.read_text(encoding="utf-8"))
+        attachments = payload["attached_artifacts"]
+
+        self.assertEqual(set(attachments), baseline.REQUIRED_ATTACHMENTS)
+        for reference in attachments.values():
+            self.assertTrue((ROOT / reference).exists(), reference)
+
+    def test_reached_baseline_rejects_pending_connector_manifest(self):
+        payload = json.loads(INTERNAL_PILOT_BASELINE_PATH.read_text(encoding="utf-8"))
+        connectors = json.loads((ROOT / payload["attached_artifacts"]["connector_manifests"]).read_text(encoding="utf-8"))
+        connectors["connector_manifests"][0]["approval_status"] = "pending"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = pathlib.Path(temp_dir)
+            connector_path = temp_path / "connectors.json"
+            baseline_path = temp_path / "baseline.json"
+            connector_path.write_text(json.dumps(connectors), encoding="utf-8")
+            payload["attached_artifacts"]["connector_manifests"] = str(connector_path)
+            baseline_path.write_text(json.dumps(payload), encoding="utf-8")
+            report = baseline.validate_first_deployable_baseline(baseline_path, require_reached=True)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("approval_status must be live_approved" in error for error in report["errors"]))
 
     def test_validator_rejects_reached_without_all_criteria_reached(self):
         payload = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))

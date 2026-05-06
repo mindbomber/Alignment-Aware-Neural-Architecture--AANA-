@@ -223,7 +223,7 @@ python scripts/aana_cli.py release-check --deployment-manifest examples/producti
 python scripts/aana_cli.py release-check --deployment-manifest examples/production_deployment_internal_pilot.json --governance-policy examples/human_governance_policy_internal_pilot.json --evidence-registry examples/evidence_registry.json --observability-policy examples/observability_policy_internal_pilot.json --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
 ```
 
-The observability policies declare required metrics, including `aix_score_average`, `aix_decision_count`, and `aix_hard_blocker_count`, plus alert thresholds, drift-review reports, ownership, and latency SLOs. `release-check` always enforces adapter AIx tuning against declared risk tiers. When `release-check` receives `--audit-log`, it also exports audit metrics and fails release on low final AIx score, AIx hard blockers, or disallowed final AIx decisions such as `defer` or `refuse`. The internal pilot profile gives the single-node deployment concrete alert routes and drift reports; a real deployment must connect those declarations to the selected monitoring stack.
+The observability policies declare required metrics, including `aix_score_average`, `aix_decision_count`, `aix_hard_blocker_count`, `refusal_defer_rate`, `connector_failure_count`, and `evidence_freshness_failure_count`, plus alert thresholds, drift-review reports, ownership, and latency SLOs. The internal-pilot policy at `examples/observability_policy_internal_pilot.json` is the dashboard/alert/on-call source of truth: it declares concrete dashboard panels, alert coverage for high refusal/defer rate, connector failures, stale evidence, latency spikes, AIx drift, and hard-blocker spikes, plus primary and secondary on-call ownership. `release-check` always enforces adapter AIx tuning against declared risk tiers. When `release-check` receives `--audit-log`, it also exports audit metrics and fails release on low final AIx score, AIx hard blockers, or disallowed final AIx decisions such as `defer` or `refuse`. The internal pilot profile gives the single-node deployment concrete alert routes and drift reports; a real deployment must connect those declarations to the selected monitoring stack.
 
 ## Milestone 6: Evaluation and Release Gates
 
@@ -241,6 +241,7 @@ Completion criteria:
 - Schema compatibility tests protect contract changes.
 - Release notes include known caveats and benchmark limitations.
 - Production rollout requires a reviewed evidence package, not only a passing unit test suite.
+- Incident response plan validation passes for severity levels, rollback triggers, notification paths, audit review, and customer-impact review.
 
 Local release gate:
 
@@ -249,6 +250,7 @@ docker compose up --build
 python scripts/dev.py contract-freeze
 python scripts/dev.py pilot-certify
 python scripts/dev.py production-profiles
+python scripts/validate_incident_response_plan.py
 python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json --drift-output eval_outputs/audit/ci/aana-ci-aix-drift.json --reviewer-report-output eval_outputs/audit/ci/aana-ci-reviewer-report.md --manifest-output eval_outputs/audit/ci/manifests/aana-ci-audit-integrity.json
 python scripts/aana_cli.py release-check
 python scripts/aana_cli.py release-check --deployment-manifest path/to/your-production-deployment.json --governance-policy path/to/your-governance-policy.json --audit-log path/to/redacted-audit.jsonl
@@ -330,17 +332,19 @@ python scripts/aana_cli.py release-check --skip-local-check
 
 ## Milestone 7: Deployment Hardening
 
-Status: outside this repo until a target deployment is chosen. The local `production-preflight` command lists these gates so they are not lost during release preparation.
+Status: complete for repo-local deployment packaging and validation. External production still requires the selected cluster, ingress, certificate, secret manager, immutable audit sink, connector services, and owner approval.
 
 Goal: run AANA in a controlled service environment.
 
 Completion criteria:
 
-- TLS termination and authenticated clients.
-- Per-client rate limits and request-size limits.
+- TLS termination, HTTPS-only ingress, and authenticated clients.
+- Per-client edge rate limits, runtime rate limits, and request-size limits.
 - Secret management outside source files and command history.
-- Health checks and graceful shutdown.
-- Deployment rollback plan.
+- `/health` liveness and `/ready` readiness checks.
+- CPU and memory requests/limits.
+- Non-root container runtime.
+- Deployment rollback plan and last-known-good artifact.
 - Dependency and container/image scanning if packaged as a service.
 - Least-privilege access to evidence sources and downstream agent actions.
 
@@ -362,14 +366,17 @@ python scripts/aana_cli.py validate-deployment --deployment-manifest examples/pr
 python scripts/aana_cli.py validate-deployment --deployment-manifest path/to/your-production-deployment.json --json
 ```
 
-The checked-in template is a concrete local controlled deployment profile. The `production_deployment_internal_pilot.json` profile is a more complete single-node internal pilot environment for running the current gallery behind an internal TLS terminator with token auth, append-only redacted audit logs, rate limits, evidence-source authorization, observability, domain-owner signoff, and human-review queues. Before external production use, replace local paths and internal queue names with the real infrastructure, owners, and review routes for that environment. A launch manifest must declare:
+The checked-in template is a concrete controlled deployment profile backed by `deploy/kubernetes/aana-bridge-production-template.yaml`. The Kubernetes template includes Secret, ConfigMap, PVC, Deployment, Service, HTTPS-only Ingress, `/health` and `/ready` probes, resource requests/limits, non-root runtime context, edge rate-limit annotations, and rollback command metadata. The `production_deployment_internal_pilot.json` profile is a more complete internal pilot environment for running the current gallery behind an internal TLS terminator with token auth, append-only redacted audit logs, rate limits, evidence-source authorization, observability, domain-owner signoff, human-review queues, and incident rollback path. Before external production use, replace internal queue names and example URLs with the real infrastructure, owners, and review routes for that environment. A launch manifest must declare:
 
 - bridge authentication, TLS termination, request-size limit, and rate limits,
+- container image, command, health/readiness probes, and resource limits,
+- Kubernetes manifest, namespace, service, ingress, and rollback command,
 - immutable audit sink, retention, redaction, and raw-artifact storage policy,
 - authorized evidence sources with owners, freshness SLOs, and trust tiers,
 - observability dashboard, alerts, and tracked gate/action/violation/AIx metrics,
 - adapter domain owners and review status,
-- human-review queue, triggers, and SLA.
+- human-review queue, triggers, and SLA,
+- incident owner, channel, rollback trigger, rollback path, rollback steps, and last-known-good artifact.
 
 Internal pilot smoke test:
 
@@ -479,5 +486,6 @@ Completed in this repository:
 - Human-governance policy template and validator for escalation, explanation, review metrics, and incident response.
 - Release-check command that combines local checks, doctor, adapter AIx tuning enforcement, production preflight, governance validation, AIx audit enforcement, and release documentation presence.
 - CI production-profile guard for adapter gallery examples, AIx tuning, internal pilot deployment/governance/observability profiles, evidence registry, evidence integration stubs, audit metrics artifact export, and release-check with a generated redacted audit log.
+- Incident response plan artifact and validator for severity levels, rollback triggers, owner notification paths, audit review procedure, and customer-impact review.
 
 Remaining production work depends on replacing templates with real deployment values, evidence sources, domain owners, review queues, incident channels, and monitoring stack.

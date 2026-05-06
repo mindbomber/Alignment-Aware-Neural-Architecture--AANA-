@@ -1,0 +1,265 @@
+{
+  "external_evidence_version": "0.1",
+  "evidence_scope": "internal_pilot",
+  "connector_manifests": [
+    {
+      "connector_id": "crm_customer_account",
+      "endpoint_url": "https://aana.internal.example/connectors/support/crm-customer-account",
+      "environment": "internal-pilot",
+      "owner": "Customer Support Operations",
+      "auth_token_env": "AANA_CRM_CUSTOMER_ACCOUNT_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "customer_account.read.redacted",
+        "customer_verification_status.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "customer_account_metadata",
+        "verification_status"
+      ],
+      "reviewed_by": "Customer Support Operations Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "order_history",
+      "endpoint_url": "https://aana.internal.example/connectors/support/order-history",
+      "environment": "internal-pilot",
+      "owner": "Order Operations",
+      "auth_token_env": "AANA_ORDER_HISTORY_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "orders.read.summary",
+        "refund_eligibility.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "order_summary",
+        "refund_status"
+      ],
+      "reviewed_by": "Order Operations Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "refund_policy",
+      "endpoint_url": "https://aana.internal.example/connectors/support/refund-policy",
+      "environment": "internal-pilot",
+      "owner": "Support Policy",
+      "auth_token_env": "AANA_REFUND_POLICY_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "support_policy.read.published"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "published_policy"
+      ],
+      "reviewed_by": "Support Policy Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "internal_notes_classifier",
+      "endpoint_url": "https://aana.internal.example/connectors/support/internal-notes-classifier",
+      "environment": "internal-pilot",
+      "owner": "Privacy and Support Operations",
+      "auth_token_env": "AANA_INTERNAL_NOTES_CLASSIFIER_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "internal_notes.classification.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "internal_note_classification"
+      ],
+      "reviewed_by": "Privacy and Support Operations Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "support_ticket_history",
+      "endpoint_url": "https://aana.internal.example/connectors/support/ticket-history",
+      "environment": "internal-pilot",
+      "owner": "Support Operations",
+      "auth_token_env": "AANA_SUPPORT_TICKET_HISTORY_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "tickets.read.redacted_history"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "ticket_metadata",
+        "redacted_ticket_history"
+      ],
+      "reviewed_by": "Support Operations Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "email_recipient_verification",
+      "endpoint_url": "https://aana.internal.example/connectors/support/email-recipient-verification",
+      "environment": "internal-pilot",
+      "owner": "Messaging Platform",
+      "auth_token_env": "AANA_EMAIL_RECIPIENT_VERIFICATION_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "email_recipient.verify"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "recipient_verification_metadata"
+      ],
+      "reviewed_by": "Messaging Platform Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "attachment_metadata",
+      "endpoint_url": "https://aana.internal.example/connectors/support/attachment-metadata",
+      "environment": "internal-pilot",
+      "owner": "Messaging Platform and DLP",
+      "auth_token_env": "AANA_ATTACHMENT_METADATA_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "attachments.metadata.read",
+        "dlp.classification.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "attachment_metadata",
+        "dlp_classification"
+      ],
+      "reviewed_by": "DLP Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "account_verification_status",
+      "endpoint_url": "https://aana.internal.example/connectors/support/account-verification-status",
+      "environment": "internal-pilot",
+      "owner": "Support Identity Verification",
+      "auth_token_env": "AANA_ACCOUNT_VERIFICATION_STATUS_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "account_verification_status.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "verification_status"
+      ],
+      "reviewed_by": "Support Identity Verification Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "billing_payment_redaction",
+      "endpoint_url": "https://aana.internal.example/connectors/support/billing-payment-redaction",
+      "environment": "internal-pilot",
+      "owner": "Billing Privacy and Payments Platform",
+      "auth_token_env": "AANA_BILLING_PAYMENT_REDACTION_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "billing.redaction_metadata.read",
+        "payment_data.classification.read"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "billing_redaction_metadata",
+        "payment_classification"
+      ],
+      "reviewed_by": "Billing Privacy Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    },
+    {
+      "connector_id": "support_policy_registry",
+      "endpoint_url": "https://aana.internal.example/connectors/support/policy-registry",
+      "environment": "internal-pilot",
+      "owner": "Support Policy Governance",
+      "auth_token_env": "AANA_SUPPORT_POLICY_REGISTRY_TOKEN",
+      "approval_status": "live_approved",
+      "source_mode": "live",
+      "permission_model": "least_privilege_readonly",
+      "approved_scopes": [
+        "support_policy_registry.read.published"
+      ],
+      "denied_scopes": [
+        "write",
+        "delete",
+        "send",
+        "export_raw",
+        "admin"
+      ],
+      "data_classes": [
+        "published_policy_registry"
+      ],
+      "reviewed_by": "Support Policy Governance Security Reviewer",
+      "reviewed_at": "2026-05-05"
+    }
+  ]
+}

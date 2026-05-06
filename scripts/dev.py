@@ -187,6 +187,12 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Validate adapter catalog metadata, docs links, evidence requirements, and completeness.",
         ),
         ReleaseGate(
+            "support_adapter_expansion",
+            "catalog",
+            [PYTHON, "scripts/validate_support_adapter_expansion.py"],
+            "Validate gated productization for refunds, account closure, chargeback, cancellation, escalation, and retention/deletion support candidates.",
+        ),
+        ReleaseGate(
             "adapter_examples",
             "adapter",
             [PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"],
@@ -223,6 +229,24 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Validate support security/privacy deployment review controls and external production blockers.",
         ),
         ReleaseGate(
+            "secrets_scan",
+            "production-profile",
+            [PYTHON, "scripts/validate_secrets_scan.py"],
+            "Run allowlist-backed secrets scanning for deployment, runtime, docs, examples, scripts, and tests.",
+        ),
+        ReleaseGate(
+            "audit_retention_policy",
+            "production-profile",
+            [PYTHON, "scripts/validate_audit_retention_policy.py"],
+            "Validate append-only audit retention, legal hold, access control, integrity checks, and support redaction proof.",
+        ),
+        ReleaseGate(
+            "incident_response_plan",
+            "production-profile",
+            [PYTHON, "scripts/validate_incident_response_plan.py"],
+            "Validate severity levels, rollback triggers, owner notification paths, audit review, and customer-impact review.",
+        ),
+        ReleaseGate(
             "support_domain_signoff",
             "production-profile",
             [PYTHON, "scripts/validate_support_domain_signoff.py"],
@@ -245,6 +269,12 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "production-profile",
             [PYTHON, "scripts/validate_first_deployable_baseline.py"],
             "Validate the first deployable support runtime baseline boundary and remaining external evidence.",
+        ),
+        ReleaseGate(
+            "production_readiness_review",
+            "production-profile",
+            [PYTHON, "scripts/validate_production_readiness_review.py"],
+            "Validate the environment-specific readiness review before calling an environment deployable.",
         ),
         ReleaseGate(
             "internal_pilot_plan",
@@ -307,16 +337,31 @@ def production_profiles(audit_log=None, metrics_output=None, drift_output=None, 
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         audit_log_path.write_text("", encoding="utf-8")
         run([PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"])
+        run([PYTHON, "scripts/validate_support_adapter_expansion.py"])
         run([PYTHON, "scripts/aana_cli.py", "pilot-certify"])
         run([PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"])
         run([PYTHON, "scripts/validate_versioning_migration.py"])
         run([PYTHON, "scripts/aana_cli.py", "aix-tuning"])
         run([PYTHON, "scripts/aana_cli.py", "validate-deployment", "--deployment-manifest", "examples/production_deployment_internal_pilot.json"])
         run([PYTHON, "scripts/validate_internal_pilot_plan.py"])
+        run([PYTHON, "scripts/validate_audit_retention_policy.py"])
         run([PYTHON, "scripts/validate_support_domain_signoff.py"])
         run([PYTHON, "scripts/validate_production_readiness_boundary.py"])
         run([PYTHON, "scripts/validate_support_sla_failure_policy.py"])
         run([PYTHON, "scripts/validate_first_deployable_baseline.py"])
+        run(
+            [
+                PYTHON,
+                "scripts/validate_first_deployable_baseline.py",
+                "--baseline",
+                "examples/first_deployable_support_baseline.internal_pilot.json",
+                "--require-reached",
+            ]
+        )
+        run([PYTHON, "scripts/validate_production_readiness_review.py"])
+        run([PYTHON, "scripts/validate_security_privacy_review.py"])
+        run([PYTHON, "scripts/validate_secrets_scan.py"])
+        run([PYTHON, "scripts/validate_incident_response_plan.py"])
         run([PYTHON, "scripts/aana_cli.py", "validate-governance", "--governance-policy", "examples/human_governance_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-observability", "--observability-policy", "examples/observability_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-evidence-registry", "--evidence-registry", "examples/evidence_registry.json"])

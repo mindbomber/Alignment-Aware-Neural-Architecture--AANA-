@@ -1,0 +1,96 @@
+{
+  "review_version": "0.1",
+  "review_id": "aana-support-production-readiness-review-internal-pilot",
+  "title": "AANA Support Runtime Production Readiness Review - Internal Pilot",
+  "environment": "internal-pilot",
+  "review_status": "approved_for_internal_pilot_deployable",
+  "environment_deployable": true,
+  "production_ready": false,
+  "production_claim": "The internal-pilot environment is deployable for the approved support runtime baseline. This artifact does not certify external production customer traffic.",
+  "baseline_artifact": "examples/first_deployable_support_baseline.internal_pilot.json",
+  "required_commands": [
+    {
+      "id": "local_release_gates",
+      "command": "python scripts/dev.py release-gate",
+      "status": "passed",
+      "category": "release"
+    },
+    {
+      "id": "environment_baseline_require_reached",
+      "command": "python scripts/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached",
+      "status": "passed",
+      "category": "production-profile"
+    }
+  ],
+  "reviewed_evidence": [
+    {
+      "id": "live_connector_evidence",
+      "status": "approved",
+      "artifact": "examples/external_production_evidence_internal_pilot.json",
+      "summary": "All required support evidence connector manifests are live-approved, HTTPS-backed, and least-privilege read-only for the internal-pilot environment."
+    },
+    {
+      "id": "support_domain_owner_signoff",
+      "status": "approved",
+      "artifact": "examples/support_domain_owner_signoff_internal_pilot.json",
+      "summary": "Support leadership, support policy, privacy, audit, escalation, safe-language, verification, and allowed automation scope signoffs are approved for internal pilot."
+    },
+    {
+      "id": "pilot_metrics",
+      "status": "accepted",
+      "artifact": "examples/internal_pilot_measured_results_support.json",
+      "summary": "Measured internal-pilot support results meet the baseline thresholds for over-acceptance, over-refusal, latency, and correction success."
+    },
+    {
+      "id": "audit_retention",
+      "status": "approved_for_internal_pilot",
+      "artifact": "examples/audit_retention_policy_internal_pilot.json",
+      "summary": "Audit retention is metadata-only, append-only, immutable, access-controlled, and redaction-validated for the internal pilot."
+    },
+    {
+      "id": "observability",
+      "status": "approved_for_internal_pilot",
+      "artifact": "examples/observability_policy_internal_pilot.json",
+      "summary": "Dashboards, tracked metrics, alerts, drift review, latency SLO, and on-call ownership are declared for support runtime operation."
+    },
+    {
+      "id": "security_privacy",
+      "status": "reviewed",
+      "artifact": "examples/security_privacy_review_support.json",
+      "summary": "Bridge auth, connector permissions, PII redaction, attachment metadata, rate limiting, and secrets scanning are reviewed for the internal pilot boundary."
+    },
+    {
+      "id": "incident_response",
+      "status": "approved_for_internal_pilot",
+      "artifact": "examples/incident_response_plan_internal_pilot.json",
+      "summary": "Severity levels, rollback triggers, owner notification paths, audit review, and customer-impact review are defined."
+    },
+    {
+      "id": "deployment_manifest",
+      "status": "approved_for_internal_pilot",
+      "artifact": "examples/production_deployment_internal_pilot.json",
+      "summary": "The deployment artifact declares the bridge, auth, TLS assumptions, rate limits, probes, resource limits, audit sink, observability, human review, and rollback path."
+    }
+  ],
+  "decision": {
+    "environment_status": "deployable_internal_pilot",
+    "allowed_scope": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ],
+    "not_allowed_scope": [
+      "external production customer traffic",
+      "full autonomous support enforcement",
+      "support adapter expansion candidates without their own executable fixtures, evidence, calibration, human review, and domain-owner signoff"
+    ],
+    "promotion_requirement": "External production readiness requires a production environment artifact that passes the same review with production connector manifests, production owner signoff, production audit storage evidence, production observability, production security review, incident response ownership, and measured production pilot results."
+  },
+  "release_gate": {
+    "script": "scripts/validate_production_readiness_review.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

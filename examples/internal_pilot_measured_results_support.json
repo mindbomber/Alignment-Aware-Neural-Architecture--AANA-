@@ -1,0 +1,45 @@
+{
+  "pilot_results_version": "0.1",
+  "pilot_id": "aana-support-shadow-internal-pilot",
+  "environment": "internal-pilot",
+  "measurement_status": "accepted",
+  "mode": "shadow_observe_only",
+  "sample": {
+    "workflow_checks": 8,
+    "agent_event_checks": 8,
+    "support_adapters": [
+      "support_reply",
+      "crm_support_reply",
+      "email_send_guardrail",
+      "ticket_update_checker",
+      "invoice_billing_reply"
+    ]
+  },
+  "metrics": {
+    "over_acceptance_count": 0,
+    "over_refusal_count": 0,
+    "p95_latency_ms": 1.484,
+    "correction_success_rate": 1.0,
+    "human_review_load": 12,
+    "human_review_rate": 0.75,
+    "human_review_precision": 1.0,
+    "false_blocker_rate": 0.0,
+    "evidence_missing_route_accuracy": 1.0
+  },
+  "would_metrics": {
+    "would_block": 12,
+    "would_revise": 11,
+    "would_retrieve": 0,
+    "would_ask": 1,
+    "would_defer": 0,
+    "would_refuse": 0,
+    "would_accept": 4
+  },
+  "audit_log_ref": "eval_outputs/audit/support-shadow-internal-pilot.jsonl",
+  "metrics_report_ref": "eval_outputs/pilots/support-shadow-internal-pilot-results.json",
+  "reviewer_report_ref": "eval_outputs/pilots/support-shadow-internal-pilot-reviewer-report.md",
+  "notes": [
+    "Measured result artifact is scoped to the internal-pilot deployable baseline.",
+    "It does not certify production readiness for external customer traffic."
+  ]
+}

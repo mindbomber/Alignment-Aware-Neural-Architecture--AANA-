@@ -31,6 +31,28 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
         self.assertIn("--host", dockerfile)
         self.assertIn("0.0.0.0", dockerfile)
         self.assertIn("--audit-log", dockerfile)
+        self.assertIn("USER 10001", dockerfile)
+        self.assertIn("HEALTHCHECK", dockerfile)
+
+    def test_production_kubernetes_template_declares_hardened_runtime(self):
+        manifest = (ROOT / "deploy" / "kubernetes" / "aana-bridge-production-template.yaml").read_text(encoding="utf-8")
+
+        for expected in [
+            "kind: Deployment",
+            "kind: Service",
+            "kind: Ingress",
+            "nginx.ingress.kubernetes.io/force-ssl-redirect: \"true\"",
+            "nginx.ingress.kubernetes.io/limit-rpm: \"60\"",
+            "path: /health",
+            "path: /ready",
+            "resources:",
+            "requests:",
+            "limits:",
+            "runAsNonRoot: true",
+            "allowPrivilegeEscalation: false",
+            "kubectl rollout undo deployment/aana-bridge -n aana-runtime",
+        ]:
+            self.assertIn(expected, manifest)
 
     def test_compose_wires_runtime_profiles_and_post_auth(self):
         compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")

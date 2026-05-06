@@ -83,6 +83,8 @@ redacted audit records survive container restarts.
 The deployable runtime package is intentionally small:
 
 - `Dockerfile`: builds the bridge image and starts `scripts/aana_server.py`.
+  The image runs as UID `10001` and uses `/ready` as the container
+  healthcheck.
 - `docker-compose.yml`: local container startup with token auth, audit logging,
   body limits, rate-limit settings, timeout settings, and a `/ready`
   healthcheck.
@@ -93,9 +95,11 @@ The deployable runtime package is intentionally small:
   readiness probe, and Service.
 - `deploy/kubernetes/aana-bridge-internal-pilot.yaml`: local internal pilot
   profile overlay values.
-- `deploy/kubernetes/aana-bridge-production-template.yaml`: production template
-  values that must be replaced with approved evidence, audit, review, and
-  observability paths before use.
+- `deploy/kubernetes/aana-bridge-production-template.yaml`: full production
+  Kubernetes template with Secret, ConfigMap, PVC, Deployment, Service,
+  HTTPS-only Ingress, `/health` and `/ready` probes, CPU/memory requests and
+  limits, non-root runtime context, edge rate-limit annotations, and an explicit
+  rollback command.
 
 The bridge process reads auth from `AANA_BRIDGE_TOKEN` unless `--auth-token` or
 `--auth-token-file` is supplied. The container default command uses:
@@ -178,3 +182,22 @@ python scripts/aana_cli.py release-check --deployment-manifest examples/producti
 Use `python scripts/aana_cli.py pilot-certify` to confirm the CLI, Python API,
 HTTP bridge, contracts, skills/plugins, evidence stubs, and contract freeze
 surfaces are locally pilot-ready.
+
+## Production Deployment Assumptions
+
+The production Kubernetes template assumes TLS is terminated by the ingress
+controller, HTTPS redirects are enforced, caller authentication is still handled
+by the bridge token, and tenant-aware edge limits are enforced before traffic
+reaches the Python process. The bridge keeps its own per-client runtime rate
+limit as a second guard.
+
+Rollback is an operational requirement, not an optional note. The production
+manifest and deployment profile both declare:
+
+```powershell
+kubectl rollout undo deployment/aana-bridge -n aana-runtime
+```
+
+For support enforcement incidents, first switch affected adapters back to
+shadow or advisory mode, then roll back the deployment, verify `/health` and
+`/ready`, and rerun the release gate before restoring enforcement.

@@ -677,6 +677,24 @@ def run_evidence_mock_connector(integration_id, fixtures=None, auth_scopes=None,
     )
 
 
+def live_support_connector_manifests(external_evidence):
+    return {
+        connector_id: manifest.to_dict()
+        for connector_id, manifest in evidence_integrations.live_support_connector_manifests(external_evidence).items()
+    }
+
+
+def run_live_support_connector(integration_id, external_evidence, auth_scopes=None, now=None, source_ids=None, request=None):
+    return evidence_integrations.run_live_support_connector(
+        integration_id,
+        external_evidence,
+        auth_scopes=auth_scopes,
+        now=now,
+        source_ids=source_ids,
+        request=request,
+    )
+
+
 def evidence_mock_connector_matrix(fixtures=None, integration_ids=None, now=None):
     return evidence_integrations.mock_connector_matrix(
         fixtures=fixtures,

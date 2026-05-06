@@ -1,0 +1,108 @@
+{
+  "policy_version": "0.1",
+  "policy_id": "aana-support-audit-retention-internal-pilot",
+  "title": "AANA Support Production Audit Retention Policy",
+  "environment": "internal-pilot",
+  "status": "approved_for_internal_pilot",
+  "positioning": "This policy approves an append-only/immutable audit sink for internal-pilot support guardrails. It does not certify external production readiness without the environment-specific storage owner approval and live deployment evidence.",
+  "audit_record_scope": {
+    "records": "decision metadata only",
+    "allowed_fields": [
+      "adapter_id",
+      "workflow_id",
+      "event_id",
+      "gate_decision",
+      "recommended_action",
+      "candidate_gate",
+      "violation_codes",
+      "aix",
+      "candidate_aix",
+      "hard_blockers",
+      "evidence_source_ids",
+      "input_fingerprints",
+      "execution_mode",
+      "human_review_route",
+      "human_review_queue",
+      "latency_ms",
+      "connector_failures",
+      "evidence_freshness_failures"
+    ],
+    "prohibited_fields": [
+      "raw_customer_message",
+      "raw_candidate_response",
+      "raw_prompt",
+      "raw_evidence",
+      "full_crm_record",
+      "payment_or_billing_data",
+      "internal_notes",
+      "attachment_body",
+      "safe_response_text",
+      "secrets",
+      "tokens"
+    ],
+    "raw_artifact_store": "none",
+    "redaction_required": true
+  },
+  "storage": {
+    "approved": true,
+    "sink_uri": "immutable-audit://aana-internal-pilot/support/decision-metadata",
+    "handoff_format": "jsonl",
+    "jsonl_role": "local export and test handoff only",
+    "append_only": true,
+    "immutable": true,
+    "object_lock": "compliance",
+    "versioning": true,
+    "write_mode": "create-only append with no overwrite or delete permission for runtime writers",
+    "owner": "AANA Platform Operations",
+    "deployment_manifest_ref": "examples/production_deployment_internal_pilot.json#audit"
+  },
+  "retention": {
+    "minimum_days": 365,
+    "default_days": 730,
+    "delete_after_expiration": "storage lifecycle deletes expired records only when no legal hold is active",
+    "legal_hold": {
+      "supported": true,
+      "authority": "Legal and Security Operations",
+      "effect": "suspend lifecycle deletion and preserve integrity manifests until hold is released"
+    }
+  },
+  "access_control": {
+    "runtime_writer_role": "aana-runtime-audit-writer",
+    "reader_roles": [
+      "aana-audit-reviewer",
+      "support-security-reviewer"
+    ],
+    "admin_roles": [
+      "security-audit-admin"
+    ],
+    "denied": [
+      "public",
+      "unauthenticated",
+      "support-agent-runtime-read",
+      "general-support-agent"
+    ],
+    "mfa_required": true,
+    "least_privilege": true,
+    "break_glass_review_required": true
+  },
+  "integrity_checks": {
+    "hash_algorithm": "sha256",
+    "manifest_cadence": "daily",
+    "manifest_chain_required": true,
+    "previous_manifest_hash_required": true,
+    "verification_command": "python scripts/aana_cli.py audit-verify --manifest <manifest>",
+    "review_cadence": "weekly",
+    "tamper_response": "open security incident, freeze legal hold, compare manifest chain, and preserve affected objects"
+  },
+  "redaction_proof": {
+    "method": "Generate support Workflow Contract and Agent Event audit records from canonical fixtures, validate schema, and scan for raw support request, candidate, evidence, CRM, payment, internal note, and attachment text.",
+    "fixture_ref": "examples/support_workflow_contract_examples.json",
+    "validator": "scripts/validate_audit_retention_policy.py",
+    "required_result": "no_raw_support_data_stored"
+  },
+  "release_gate": {
+    "script": "scripts/validate_audit_retention_policy.py",
+    "category": "production-profile",
+    "blocks_release": true
+  }
+}

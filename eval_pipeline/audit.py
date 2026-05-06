@@ -16,7 +16,7 @@ AUDIT_DRIFT_REPORT_VERSION = "0.1"
 AUDIT_REVIEWER_REPORT_VERSION = "0.1"
 AUDIT_DASHBOARD_VERSION = "0.1"
 AUDIT_RECORD_TYPES = {"agent_check", "workflow_check", "workflow_batch_check"}
-EXECUTION_MODES = {"enforce", "shadow"}
+EXECUTION_MODES = {"advisory", "enforce", "shadow"}
 SHADOW_ROUTES = {"pass", "revise", "defer", "refuse"}
 SHADOW_ACTION_ROUTE = {
     "accept": "pass",
@@ -361,6 +361,8 @@ def _execution_mode(result, shadow_mode=False):
         return "shadow"
     if isinstance(result, dict) and result.get("execution_mode") == "shadow":
         return "shadow"
+    if isinstance(result, dict) and result.get("execution_mode") == "advisory":
+        return "advisory"
     return "enforce"
 
 

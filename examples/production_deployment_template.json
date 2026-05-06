@@ -3,13 +3,64 @@
   "environment": "production",
   "bridge": {
     "host": "127.0.0.1",
+    "public_base_url": "https://aana.production.example",
     "auth_required": true,
     "tls_terminated": true,
+    "tls": {
+      "termination": "managed ingress controller",
+      "ingress_class": "nginx-internal",
+      "certificate_ref": "aana-runtime/aana-bridge-tls",
+      "minimum_tls_version": "TLSv1.2",
+      "https_only": true
+    },
     "max_body_bytes": 1048576,
     "rate_limits": {
       "enabled": true,
-      "requests_per_minute": 60
+      "requests_per_minute": 60,
+      "burst": 15,
+      "scope": "per authenticated client token",
+      "runtime_enforced": true,
+      "edge_enforced": true,
+      "edge_policy": "deploy/kubernetes/aana-bridge-production-template.yaml"
     }
+  },
+  "container": {
+    "image": "registry.example/aana/http-bridge:0.1",
+    "image_pull_policy": "IfNotPresent",
+    "command": "python scripts/aana_server.py --host $AANA_BRIDGE_HOST --port $AANA_BRIDGE_PORT --gallery $AANA_ADAPTER_GALLERY --audit-log $AANA_AUDIT_LOG --max-body-bytes $AANA_MAX_BODY_BYTES --rate-limit-per-minute $AANA_RATE_LIMIT_PER_MINUTE --read-timeout-seconds $AANA_READ_TIMEOUT_SECONDS",
+    "probes": {
+      "liveness": {
+        "path": "/health",
+        "period_seconds": 10,
+        "timeout_seconds": 5,
+        "failure_threshold": 6
+      },
+      "readiness": {
+        "path": "/ready",
+        "period_seconds": 10,
+        "timeout_seconds": 5,
+        "failure_threshold": 6
+      }
+    },
+    "resources": {
+      "requests": {
+        "cpu": "250m",
+        "memory": "512Mi"
+      },
+      "limits": {
+        "cpu": "1",
+        "memory": "1Gi"
+      }
+    }
+  },
+  "kubernetes": {
+    "manifest": "deploy/kubernetes/aana-bridge-production-template.yaml",
+    "namespace": "aana-runtime",
+    "service_name": "aana-bridge",
+    "ingress_name": "aana-bridge",
+    "health_endpoint": "/health",
+    "readiness_endpoint": "/ready",
+    "rollback_command": "kubectl rollout undo deployment/aana-bridge -n aana-runtime"
   },
   "audit": {
     "sink": "jsonl://eval_outputs/audit/aana-audit.jsonl",
@@ -34,8 +85,11 @@
       "aix_decision_count",
       "aix_hard_blocker_count",
       "aix_score_average",
+      "connector_failure_count",
+      "evidence_freshness_failure_count",
       "gate_decision_count",
       "recommended_action_count",
+      "refusal_defer_rate",
       "violation_code_count",
       "adapter_error_count",
       "latency"
@@ -71,5 +125,19 @@
       "irreversible external actions"
     ],
     "sla": "1 business day"
+  },
+  "incident_response": {
+    "owner": "AANA Production On-Call",
+    "incident_channel": "AANA Production Incident Channel",
+    "rollback_path": "kubectl rollout undo deployment/aana-bridge -n aana-runtime and disable enforcing mode for irreversible support adapters",
+    "rollback_trigger": "critical false accept, auth bypass, audit leakage, connector permission incident, or sustained bridge unavailability",
+    "last_known_good_artifact": "registry.example/aana/http-bridge:0.1-last-known-good",
+    "rollback_steps": [
+      "Page AANA Production On-Call and Support Operations owner.",
+      "Switch affected support adapters to shadow or advisory mode.",
+      "Run kubectl rollout undo deployment/aana-bridge -n aana-runtime.",
+      "Verify /health and /ready return success.",
+      "Run release gate against the last-known-good artifact before re-enabling enforcement."
+    ]
   }
 }

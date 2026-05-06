@@ -36,6 +36,8 @@
         "escalation",
         "retention_deletion_request"
       ],
+      "expansion_plan": "examples/support_adapter_expansion_plan.json",
+      "expansion_gate": "Later adapters stay expansion candidates until the first enforced support baseline is measured and accepted, then each candidate still needs executable fixtures, verifier ownership, evidence requirements, AIx tuning, human-review routing, audit-safe examples, and domain-owner signoff before becoming a supported adapter.",
       "supported_surfaces": [
         "CLI",
         "Python SDK",

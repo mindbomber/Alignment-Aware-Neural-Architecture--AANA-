@@ -93,7 +93,11 @@ class DeploymentPackageTests(unittest.TestCase):
 
         self.assertIn("production-template", production_template)
         self.assertIn("requires-external-evidence-and-owner-signoff", production_template)
-        self.assertIn("replace-with-append-only-audit-sink-mounted-path", production_template)
+        self.assertIn("kind: Deployment", production_template)
+        self.assertIn("kind: Ingress", production_template)
+        self.assertIn("path: /health", production_template)
+        self.assertIn("path: /ready", production_template)
+        self.assertIn("kubectl rollout undo deployment/aana-bridge -n aana-runtime", production_template)
         self.assertIn("replace-with-approved-evidence-registry", production_template)
 
     def test_repo_deployment_manifests_remain_validator_clean(self):

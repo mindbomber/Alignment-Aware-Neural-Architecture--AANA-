@@ -36,6 +36,12 @@ REQUIRED_PILOT_METRICS = {
     "max_p95_latency_ms",
     "min_correction_success_rate",
 }
+REQUIRED_ATTACHMENTS = {
+    "connector_manifests",
+    "deployment_manifest",
+    "support_owner_signoff",
+    "measured_pilot_results",
+}
 REACHED_STATUSES = {"reached", "approved", "validated"}
 
 
@@ -44,16 +50,106 @@ def load_json(path):
 
 
 def _repo_path_exists(reference):
-    raw_path = str(reference).split(":", 1)[0].split("#", 1)[0]
+    reference = str(reference)
+    if pathlib.Path(reference).is_absolute():
+        return pathlib.Path(reference).exists()
+    raw_path = reference.split(":", 1)[0].split("#", 1)[0]
     if not raw_path or raw_path.startswith("scripts/aana_cli.py "):
         return True
     if raw_path.startswith("scripts/dev.py "):
         return (ROOT / "scripts" / "dev.py").exists()
-    return (ROOT / raw_path).exists()
+    path = pathlib.Path(raw_path)
+    if path.is_absolute():
+        return path.exists()
+    return (ROOT / path).exists()
 
 
 def _criterion_reached(criterion):
     return criterion.get("status") in REACHED_STATUSES
+
+
+def _load_attached_json(attachments, key, errors):
+    reference = attachments.get(key)
+    if not isinstance(reference, str) or not reference.strip():
+        errors.append(f"attached_artifacts.{key} is required.")
+        return None
+    if not _repo_path_exists(reference):
+        errors.append(f"attached_artifacts.{key} path does not exist: {reference}")
+        return None
+    try:
+        path = pathlib.Path(reference)
+        return load_json(path if path.is_absolute() else ROOT / path)
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"attached_artifacts.{key} must be readable JSON: {exc}")
+        return None
+
+
+def _validate_connector_attachment(payload, errors):
+    manifests = payload.get("connector_manifests", []) if isinstance(payload, dict) else []
+    by_id = {item.get("connector_id"): item for item in manifests if isinstance(item, dict)}
+    missing = sorted(
+        {
+            "crm_customer_account",
+            "order_history",
+            "refund_policy",
+            "internal_notes_classifier",
+            "support_ticket_history",
+            "email_recipient_verification",
+            "attachment_metadata",
+            "account_verification_status",
+            "billing_payment_redaction",
+            "support_policy_registry",
+        }
+        - set(by_id)
+    )
+    if missing:
+        errors.append(f"connector_manifests missing support connector(s): {', '.join(missing)}")
+    for connector_id, manifest in by_id.items():
+        if connector_id not in missing and connector_id:
+            if manifest.get("source_mode") != "live":
+                errors.append(f"connector_manifests.{connector_id}: source_mode must be live.")
+            if manifest.get("approval_status") not in {"live_approved", "approved"}:
+                errors.append(f"connector_manifests.{connector_id}: approval_status must be live_approved or approved.")
+            if not str(manifest.get("endpoint_url", "")).startswith("https://"):
+                errors.append(f"connector_manifests.{connector_id}: endpoint_url must be HTTPS.")
+
+
+def _validate_signoff_attachment(payload, errors):
+    if not isinstance(payload, dict):
+        errors.append("support_owner_signoff must be a JSON object.")
+        return
+    if payload.get("overall_status") != "approved":
+        errors.append("support_owner_signoff.overall_status must be approved.")
+    for approver in payload.get("required_approvers", []):
+        if approver.get("approval_status") != "approved":
+            errors.append(f"support_owner_signoff approver {approver.get('role', '<missing>')} must be approved.")
+    for area in payload.get("required_signoff_areas", []):
+        if area.get("approval_status") != "approved":
+            errors.append(f"support_owner_signoff area {area.get('id', '<missing>')} must be approved.")
+
+
+def _validate_pilot_results_attachment(payload, thresholds, errors):
+    if not isinstance(payload, dict):
+        errors.append("measured_pilot_results must be a JSON object.")
+        return
+    if payload.get("measurement_status") != "accepted":
+        errors.append("measured_pilot_results.measurement_status must be accepted.")
+    metrics = payload.get("metrics", {})
+    for key in ("over_acceptance_count", "over_refusal_count", "p95_latency_ms", "correction_success_rate"):
+        if not isinstance(metrics.get(key), (int, float)):
+            errors.append(f"measured_pilot_results.metrics.{key} is required.")
+            return
+    if metrics.get("over_acceptance_count") > thresholds.get("max_over_acceptance_count", -1):
+        errors.append("measured_pilot_results.over_acceptance_count exceeds threshold.")
+    if metrics.get("over_refusal_count") > thresholds.get("max_over_refusal_count", -1):
+        errors.append("measured_pilot_results.over_refusal_count exceeds threshold.")
+    if metrics.get("p95_latency_ms") > thresholds.get("max_p95_latency_ms", -1):
+        errors.append("measured_pilot_results.p95_latency_ms exceeds threshold.")
+    if metrics.get("correction_success_rate") < thresholds.get("min_correction_success_rate", 2.0):
+        errors.append("measured_pilot_results.correction_success_rate is below threshold.")
+    for key in ("audit_log_ref", "metrics_report_ref", "reviewer_report_ref"):
+        if not str(payload.get(key, "")).strip():
+            errors.append(f"measured_pilot_results.{key} is required.")
 
 
 def validate_first_deployable_baseline(path=DEFAULT_BASELINE, require_reached=False):
@@ -111,6 +207,27 @@ def validate_first_deployable_baseline(path=DEFAULT_BASELINE, require_reached=Fa
     measured = criteria_by_id.get("internal_pilot_metrics", {})
     if measured.get("status") != "pending_measured_pilot_results" and payload.get("current_status") != "reached":
         errors.append("internal_pilot_metrics should remain pending_measured_pilot_results until measured pilot evidence is supplied.")
+
+    if payload.get("current_status") == "reached" or require_reached:
+        attachments = payload.get("attached_artifacts", {})
+        if not isinstance(attachments, dict):
+            errors.append("attached_artifacts must be an object for a reached baseline.")
+            attachments = {}
+        missing_attachments = sorted(REQUIRED_ATTACHMENTS - set(attachments))
+        if missing_attachments:
+            errors.append(f"attached_artifacts missing: {', '.join(missing_attachments)}")
+        connector_payload = _load_attached_json(attachments, "connector_manifests", errors)
+        signoff_payload = _load_attached_json(attachments, "support_owner_signoff", errors)
+        pilot_payload = _load_attached_json(attachments, "measured_pilot_results", errors)
+        deployment_payload = _load_attached_json(attachments, "deployment_manifest", errors)
+        if connector_payload is not None:
+            _validate_connector_attachment(connector_payload, errors)
+        if signoff_payload is not None:
+            _validate_signoff_attachment(signoff_payload, errors)
+        if pilot_payload is not None:
+            _validate_pilot_results_attachment(pilot_payload, thresholds, errors)
+        if isinstance(deployment_payload, dict) and deployment_payload.get("environment") != payload.get("environment"):
+            errors.append("attached deployment_manifest.environment must match baseline environment.")
 
     reached_policy = payload.get("baseline_reached_policy", {})
     if reached_policy.get("all_required_criteria_must_be_reached") is not True:

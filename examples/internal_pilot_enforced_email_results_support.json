@@ -1,0 +1,57 @@
+{
+  "pilot_results_version": "0.1",
+  "pilot_id": "aana-support-enforced-email-internal-pilot",
+  "environment": "internal-pilot",
+  "measurement_status": "accepted",
+  "mode": "enforced_email_send_guardrail",
+  "enforcement": "irreversible_email_send_blocking",
+  "enforced_adapters": [
+    "email_send_guardrail"
+  ],
+  "required_preflight": {
+    "verified_recipient": true,
+    "attachment_metadata_dlp": true,
+    "irreversible_send_approval_path": true,
+    "bridge_outage_fail_closed": true
+  },
+  "sample": {
+    "enforced_email_checks": 6,
+    "skipped_non_email_checks": 10,
+    "workflow_contract_checks": 3,
+    "agent_event_checks": 3
+  },
+  "metrics": {
+    "send_allowed_count": 2,
+    "send_blocked_count": 4,
+    "human_review_required_count": 4,
+    "excluded_non_email_checks": 10,
+    "preflight_failure_count": 0,
+    "bridge_outage_blocks_sends": true,
+    "p95_latency_ms": 1.771
+  },
+  "bridge_outage_proof": {
+    "scenario": "email_send_guardrail_bridge_unavailable",
+    "failure_mode": "fail_closed",
+    "recommended_action": "refuse",
+    "production_effect": "send_blocked",
+    "human_review_required": true,
+    "audit_code": "support_bridge_unavailable_irreversible"
+  },
+  "audit_log_ref": "eval_outputs/audit/support-enforced-email-internal-pilot.jsonl",
+  "metrics_report_ref": "eval_outputs/pilots/support-enforced-email-internal-pilot-results.json",
+  "reviewer_report_ref": "eval_outputs/pilots/support-enforced-email-internal-pilot-reviewer-report.md",
+  "promotion_boundary": {
+    "next_phase": "expanded_support_workflows",
+    "blocked_until": [
+      "live or approved support evidence connectors remain attached",
+      "support owner accepts email-send false-blocker and missed-unsafe rates",
+      "bridge outage fail-closed behavior is validated in the deployment environment",
+      "human review route is staffed for blocked irreversible sends"
+    ]
+  },
+  "notes": [
+    "This phase enforces only email_send_guardrail for approved internal pilot fixtures.",
+    "AANA blocks irreversible email sends when recipient, attachment/DLP, approval, or runtime availability requirements are not satisfied.",
+    "This artifact does not certify external production readiness without live evidence connectors, deployment evidence, owner signoff, and measured pilot review."
+  ]
+}

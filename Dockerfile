@@ -26,7 +26,12 @@ COPY web ./web
 RUN python -m pip install --no-cache-dir --upgrade pip \
     && python -m pip install --no-cache-dir .
 
-RUN mkdir -p /app/eval_outputs/audit/docker
+RUN addgroup --system aana \
+    && adduser --system --ingroup aana --uid 10001 aana \
+    && mkdir -p /app/eval_outputs/audit/docker \
+    && chown -R aana:aana /app/eval_outputs
+
+USER 10001
 
 EXPOSE 8765
 

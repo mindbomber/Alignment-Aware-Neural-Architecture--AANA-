@@ -18,6 +18,18 @@ The baseline is reached only when all of these are true:
 
 The checked-in baseline artifact is intentionally `not_reached_external_evidence_required`. Repo-local gates can validate contracts, registry routing, fixture-backed evidence boundaries, audit redaction, gallery metadata, golden outputs, and release wiring. They cannot prove support owner approval or measured pilot performance on live traffic.
 
+## Environment Baselines
+
+Environment-specific artifacts use the same schema and attach deployment evidence:
+
+- `examples/first_deployable_support_baseline.internal_pilot.json`
+- `examples/external_production_evidence_internal_pilot.json`
+- `examples/production_deployment_internal_pilot.json`
+- `examples/support_domain_owner_signoff_internal_pilot.json`
+- `examples/internal_pilot_measured_results_support.json`
+
+The internal-pilot artifact can pass `--require-reached` because it declares live-approved internal-pilot connector manifests, an approved support owner signoff artifact, the internal-pilot deployment manifest, and measured pilot metrics. It remains scoped to `environment: internal-pilot` and is not production certification for external customer traffic.
+
 ## Validation
 
 ```powershell
@@ -28,4 +40,10 @@ Use `--require-reached` only with an environment-specific artifact that attaches
 
 ```powershell
 python scripts/validate_first_deployable_baseline.py --baseline path/to/baseline.json --require-reached
+```
+
+For the checked-in internal-pilot baseline:
+
+```powershell
+python scripts/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached
 ```
