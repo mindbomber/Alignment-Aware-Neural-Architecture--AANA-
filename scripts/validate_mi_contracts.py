@@ -14,7 +14,12 @@ from jsonschema import Draft202012Validator
 from eval_pipeline.mi_audit import load_mi_audit_jsonl, validate_mi_audit_records
 from eval_pipeline.mi_audit_integrity import verify_mi_audit_integrity
 from eval_pipeline.mi_observability import MI_OBSERVABILITY_DASHBOARD_VERSION
+from eval_pipeline.privacy_review import validate_redacted_artifact
 from eval_pipeline.production_readiness import PRODUCTION_MI_READINESS_VERSION
+from eval_pipeline.release_readiness_report import (
+    DEFAULT_RELEASE_REPORT_PATH,
+    RELEASE_READINESS_REPORT_VERSION,
+)
 from eval_pipeline.schema_versioning_policy import (
     DEFAULT_SCHEMA_VERSIONING_POLICY_JSON_PATH,
     SCHEMA_VERSIONING_POLICY_VERSION,
@@ -29,6 +34,7 @@ DEFAULT_AUDIT_JSONL = ROOT / "eval_outputs" / "mi_pilot" / "research_citation" /
 DEFAULT_AUDIT_MANIFEST = ROOT / "eval_outputs" / "mi_pilot" / "research_citation" / "mi_audit.jsonl.sha256.json"
 DEFAULT_DASHBOARD = ROOT / "eval_outputs" / "mi_pilot" / "research_citation" / "mi_dashboard.json"
 DEFAULT_READINESS = ROOT / "eval_outputs" / "mi_pilot" / "research_citation" / "production_mi_readiness.json"
+DEFAULT_RELEASE_REPORT = DEFAULT_RELEASE_REPORT_PATH
 DEFAULT_VERSIONING_POLICY = DEFAULT_SCHEMA_VERSIONING_POLICY_JSON_PATH
 
 
@@ -187,6 +193,11 @@ def validate_dashboard(dashboard_path: str | pathlib.Path = DEFAULT_DASHBOARD) -
     ):
         if not isinstance(metrics.get(metric), (int, float)):
             issues.append(ValidationIssue(str(path), f"$.metrics.{metric}", "Required metric must be numeric."))
+    privacy_report = validate_redacted_artifact(dashboard, artifact=str(path))
+    issues.extend(
+        ValidationIssue(str(path), issue.get("path", "$"), issue.get("message", "Dashboard privacy review failed."))
+        for issue in privacy_report.get("issues", [])
+    )
     return issues
 
 
@@ -244,6 +255,61 @@ def validate_production_readiness(readiness_path: str | pathlib.Path = DEFAULT_R
         issues.append(ValidationIssue(str(path), "$.can_execute_directly", "Ready readiness result must allow direct execution."))
     if release_status == "blocked" and can_execute is True:
         issues.append(ValidationIssue(str(path), "$.can_execute_directly", "Blocked readiness result cannot allow direct execution."))
+    privacy_report = validate_redacted_artifact(readiness, artifact=str(path))
+    issues.extend(
+        ValidationIssue(str(path), issue.get("path", "$"), issue.get("message", "Readiness privacy review failed."))
+        for issue in privacy_report.get("issues", [])
+    )
+    return issues
+
+
+def validate_release_readiness_report(report_path: str | pathlib.Path = DEFAULT_RELEASE_REPORT) -> list[ValidationIssue]:
+    path = pathlib.Path(report_path)
+    report, issues = _load_json(path)
+    if issues:
+        return issues
+    issues = _require_object(report, artifact=path)
+    if issues:
+        return issues
+
+    if report.get("release_readiness_report_version") != RELEASE_READINESS_REPORT_VERSION:
+        issues.append(
+            ValidationIssue(
+                str(path),
+                "$.release_readiness_report_version",
+                f"Must be {RELEASE_READINESS_REPORT_VERSION}.",
+            )
+        )
+    if report.get("status") not in {"pass", "block"}:
+        issues.append(ValidationIssue(str(path), "$.status", "Must be pass or block."))
+    if report.get("release_status") not in {"ready", "blocked"}:
+        issues.append(ValidationIssue(str(path), "$.release_status", "Must be ready or blocked."))
+    if not isinstance(report.get("can_execute_directly"), bool):
+        issues.append(ValidationIssue(str(path), "$.can_execute_directly", "Must be a boolean."))
+    if not isinstance(report.get("required_gate_items"), list):
+        issues.append(ValidationIssue(str(path), "$.required_gate_items", "Must be an array."))
+    if not isinstance(report.get("release_signoff_items"), list):
+        issues.append(ValidationIssue(str(path), "$.release_signoff_items", "Must be an array."))
+    if not isinstance(report.get("unresolved_items"), list):
+        issues.append(ValidationIssue(str(path), "$.unresolved_items", "Must be an array."))
+    counts = report.get("counts") if isinstance(report.get("counts"), dict) else {}
+    if not isinstance(report.get("counts"), dict):
+        issues.append(ValidationIssue(str(path), "$.counts", "Counts must be an object."))
+    unresolved_count = counts.get("unresolved_count")
+    unresolved_items = report.get("unresolved_items") if isinstance(report.get("unresolved_items"), list) else []
+    if not isinstance(unresolved_count, int):
+        issues.append(ValidationIssue(str(path), "$.counts.unresolved_count", "Must be an integer."))
+    elif unresolved_count != len(unresolved_items):
+        issues.append(ValidationIssue(str(path), "$.counts.unresolved_count", "Must match unresolved_items length."))
+    if report.get("status") == "pass" and unresolved_items:
+        issues.append(ValidationIssue(str(path), "$.unresolved_items", "Passing release report cannot contain unresolved items."))
+    if report.get("status") == "block" and not unresolved_items:
+        issues.append(ValidationIssue(str(path), "$.unresolved_items", "Blocking release report must list unresolved items."))
+    privacy_report = validate_redacted_artifact(report, artifact=str(path))
+    issues.extend(
+        ValidationIssue(str(path), issue.get("path", "$"), issue.get("message", "Release report privacy review failed."))
+        for issue in privacy_report.get("issues", [])
+    )
     return issues
 
 
@@ -322,6 +388,7 @@ def validate_mi_contracts(
     audit_manifest_path: str | pathlib.Path = DEFAULT_AUDIT_MANIFEST,
     dashboard_path: str | pathlib.Path = DEFAULT_DASHBOARD,
     readiness_path: str | pathlib.Path = DEFAULT_READINESS,
+    release_report_path: str | pathlib.Path = DEFAULT_RELEASE_REPORT,
     versioning_policy_path: str | pathlib.Path = DEFAULT_VERSIONING_POLICY,
 ) -> dict[str, Any]:
     schema, issues = validate_schema(schema_path)
@@ -340,6 +407,7 @@ def validate_mi_contracts(
     issues.extend(validate_audit_integrity_manifest(audit_path, audit_manifest_path))
     issues.extend(validate_dashboard(dashboard_path))
     issues.extend(validate_production_readiness(readiness_path))
+    issues.extend(validate_release_readiness_report(release_report_path))
     issues.extend(validate_schema_versioning_policy(versioning_policy_path))
 
     return {
@@ -353,6 +421,7 @@ def validate_mi_contracts(
             "audit_manifest": str(pathlib.Path(audit_manifest_path)),
             "dashboard": str(pathlib.Path(dashboard_path)),
             "production_readiness": str(pathlib.Path(readiness_path)),
+            "release_readiness_report": str(pathlib.Path(release_report_path)),
             "versioning_policy": str(pathlib.Path(versioning_policy_path)),
         },
     }
@@ -366,6 +435,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--audit-manifest", default=str(DEFAULT_AUDIT_MANIFEST), help="Path to mi_audit.jsonl.sha256.json.")
     parser.add_argument("--dashboard", default=str(DEFAULT_DASHBOARD), help="Path to mi_dashboard.json.")
     parser.add_argument("--production-readiness", default=str(DEFAULT_READINESS), help="Path to production_mi_readiness.json.")
+    parser.add_argument("--release-report", default=str(DEFAULT_RELEASE_REPORT), help="Path to production_mi_release_report.json.")
     parser.add_argument("--versioning-policy", default=str(DEFAULT_VERSIONING_POLICY), help="Path to MI schema versioning policy JSON.")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable validation output.")
     return parser
@@ -380,6 +450,7 @@ def main(argv: list[str] | None = None) -> int:
         audit_manifest_path=args.audit_manifest,
         dashboard_path=args.dashboard,
         readiness_path=args.production_readiness,
+        release_report_path=args.release_report,
         versioning_policy_path=args.versioning_policy,
     )
     if args.json:

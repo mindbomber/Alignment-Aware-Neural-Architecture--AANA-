@@ -36,6 +36,8 @@ Redacted MI audit JSONL: [`eval_pipeline/mi_audit.py`](../eval_pipeline/mi_audit
 
 MI audit integrity manifest: [`eval_pipeline/mi_audit_integrity.py`](../eval_pipeline/mi_audit_integrity.py)
 
+Immutable audit storage stub: [`eval_pipeline/immutable_audit_storage.py`](../eval_pipeline/immutable_audit_storage.py)
+
 MI benchmark suite: [`eval_pipeline/mi_benchmark.py`](../eval_pipeline/mi_benchmark.py)
 
 Reproducible MI benchmark artifacts:
@@ -46,6 +48,22 @@ MI observability dashboard:
 [`eval_outputs/mi_benchmark/mi_observability_dashboard.json`](../eval_outputs/mi_benchmark/mi_observability_dashboard.json)
 
 Research/citation MI pilot: [`eval_pipeline/mi_pilot.py`](../eval_pipeline/mi_pilot.py)
+
+Guarded live pilot hardening: [`eval_pipeline/pilot_hardening.py`](../eval_pipeline/pilot_hardening.py)
+
+Security and privacy review: [`eval_pipeline/privacy_review.py`](../eval_pipeline/privacy_review.py)
+
+Release readiness checklist automation: [`eval_pipeline/release_readiness_report.py`](../eval_pipeline/release_readiness_report.py)
+
+Full MI release candidate: [`eval_pipeline/mi_release_candidate.py`](../eval_pipeline/mi_release_candidate.py)
+
+Release blocker remediation: [`eval_pipeline/release_blocker_remediation.py`](../eval_pipeline/release_blocker_remediation.py)
+
+MI release evidence bundle: [`eval_pipeline/mi_release_bundle.py`](../eval_pipeline/mi_release_bundle.py)
+
+MI release bundle verification: [`eval_pipeline/mi_release_bundle_verification.py`](../eval_pipeline/mi_release_bundle_verification.py)
+
+Human signoff record: [`eval_pipeline/human_signoff.py`](../eval_pipeline/human_signoff.py)
 
 Working MI pilot artifacts:
 [`eval_outputs/mi_pilot/research_citation/pilot_result.json`](../eval_outputs/mi_pilot/research_citation/pilot_result.json),
@@ -307,6 +325,20 @@ The JSONL row shape is:
 
 The implementation emits `mi_audit_records[]` from `mi_boundary_batch(...)` and supports appending those rows to JSONL with `append_mi_audit_jsonl(...)`.
 
+## Immutable Audit Storage Stub
+
+The current immutable audit storage implementation is a local append-only stub. It accepts only valid redacted MI audit records, appends them to local JSONL, writes a SHA-256 integrity manifest, and verifies the current log before future appends. If an existing audit log has been rewritten or tampered with, the next append is rejected.
+
+The stub defines the future production interface:
+
+- `append(records)`: append redacted MI audit records and return a storage receipt.
+- `verify()`: verify local JSONL against the latest integrity manifest.
+- `contract()`: return storage mode, required capabilities, and production boundary.
+
+Remote immutable storage is explicitly not configured in this local release. Before live production, the storage backend must provide append-only writes, tamper-evident hash chains, server-side timestamps, retention policy, access control, replication or backup, and incident export.
+
+The local contract artifact is `eval_outputs/immutable_audit_storage/immutable_audit_storage_contract.json`.
+
 ## MI Benchmark Suite
 
 The benchmark suite uses deterministic handoff workflows where schema-valid messages can still propagate unsupported claims, unknown assumptions, boundary mismatches, missing evidence, or irreversible-capacity gaps.
@@ -348,6 +380,97 @@ This pilot uses the research/citation workflow because it exercises a high-value
 - `publication-agent-to-publication-check`: agent-to-tool publication readiness check.
 
 The pilot deliberately includes an unsupported productivity claim and a downstream dependency on that claim. The expected platform behavior is `revise`, not `accept`: the downstream publication step should be routed back through shared correction to repair the upstream research summary before publication.
+
+## Pilot Hardening
+
+The first pilot promoted from fixture mode to guarded live mode is the research/citation workflow. The hardening wrapper keeps the existing MI batch, audit, dashboard, and production-readiness surfaces, then adds an execution interlock:
+
+- `production_mi_readiness_gate(...)` must pass before any direct external action is eligible.
+- direct execution also requires an explicit `allow_direct_execution=True` caller decision.
+- blocked runs are marked `blocked_not_executed`; no external action is taken.
+- blocked runs produce a rollback plan with `rollback_action: no_external_action_taken`.
+- blocked runs enqueue a redacted human-review packet with blockers, AIx summary, propagated-risk summary, and fingerprints only.
+
+The guarded artifact is `eval_outputs/mi_pilot/research_citation/guarded_live_result.json`, and the live-mode human-review queue is `eval_outputs/mi_pilot/research_citation/mi_human_review_queue.jsonl`.
+
+## Security And Privacy Review
+
+MI decision artifacts are treated as redacted metadata surfaces, not content stores. Audit JSONL, dashboard JSON, production-readiness JSON, and human-review queue packets must preserve only decision metadata, endpoint summaries, AIx summaries, violation codes, blockers, route decisions, and fingerprints.
+
+The privacy review validator recursively rejects raw-content field names such as `message`, `prompt`, `raw_prompt`, `evidence`, `raw_evidence`, `private_records`, `payload`, `claims`, and `text` except for approved fingerprint slots such as `fingerprints.message` and `fingerprints.evidence`. It also scans strings for common secret and private-record patterns, including API keys, bearer tokens, cloud access keys, private key blocks, SSNs, and credit-card-like numbers.
+
+CI contract validation now applies this redaction review to dashboard and readiness artifacts, while audit and human-review validators apply it directly to every record or packet.
+
+## Release Readiness Checklist Automation
+
+The Markdown checklist at `docs/production-mi-release-checklist.md` is converted into a machine-checkable JSON report by `release_readiness_report(...)`. The report combines:
+
+- parsed checklist counts from Required Gate, Blocking Conditions, and Release Signoff sections.
+- production readiness gate rows from `production_mi_readiness_gate(...)`.
+- artifact signoff checks for redacted audit JSONL, pilot result, dashboard propagated-risk state, risk tier, and human-review queue.
+- final `status: pass | block`.
+- `unresolved_items` with category, item ID, details, and required route where available.
+
+The default generated artifact is `eval_outputs/mi_pilot/research_citation/production_mi_release_report.json`. CI can run `aana-release-readiness-report`; by default it exits nonzero when the report blocks.
+
+## Full AANA MI Release Candidate
+
+The full release-candidate runner executes the MI release path as one command: schema and contract validation, benchmark generation and dashboard export, guarded pilot generation, redacted audit validation, audit integrity manifest refresh, production readiness validation, dashboard validation, release-readiness report generation, and final contract validation.
+
+The default command is `aana-mi-release-candidate`. It writes a single report to `eval_outputs/mi_release_candidate/aana_mi_release_candidate_report.json` with top-level `status: pass | block`, per-check statuses, artifact paths, and unresolved items. By default the command exits nonzero when the release candidate blocks; pass `--no-fail-on-block` to inspect the report without failing the shell command.
+
+## Release Blocker Remediation
+
+The remediation layer consumes release-readiness blockers from the RC report and repairs the research/citation pilot before re-running MI. The current remediation:
+
+- executes the shared correction loop against the blocked pilot.
+- removes unsupported productivity percentage and Source C citation claims.
+- rewrites the research handoff to use only Source A and Source B.
+- replaces downstream publication assumptions with supported evidence-bound assumptions.
+- reruns MI boundary, global AIx, propagated-risk tracking, audit, dashboard, readiness, release-readiness, and RC checks.
+
+The remediation artifact is `eval_outputs/mi_pilot/research_citation/release_blocker_remediation.json`. After remediation, the default RC report passes with zero blocking checks.
+
+## MI Release Package And Evidence Bundle
+
+The release bundle snapshots the passing MI release candidate into `eval_outputs/mi_release_candidate/release_bundle/`. It copies the RC report, production readiness report, release-readiness report, audit JSONL, audit integrity manifest, dashboard JSON, benchmark report, pilot handoffs, and remediation report.
+
+The bundle writes:
+
+- `release_manifest.json`: artifact source paths, bundle paths, SHA-256 hashes, byte counts, versions, RC status, readiness status, global AIx, and unresolved blocker count.
+- `release_note.md`: short summary of what passed and what remains out of scope.
+- `artifacts/`: copied release evidence files.
+
+Run it with `aana-mi-release-bundle`.
+
+## MI Release Bundle Verification
+
+The bundle verifier reads `release_bundle/release_manifest.json`, recomputes SHA-256 hashes for every copied artifact, confirms all bundle files exist, and checks release status invariants:
+
+- RC status is `pass`.
+- readiness status is `ready`.
+- global AIx score is greater than or equal to the recorded accept threshold.
+- unresolved blocker count is `0`.
+
+The verifier writes `release_bundle_verification.json` in the bundle directory and exits nonzero if any artifact is missing, tampered, or status-regressed. Run it with `aana-mi-verify-release-bundle`.
+
+## CI Release Command
+
+The CI-safe release command is `aana-mi-release`. It runs the full MI release candidate, generates the release bundle, verifies the bundle, and writes one combined report to `eval_outputs/mi_release_candidate/release_bundle/aana_mi_release_report.json`.
+
+The command exits nonzero if the RC blocks, bundle generation regresses, verification detects tampering, or any stage is skipped. A passing run reports three stages:
+
+- `release_candidate`
+- `release_bundle`
+- `release_bundle_verification`
+
+## Human Signoff Record
+
+The human signoff artifact records domain-owner approval state for the verified MI evidence bundle. It includes reviewer identity, decision, scope, timestamp, release manifest SHA-256, bundle verification status, RC status, readiness status, global AIx, and unresolved blocker count.
+
+The default artifact is `eval_outputs/mi_release_candidate/release_bundle/human_signoff.json`. It is generated as `decision: pending` unless an actual reviewer explicitly records another decision. Approval is not inferred from passing automated checks.
+
+Supported decisions are `pending`, `approved`, `rejected`, and `needs_changes`. An `approved` record must be bound to a passing bundle verification, RC `pass`, readiness `ready`, and zero unresolved blockers.
 
 ## Production Readiness Gate
 
@@ -497,6 +620,52 @@ The canonical milestone 2 schema is [`schemas/interoperability_contract.schema.j
 - How should `global_aix` aggregate local candidate/final AIx without hiding hard blockers?
 - What is the minimal propagated-assumption format needed to trace upstream unsupported claims?
 - Which connector families should be first-class MI recipients in the pilot: support/email, code/release, files, research, or calendar?
+
+## Live Connector Boundary Plan
+
+The local MI release candidate does not authorize external live connector execution. The readiness plan records these connector families as out of scope until a later release candidate explicitly enables them: email send, calendar write, deployment/release, workspace file write, remote code repository, CRM/support, ticketing, billing/payment, data export, IAM/permissions, chat collaboration, and web publishing.
+
+Each connector boundary must define:
+
+- Auth requirements: least-privilege scopes, token handling, rotation, and approval owner.
+- Rate limits: request caps, burst limits, idempotency keys, and bounded retries.
+- Redaction behavior: no raw private content in MI audit, dashboard, review, or bundle artifacts.
+- Rollback behavior: dry-run first, owner assignment, undo path where possible, and `defer` for irreversible actions.
+- MI gates: production readiness, release bundle verification, human signoff, pre-execution hook, immutable audit storage, and connector-specific reviews.
+
+The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/live_connector_readiness_plan.json`.
+
+## Production Deployment Manifest
+
+The production deployment manifest references the verified MI release bundle and records the environment assumptions needed before any guarded live deployment. It must preserve the release bundle hash path, bundle verification status, global AIx, unresolved blocker count, human signoff status, live connector boundary status, secrets policy, redacted audit policy, and rollback owner.
+
+The manifest is valid as a control artifact even when deployment is blocked. In that case, `deployment_authorized` is `false` and `blockers` explains which external controls remain unresolved, such as pending human signoff or missing connector enablement review.
+
+The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_deployment_manifest.json`.
+
+## Post-Release Monitoring
+
+After MI release, runtime monitoring must track whether local MI decisions remain aligned under production traffic. The alert policy covers global AIx drift, false accept rate, false refusal rate, audit append failures, stale evidence, and unresolved propagated risk. Monitoring must consume only redacted decision metadata and validator summaries; it must not capture raw prompts, raw evidence, or private content.
+
+Critical alerts route to blocking or deferring high-risk actions until the affected workflow is replayed, corrected, and rechecked through MI boundary and global AIx gates. Warning alerts route to threshold calibration or evidence freshness review.
+
+The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/post_release_monitoring_policy.json`.
+
+## Production Dry Run
+
+The end-to-end production dry run runs the local MI release command, regenerates the live connector readiness plan, writes a deployment manifest bound to the current verified release bundle, and confirms that no live external actions were attempted. The dry-run report may have `status: block` when production-only controls remain unresolved, but every blocker must be explicit.
+
+The first expected unresolved item is `human_signoff_not_approved`, because local RC evidence does not itself authorize production deployment. A passing release command plus a blocked deployment manifest is therefore a valid dry-run result when the block is explicit and live execution remains disabled.
+
+The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_dry_run_report.json`.
+
+## Final Production Go/No-Go Gate
+
+The final production gate combines the verified release bundle, human signoff, deployment manifest, monitoring policy, and production dry-run report into one decision artifact. It returns `go` only when the bundle is verified, global AIx meets threshold, human signoff is approved, deployment is authorized, monitoring is valid, and the dry run passes without live external actions.
+
+Until those conditions hold, the report must return `no_go` with explicit blockers. For the local RC, the expected blockers are pending human signoff, deployment not authorized, and production dry run not pass.
+
+The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_go_no_go_report.json`.
 
 ## Milestone 1 Completion Criteria
 

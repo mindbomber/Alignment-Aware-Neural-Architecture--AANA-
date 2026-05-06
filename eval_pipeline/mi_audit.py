@@ -8,18 +8,39 @@ import pathlib
 from datetime import datetime, timezone
 from typing import Any
 
+from eval_pipeline.privacy_review import validate_redacted_artifact
+
 
 MI_AUDIT_RECORD_VERSION = "0.1"
 MI_AUDIT_RECORD_TYPE = "mi_handoff_decision"
 RAW_CONTENT_FIELDS = {
+    "candidate",
+    "customer_record",
+    "customer_records",
+    "developer_prompt",
     "message",
     "evidence",
     "evidence_summary",
+    "input",
+    "output",
+    "private_record",
+    "private_records",
+    "prompt",
     "summary",
     "claims",
     "assumptions",
     "payload",
+    "raw_evidence",
+    "raw_message",
+    "raw_prompt",
+    "request",
+    "secret",
+    "secrets",
+    "system_prompt",
     "text",
+    "tool_result",
+    "transcript",
+    "user_prompt",
 }
 
 
@@ -176,6 +197,11 @@ def validate_mi_audit_record(record: dict[str, Any]) -> dict[str, Any]:
     for raw_field in RAW_CONTENT_FIELDS:
         if raw_field in record:
             issues.append({"path": f"$.{raw_field}", "message": "Raw MI content field is not allowed in audit records."})
+    privacy_report = validate_redacted_artifact(record, artifact="mi_audit_record")
+    issues.extend(
+        {"path": issue.get("path", "$"), "message": issue.get("message", "Privacy review failed.")}
+        for issue in privacy_report.get("issues", [])
+    )
     return {"valid": not issues, "issues": issues}
 
 
@@ -193,6 +219,7 @@ def validate_mi_audit_records(records: list[dict[str, Any]]) -> dict[str, Any]:
 __all__ = [
     "MI_AUDIT_RECORD_TYPE",
     "MI_AUDIT_RECORD_VERSION",
+    "RAW_CONTENT_FIELDS",
     "append_mi_audit_jsonl",
     "load_mi_audit_jsonl",
     "mi_audit_record",

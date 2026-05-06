@@ -50,6 +50,17 @@ Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AAN
 aana = "scripts.aana_cli:main"
 aana-server = "eval_pipeline.agent_server:main"
 aana-validate-mi-contracts = "scripts.validate_mi_contracts:main"
+aana-release-readiness-report = "scripts.release_readiness_report:main"
+aana-mi-release-candidate = "scripts.mi_release_candidate:main"
+aana-mi-release-bundle = "scripts.mi_release_bundle:main"
+aana-mi-verify-release-bundle = "scripts.mi_verify_release_bundle:main"
+aana-mi-release = "scripts.mi_release:main"
+aana-mi-human-signoff = "scripts.human_signoff:main"
+aana-mi-live-connector-plan = "scripts.live_connector_readiness:main"
+aana-mi-production-deployment-manifest = "scripts.production_deployment_manifest:main"
+aana-mi-post-release-monitoring = "scripts.post_release_monitoring:main"
+aana-mi-production-dry-run = "scripts.production_dry_run:main"
+aana-mi-production-go-no-go = "scripts.production_go_no_go:main"
 
 [tool.setuptools.packages.find]
 include = ["aana*", "eval_pipeline*", "scripts*"]

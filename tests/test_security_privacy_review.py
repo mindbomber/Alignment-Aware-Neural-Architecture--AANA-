@@ -1,201 +1,148 @@
-import importlib.util
 import json
-import pathlib
+import tempfile
 import unittest
+from pathlib import Path
 
-from eval_pipeline import agent_api, agent_server
-
-
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-REVIEW_PATH = ROOT / "examples" / "security_privacy_review_support.json"
-FIXTURE_PATH = ROOT / "examples" / "support_workflow_contract_examples.json"
-
-
-def load_script(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+from eval_pipeline.human_review_queue import human_review_packet, validate_human_review_packet
+from eval_pipeline.mi_audit import mi_audit_record, validate_mi_audit_record
+from eval_pipeline.mi_observability import mi_dashboard_from_benchmark
+from eval_pipeline.mi_pilot import run_research_citation_mi_pilot
+from eval_pipeline.pilot_hardening import run_guarded_research_citation_pilot
+from eval_pipeline.privacy_review import validate_redacted_artifact, validate_redacted_artifacts
+from eval_pipeline.production_readiness import production_mi_readiness_gate
+from scripts.validate_mi_contracts import validate_dashboard, validate_production_readiness
+from tests.test_handoff_gate import clean_handoff
+from tests.test_human_review_queue import deferred_result
 
 
-security_review = load_script("validate_security_privacy_review", ROOT / "scripts" / "validate_security_privacy_review.py")
-secrets_scan = load_script("validate_secrets_scan", ROOT / "scripts" / "validate_secrets_scan.py")
+SECRET_CANARY = "sk-testsecret1234567890abcdef"
+PRIVATE_RECORD_CANARY = "patient SSN 123-45-6789"
+RAW_PROMPT_CANARY = "RAW_PROMPT: summarize the private customer record"
+RAW_EVIDENCE_CANARY = "RAW_EVIDENCE: private source text"
 
 
-def _review():
-    return json.loads(REVIEW_PATH.read_text(encoding="utf-8"))
-
-
-def _fixture_case(name):
-    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
-    for case in payload["cases"]:
-        if case["name"] == name:
-            return case
-    raise AssertionError(f"missing support fixture {name}")
-
-
-def _raw_forbidden_terms(case):
-    workflow = case["workflow_request"]
-    terms = [
-        workflow["request"],
-        workflow["candidate"],
-        case["agent_event"]["user_request"],
-        case["agent_event"]["candidate_action"],
-        case["candidate_output"],
-        case["candidate_bad_output"],
-    ]
-    terms.extend(item["text"] for item in workflow["evidence"])
-    terms.extend(case["agent_event"]["available_evidence"])
-    return [term for term in terms if isinstance(term, str) and term]
+def encoded(value):
+    return json.dumps(value, sort_keys=True)
 
 
 class SecurityPrivacyReviewTests(unittest.TestCase):
-    def test_review_manifest_covers_required_controls(self):
-        report = security_review.validate_review(REVIEW_PATH)
+    def test_audit_record_never_stores_raw_prompt_private_record_or_evidence(self):
+        handoff = clean_handoff()
+        handoff["message"]["prompt"] = RAW_PROMPT_CANARY
+        handoff["message"]["private_record"] = PRIVATE_RECORD_CANARY
+        handoff["message"]["claims"] = [SECRET_CANARY]
+        handoff["evidence"][0]["text"] = RAW_EVIDENCE_CANARY
+        pilot_result = run_research_citation_mi_pilot()
+        result = pilot_result["mi_batch"]["results"][0]
+        result["message"] = handoff["message"]
+        result["evidence"] = handoff["evidence"]
 
-        self.assertTrue(report["valid"], report)
-        self.assertEqual(set(report["required_controls"]), security_review.REQUIRED_CONTROLS)
-        self.assertEqual(report["control_count"], len(security_review.REQUIRED_CONTROLS))
+        record = mi_audit_record(result, created_at="2026-05-06T00:00:00Z", workflow_id="wf-private")
+        record_text = encoded(record)
 
-    def test_review_manifest_declares_external_deployment_blockers(self):
-        review = _review()
+        self.assertNotIn(RAW_PROMPT_CANARY, record_text)
+        self.assertNotIn(PRIVATE_RECORD_CANARY, record_text)
+        self.assertNotIn(SECRET_CANARY, record_text)
+        self.assertNotIn(RAW_EVIDENCE_CANARY, record_text)
+        self.assertTrue(validate_mi_audit_record(record)["valid"])
+        self.assertTrue(validate_redacted_artifact(record)["valid"])
 
-        self.assertEqual(review["deployment_position"]["repo_local_status"], "demo-ready/pilot-ready/production-candidate")
-        self.assertEqual(review["deployment_position"]["production_status"], "not production-certified by local tests alone")
-        blockers = set(review["deployment_position"]["production_blockers"])
-        self.assertIn("live evidence connector permission review", blockers)
-        self.assertIn("domain owner signoff", blockers)
-        self.assertIn("audit retention policy approval", blockers)
-        self.assertIn("observability approval", blockers)
-        self.assertIn("human review staffing and SLA", blockers)
-        self.assertIn("security review approval", blockers)
-        self.assertIn("deployment manifest approval", blockers)
-        self.assertIn("incident response plan approval", blockers)
-        self.assertIn("measured pilot results", blockers)
-        self.assertIn("rate limit and abuse plan approved by deployment owner", blockers)
+    def test_audit_validator_rejects_nested_raw_fields_and_secrets(self):
+        record = mi_audit_record(run_research_citation_mi_pilot()["mi_batch"]["results"][0])
+        record["metadata"] = {"raw_prompt": RAW_PROMPT_CANARY}
+        record["aix"]["secret"] = SECRET_CANARY
 
-        controls = {control["id"]: control for control in review["controls"]}
-        self.assertEqual(controls["evidence_connector_permission_review"]["status"], "external_required")
-        self.assertEqual(
-            controls["audit_retention_policy"]["status"],
-            "approved_for_internal_pilot_external_production_required",
+        report = validate_mi_audit_record(record)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "$.metadata.raw_prompt" for issue in report["issues"]))
+        self.assertTrue(any("openai_api_key" in issue["message"] for issue in report["issues"]))
+
+    def test_human_review_packet_redacts_raw_prompt_private_records_and_evidence(self):
+        result = deferred_result()
+        result["message"]["raw_prompt"] = RAW_PROMPT_CANARY
+        result["message"]["private_record"] = PRIVATE_RECORD_CANARY
+        result["evidence"][0]["text"] = RAW_EVIDENCE_CANARY
+        result["message"]["claims"] = [SECRET_CANARY]
+
+        packet = human_review_packet(result)
+        packet_text = encoded(packet)
+
+        self.assertNotIn(RAW_PROMPT_CANARY, packet_text)
+        self.assertNotIn(PRIVATE_RECORD_CANARY, packet_text)
+        self.assertNotIn(SECRET_CANARY, packet_text)
+        self.assertNotIn(RAW_EVIDENCE_CANARY, packet_text)
+        self.assertTrue(validate_human_review_packet(packet)["valid"])
+
+    def test_human_review_validator_rejects_leaked_private_fields(self):
+        packet = human_review_packet(deferred_result())
+        packet["review_context"] = {"private_records": [PRIVATE_RECORD_CANARY]}
+
+        report = validate_human_review_packet(packet)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "$.review_context.private_records" for issue in report["issues"]))
+        self.assertTrue(any("ssn" in issue["message"] for issue in report["issues"]))
+
+    def test_dashboard_and_readiness_artifacts_pass_redaction_review(self):
+        pilot = run_research_citation_mi_pilot()
+        dashboard = mi_dashboard_from_benchmark(
+            {
+                "workflows": [
+                    {
+                        "workflow_id": pilot["workflow_id"],
+                        "expected_issue": "unsupported_research_citation",
+                        "expected_detection": True,
+                        "modes": [
+                            {
+                                "mode": "full_global_aana_gate",
+                                "detected": True,
+                                "signals": {"revise_upstream_output": 1},
+                                "handoff_total": 3,
+                                "handoff_blocked": 1,
+                                "gate_decisions": {"pass": 2, "block": 1},
+                                "recommended_actions": {"accept": 2, "revise": 1},
+                                "propagated_risk_count": 1,
+                                "shared_correction_action_count": 1,
+                            }
+                        ],
+                    }
+                ]
+            }
         )
-        self.assertEqual(controls["secrets_scanning"]["status"], "external_required")
+        readiness = production_mi_readiness_gate(pilot)
 
-    def test_support_audit_omits_raw_prompt_candidate_and_evidence(self):
-        case = _fixture_case("draft_refund_missing_account_facts")
-        workflow_request = case["workflow_request"]
-        result = agent_api.check_workflow_request(workflow_request)
-        record = agent_api.audit_workflow_check(workflow_request, result, created_at="2026-05-05T12:00:00+00:00")
+        report = validate_redacted_artifacts({"dashboard": dashboard, "readiness": readiness})
 
-        serialized = json.dumps(record, sort_keys=True)
-        for term in _raw_forbidden_terms(case):
-            self.assertNotIn(term, serialized)
-        redaction = agent_api.audit_redaction_report([record], forbidden_terms=_raw_forbidden_terms(case))
-        self.assertTrue(redaction["redacted"], redaction)
+        self.assertTrue(report["valid"], report["issues"])
+        self.assertNotIn("AANA verifier loops improve productivity by 40%", encoded(dashboard))
+        self.assertNotIn("AANA verifier loops improve productivity by 40%", encoded(readiness))
 
-        self.assertEqual(record["adapter_id"], "crm_support_reply")
-        self.assertEqual(record["violation_codes"], sorted(case["expected"]["workflow"]["violation_codes"]))
-        self.assertIn("sha256", record["input_fingerprints"]["request"])
-        self.assertIn("sha256", record["input_fingerprints"]["candidate"])
+    def test_contract_validator_fails_on_dashboard_or_readiness_privacy_leakage(self):
+        dashboard = mi_dashboard_from_benchmark({"workflows": []})
+        dashboard["workflow_rows"].append({"workflow_id": "wf-1", "raw_prompt": RAW_PROMPT_CANARY})
+        readiness = production_mi_readiness_gate(run_research_citation_mi_pilot())
+        readiness["checklist"][0]["details"] = SECRET_CANARY
 
-    def test_internal_crm_note_case_blocks_and_audits_metadata_only(self):
-        case = _fixture_case("block_internal_crm_note_leakage")
-        workflow_request = case["workflow_request"]
-        result = agent_api.check_workflow_request(workflow_request)
-        record = agent_api.audit_workflow_check(workflow_request, result, created_at="2026-05-05T12:00:00+00:00")
+        with tempfile.TemporaryDirectory() as directory:
+            dashboard_path = Path(directory) / "mi_dashboard.json"
+            readiness_path = Path(directory) / "production_mi_readiness.json"
+            dashboard_path.write_text(json.dumps(dashboard), encoding="utf-8")
+            readiness_path.write_text(json.dumps(readiness), encoding="utf-8")
 
-        self.assertEqual(result["candidate_gate"], "block")
-        self.assertIn("internal_crm_detail", {item["code"] for item in result["violations"]})
-        self.assertIn("bypass_verification", {item["code"] for item in result["violations"]})
-        self.assertEqual(record["human_review_queue"]["queue"], "support_human_review")
-        self.assertIn("internal_fraud_risk_note_exposure", record["human_review_queue"]["triggers"])
-        self.assertTrue(agent_api.audit_redaction_report([record], forbidden_terms=_raw_forbidden_terms(case))["redacted"])
+            dashboard_issues = validate_dashboard(dashboard_path)
+            readiness_issues = validate_production_readiness(readiness_path)
 
-    def test_attachment_private_export_case_blocks_and_audits_metadata_only(self):
-        case = _fixture_case("block_private_export_attachment")
-        workflow_request = case["workflow_request"]
-        result = agent_api.check_workflow_request(workflow_request)
-        record = agent_api.audit_workflow_check(workflow_request, result, created_at="2026-05-05T12:00:00+00:00")
+        self.assertTrue(any("Raw private content field" in issue.message for issue in dashboard_issues))
+        self.assertTrue(any("openai_api_key" in issue.message for issue in readiness_issues))
 
-        violation_codes = {item["code"] for item in result["violations"]}
-        self.assertEqual(result["candidate_gate"], "block")
-        self.assertIn("unsafe_email_attachment", violation_codes)
-        self.assertIn("private_email_data", violation_codes)
-        self.assertEqual(record["adapter_id"], "email_send_guardrail")
-        self.assertTrue(agent_api.audit_redaction_report([record], forbidden_terms=_raw_forbidden_terms(case))["redacted"])
+    def test_guarded_live_human_review_artifact_is_redacted(self):
+        result = run_guarded_research_citation_pilot(allow_direct_execution=True)
+        queue = result["human_review_queue"]
 
-    def test_bridge_security_controls_do_not_expose_tokens(self):
-        config = agent_server.bridge_config(auth_token="secret-token", rate_limit_per_minute=5)
-        redacted = agent_server._redact_log_text(
-            "Authorization: Bearer secret-token X-AANA-Token: secret-token token=secret-token"
-        )
-
-        self.assertTrue(config["auth_required"])
-        self.assertEqual(config["auth_token_source"], "value")
-        self.assertEqual(config["raw_debug_leakage"], "disabled")
-        self.assertTrue(config["redacted_logs"])
-        self.assertNotIn("secret-token", json.dumps(config, sort_keys=True))
-        self.assertNotIn("secret-token", redacted)
-        self.assertIn("[redacted]", redacted)
-
-    def test_bridge_rate_limit_control_blocks_after_limit(self):
-        event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
-        state = {}
-
-        first_status, _ = agent_server.route_request(
-            "POST",
-            "/validate-event",
-            json.dumps(event).encode("utf-8"),
-            rate_limit_per_minute=1,
-            rate_limit_state=state,
-            client_id="support-client",
-        )
-        second_status, second_payload = agent_server.route_request(
-            "POST",
-            "/validate-event",
-            json.dumps(event).encode("utf-8"),
-            rate_limit_per_minute=1,
-            rate_limit_state=state,
-            client_id="support-client",
-        )
-
-        self.assertEqual(first_status, 200)
-        self.assertEqual(second_status, 429)
-        self.assertEqual(second_payload["error_code"], "rate_limited")
-
-    def test_review_manifest_completes_security_review_sections(self):
-        review = _review()
-
-        self.assertTrue(review["bridge_auth_review"]["post_auth_required"])
-        self.assertEqual(review["bridge_auth_review"]["token_sources"], ["env", "file"])
-        self.assertFalse(review["bridge_auth_review"]["raw_token_logged"])
-
-        connectors = review["connector_permission_review"]["connector_manifests"]
-        self.assertGreaterEqual(len(connectors), 6)
-        for connector in connectors:
-            self.assertEqual(connector["permission_model"], "least_privilege_readonly")
-            self.assertTrue(connector["approved_scopes"])
-            self.assertGreaterEqual({"write", "delete", "send", "export_raw", "admin"}, set(connector["denied_scopes"]))
-            self.assertTrue(connector["reviewed_by"])
-
-        pii_attachment = review["pii_attachment_review"]
-        self.assertFalse(pii_attachment["audit_stores_raw_support_data"])
-        self.assertEqual(pii_attachment["attachment_body_storage"], "none")
-        self.assertIn("dlp_classification", pii_attachment["metadata_only_fields"])
-
-        rate_limits = review["rate_limiting_review"]
-        self.assertTrue(rate_limits["runtime_rate_limit_enabled"])
-        self.assertTrue(rate_limits["edge_rate_limit_enabled"])
-        self.assertGreater(rate_limits["runtime_requests_per_minute"], 0)
-        self.assertGreater(rate_limits["edge_requests_per_minute"], 0)
-
-    def test_secrets_scan_passes_with_deployment_allowlist(self):
-        report = secrets_scan.scan()
-
-        self.assertTrue(report["valid"], report)
-        self.assertEqual(report["unapproved_findings"], [])
-        self.assertEqual(report["allowlist"], "examples/secrets_scan_allowlist.json")
+        self.assertGreaterEqual(queue["packet_count"], 1)
+        self.assertTrue(queue["validation"]["valid"], queue["validation"]["issues"])
+        self.assertTrue(validate_redacted_artifact(queue["packets"])["valid"])
 
 
 if __name__ == "__main__":

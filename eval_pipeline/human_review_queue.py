@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from eval_pipeline.mi_audit import RAW_CONTENT_FIELDS
+from eval_pipeline.privacy_review import validate_redacted_artifact
 
 
 HUMAN_REVIEW_QUEUE_VERSION = "0.1"
@@ -247,6 +248,11 @@ def validate_human_review_packet(packet: dict[str, Any]) -> dict[str, Any]:
     for raw_field in RAW_CONTENT_FIELDS:
         if raw_field in packet:
             issues.append({"path": f"$.{raw_field}", "message": "Raw MI content field is not allowed in review packets."})
+    privacy_report = validate_redacted_artifact(packet, artifact="human_review_packet")
+    issues.extend(
+        {"path": issue.get("path", "$"), "message": issue.get("message", "Privacy review failed.")}
+        for issue in privacy_report.get("issues", [])
+    )
     return {"valid": not issues, "issues": issues}
 
 
