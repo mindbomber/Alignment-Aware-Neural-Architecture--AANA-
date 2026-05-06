@@ -42,6 +42,8 @@ python scripts/run_starter_pilot_kit.py --kit enterprise
 python scripts/run_starter_pilot_kit.py --kit personal_productivity
 python scripts/run_starter_pilot_kit.py --kit civic_government
 python scripts/run_github_action_guardrails.py --changed-files "src/app.py,migrations/001.sql" --migration-diff eval_outputs/migration-diff.sql
+python scripts/community_issue_scout.py --output examples/community_issue_candidates.json
+python scripts/community_issue_solver.py --repository adhit-r/fairmind --limit 1
 python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
 python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
@@ -81,6 +83,8 @@ Commands:
 - `run_pilot_evaluation_kit.py` - Run named synthetic and public-data-rehearsal pilot packs for enterprise, personal, civic/government, and public-data evaluation planning.
 - `run_starter_pilot_kit.py` - Materialize starter pilot kit workflows from synthetic records, run adapter checks, write redacted audit JSONL, export metrics JSON, and produce JSON/Markdown reports under `eval_outputs/starter_pilot_kits/`.
 - `run_github_action_guardrails.py` - Run the GitHub Action guardrail engine locally against changed files, diffs, and optional release evidence for code review, deployment readiness, API contract, infrastructure, and database migration adapters.
+- `community_issue_scout.py` - Search public GitHub issues and write a heuristic AANA intake candidate list with issue family, suggested adapter, evidence needs, first action, and publication boundary. Convert one candidate at a time into a Workflow Contract before acting.
+- `community_issue_solver.py` - Create AANA-gated workpacks for selected public GitHub issues, including a public response draft, Workflow Contract, gate result, and local publish boundary. The script stops before posting, opening PRs, or pushing branches.
 - `pilot_smoke_test.py` - Start or target the AANA HTTP bridge, verify POST auth, run an agent check, verify server-side redacted audit append, and summarize the audit log.
 - `aana_server.py` - Run the local HTTP bridge with POST auth, optional token-file rotation, request-size limits, process-local rate limits, read timeouts, `/health`, `/ready`, OpenAPI, and server-side audit append.
 - `run_internal_pilot.py` - Set up the internal pilot runtime directories, start the real bridge with `AANA_BRIDGE_TOKEN` and `--audit-log`, run the smoke test against that live bridge, write an audit integrity manifest and metrics export, and shut it down.

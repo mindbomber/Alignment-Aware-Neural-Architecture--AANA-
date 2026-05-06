@@ -45,9 +45,12 @@ Agent-event files are local development fixtures. For standalone agent skills or
 - `ticket_update_checker_adapter.json` is a filled executable adapter for customer-visible ticket updates that checks status claims, commitments, wording, internal/private data, and support policy before posting.
 - `research_answer_grounding_adapter.json` is a filled executable adapter for cited research answers that checks citation index, source boundaries, unsupported claims, uncertainty, and source registry before publishing or decision use.
 - `research_summary_adapter.json` is a filled executable adapter for grounded research and knowledge-work summaries.
+- `community_issue_candidates.json` is a generated public GitHub issue intake list from `scripts/community_issue_scout.py`; treat it as a triage artifact, not as a gate decision. Use `scripts/community_issue_solver.py` to create AANA-gated workpacks for individual candidates.
 - `agent_event_support_reply.json` is a machine-readable event an agent can pass to AANA before sending a support reply.
 - `agent_events/` contains executable agent-event examples for support replies, travel booking/planning, meal planning, and research summaries.
 - `workflow_research_summary.json` is a general AANA Workflow Contract request for apps, notebooks, and agent tools.
+- `workflow_community_issue_research_grounding.json` turns a public community research issue into an AANA-checkable research-grounding Workflow Contract.
+- `workflow_community_issue_oecd_risk_framework.json` turns a live FairMind OECD AI risk framework issue into an AANA-checkable public-response Workflow Contract.
 - `workflow_batch_productive_work.json` checks several workflow requests at once across research, support, and meal-planning use cases.
 - `agent_api_usage.py` shows the same event check through the Python API instead of the CLI.
 

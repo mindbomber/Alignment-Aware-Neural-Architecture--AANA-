@@ -1,0 +1,442 @@
+{
+  "candidates": [
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "help wanted",
+        "tradition"
+      ],
+      "problem": "Parallel traditions: Buddhist, Stoic, Daoist alignment frameworks?",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "yujesyoga/yogic-alignment-framework",
+      "source": "https://github.com/yujesyoga/yogic-alignment-framework/issues/4"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "research"
+      ],
+      "problem": "Research: Quantitative Analysis of Subtle AI Drift & Behavioral Alignment",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "meunier-jc/Human-AI-Moral-Contract",
+      "source": "https://github.com/meunier-jc/Human-AI-Moral-Contract/issues/9"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "enhancement",
+        "help wanted",
+        "ai/ml",
+        "security"
+      ],
+      "problem": "OECD AI Risk Framework Integration",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "adhit-r/fairmind",
+      "source": "https://github.com/adhit-r/fairmind/issues/151"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "research"
+      ],
+      "problem": "Community Research Initiative: CIP v2.5 as Open-Science Framework",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "meunier-jc/Human-AI-Moral-Contract",
+      "source": "https://github.com/meunier-jc/Human-AI-Moral-Contract/issues/13"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "publication_check",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "current docs page",
+        "claim boundaries",
+        "examples to verify"
+      ],
+      "first_action": "create workflow contract",
+      "issue_family": "documentation",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "research"
+      ],
+      "problem": "Research: CIP Alignment with EU AI Act & Regulatory Frameworks",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "meunier-jc/Human-AI-Moral-Contract",
+      "source": "https://github.com/meunier-jc/Human-AI-Moral-Contract/issues/8"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "code-quality"
+      ],
+      "problem": "refactor: unify AI provider keys and consolidate LLM clients",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "modelguide/modelguide",
+      "source": "https://github.com/modelguide/modelguide/issues/216"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "roadmap"
+      ],
+      "problem": "Observability integrations (umbrella): W&B, MLflow, Langfuse, OpenTelemetry, Phoenix",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "aganthos/clawloop",
+      "source": "https://github.com/aganthos/clawloop/issues/52"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "python"
+      ],
+      "problem": "Replace version hardcoding in make_json.py with reading the version directly off the file",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "nhsengland/llm-eval-monitor-framework",
+      "source": "https://github.com/nhsengland/llm-eval-monitor-framework/issues/10"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "model_evaluation_release",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "benchmark definition",
+        "baseline results",
+        "risk or failure-mode taxonomy"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "alignment_evaluation",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "question"
+      ],
+      "problem": "De-duplicate APIBench eval data (?)",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "ShishirPatil/gorilla",
+      "source": "https://github.com/ShishirPatil/gorilla/issues/87"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "allowed source corpus",
+        "citation policy",
+        "unsupported-answer behavior"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "rag_grounding",
+      "labels": [
+        "help wanted",
+        "ai/ml",
+        "advanced",
+        "discussion"
+      ],
+      "problem": "Enhance NLP System with Domain-Specific Legal Intelligence and Fine-Tuning",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "viru0909-dev/nyay-setu-working",
+      "source": "https://github.com/viru0909-dev/nyay-setu-working/issues/176"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "allowed source corpus",
+        "citation policy",
+        "unsupported-answer behavior"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "rag_grounding",
+      "labels": [
+        "enhancement",
+        "help wanted"
+      ],
+      "problem": "Extended Retrieval Augmented Generation (RAG) support",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "StanfordSpezi/SpeziLLM",
+      "source": "https://github.com/StanfordSpezi/SpeziLLM/issues/88"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "allowed source corpus",
+        "citation policy",
+        "unsupported-answer behavior"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "rag_grounding",
+      "labels": [
+        "enhancement",
+        "help wanted"
+      ],
+      "problem": "Community Testing: Help Us Break DocBrain",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "docbrain-ai/docbrain",
+      "source": "https://github.com/docbrain-ai/docbrain/issues/1"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "allowed source corpus",
+        "citation policy",
+        "unsupported-answer behavior"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "rag_grounding",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "performance",
+        "optimization"
+      ],
+      "problem": "[TECH-DEBT] \ud83d\ude80 Performance Optimization: Reduce latency for complex questions (currently ~40s)",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "anhmtk/StillMe-Learning-AI-System-RAG-Foundation",
+      "source": "https://github.com/anhmtk/StillMe-Learning-AI-System-RAG-Foundation/issues/123"
+    },
+    {
+      "aana_fit": "high",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "allowed source corpus",
+        "citation policy",
+        "unsupported-answer behavior"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "rag_grounding",
+      "labels": [
+        "help wanted"
+      ],
+      "problem": "Engineer Issues Part01",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "ounialaeddine-blip/Heal-Agent",
+      "source": "https://github.com/ounialaeddine-blip/Heal-Agent/issues/1"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "model or architecture target",
+        "experiment artifacts",
+        "trace or benchmark expectation"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "mechanistic_interpretability",
+      "labels": [
+        "research"
+      ],
+      "problem": "[RESEARCH] Mechanistic Interpretability",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "KSI-ML-research/krasnal",
+      "source": "https://github.com/KSI-ML-research/krasnal/issues/48"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "model or architecture target",
+        "experiment artifacts",
+        "trace or benchmark expectation"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "mechanistic_interpretability",
+      "labels": [],
+      "problem": "Add mechanistic interpretability tracing for SSM models",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "brendanlong/math-llm",
+      "source": "https://github.com/brendanlong/math-llm/pull/10"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "model or architecture target",
+        "experiment artifacts",
+        "trace or benchmark expectation"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "mechanistic_interpretability",
+      "labels": [
+        "enhancement",
+        "phase-56"
+      ],
+      "problem": "Phase 56.3: AttentionVisualizer \u2014 Mechanistic Interpretability & Circuit Discovery",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "web3guru888/asi-build",
+      "source": "https://github.com/web3guru888/asi-build/issues/1068"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "model or architecture target",
+        "experiment artifacts",
+        "trace or benchmark expectation"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "mechanistic_interpretability",
+      "labels": [],
+      "problem": "DILA Model Implementation",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "sunlabuiuc/PyHealth",
+      "source": "https://github.com/sunlabuiuc/PyHealth/pull/1054"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_answer_grounding",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules",
+        "model or architecture target",
+        "experiment artifacts",
+        "trace or benchmark expectation"
+      ],
+      "first_action": "draft grounded response and run workflow-check",
+      "issue_family": "mechanistic_interpretability",
+      "labels": [],
+      "problem": "Add AlphaEdit, mechanistic interpretability, and naturalistic fact editing experiments",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "Hypogenic-AI/isolate-knowledge-updates-claude",
+      "source": "https://github.com/Hypogenic-AI/isolate-knowledge-updates-claude/pull/5"
+    },
+    {
+      "aana_fit": "medium",
+      "adapter": "research_summary",
+      "evidence_needed": [
+        "issue body",
+        "maintainer acceptance criteria",
+        "repository contribution rules"
+      ],
+      "first_action": "create workflow contract",
+      "issue_family": "community_research",
+      "labels": [
+        "good first issue"
+      ],
+      "problem": "Bug: `ContextString` is ignored in `GenericAttackGoal`, causing contextless attacks and `LLMEval` evaluation",
+      "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+      "repository": "IBM/ares",
+      "source": "https://github.com/IBM/ares/issues/345"
+    }
+  ]
+}
