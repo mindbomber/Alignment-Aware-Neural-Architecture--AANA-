@@ -105,7 +105,8 @@ class InternalPilotRunnerTests(unittest.TestCase):
 
         command = popen.call_args.args[0]
         self.assertIn("--audit-log", command)
-        self.assertIn("eval_outputs\\audit\\pilot.jsonl", command)
+        audit_log = command[command.index("--audit-log") + 1]
+        self.assertEqual(pathlib.PurePath(audit_log).parts, pathlib.PurePath("eval_outputs/audit/pilot.jsonl").parts)
         self.assertIn("--shadow-mode", command)
 
     def test_pilot_rollout_defaults_to_shadow_mode(self):
