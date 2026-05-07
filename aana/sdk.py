@@ -14,6 +14,29 @@ import urllib.request
 from urllib.parse import urlencode
 
 from eval_pipeline import agent_api, agent_contract, workflow_contract
+from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, validate_event as validate_tool_precheck_event
+
+
+TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
+TOOL_CATEGORIES = {"public_read", "private_read", "write", "unknown"}
+AUTHORIZATION_STATES = {"none", "user_claimed", "authenticated", "validated", "confirmed"}
+TOOL_PRECHECK_ROUTES = {"accept", "ask", "defer", "refuse"}
+RISK_DOMAINS = {
+    "devops",
+    "finance",
+    "education",
+    "hr",
+    "legal",
+    "pharma",
+    "healthcare",
+    "commerce",
+    "customer_support",
+    "security",
+    "research",
+    "personal_productivity",
+    "public_information",
+    "unknown",
+}
 
 
 class AANAClientError(RuntimeError):
@@ -165,6 +188,113 @@ def evidence_object(
     )[0]
 
 
+def tool_evidence_ref(
+    *,
+    source_id,
+    kind,
+    trust_tier="unknown",
+    redaction_status="unknown",
+    summary=None,
+):
+    """Build one redacted evidence reference for a pre-tool-call event."""
+
+    if not isinstance(source_id, str) or not source_id.strip():
+        raise AANAClientError("Tool evidence ref requires a non-empty source_id.")
+    if kind not in {
+        "user_message",
+        "assistant_message",
+        "tool_result",
+        "policy",
+        "auth_event",
+        "approval",
+        "system_state",
+        "audit_record",
+        "other",
+    }:
+        raise AANAClientError(f"Unsupported tool evidence kind: {kind!r}.")
+    ref = {
+        "source_id": source_id,
+        "kind": kind,
+        "trust_tier": trust_tier,
+        "redaction_status": redaction_status,
+    }
+    if summary is not None:
+        ref["summary"] = str(summary)
+    return ref
+
+
+def build_tool_precheck_event(
+    *,
+    tool_name,
+    tool_category,
+    authorization_state,
+    evidence_refs,
+    risk_domain,
+    proposed_arguments,
+    recommended_route="accept",
+    request_id=None,
+    agent_id=None,
+    user_intent=None,
+    authorization_subject=None,
+):
+    """Build an AANA Agent Tool Precheck Contract event.
+
+    This is the small contract an agent runtime emits immediately before a tool
+    call. Use `check_tool_precheck` to validate and gate it locally.
+    """
+
+    if tool_category not in TOOL_CATEGORIES:
+        raise AANAClientError(f"Unsupported tool_category: {tool_category!r}.")
+    if authorization_state not in AUTHORIZATION_STATES:
+        raise AANAClientError(f"Unsupported authorization_state: {authorization_state!r}.")
+    if recommended_route not in TOOL_PRECHECK_ROUTES:
+        raise AANAClientError(f"Unsupported recommended_route: {recommended_route!r}.")
+    if risk_domain not in RISK_DOMAINS:
+        raise AANAClientError(f"Unsupported risk_domain: {risk_domain!r}.")
+    if not isinstance(proposed_arguments, dict):
+        raise AANAClientError("proposed_arguments must be a dictionary.")
+
+    event = {
+        "schema_version": TOOL_PRECHECK_SCHEMA_VERSION,
+        "tool_name": str(tool_name),
+        "tool_category": tool_category,
+        "authorization_state": authorization_state,
+        "evidence_refs": [dict(ref) for ref in _list(evidence_refs)],
+        "risk_domain": risk_domain,
+        "proposed_arguments": dict(proposed_arguments),
+        "recommended_route": recommended_route,
+    }
+    if request_id:
+        event["request_id"] = str(request_id)
+    if agent_id:
+        event["agent_id"] = str(agent_id)
+    if user_intent:
+        event["user_intent"] = str(user_intent)
+    if authorization_subject is not None:
+        event["authorization_subject"] = dict(authorization_subject)
+    return event
+
+
+def check_tool_precheck(event=None, **kwargs):
+    """Run the local schema-based AANA pre-tool-call gate."""
+
+    payload = event or build_tool_precheck_event(**kwargs)
+    return gate_pre_tool_call(payload)
+
+
+def should_execute_tool(result):
+    """Return True only when the AANA pre-tool-call result allows execution."""
+
+    aix = result.get("aix") if isinstance(result, dict) else {}
+    hard_blockers = aix.get("hard_blockers") if isinstance(aix, dict) else None
+    return (
+        isinstance(result, dict)
+        and result.get("gate_decision") == "pass"
+        and result.get("recommended_action") == "accept"
+        and not (result.get("hard_blockers") or hard_blockers)
+    )
+
+
 def build_family_workflow_request(family, **kwargs):
     """Build a Workflow Contract request with family metadata attached."""
 
@@ -265,6 +395,9 @@ class AANAClient:
     def agent_event(self, **kwargs):
         return build_agent_event(**kwargs)
 
+    def tool_precheck_event(self, **kwargs):
+        return build_tool_precheck_event(**kwargs)
+
     def validate_workflow(self, workflow_request):
         if self.uses_bridge:
             return self._post("/validate-workflow", workflow_request)
@@ -274,6 +407,16 @@ class AANAClient:
         if self.uses_bridge:
             return self._post("/validate-event", event)
         return agent_api.validate_event(event)
+
+    def validate_tool_precheck(self, event):
+        if self.uses_bridge:
+            return self._post("/validate-tool-precheck", event)
+        errors = validate_tool_precheck_event(event)
+        return {
+            "valid": not errors,
+            "errors": errors,
+            "schema_version": TOOL_PRECHECK_SCHEMA_VERSION,
+        }
 
     def workflow_check(self, workflow_request=None, **kwargs):
         request = workflow_request or self.workflow_request(**kwargs)
@@ -288,6 +431,12 @@ class AANAClient:
             return self._post("/agent-check", payload, shadow_mode=self.shadow_mode)
         result = agent_api.check_event(payload, gallery_path=self.gallery_path or agent_api.DEFAULT_GALLERY)
         return agent_api.apply_shadow_mode(result) if self.shadow_mode else result
+
+    def tool_precheck(self, event=None, **kwargs):
+        payload = event or self.tool_precheck_event(**kwargs)
+        if self.uses_bridge:
+            return self._post("/tool-precheck", payload, shadow_mode=self.shadow_mode)
+        return check_tool_precheck(payload)
 
     def workflow_batch(self, requests, batch_id=None):
         payload = {

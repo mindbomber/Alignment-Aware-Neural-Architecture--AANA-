@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AANA Tool Call Gate</title>
+    <meta name="description" content="Paste a proposed agent tool call and inspect the AANA pre-tool-call gate decision.">
+    <link rel="stylesheet" href="app.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="AANA home">
+        <span class="brand-mark">AA</span>
+        <span>AANA Tool Call Gate</span>
+      </a>
+      <nav aria-label="Demo links">
+        <a href="../agent-tool-precheck-contract.md">Contract</a>
+        <a href="../aana-agent-contract-sdk.md">SDK</a>
+        <a href="https://huggingface.co/datasets/mindbomber/aana-agent-tool-contract-v1">Benchmark</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="workspace" aria-labelledby="workspace-title">
+        <div class="workspace-head">
+          <div>
+            <p class="eyebrow">Pre-tool-call contract</p>
+            <h1 id="workspace-title">Paste a tool call. See the AANA route.</h1>
+          </div>
+          <div class="actions">
+            <button id="load-private" type="button">Private Read</button>
+            <button id="load-write" type="button">Write</button>
+            <button id="load-public" type="button">Public Read</button>
+            <button id="run-gate" class="primary" type="button">Run Gate</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <section class="editor" aria-label="Tool call editor">
+            <label class="field">
+              <span>Tool Call JSON</span>
+              <textarea id="tool-json" spellcheck="false"></textarea>
+            </label>
+
+            <div class="controls">
+              <label class="field">
+                <span>Category</span>
+                <select id="tool-category">
+                  <option value="auto">Auto</option>
+                  <option value="public_read">Public read</option>
+                  <option value="private_read">Private read</option>
+                  <option value="write">Write</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Authorization</span>
+                <select id="authorization-state">
+                  <option value="none">None</option>
+                  <option value="user_claimed">User claimed</option>
+                  <option value="authenticated">Authenticated</option>
+                  <option value="validated">Validated</option>
+                  <option value="confirmed">Confirmed</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Risk Domain</span>
+                <select id="risk-domain">
+                  <option value="auto">Auto</option>
+                  <option value="devops">DevOps</option>
+                  <option value="finance">Finance</option>
+                  <option value="education">Education</option>
+                  <option value="hr">HR</option>
+                  <option value="legal">Legal</option>
+                  <option value="pharma">Pharma</option>
+                  <option value="security">Security</option>
+                  <option value="public_information">Public information</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Runtime Route</span>
+                <select id="runtime-route">
+                  <option value="accept">Accept</option>
+                  <option value="ask">Ask</option>
+                  <option value="defer">Defer</option>
+                  <option value="refuse">Refuse</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Evidence Refs</span>
+              <textarea id="evidence-json" spellcheck="false"></textarea>
+            </label>
+          </section>
+
+          <section class="results" aria-live="polite" aria-label="AANA result">
+            <div class="status-row">
+              <div class="status-card" data-tone="idle" id="gate-card">
+                <span>Gate</span>
+                <strong id="gate-decision">-</strong>
+              </div>
+              <div class="status-card" data-tone="idle" id="action-card">
+                <span>Action</span>
+                <strong id="recommended-action">-</strong>
+              </div>
+              <div class="status-card" data-tone="idle">
+                <span>AIx</span>
+                <strong id="aix-score">-</strong>
+              </div>
+            </div>
+
+            <div class="result-panels">
+              <article class="panel">
+                <h2>Hard Blockers</h2>
+                <div id="blockers" class="chips"></div>
+              </article>
+
+              <article class="panel">
+                <h2>Reasons</h2>
+                <div id="reasons" class="chips"></div>
+              </article>
+
+              <article class="panel">
+                <h2>Normalized Event</h2>
+                <pre id="event-output"></pre>
+              </article>
+
+              <article class="panel">
+                <h2>Gate Result</h2>
+                <pre id="result-output"></pre>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

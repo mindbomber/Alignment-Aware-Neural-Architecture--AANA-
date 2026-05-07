@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aana.dev/schemas/agent_tool_precheck.schema.json",
+  "title": "AANA Agent Tool Precheck Contract",
+  "description": "Minimal pre-execution event every agent or tool runtime can emit before a tool call. AANA consumes this contract to decide whether the action should be accepted, clarified, deferred, or refused.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_name",
+    "tool_category",
+    "authorization_state",
+    "evidence_refs",
+    "risk_domain",
+    "proposed_arguments",
+    "recommended_route"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "aana.agent_tool_precheck.v1"
+    },
+    "tool_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runtime tool/function name exactly as the agent intends to call it."
+    },
+    "tool_category": {
+      "type": "string",
+      "enum": ["public_read", "private_read", "write", "unknown"],
+      "description": "Public/non-sensitive reads may be accepted without identity auth. Private reads and writes require stronger authorization evidence."
+    },
+    "authorization_state": {
+      "type": "string",
+      "enum": ["none", "user_claimed", "authenticated", "validated", "confirmed"],
+      "description": "Highest verified authorization state known before execution."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "description": "References to evidence used to classify the tool call and authorization state. Keep raw private data out of this field when possible.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "kind"],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "user_message",
+              "assistant_message",
+              "tool_result",
+              "policy",
+              "auth_event",
+              "approval",
+              "system_state",
+              "audit_record",
+              "other"
+            ]
+          },
+          "trust_tier": {
+            "type": "string",
+            "enum": ["verified", "runtime", "user_claimed", "unverified", "unknown"],
+            "default": "unknown"
+          },
+          "redaction_status": {
+            "type": "string",
+            "enum": ["public", "redacted", "sensitive", "unknown"],
+            "default": "unknown"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short redacted summary of what this evidence establishes."
+          }
+        }
+      }
+    },
+    "risk_domain": {
+      "type": "string",
+      "enum": [
+        "devops",
+        "finance",
+        "education",
+        "hr",
+        "legal",
+        "pharma",
+        "healthcare",
+        "commerce",
+        "customer_support",
+        "security",
+        "research",
+        "personal_productivity",
+        "public_information",
+        "unknown"
+      ],
+      "description": "Primary risk surface for the proposed action."
+    },
+    "proposed_arguments": {
+      "type": "object",
+      "description": "Tool arguments the agent intends to pass. Redact secrets and private values where possible.",
+      "additionalProperties": true
+    },
+    "recommended_route": {
+      "type": "string",
+      "enum": ["accept", "ask", "defer", "refuse"],
+      "description": "Runtime's proposed route before AANA applies the final gate."
+    },
+    "request_id": {
+      "type": "string",
+      "description": "Optional event/request id for audit correlation."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Optional agent/runtime id."
+    },
+    "user_intent": {
+      "type": "string",
+      "description": "Short redacted summary of the user request that led to this tool call."
+    },
+    "authorization_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional redacted subject whose authorization was checked.",
+      "properties": {
+        "subject_type": {
+          "type": "string",
+          "enum": ["user", "account", "client", "employee", "student", "patient", "case", "service", "unknown"]
+        },
+        "subject_ref": {
+          "type": "string",
+          "description": "Opaque or redacted subject reference."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "write" },
+          "recommended_route": { "const": "accept" }
+        },
+        "required": ["tool_category", "recommended_route"]
+      },
+      "then": {
+        "properties": {
+          "authorization_state": {
+            "enum": ["validated", "confirmed"]
+          },
+          "recommended_route": {
+            "const": "accept"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "private_read" },
+          "recommended_route": { "const": "accept" }
+        },
+        "required": ["tool_category", "recommended_route"]
+      },
+      "then": {
+        "properties": {
+          "authorization_state": {
+            "enum": ["authenticated", "validated", "confirmed"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "unknown" }
+        },
+        "required": ["tool_category"]
+      },
+      "then": {
+        "properties": {
+          "recommended_route": {
+            "enum": ["ask", "defer", "refuse"]
+          }
+        }
+      }
+    }
+  ]
+}

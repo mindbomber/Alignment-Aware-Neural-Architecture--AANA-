@@ -154,6 +154,8 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("/validate-event", payload["paths"])
         self.assertIn("/workflow-check", payload["paths"])
         self.assertIn("/workflow-batch", payload["paths"])
+        self.assertIn("/tool-precheck", payload["paths"])
+        self.assertIn("/validate-tool-precheck", payload["paths"])
         self.assertIn("/playground/gallery", payload["paths"])
         self.assertIn("/playground/check", payload["paths"])
         self.assertIn("/demos/scenarios", payload["paths"])
@@ -164,6 +166,7 @@ class AgentServerTests(unittest.TestCase):
         self.assertIn("AgentEvent", payload["components"]["schemas"])
         self.assertIn("WorkflowRequest", payload["components"]["schemas"])
         self.assertIn("WorkflowBatchRequest", payload["components"]["schemas"])
+        self.assertIn("AgentToolPrecheck", payload["components"]["schemas"])
         self.assertIn("BridgeConfig", payload["components"]["schemas"])
         self.assertIn("error_code", payload["components"]["schemas"]["Error"]["properties"])
 
@@ -186,7 +189,7 @@ class AgentServerTests(unittest.TestCase):
             self.assertEqual(payload["max_body_bytes"], 2048)
             self.assertEqual(payload["rate_limit_per_minute"], 12)
             self.assertEqual(payload["read_timeout_seconds"], 3.5)
-            self.assertEqual(payload["runtime_routes"], ["/agent-check", "/workflow-check", "/workflow-batch"])
+            self.assertEqual(payload["runtime_routes"], ["/agent-check", "/workflow-check", "/workflow-batch", "/tool-precheck"])
             self.assertEqual(payload["raw_debug_leakage"], "disabled")
             self.assertTrue(payload["redacted_logs"])
             self.assertNotIn("secret-token", json.dumps(payload))
@@ -232,6 +235,37 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(payload["agent"], "openclaw")
         self.assertEqual(payload["gate_decision"], "pass")
         self.assertEqual(payload["recommended_action"], "revise")
+
+    def test_tool_precheck_routes(self):
+        event = {
+            "schema_version": "aana.agent_tool_precheck.v1",
+            "tool_name": "get_game_score",
+            "tool_category": "public_read",
+            "authorization_state": "none",
+            "evidence_refs": [
+                {
+                    "source_id": "policy.public_scores",
+                    "kind": "policy",
+                    "trust_tier": "verified",
+                    "redaction_status": "public",
+                }
+            ],
+            "risk_domain": "public_information",
+            "proposed_arguments": {"game_id": "GAME-123"},
+            "recommended_route": "accept",
+        }
+
+        status, validation = agent_server.route_request("POST", "/validate-tool-precheck", json.dumps(event).encode("utf-8"))
+        status_check, result = agent_server.route_request("POST", "/tool-precheck", json.dumps(event).encode("utf-8"))
+        schema_status, schema = agent_server.route_request("GET", "/schemas/agent-tool-precheck.schema.json")
+
+        self.assertEqual(status, 200)
+        self.assertTrue(validation["valid"])
+        self.assertEqual(status_check, 200)
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(result["recommended_action"], "accept")
+        self.assertEqual(schema_status, 200)
+        self.assertEqual(schema["title"], "AANA Agent Tool Precheck Contract")
 
     def test_playground_check_returns_result_and_audit_preview(self):
         workflow_request = {

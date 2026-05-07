@@ -29,6 +29,7 @@ The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playgro
 Try the hosted synthetic demo if you want to inspect behavior before installing:
 
 - [Hosted demo](../demo/index.html)
+- [Tool call gate demo](../tool-call-demo/index.html)
 - [Hosted demo notes](../hosted-demo.md)
 - [Adapter gallery](../adapter-gallery/index.html)
 

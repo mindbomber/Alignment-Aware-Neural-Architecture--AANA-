@@ -96,6 +96,59 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertEqual(result["gate_decision"], "pass")
         self.assertEqual(result["recommended_action"], "revise")
 
+    def test_python_sdk_builds_and_checks_tool_precheck_event(self):
+        event = aana.build_tool_precheck_event(
+            request_id="tool-sdk-001",
+            agent_id="test-agent",
+            tool_name="get_recent_transactions",
+            tool_category="private_read",
+            authorization_state="authenticated",
+            evidence_refs=[
+                aana.tool_evidence_ref(
+                    source_id="auth.email.lookup",
+                    kind="auth_event",
+                    trust_tier="verified",
+                    redaction_status="redacted",
+                    summary="User was authenticated through an email lookup.",
+                )
+            ],
+            risk_domain="finance",
+            proposed_arguments={"account_id": "acct_redacted", "limit": 10},
+            recommended_route="accept",
+        )
+
+        validation = aana.validate_tool_precheck_event(event)
+        result = aana.check_tool_precheck(event)
+
+        self.assertEqual(validation, [])
+        self.assertEqual(event["schema_version"], aana.TOOL_PRECHECK_SCHEMA_VERSION)
+        self.assertEqual(result["gate_decision"], "pass")
+        self.assertTrue(aana.should_execute_tool(result))
+
+    def test_python_sdk_tool_precheck_blocks_missing_authorization_evidence(self):
+        client = aana.AANAClient()
+        result = client.tool_precheck(
+            tool_name="find_account_key_by_email",
+            tool_category="public_read",
+            authorization_state="none",
+            evidence_refs=[
+                aana.tool_evidence_ref(
+                    source_id="counterfactual.missing_authorization",
+                    kind="system_state",
+                    trust_tier="verified",
+                    redaction_status="public",
+                    summary="Counterfactual stressor removes verified authorization context.",
+                )
+            ],
+            risk_domain="finance",
+            proposed_arguments={"email": "redacted@example.com"},
+            recommended_route="accept",
+        )
+
+        self.assertEqual(result["recommended_action"], "defer")
+        self.assertEqual(result["gate_decision"], "fail")
+        self.assertFalse(aana.should_execute_tool(result))
+
     def test_python_sdk_shadow_mode_observes_without_blocking(self):
         client = aana.AANAClient(shadow_mode=True)
         result = client.agent_check(
@@ -145,6 +198,45 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertEqual(captured["body"]["adapter"], "research_summary")
         self.assertEqual(captured["timeout"], 10.0)
 
+    def test_python_sdk_bridge_client_posts_tool_precheck_payloads(self):
+        captured = {}
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self):
+                return b'{"gate_decision":"pass","recommended_action":"accept","hard_blockers":[]}'
+
+        def fake_urlopen(request, timeout):
+            captured["url"] = request.full_url
+            captured["body"] = json.loads(request.data.decode("utf-8"))
+            captured["timeout"] = timeout
+            return FakeResponse()
+
+        client = aana.AANAClient(base_url="http://127.0.0.1:8765", shadow_mode=True)
+        event = client.tool_precheck_event(
+            tool_name="get_game_score",
+            tool_category="public_read",
+            authorization_state="none",
+            evidence_refs=[aana.tool_evidence_ref(source_id="policy.public_scores", kind="policy")],
+            risk_domain="public_information",
+            proposed_arguments={"game_id": "GAME-123"},
+            recommended_route="accept",
+        )
+
+        with mock.patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            result = client.tool_precheck(event)
+
+        self.assertEqual(result["recommended_action"], "accept")
+        self.assertIn("/tool-precheck", captured["url"])
+        self.assertIn("shadow_mode=true", captured["url"])
+        self.assertEqual(captured["body"]["schema_version"], "aana.agent_tool_precheck.v1")
+        self.assertEqual(captured["timeout"], 10.0)
+
     def test_typescript_sdk_package_contains_helpers(self):
         package_path = ROOT / "sdk" / "typescript" / "package.json"
         source_path = ROOT / "sdk" / "typescript" / "src" / "index.ts"
@@ -165,8 +257,12 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertIn("export function familyWorkflowRequest", source)
         self.assertIn("export function workflowRequest", source)
         self.assertIn("export function agentEvent", source)
+        self.assertIn("export function toolPrecheckEvent", source)
+        self.assertIn("export function checkToolPrecheck", source)
+        self.assertIn("export function shouldExecuteTool", source)
         self.assertIn("shadowMode", source)
         self.assertIn("workflowCheck", readme)
+        self.assertIn("toolPrecheck", readme)
 
 
 if __name__ == "__main__":

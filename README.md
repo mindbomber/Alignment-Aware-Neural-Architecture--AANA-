@@ -7,6 +7,8 @@
 
 🌐 Public project site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
 
+🚦 Try AANA in the browser: https://huggingface.co/spaces/mindbomber/aana-demo
+
 ![AANA repository social preview](assets/github-social-preview.png)
 
 This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
@@ -20,10 +22,18 @@ First deployable support boundary: draft support replies, CRM support replies, r
 Start with the path that matches what you are doing:
 
 - **Try Demo**: [docs/try-demo/index.md](docs/try-demo/index.md)
+- **Tool Call Gate Demo**: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
+- **Head-to-Head Findings**: [docs/aana-head-to-head-findings.md](docs/aana-head-to-head-findings.md)
 - **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
+- **Agent Tool Contract SDK**: [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md)
+- **Agent Framework Middleware**: [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md)
 - **Build Adapter**: [docs/build-adapter/index.md](docs/build-adapter/index.md)
 
-Try the hosted synthetic demo without cloning the repo: [AANA hosted demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/). It uses precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
+Try AANA without cloning the repo:
+
+- [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo): enter a candidate answer/action, evidence, and constraints; get an AANA route, AIx score, hard blockers, suggested revision, and audit summary.
+- [AANA hosted synthetic demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/): precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
+- [AANA head-to-head findings](docs/aana-head-to-head-findings.md): a concise public summary of the agent-action comparisons against permissive agents, classifiers, prompt-only guards, LLM judges, and static contract gates.
 
 Production positioning: this repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
