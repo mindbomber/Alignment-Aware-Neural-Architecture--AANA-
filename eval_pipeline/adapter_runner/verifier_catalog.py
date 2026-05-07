@@ -74,6 +74,14 @@ VERIFIER_REGISTRY = build_verifier_registry(
             "correction_routes": DATA_EXPORT_CORRECTION_ROUTES,
             "fallback_action": "ask",
         },
+        "agent_action_safety": {
+            "family": "local_actions",
+            "supported_adapters": ('agent_action_safety_guardrail',),
+            "report_function": agent_action_safety_tool_report,
+            "safe_response_function": agent_action_safety_repair,
+            "correction_routes": AGENT_ACTION_SAFETY_CORRECTION_ROUTES,
+            "fallback_action": "ask",
+        },
         "code_review": {
             "family": "engineering_release",
             "supported_adapters": ('code_change_review',),

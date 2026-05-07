@@ -140,6 +140,17 @@ DATA_EXPORT_VIOLATION_TO_CONSTRAINTS = {
 }
 
 
+AGENT_ACTION_SAFETY_VIOLATION_TO_CONSTRAINTS = {
+    "harmful_or_illegal_tool_action": ["agent_action_harmful_or_illegal_blocked"],
+    "private_data_or_credential_risk": ["agent_action_private_data_guarded"],
+    "irreversible_external_effect_without_review": [
+        "agent_action_irreversible_effects_reviewed"
+    ],
+    "ambiguous_high_risk_action": ["agent_action_ambiguous_risk_routed"],
+    "user_intent_mismatch": ["agent_action_user_intent_preserved"],
+}
+
+
 PUBLICATION_VIOLATION_TO_CONSTRAINTS = {
     "unsupported_publication_claim": ["publication_claims_supported"],
     "publication_citation_unverified": ["publication_citations_verified"],
@@ -379,6 +390,7 @@ VIOLATION_MAPPING_SPECS = (
     ("insurance_coverage_claims_verified", INSURANCE_CLAIM_TRIAGE_VIOLATION_TO_CONSTRAINTS),
     ("grant_eligibility_verified", GRANT_APPLICATION_REVIEW_VIOLATION_TO_CONSTRAINTS),
     ("publication_claims_supported", PUBLICATION_VIOLATION_TO_CONSTRAINTS),
+    ("agent_action_harmful_or_illegal_blocked", AGENT_ACTION_SAFETY_VIOLATION_TO_CONSTRAINTS),
     ("data_export_scope_verified", DATA_EXPORT_VIOLATION_TO_CONSTRAINTS),
     ("calendar_availability_verified", CALENDAR_VIOLATION_TO_CONSTRAINTS),
     ("live_quote_price_verified", BOOKING_PURCHASE_VIOLATION_TO_CONSTRAINTS),
