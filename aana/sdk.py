@@ -14,7 +14,7 @@ import urllib.request
 from urllib.parse import urlencode
 
 from eval_pipeline import agent_api, agent_contract, workflow_contract
-from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, validate_event as validate_tool_precheck_event
+from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
 TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
@@ -282,6 +282,13 @@ def check_tool_precheck(event=None, **kwargs):
     return gate_pre_tool_call(payload)
 
 
+def check_tool_precheck_v2(event=None, **kwargs):
+    """Run the local τ²-calibrated AANA v2 pre-tool-call gate."""
+
+    payload = event or build_tool_precheck_event(**kwargs)
+    return gate_pre_tool_call_v2(payload)
+
+
 def should_execute_tool(result):
     """Return True only when the AANA pre-tool-call result allows execution."""
 
@@ -437,6 +444,12 @@ class AANAClient:
         if self.uses_bridge:
             return self._post("/tool-precheck", payload, shadow_mode=self.shadow_mode)
         return check_tool_precheck(payload)
+
+    def tool_precheck_v2(self, event=None, **kwargs):
+        payload = event or self.tool_precheck_event(**kwargs)
+        if self.uses_bridge:
+            raise AANAClientError("tool_precheck_v2 is currently available only in local in-process mode.")
+        return check_tool_precheck_v2(payload)
 
     def workflow_batch(self, requests, batch_id=None):
         payload = {
