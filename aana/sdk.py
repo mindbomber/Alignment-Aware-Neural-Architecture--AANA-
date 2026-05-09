@@ -17,11 +17,13 @@ from aana.canonical_ids import (
     AUTHORIZATION_STATES as CANONICAL_AUTHORIZATION_STATES,
     REDACTION_STATUSES,
     RISK_DOMAINS as CANONICAL_RISK_DOMAINS,
+    ROUTE_TABLE as CANONICAL_ROUTE_TABLE,
     RUNTIME_MODES,
     TOOL_CATEGORIES as CANONICAL_TOOL_CATEGORIES,
     TOOL_EVIDENCE_TYPES,
     TOOL_PRECHECK_ROUTES as CANONICAL_TOOL_PRECHECK_ROUTES,
     TRUST_TIERS,
+    route_allows_execution,
 )
 from aana.bundles import bundle_adapter_aliases
 from eval_pipeline import agent_api, agent_contract, workflow_contract
@@ -34,6 +36,7 @@ TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
 TOOL_CATEGORIES = set(CANONICAL_TOOL_CATEGORIES)
 AUTHORIZATION_STATES = set(CANONICAL_AUTHORIZATION_STATES)
 TOOL_PRECHECK_ROUTES = set(CANONICAL_TOOL_PRECHECK_ROUTES)
+ROUTE_TABLE = CANONICAL_ROUTE_TABLE
 EXECUTION_MODES = set(RUNTIME_MODES)
 RISK_DOMAINS = set(CANONICAL_RISK_DOMAINS)
 
@@ -460,9 +463,11 @@ def audit_safe_decision_event(result, event=None, *, latency_ms=None):
 def _correction_recovery_suggestion(route, result):
     safe_response = result.get("safe_response") if isinstance(result, dict) else None
     if route == "accept":
-        return "Execute only within the checked scope and append the audit-safe decision event."
+        return ROUTE_TABLE["accept"]["description"] + " Append the audit-safe decision event."
     if route == "revise":
         return "Use the corrected safe response, then recheck before execution." if safe_response else "Revise the candidate against blockers, then recheck."
+    if route == "retrieve":
+        return "Retrieve missing grounding or policy evidence, then recheck before execution."
     if route == "ask":
         return "Ask the user or runtime for the missing authorization, confirmation, or evidence before execution."
     if route == "defer":
@@ -600,10 +605,11 @@ def execution_policy(result, *, mode=None):
     gate_decision = result.get("gate_decision")
     recommended_action = result.get("recommended_action")
     architecture_route = architecture.get("route") or recommended_action
+    route_can_execute = route_allows_execution(str(architecture_route or ""))
     aana_allows = (
         gate_decision == "pass"
         and recommended_action == "accept"
-        and architecture_route == "accept"
+        and route_can_execute
         and not hard_blockers
         and not validation_errors
     )
@@ -625,6 +631,7 @@ def execution_policy(result, *, mode=None):
         "fail_closed": not aana_allows,
         "reason": reason,
         "required_route": "accept",
+        "route_table": ROUTE_TABLE,
         "observed": {
             "gate_decision": gate_decision,
             "recommended_action": recommended_action,

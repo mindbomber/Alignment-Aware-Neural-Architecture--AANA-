@@ -36,6 +36,10 @@ In enforcement mode, execute the original tool call only when:
 - no `aix.hard_blockers`
 - no schema or contract validation errors
 
+This is the uniform AANA route rule across CLI, SDK, API, and middleware:
+only `accept` can execute. `revise`, `retrieve`, `ask`, `defer`, and `refuse`
+must not call the wrapped tool body.
+
 Schema errors, missing authorization, unknown tools, malformed evidence, and
 non-`accept` routes fail closed. If the gate fails, the Python wrappers raise
 `AANAToolExecutionBlocked`.
@@ -167,11 +171,11 @@ decision = aana.check_tool_call({
     "recommended_route": "accept",
 })
 
-if decision["route"] != "accept":
+if not aana.should_execute_tool(decision):
     return {"blocked": True, "aana": decision}
 ```
 
-The production wrappers use the stricter `execution_policy`, so they also block
+The production wrappers use the same `execution_policy`, so they also block
 schema errors, hard blockers, and malformed evidence even if a route alias is
 present.
 For a repo-owned enforcement proof, run:

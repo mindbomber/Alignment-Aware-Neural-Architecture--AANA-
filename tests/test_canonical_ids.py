@@ -57,6 +57,18 @@ class CanonicalIDTests(unittest.TestCase):
         self.assertEqual(canonical_ids.canonicalize_tool_evidence_type("approval_state"), "approval")
         self.assertEqual(canonical_ids.canonicalize_runtime_mode("observe_only"), "shadow")
 
+    def test_route_table_freezes_semantics_and_execution_rule(self):
+        self.assertEqual(
+            canonical_ids.ACTION_ROUTES,
+            ("accept", "revise", "retrieve", "ask", "defer", "refuse"),
+        )
+        self.assertEqual(tuple(canonical_ids.ROUTE_TABLE), canonical_ids.ACTION_ROUTES)
+        for route in canonical_ids.ACTION_ROUTES:
+            self.assertEqual(canonical_ids.route_allows_execution(route), route == "accept")
+            self.assertEqual(canonical_ids.ROUTE_TABLE[route]["execution_allowed"], route == "accept")
+            self.assertTrue(canonical_ids.ROUTE_TABLE[route]["description"])
+            self.assertTrue(canonical_ids.ROUTE_TABLE[route]["next_step"])
+
 
 if __name__ == "__main__":
     unittest.main()

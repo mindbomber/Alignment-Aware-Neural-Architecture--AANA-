@@ -24,6 +24,32 @@ def test_should_execute_requires_true_accept_across_result_surfaces() -> None:
     assert policy["reason"] == "route_not_accept"
 
 
+def test_route_table_allows_execution_only_for_accept() -> None:
+    for route in ("revise", "retrieve", "ask", "defer", "refuse"):
+        result = {
+            "gate_decision": "pass",
+            "recommended_action": route,
+            "hard_blockers": [],
+            "aix": {"hard_blockers": []},
+            "architecture_decision": {"route": route, "hard_blockers": []},
+        }
+
+        assert not aana.should_execute_tool(result)
+        policy = aana.execution_policy(result)
+        assert not policy["aana_allows_execution"]
+        assert not policy["execution_allowed"]
+        assert policy["required_route"] == "accept"
+
+    accept = {
+        "gate_decision": "pass",
+        "recommended_action": "accept",
+        "hard_blockers": [],
+        "aix": {"hard_blockers": []},
+        "architecture_decision": {"route": "accept", "hard_blockers": []},
+    }
+    assert aana.should_execute_tool(accept)
+
+
 def test_check_tool_call_fail_closes_malformed_evidence() -> None:
     result = aana.check_tool_call(
         {

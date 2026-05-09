@@ -17,6 +17,8 @@ The contract is deliberately small:
 ```
 
 AANA checks this event and returns whether the runtime should `accept`, `ask`, `defer`, or `refuse`.
+The broader AANA result envelope uses one route table for all agent checks:
+`accept`, `revise`, `retrieve`, `ask`, `defer`, and `refuse`.
 
 ## Freeze Guarantee
 
@@ -68,12 +70,23 @@ Only execute when all are true:
 - `hard_blockers` is empty
 - `aix.hard_blockers` is empty
 
+No other route executes. `revise`, `retrieve`, `ask`, `defer`, and `refuse`
+are recovery/control routes that must complete and then recheck, or stop.
+
 ## Route Semantics
 
-- `accept`: execute only within the checked scope.
-- `ask`: ask for missing authorization, confirmation, evidence, or clarification.
-- `defer`: route to stronger evidence retrieval, a domain owner, or human review.
-- `refuse`: do not execute because a hard blocker prevents safe action.
+| Route | Execution | Meaning |
+| --- | --- | --- |
+| `accept` | yes | Proceed only within the checked scope. |
+| `revise` | no | Revise the candidate output or action, then recheck before execution. |
+| `retrieve` | no | Retrieve missing grounding or policy evidence, then recheck before execution. |
+| `ask` | no | Ask the user or runtime for missing information, authorization, or confirmation. |
+| `defer` | no | Route to stronger evidence, a domain owner, review queue, or human reviewer. |
+| `refuse` | no | Do not execute because a hard blocker prevents safe action. |
+
+Agent Action Contract v1 `recommended_route` is the pre-tool-call subset:
+`accept`, `ask`, `defer`, and `refuse`. Full agent/workflow checks may also
+return `revise` or `retrieve`.
 
 Route strictness is ordered as:
 

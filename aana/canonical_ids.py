@@ -6,6 +6,8 @@ import json
 import pathlib
 from typing import Any
 
+from eval_pipeline.route_semantics import ACTION_ROUTES, ROUTE_TABLE, route_allows_execution as _route_allows_execution
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -44,14 +46,6 @@ ADAPTER_FAMILY_ALIASES: dict[str, str] = {}
 
 BUNDLE_IDS, BUNDLE_ALIASES = _bundle_ids_and_aliases_from_manifests()
 
-ACTION_ROUTES = (
-    "accept",
-    "revise",
-    "retrieve",
-    "ask",
-    "refuse",
-    "defer",
-)
 TOOL_PRECHECK_ROUTES = (
     "accept",
     "ask",
@@ -174,6 +168,14 @@ def canonicalize_route(identifier: str) -> str:
     return canonicalize(identifier, ACTION_ROUTES, ROUTE_ALIASES, surface="route")
 
 
+def route_allows_execution(route: str) -> bool:
+    try:
+        route = canonicalize_route(route)
+    except KeyError:
+        return False
+    return _route_allows_execution(route)
+
+
 def canonicalize_tool_evidence_type(identifier: str) -> str:
     return canonicalize(identifier, TOOL_EVIDENCE_TYPES, TOOL_EVIDENCE_TYPE_ALIASES, surface="tool evidence type")
 
@@ -234,6 +236,17 @@ def validate_canonical_ids() -> dict[str, Any]:
         ("runtime_mode", RUNTIME_MODES, RUNTIME_MODE_ALIASES),
     ):
         _validate_surface(issues, surface=surface, canonical_ids=canonical_ids, aliases=aliases)
+    if tuple(ROUTE_TABLE) != ACTION_ROUTES:
+        _add_issue(issues, "route_table_order_drift", "ROUTE_TABLE order must match canonical action routes.")
+    for route in ACTION_ROUTES:
+        entry = ROUTE_TABLE.get(route)
+        if not isinstance(entry, dict):
+            _add_issue(issues, "route_table_missing_route", f"ROUTE_TABLE missing route {route!r}.")
+            continue
+        if bool(entry.get("execution_allowed")) is not (route == "accept"):
+            _add_issue(issues, "route_execution_rule_drift", "Only the accept route may allow execution.")
+        if not entry.get("description") or not entry.get("next_step"):
+            _add_issue(issues, "route_table_incomplete", f"ROUTE_TABLE route {route!r} must include description and next_step.")
 
     from aana import sdk
     from aana.adapters import FAMILY_IDS
@@ -313,6 +326,7 @@ def validate_canonical_ids() -> dict[str, Any]:
             "adapter_families": list(ADAPTER_FAMILY_IDS),
             "bundles": list(BUNDLE_IDS),
             "action_routes": list(ACTION_ROUTES),
+            "route_table": ROUTE_TABLE,
             "tool_precheck_routes": list(TOOL_PRECHECK_ROUTES),
             "tool_evidence_types": list(TOOL_EVIDENCE_TYPES),
             "runtime_modes": list(RUNTIME_MODES),

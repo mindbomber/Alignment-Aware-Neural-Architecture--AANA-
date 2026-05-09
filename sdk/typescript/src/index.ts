@@ -20,6 +20,42 @@ export type RiskDomain =
 
 export const TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1" as const;
 export const PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable." as const;
+export const ROUTE_TABLE: Record<AanaAction, { description: string; execution_allowed: boolean; next_step: string }> = {
+  accept: {
+    description: "Proceed only within the checked scope.",
+    execution_allowed: true,
+    next_step: "execute_checked_action"
+  },
+  revise: {
+    description: "Revise the candidate output or action, then recheck before execution.",
+    execution_allowed: false,
+    next_step: "revise_then_recheck"
+  },
+  retrieve: {
+    description: "Retrieve missing grounding or policy evidence, then recheck before execution.",
+    execution_allowed: false,
+    next_step: "retrieve_evidence_then_recheck"
+  },
+  ask: {
+    description: "Ask the user or runtime for missing information, authorization, or confirmation.",
+    execution_allowed: false,
+    next_step: "ask_then_recheck"
+  },
+  defer: {
+    description: "Route to stronger evidence, a domain owner, review queue, or human reviewer.",
+    execution_allowed: false,
+    next_step: "defer_to_review"
+  },
+  refuse: {
+    description: "Do not execute because a hard blocker prevents safe action.",
+    execution_allowed: false,
+    next_step: "refuse_action"
+  }
+} as const;
+
+export function routeAllowsExecution(route: AanaAction | string | undefined): boolean {
+  return route === "accept";
+}
 
 export interface EvidenceObject {
   text: string;
@@ -151,6 +187,7 @@ export interface ExecutionPolicy {
   fail_closed: boolean;
   reason: string;
   required_route: "accept";
+  route_table: typeof ROUTE_TABLE;
   observed: {
     gate_decision?: "pass" | "fail";
     recommended_action?: ToolPrecheckAction;
@@ -556,7 +593,7 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
 }
 
 function correctionRecoverySuggestion(route: ToolPrecheckAction): string {
-  if (route === "accept") return "Execute only within the checked scope and append the audit-safe decision event.";
+  if (route === "accept") return `${ROUTE_TABLE.accept.description} Append the audit-safe decision event.`;
   if (route === "ask") return "Ask the user or runtime for the missing authorization, confirmation, or evidence before execution.";
   if (route === "defer") return "Defer to stronger evidence retrieval, a domain owner, or human review before execution.";
   return "Refuse the proposed action because a hard blocker prevents safe execution.";
@@ -614,7 +651,7 @@ export function executionPolicy(result: ToolPrecheckResult, mode?: "enforce" | "
   const architectureRoute = result.architecture_decision?.route ?? result.recommended_action;
   const hardBlockerCount = (result.hard_blockers ?? []).length + (result.aix?.hard_blockers ?? []).length + (result.architecture_decision?.hard_blockers ?? []).length;
   const validationErrorCount = (result.validation_errors ?? []).length;
-  const aanaAllows = result.gate_decision === "pass" && result.recommended_action === "accept" && architectureRoute === "accept" && hardBlockerCount === 0 && validationErrorCount === 0;
+  const aanaAllows = result.gate_decision === "pass" && result.recommended_action === "accept" && routeAllowsExecution(architectureRoute) && hardBlockerCount === 0 && validationErrorCount === 0;
   const executionAllowed = requestedMode === "enforce" ? aanaAllows : true;
   const reason = validationErrorCount > 0
     ? "schema_or_contract_validation_failed"
@@ -632,6 +669,7 @@ export function executionPolicy(result: ToolPrecheckResult, mode?: "enforce" | "
     fail_closed: !aanaAllows,
     reason,
     required_route: "accept",
+    route_table: ROUTE_TABLE,
     observed: {
       gate_decision: result.gate_decision,
       recommended_action: result.recommended_action,

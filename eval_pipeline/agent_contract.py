@@ -4,10 +4,12 @@ import datetime
 import re
 
 from eval_pipeline import aix
+from eval_pipeline.route_semantics import ACTION_ROUTES, ROUTE_TABLE
 
 
 AGENT_EVENT_VERSION = "0.1"
-ALLOWED_ACTIONS = ["accept", "revise", "retrieve", "ask", "refuse", "defer"]
+ALLOWED_ACTIONS = list(ACTION_ROUTES)
+ROUTE_SEMANTICS = ROUTE_TABLE
 GATE_DECISIONS = ["pass", "block", "fail", "needs_adapter_implementation"]
 
 

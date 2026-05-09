@@ -48,7 +48,7 @@ def api_allows_execution(decision: dict[str, Any]) -> bool:
         and decision.get("recommended_action") == "accept"
         and not (decision.get("hard_blockers") or architecture.get("hard_blockers"))
         and not decision.get("validation_errors")
-        and policy.get("execution_allowed", True)
+        and policy.get("execution_allowed") is True
     )
 
 
