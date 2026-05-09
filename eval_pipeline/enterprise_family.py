@@ -10,28 +10,20 @@ from eval_pipeline import adapter_gallery, agent_api, evidence_integrations, pro
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ENTERPRISE_FAMILY_VERSION = "0.1"
+ENTERPRISE_BUNDLE_MANIFEST = ROOT / "aana" / "bundles" / "enterprise" / "manifest.json"
 
-ENTERPRISE_CORE_ADAPTERS = (
-    "crm_support_reply",
-    "email_send_guardrail",
-    "ticket_update_checker",
-    "data_export_guardrail",
-    "access_permission_change",
-    "code_change_review",
-    "deployment_readiness",
-    "incident_response_update",
-)
+def _bundle_manifest():
+    return json.loads(ENTERPRISE_BUNDLE_MANIFEST.read_text(encoding="utf-8"))
 
-ENTERPRISE_EVIDENCE_CONNECTORS = {
-    "crm": "crm_support",
-    "ticketing": "ticketing",
-    "email": "email_send",
-    "iam": "iam",
-    "ci_github": "ci",
-    "deployment": "deployment",
-    "billing": "billing",
-    "data_warehouse_export": "data_export",
-}
+
+def _connector_map(bundle):
+    connectors = {connector: connector for connector in bundle.get("required_evidence_connectors", [])}
+    connectors.update(bundle.get("evidence_connector_aliases", {}))
+    return connectors
+
+
+ENTERPRISE_CORE_ADAPTERS = tuple(_bundle_manifest().get("core_adapter_ids", []))
+ENTERPRISE_EVIDENCE_CONNECTORS = _connector_map(_bundle_manifest())
 
 ENTERPRISE_AGENT_SKILLS = {
     "support_draft_review": "examples/openclaw/aana-support-reply-guardrail-skill/SKILL.md",

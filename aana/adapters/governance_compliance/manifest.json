@@ -1,0 +1,22 @@
+{
+  "family_id": "governance_compliance",
+  "family_type": "technical_adapter",
+  "purpose": "Check policy, risk, auditability, approval, release, and compliance-claim boundaries.",
+  "routes": ["accept", "revise", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "unsupported_policy_claim_recall",
+    "missing_audit_evidence_recall",
+    "approval_gap_recall",
+    "safe_allow_rate",
+    "route_accuracy"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "policy/risk/audit datasets where available",
+      "calibration": [],
+      "heldout_validation": [],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports governance and compliance-control workflow checks only where policy evidence and review authority are explicitly supplied."
+}

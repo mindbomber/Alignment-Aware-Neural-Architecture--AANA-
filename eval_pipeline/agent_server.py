@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from eval_pipeline import agent_api, agent_contract, aix, workflow_contract  # noqa: E402
+from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, load_schema as load_tool_precheck_schema, validate_event as validate_tool_precheck_event  # noqa: E402
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -288,6 +289,20 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     },
                 }
             },
+            "/tool-precheck": {
+                "post": {
+                    "operationId": "checkToolPrecheck",
+                    "summary": "Check a proposed tool call with the AANA Agent Tool Precheck Contract.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgentToolPrecheck"}}},
+                    },
+                    "responses": {
+                        "200": {"description": "AANA pre-tool-call gate result."},
+                        "400": {"description": "Invalid tool precheck event."},
+                    },
+                }
+            },
             "/validate-event": {
                 "post": {
                     "operationId": "validateAgentEvent",
@@ -295,6 +310,26 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                     "requestBody": {
                         "required": True,
                         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgentEvent"}}},
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Validation report.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationReport"}}},
+                        },
+                        "400": {
+                            "description": "Request body is not valid JSON.",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}},
+                        },
+                    },
+                }
+            },
+            "/validate-tool-precheck": {
+                "post": {
+                    "operationId": "validateToolPrecheck",
+                    "summary": "Validate an AANA Agent Tool Precheck Contract event without running the gate.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgentToolPrecheck"}}},
                     },
                     "responses": {
                         "200": {
@@ -455,6 +490,7 @@ def openapi_schema(base_url=f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"):
                 "WorkflowBatchRequest": workflow_contract.WORKFLOW_BATCH_REQUEST_SCHEMA,
                 "WorkflowResult": workflow_contract.WORKFLOW_RESULT_SCHEMA,
                 "WorkflowBatchResult": workflow_contract.WORKFLOW_BATCH_RESULT_SCHEMA,
+                "AgentToolPrecheck": load_tool_precheck_schema(),
                 "Health": {
                     "type": "object",
                     "properties": {
@@ -665,7 +701,7 @@ def bridge_config(
         "bridge_version": BRIDGE_VERSION,
         "runtime_integration_point": "http_bridge",
         "public_contracts": ["agent_event", "workflow_request", "workflow_batch_request"],
-        "runtime_routes": ["/agent-check", "/workflow-check", "/workflow-batch"],
+        "runtime_routes": ["/agent-check", "/workflow-check", "/workflow-batch", "/tool-precheck"],
         "health_routes": ["/health", "/ready", "/config"],
         "auth_required": bool(token),
         "auth_token_source": "file" if auth_token_file else "value" if auth_token else "environment" if token else "none",
@@ -951,6 +987,9 @@ def route_request(
     if method == "GET" and parsed.path == "/schemas/workflow-batch-result.schema.json":
         return 200, workflow_contract.WORKFLOW_BATCH_RESULT_SCHEMA
 
+    if method == "GET" and parsed.path == "/schemas/agent-tool-precheck.schema.json":
+        return 200, load_tool_precheck_schema()
+
     if method == "GET" and parsed.path == "/schemas":
         return 200, agent_api.schema_catalog()
 
@@ -977,6 +1016,27 @@ def route_request(
             return 200, agent_api.validate_event(event)
         except json.JSONDecodeError as exc:
             return 400, public_error(400, "invalid_json", "Request body must be valid JSON.", exc)
+
+    if method == "POST" and parsed.path == "/validate-tool-precheck":
+        try:
+            event = json.loads(body.decode("utf-8") if body else "{}")
+            errors = validate_tool_precheck_event(event)
+            return 200, {
+                "valid": not errors,
+                "errors": errors,
+                "schema_version": "aana.agent_tool_precheck.v1",
+            }
+        except json.JSONDecodeError as exc:
+            return 400, public_error(400, "invalid_json", "Request body must be valid JSON.", exc)
+
+    if method == "POST" and parsed.path == "/tool-precheck":
+        try:
+            event = json.loads(body.decode("utf-8") if body else "{}")
+            if not isinstance(event, dict):
+                raise ValueError("Request body must be a JSON object.")
+            return 200, gate_pre_tool_call(event)
+        except (json.JSONDecodeError, ValueError) as exc:
+            return 400, public_error(400, "bad_request", "Request could not be processed.", exc)
 
     if method == "POST" and parsed.path == "/workflow-check":
         try:
@@ -1084,8 +1144,11 @@ def route_request(
                 "GET /schemas/workflow-batch-request.schema.json",
                 "GET /schemas/workflow-result.schema.json",
                 "GET /schemas/workflow-batch-result.schema.json",
+                "GET /schemas/agent-tool-precheck.schema.json",
                 "POST /validate-event",
                 "POST /agent-check",
+                "POST /validate-tool-precheck",
+                "POST /tool-precheck",
                 "POST /validate-workflow",
                 "POST /validate-workflow-batch",
                 "POST /workflow-check",
@@ -1254,7 +1317,7 @@ def run_server(
     print(f"Rate limit: {'disabled' if not rate_limit_per_minute else str(rate_limit_per_minute) + ' POST request(s)/minute/client'}")
     print(f"Read timeout: {read_timeout_seconds} seconds")
     print(f"Shadow mode: {'enabled (observe only)' if shadow_mode else 'disabled'}")
-    print("Routes: GET /health, GET /ready, GET /policy-presets, GET /playground, GET /playground/gallery, GET /adapter-gallery, GET /adapter-gallery/data.json, GET /enterprise, GET /personal-productivity, GET /government-civic, GET /families/data.json, GET /demos, GET /demos/scenarios, GET /dashboard, GET /dashboard/metrics, GET /dashboard/mi-metrics, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-workflow, POST /workflow-check, POST /playground/check, POST /validate-workflow-batch, POST /workflow-batch")
+    print("Routes: GET /health, GET /ready, GET /policy-presets, GET /playground, GET /playground/gallery, GET /adapter-gallery, GET /adapter-gallery/data.json, GET /enterprise, GET /personal-productivity, GET /government-civic, GET /families/data.json, GET /demos, GET /demos/scenarios, GET /dashboard, GET /dashboard/metrics, GET /dashboard/mi-metrics, GET /openapi.json, GET /schemas, POST /validate-event, POST /agent-check, POST /validate-tool-precheck, POST /tool-precheck, POST /validate-workflow, POST /workflow-check, POST /playground/check, POST /validate-workflow-batch, POST /workflow-batch")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

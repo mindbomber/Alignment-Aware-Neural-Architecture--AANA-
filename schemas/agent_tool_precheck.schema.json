@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aana.dev/schemas/agent_action_contract_v1.schema.json",
+  "title": "AANA Agent Action Contract v1",
+  "description": "Public seven-field pre-execution contract every agent or tool runtime can emit before a consequential action. AANA consumes this contract to decide whether the action should be accepted, clarified, deferred, or refused.",
+  "x-aana-contract-freeze": {
+    "version": "v1",
+    "required_field_order": [
+      "tool_name",
+      "tool_category",
+      "authorization_state",
+      "evidence_refs",
+      "risk_domain",
+      "proposed_arguments",
+      "recommended_route"
+    ],
+    "route_order": ["accept", "ask", "defer", "refuse"],
+    "route_semantics": {
+      "accept": "execute only within the checked scope",
+      "ask": "request missing authorization, confirmation, evidence, or clarification",
+      "defer": "route to stronger evidence retrieval, domain owner, or human review",
+      "refuse": "do not execute because a hard blocker prevents safe action"
+    },
+    "versioning_rules": [
+      "v1 required fields must not be removed, renamed, reordered, or made optional in a v1-compatible schema.",
+      "Future v2/v3 schemas may add optional fields but must keep accepting valid v1 events unless an explicit new schema id is negotiated.",
+      "New route or enum values must be opt-in and old v1 clients should fail closed when they encounter them.",
+      "Result envelopes may add optional metadata, but gate_decision, recommended_action, hard_blockers, and audit-safe route information must remain backward-compatible."
+    ]
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool_name",
+    "tool_category",
+    "authorization_state",
+    "evidence_refs",
+    "risk_domain",
+    "proposed_arguments",
+    "recommended_route"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "aana.agent_tool_precheck.v1",
+      "description": "Optional compatibility marker for runtimes that use the original pre-tool-check wire name. The public v1 minimum is the seven required action fields."
+    },
+    "tool_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runtime tool/function name exactly as the agent intends to call it."
+    },
+    "tool_category": {
+      "type": "string",
+      "enum": ["public_read", "private_read", "write", "unknown"],
+      "description": "Public/non-sensitive reads may be accepted without identity auth. Private reads and writes require stronger authorization evidence."
+    },
+    "authorization_state": {
+      "type": "string",
+      "enum": ["none", "user_claimed", "authenticated", "validated", "confirmed"],
+      "description": "Highest verified authorization state known before execution."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "description": "References to evidence used to classify the tool call and authorization state. Keep raw private data out of this field when possible.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "kind", "trust_tier", "redaction_status", "freshness", "provenance"],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "user_message",
+              "assistant_message",
+              "tool_result",
+              "policy",
+              "auth_event",
+              "approval",
+              "system_state",
+              "audit_record",
+              "other"
+            ]
+          },
+          "trust_tier": {
+            "type": "string",
+            "enum": ["verified", "runtime", "user_claimed", "unverified", "unknown"],
+            "default": "unknown"
+          },
+          "redaction_status": {
+            "type": "string",
+            "enum": ["public", "redacted", "sensitive", "unknown"],
+            "default": "unknown"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short redacted summary of what this evidence establishes."
+          },
+          "retrieved_at": {
+            "type": "string",
+            "description": "Optional ISO timestamp for freshness checks."
+          },
+          "freshness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status"],
+            "description": "Freshness status used before public audit logs or claims.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["fresh", "stale", "unknown"]
+              },
+              "checked_at": {
+                "type": "string",
+                "description": "Optional ISO timestamp for when freshness was checked."
+              },
+              "max_age_hours": {
+                "type": "number"
+              },
+              "age_hours": {
+                "type": "number"
+              },
+              "source": {
+                "type": "string",
+                "description": "Redacted source of the freshness assertion."
+              }
+            }
+          },
+          "citation_url": {
+            "type": "string",
+            "description": "Optional public citation/provenance URL."
+          },
+          "retrieval_url": {
+            "type": "string",
+            "description": "Optional retrieval/provenance URI."
+          },
+          "provenance": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required redacted provenance label such as connector, policy, user, runtime, or fixture."
+          },
+          "supports": {
+            "type": "array",
+            "description": "Optional redacted claim/action ids this evidence supports.",
+            "items": { "type": "string" }
+          },
+          "contradicts": {
+            "type": "array",
+            "description": "Optional redacted claim/action ids this evidence contradicts.",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "risk_domain": {
+      "type": "string",
+      "enum": [
+        "devops",
+        "finance",
+        "education",
+        "hr",
+        "legal",
+        "pharma",
+        "healthcare",
+        "commerce",
+        "customer_support",
+        "security",
+        "research",
+        "personal_productivity",
+        "public_information",
+        "unknown"
+      ],
+      "description": "Primary risk surface for the proposed action."
+    },
+    "proposed_arguments": {
+      "type": "object",
+      "description": "Tool arguments the agent intends to pass. Redact secrets and private values where possible.",
+      "additionalProperties": true
+    },
+    "recommended_route": {
+      "type": "string",
+      "enum": ["accept", "ask", "defer", "refuse"],
+      "description": "Runtime's proposed route before AANA applies the final gate."
+    },
+    "request_id": {
+      "type": "string",
+      "description": "Optional event/request id for audit correlation."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Optional agent/runtime id."
+    },
+    "user_intent": {
+      "type": "string",
+      "description": "Short redacted summary of the user request that led to this tool call."
+    },
+    "authorization_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional redacted subject whose authorization was checked.",
+      "properties": {
+        "subject_type": {
+          "type": "string",
+          "enum": ["user", "account", "client", "employee", "student", "patient", "case", "service", "unknown"]
+        },
+        "subject_ref": {
+          "type": "string",
+          "description": "Opaque or redacted subject reference."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "write" },
+          "recommended_route": { "const": "accept" }
+        },
+        "required": ["tool_category", "recommended_route"]
+      },
+      "then": {
+        "properties": {
+          "authorization_state": {
+            "enum": ["validated", "confirmed"]
+          },
+          "recommended_route": {
+            "const": "accept"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "private_read" },
+          "recommended_route": { "const": "accept" }
+        },
+        "required": ["tool_category", "recommended_route"]
+      },
+      "then": {
+        "properties": {
+          "authorization_state": {
+            "enum": ["authenticated", "validated", "confirmed"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool_category": { "const": "unknown" }
+        },
+        "required": ["tool_category"]
+      },
+      "then": {
+        "properties": {
+          "recommended_route": {
+            "enum": ["ask", "defer", "refuse"]
+          }
+        }
+      }
+    }
+  ]
+}

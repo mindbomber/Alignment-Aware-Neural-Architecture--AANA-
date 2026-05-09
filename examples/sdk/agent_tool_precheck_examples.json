@@ -1,0 +1,110 @@
+{
+  "schema": "schemas/agent_tool_precheck.schema.json",
+  "examples": [
+    {
+      "name": "public read accepted",
+      "event": {
+        "schema_version": "aana.agent_tool_precheck.v1",
+        "request_id": "evt_public_read_001",
+        "tool_name": "get_game_score",
+        "tool_category": "public_read",
+        "authorization_state": "none",
+        "evidence_refs": [
+          {
+            "source_id": "policy.basketball.public_scores",
+            "kind": "policy",
+            "trust_tier": "verified",
+            "redaction_status": "public",
+            "summary": "Game scores are public/non-sensitive reads.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
+          }
+        ],
+        "risk_domain": "public_information",
+        "proposed_arguments": {
+          "game_id": "GAME-123"
+        },
+        "recommended_route": "accept",
+        "user_intent": "User asks for the current score of a public game."
+      }
+    },
+    {
+      "name": "private read requires authentication",
+      "event": {
+        "schema_version": "aana.agent_tool_precheck.v1",
+        "request_id": "evt_private_read_001",
+        "tool_name": "get_recent_transactions",
+        "tool_category": "private_read",
+        "authorization_state": "authenticated",
+        "evidence_refs": [
+          {
+            "source_id": "auth.lookup.client_email",
+            "kind": "auth_event",
+            "trust_tier": "verified",
+            "redaction_status": "redacted",
+            "summary": "User identity was authenticated through email lookup.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
+          },
+          {
+            "source_id": "policy.bank.transactions",
+            "kind": "policy",
+            "trust_tier": "verified",
+            "redaction_status": "public",
+            "summary": "Authenticated users may read their own transaction history.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
+          }
+        ],
+        "risk_domain": "finance",
+        "proposed_arguments": {
+          "account_id": "acct_redacted",
+          "limit": 20
+        },
+        "recommended_route": "accept",
+        "authorization_subject": {
+          "subject_type": "account",
+          "subject_ref": "acct_redacted"
+        }
+      }
+    },
+    {
+      "name": "write action deferred",
+      "event": {
+        "schema_version": "aana.agent_tool_precheck.v1",
+        "request_id": "evt_write_defer_001",
+        "tool_name": "unfreeze_account",
+        "tool_category": "write",
+        "authorization_state": "authenticated",
+        "evidence_refs": [
+          {
+            "source_id": "auth.lookup.client_email",
+            "kind": "auth_event",
+            "trust_tier": "verified",
+            "redaction_status": "redacted",
+            "summary": "User identity was authenticated, but account status validation and explicit confirmation are missing.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
+          }
+        ],
+        "risk_domain": "finance",
+        "proposed_arguments": {
+          "account_id": "acct_redacted"
+        },
+        "recommended_route": "defer",
+        "authorization_subject": {
+          "subject_type": "account",
+          "subject_ref": "acct_redacted"
+        }
+      }
+    }
+  ]
+}

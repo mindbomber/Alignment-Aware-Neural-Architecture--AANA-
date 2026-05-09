@@ -1,0 +1,13 @@
+{
+  "tool_name": "send_email",
+  "tool_category": "write",
+  "authorization_state": "user_claimed",
+  "evidence_refs": [
+    "draft_id:123"
+  ],
+  "risk_domain": "customer_support",
+  "proposed_arguments": {
+    "to": "customer@example.com"
+  },
+  "recommended_route": "accept"
+}

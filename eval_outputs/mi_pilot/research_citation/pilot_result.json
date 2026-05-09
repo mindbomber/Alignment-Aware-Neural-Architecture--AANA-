@@ -1,0 +1,2269 @@
+{
+  "accepted": true,
+  "candidate_workflow": "research/citation workflow",
+  "handoff_count": 3,
+  "handoffs": [
+    {
+      "aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+        "hard_blockers": [],
+        "message_fingerprint": "6ea6a6f19f6872dcb24cd253472f28eb59b9757465b276b24b43b9d9212f6f11",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "research_agent",
+        "score": 0.5,
+        "sender_id": "repository_evidence_connector",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "verifier_statuses": {
+          "B": "pass",
+          "C": "pass",
+          "F": "pass",
+          "P": "pass"
+        }
+      },
+      "allowed_actions": [
+        "accept",
+        "revise",
+        "retrieve",
+        "ask",
+        "defer",
+        "refuse"
+      ],
+      "constraint_map": {
+        "F": [
+          {
+            "description": "Evidence provenance and uncertainty limits must remain visible.",
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "severity": "medium",
+            "source": "evidence_registry"
+          }
+        ],
+        "K_B": [
+          {
+            "description": "Do not present incomplete evidence as settled research fact.",
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_C": [
+          {
+            "description": "The recipient requires a concise, source-bounded research summary.",
+            "hard": true,
+            "id": "research-summary-policy",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_P": [
+          {
+            "description": "Use only Source A and Source B from the supplied research evidence.",
+            "hard": true,
+            "id": "allowed-sources-only",
+            "severity": "high",
+            "source": "research_summary"
+          },
+          {
+            "description": "Do not state unsupported numerical effects or invented benchmark claims.",
+            "hard": true,
+            "id": "supported-claims-only",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ]
+      },
+      "contract_version": "0.1",
+      "evidence": [
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/0",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Only Source A and Source B are available for the requested summary.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/1",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Only Source A and Source B are available for the requested summary.",
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/2",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+            "Only Source A and Source B are available for the requested summary.",
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete."
+          ],
+          "text": "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+          "trust_tier": "verified"
+        }
+      ],
+      "handoff_aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+        "hard_blockers": [],
+        "message_fingerprint": "6ea6a6f19f6872dcb24cd253472f28eb59b9757465b276b24b43b9d9212f6f11",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "research_agent",
+        "score": 0.5,
+        "sender_id": "repository_evidence_connector",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "verifier_statuses": {
+          "B": "pass",
+          "C": "pass",
+          "F": "pass",
+          "P": "pass"
+        }
+      },
+      "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+      "message": {
+        "assumptions": [
+          {
+            "description": "The summary uses only the provided Source A and Source B evidence and preserves source limits.",
+            "evidence_source_id": "source-a",
+            "id": "source-bounded-summary",
+            "support_status": "supported"
+          }
+        ],
+        "claims": [
+          "Only Source A and Source B are available for the requested summary.",
+          "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+          "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+          "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+        ],
+        "payload_redaction_status": "redacted",
+        "summary": "Repository evidence retrieved for a source-bounded research summary."
+      },
+      "message_schema": {
+        "content_type": "text/plain",
+        "kind": "candidate_answer",
+        "redaction_required": true,
+        "schema_id": "research-citation-mi-pilot-v0.1"
+      },
+      "metadata": {
+        "boundary_type": "tool_to_agent",
+        "connectivity": 1,
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      },
+      "recipient": {
+        "id": "research_agent",
+        "trust_tier": "system",
+        "type": "agent"
+      },
+      "recommended_action": "accept",
+      "sender": {
+        "id": "repository_evidence_connector",
+        "trust_tier": "verified",
+        "type": "connector"
+      },
+      "verifier_scores": {
+        "B": {
+          "confidence": 0.9,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "certainty"
+          ]
+        },
+        "C": {
+          "confidence": 0.91,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "summary_policy"
+          ]
+        },
+        "F": {
+          "confidence": 0.88,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "provenance"
+          ]
+        },
+        "P": {
+          "confidence": 0.92,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "source_support"
+          ]
+        },
+        "overall": 1.0
+      }
+    },
+    {
+      "aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 0.75,
+          "C": 1.0,
+          "F": 0.75,
+          "P": 0.75
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+        "hard_blockers": [],
+        "message_fingerprint": "9c2277eade2b62b57bc2f585949f747eee25330355bc5e4e9e53347c57e07174",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "citation_guard",
+        "score": 0.5,
+        "sender_id": "research_agent",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 0.75,
+          "C": 1.0,
+          "F": 0.75,
+          "P": 0.75
+        },
+        "verifier_statuses": {
+          "B": "warn",
+          "C": "pass",
+          "F": "warn",
+          "P": "warn"
+        }
+      },
+      "allowed_actions": [
+        "accept",
+        "revise",
+        "retrieve",
+        "ask",
+        "defer",
+        "refuse"
+      ],
+      "constraint_map": {
+        "F": [
+          {
+            "description": "Evidence provenance and uncertainty limits must remain visible.",
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "severity": "medium",
+            "source": "evidence_registry"
+          }
+        ],
+        "K_B": [
+          {
+            "description": "Do not present incomplete evidence as settled research fact.",
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_C": [
+          {
+            "description": "The recipient requires a concise, source-bounded research summary.",
+            "hard": true,
+            "id": "research-summary-policy",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_P": [
+          {
+            "description": "Use only Source A and Source B from the supplied research evidence.",
+            "hard": true,
+            "id": "allowed-sources-only",
+            "severity": "high",
+            "source": "research_summary"
+          },
+          {
+            "description": "Do not state unsupported numerical effects or invented benchmark claims.",
+            "hard": true,
+            "id": "supported-claims-only",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ]
+      },
+      "contract_version": "0.1",
+      "evidence": [
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/0",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/1",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/2",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete."
+          ],
+          "text": "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+          "trust_tier": "verified"
+        }
+      ],
+      "handoff_aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 0.75,
+          "C": 1.0,
+          "F": 0.75,
+          "P": 0.75
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+        "hard_blockers": [],
+        "message_fingerprint": "9c2277eade2b62b57bc2f585949f747eee25330355bc5e4e9e53347c57e07174",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "citation_guard",
+        "score": 0.5,
+        "sender_id": "research_agent",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 0.75,
+          "C": 1.0,
+          "F": 0.75,
+          "P": 0.75
+        },
+        "verifier_statuses": {
+          "B": "warn",
+          "C": "pass",
+          "F": "warn",
+          "P": "warn"
+        }
+      },
+      "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+      "message": {
+        "assumptions": [
+          {
+            "description": "The summary uses only the provided Source A and Source B evidence and preserves source limits.",
+            "evidence_source_id": "source-a",
+            "id": "source-bounded-summary",
+            "support_status": "supported"
+          }
+        ],
+        "claims": [
+          "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+          "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+          "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+        ],
+        "payload_redaction_status": "redacted",
+        "summary": "AANA-style verifier loops can help knowledge-work summaries by making constraints explicit and routing failures to revise, ask, defer, refuse, or accept. The supplied evidence does not provide a measured productivity percentage or a Source C citation, so those claims are removed and uncertainty remains labeled."
+      },
+      "message_schema": {
+        "content_type": "text/plain",
+        "kind": "candidate_answer",
+        "redaction_required": true,
+        "schema_id": "research-citation-mi-pilot-v0.1"
+      },
+      "metadata": {
+        "boundary_type": "agent_to_agent",
+        "connectivity": 2,
+        "correction_status": "remediated",
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      },
+      "recipient": {
+        "id": "citation_guard",
+        "trust_tier": "system",
+        "type": "agent"
+      },
+      "recommended_action": "accept",
+      "sender": {
+        "id": "research_agent",
+        "trust_tier": "system",
+        "type": "agent"
+      },
+      "verifier_scores": {
+        "B": {
+          "confidence": 0.9,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "certainty"
+          ]
+        },
+        "C": {
+          "confidence": 0.91,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "summary_policy"
+          ]
+        },
+        "F": {
+          "confidence": 0.88,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "provenance"
+          ]
+        },
+        "P": {
+          "confidence": 0.92,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "source_support"
+          ]
+        },
+        "overall": 1.0
+      }
+    },
+    {
+      "aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+        "hard_blockers": [],
+        "message_fingerprint": "cb11220355bcb914915a14b6486c2cf7b8b25a403ccba52d6e012267a3a6925f",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "publication_checker",
+        "score": 0.5,
+        "sender_id": "publication_agent",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "verifier_statuses": {
+          "B": "pass",
+          "C": "pass",
+          "F": "pass",
+          "P": "pass"
+        }
+      },
+      "allowed_actions": [
+        "accept",
+        "revise",
+        "retrieve",
+        "ask",
+        "defer",
+        "refuse"
+      ],
+      "constraint_map": {
+        "F": [
+          {
+            "description": "Evidence provenance and uncertainty limits must remain visible.",
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "severity": "medium",
+            "source": "evidence_registry"
+          }
+        ],
+        "K_B": [
+          {
+            "description": "Do not present incomplete evidence as settled research fact.",
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_C": [
+          {
+            "description": "The recipient requires a concise, source-bounded research summary.",
+            "hard": true,
+            "id": "research-summary-policy",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ],
+        "K_P": [
+          {
+            "description": "Use only Source A and Source B from the supplied research evidence.",
+            "hard": true,
+            "id": "allowed-sources-only",
+            "severity": "high",
+            "source": "research_summary"
+          },
+          {
+            "description": "Do not state unsupported numerical effects or invented benchmark claims.",
+            "hard": true,
+            "id": "supported-claims-only",
+            "severity": "high",
+            "source": "research_summary"
+          }
+        ]
+      },
+      "contract_version": "0.1",
+      "evidence": [
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/0",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Corrected research summary is source-bounded and ready for publication checking.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/1",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Corrected research summary is source-bounded and ready for publication checking.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "text": "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+          "trust_tier": "verified"
+        },
+        {
+          "evidence_version": "0.1",
+          "limits": [],
+          "metadata": {
+            "freshness_status": "fresh",
+            "source_mode": "repository_fixture"
+          },
+          "redaction_status": "redacted",
+          "retrieval_url": "aana://pilot/research-summary/source-a/2",
+          "retrieved_at": "2026-05-05T00:00:00Z",
+          "source_id": "source-a",
+          "supports": [
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+            "Corrected research summary is source-bounded and ready for publication checking."
+          ],
+          "text": "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+          "trust_tier": "verified"
+        }
+      ],
+      "handoff_aix": {
+        "aix_version": "0.1",
+        "base_score": 0.5,
+        "beta": 1.0,
+        "components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "decision": "defer",
+        "handoff_aix_version": "0.1",
+        "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+        "hard_blockers": [],
+        "message_fingerprint": "cb11220355bcb914915a14b6486c2cf7b8b25a403ccba52d6e012267a3a6925f",
+        "notes": [],
+        "penalty": 0.0,
+        "recipient_id": "publication_checker",
+        "score": 0.5,
+        "sender_id": "publication_agent",
+        "thresholds": {
+          "accept": 0.85,
+          "defer": 0.5,
+          "revise": 0.65
+        },
+        "verifier_components": {
+          "B": 1.0,
+          "C": 1.0,
+          "F": 1.0,
+          "P": 1.0
+        },
+        "verifier_statuses": {
+          "B": "pass",
+          "C": "pass",
+          "F": "pass",
+          "P": "pass"
+        }
+      },
+      "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+      "message": {
+        "assumptions": [
+          {
+            "description": "The corrected upstream research summary no longer contains unsupported productivity or Source C claims.",
+            "evidence_source_id": "source-a",
+            "id": "corrected-research-summary-ready",
+            "support_status": "supported"
+          }
+        ],
+        "claims": [
+          "Corrected research summary is source-bounded and ready for publication checking.",
+          "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+        ],
+        "payload_redaction_status": "redacted",
+        "summary": "Publication step checks the corrected source-bounded research summary."
+      },
+      "message_schema": {
+        "content_type": "text/plain",
+        "kind": "candidate_answer",
+        "redaction_required": true,
+        "schema_id": "research-citation-mi-pilot-v0.1"
+      },
+      "metadata": {
+        "boundary_type": "agent_to_tool",
+        "connectivity": 3,
+        "correction_status": "remediated",
+        "mi_risk_tier": "elevated",
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      },
+      "recipient": {
+        "adapter_id": "publication_check",
+        "id": "publication_checker",
+        "trust_tier": "system",
+        "type": "adapter"
+      },
+      "recommended_action": "accept",
+      "sender": {
+        "id": "publication_agent",
+        "trust_tier": "system",
+        "type": "agent"
+      },
+      "verifier_scores": {
+        "B": {
+          "confidence": 0.9,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "certainty"
+          ]
+        },
+        "C": {
+          "confidence": 0.91,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "summary_policy"
+          ]
+        },
+        "F": {
+          "confidence": 0.88,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "provenance"
+          ]
+        },
+        "P": {
+          "confidence": 0.92,
+          "score": 1.0,
+          "status": "pass",
+          "verifier_ids": [
+            "source_support"
+          ]
+        },
+        "overall": 1.0
+      }
+    }
+  ],
+  "mi_batch": {
+    "contract_version": "0.1",
+    "global_aix": {
+      "components": {
+        "B": 1.0,
+        "C": 1.0,
+        "F": 1.0,
+        "P": 1.0
+      },
+      "connectivity_risk": {
+        "beta": 1.15,
+        "capacity_gap": 0,
+        "capacity_sufficient": true,
+        "connectivity_risk_version": "0.1",
+        "declared_risk_tier": "elevated",
+        "inferred_risk_tier": "elevated",
+        "irreversible": false,
+        "max_connectivity": 3,
+        "notes": [],
+        "observed_correction_capacity": 3,
+        "principle": "C_global >= D_global",
+        "required_correction_capacity": 2,
+        "risk_tier": "elevated",
+        "thresholds": {
+          "accept": 0.9,
+          "defer": 0.55,
+          "drift": 0.075,
+          "revise": 0.7
+        },
+        "total_connectivity": 6
+      },
+      "decision": "accept",
+      "drift_detected": false,
+      "handoff_count": 3,
+      "handoff_scores": [
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+          "recommended_action": "accept",
+          "score": 1.0
+        },
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+          "recommended_action": "accept",
+          "score": 1.0
+        },
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+          "recommended_action": "accept",
+          "score": 1.0
+        }
+      ],
+      "hard_blockers": [],
+      "local_all_pass": true,
+      "notes": [],
+      "recommended_action": "accept",
+      "risk_tier": "elevated",
+      "score": 1.0,
+      "score_drift": {
+        "delta": 0.0,
+        "first_score": 1.0,
+        "last_score": 1.0,
+        "max_drop": 0.0,
+        "trend": "flat"
+      },
+      "thresholds": {
+        "accept": 0.9,
+        "defer": 0.55,
+        "drift": 0.1,
+        "revise": 0.7
+      },
+      "workflow_aix_version": "0.1",
+      "workflow_id": "demo-workflow-research-summary-structured-001"
+    },
+    "mi_audit_records": [
+      {
+        "aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "boundary_supported": true,
+        "boundary_type": "tool_to_agent",
+        "candidate_gate": "pass",
+        "created_at": "2026-05-09T22:17:26Z",
+        "fingerprints": {
+          "audit_summary": "19afa65e1a9ae503f8dbd5d92fe6737246e38955afe6108620e0179f398e8caf",
+          "evidence": [
+            "d62a6806fe42fe7b342b31f6d56b5e9ae55c50a55b6c261d9fea385989b0cb28",
+            "4cae3988ec9524b511725b075312bda3251657756562c4e8fb47d1eeff54f471",
+            "2831c61faf633237eb0fe0c611d3214ee46393e70505ad61fd652e82ba479e7e"
+          ],
+          "message": "c55dd804fce2cce04214afd010bae890a10a33cb0f08f646fbf5540ec7723dfd"
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+        "hard_blockers": [],
+        "mi_audit_record_version": "0.1",
+        "recipient": {
+          "adapter_id": null,
+          "id": "research_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "recommended_action": "accept",
+        "record_fingerprint": "811ec2e03d98b3fd2b861b4d0dbaec4f53aee74f7e111f76b9bc33fccb05e56b",
+        "record_type": "mi_handoff_decision",
+        "sender": {
+          "adapter_id": null,
+          "id": "repository_evidence_connector",
+          "trust_tier": "verified",
+          "type": "connector"
+        },
+        "violation_codes": [],
+        "violation_count": 0,
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      },
+      {
+        "aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "boundary_supported": true,
+        "boundary_type": "agent_to_agent",
+        "candidate_gate": "pass",
+        "created_at": "2026-05-09T22:17:26Z",
+        "fingerprints": {
+          "audit_summary": "7b7cd92b7b2dfb33e0e16e289d930aeff8585a8d78a78488b38a66752185ba4f",
+          "evidence": [
+            "3682aa4ea0ed9cd358a469056ad2af0e256f6c556f36e065a37eb21f2c6b3416",
+            "6cee5b18a2265793a0f8722aa27fb1172cc7274a8ca5aa8088ac54cbc848cdb6",
+            "f1c800a0c479f08957cbef511b669ed968dee5f25540ba62647bf0515b00014c"
+          ],
+          "message": "4472d038e70d1ea7325e016471309202d0e88e1693da901f8b048a849525c142"
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+        "hard_blockers": [],
+        "mi_audit_record_version": "0.1",
+        "recipient": {
+          "adapter_id": null,
+          "id": "citation_guard",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "recommended_action": "accept",
+        "record_fingerprint": "ed4aee62d8af332e473d7b86ffbcb18e27c4e47c1c5d783e02fd04b20206f722",
+        "record_type": "mi_handoff_decision",
+        "sender": {
+          "adapter_id": null,
+          "id": "research_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "violation_codes": [],
+        "violation_count": 0,
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      },
+      {
+        "aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "boundary_supported": true,
+        "boundary_type": "agent_to_tool",
+        "candidate_gate": "pass",
+        "created_at": "2026-05-09T22:17:26Z",
+        "fingerprints": {
+          "audit_summary": "aabf91354e4e33840f6163de03cbaf8c91e716f2562573fd1d2e2632814e536e",
+          "evidence": [
+            "d8eae9418402b9dec0f838a3eb6aed50c317facac36f440d14d53be98c92f326",
+            "664f02e3e3b258e8c743b2e1451b42abbda0a5501f634cdcc1e332599ee4c2b9",
+            "223e2f3bf4baf6a7c34a97e1c4ce37fed43740d3147606c9b85f2286e381a14f"
+          ],
+          "message": "40b8f4cf4c6e94edab33a8d57e547be3b61eec243b787be8e2df066fb0f2de1a"
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+        "hard_blockers": [],
+        "mi_audit_record_version": "0.1",
+        "recipient": {
+          "adapter_id": "publication_check",
+          "id": "publication_checker",
+          "trust_tier": "system",
+          "type": "adapter"
+        },
+        "recommended_action": "accept",
+        "record_fingerprint": "98a030f8b3732c72c072ed9b7a46479bc00b79978a77a82addcd38c7e47851e9",
+        "record_type": "mi_handoff_decision",
+        "sender": {
+          "adapter_id": null,
+          "id": "publication_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "violation_codes": [],
+        "violation_count": 0,
+        "workflow_id": "demo-workflow-research-summary-structured-001"
+      }
+    ],
+    "mi_boundary_gate_version": "0.1",
+    "propagated_risk": {
+      "handoff_count": 3,
+      "has_propagated_risk": false,
+      "propagated_risk_version": "0.1",
+      "propagation_count": 0,
+      "propagation_links": [],
+      "risk_count": 0,
+      "risk_counts": {},
+      "risks": [],
+      "severity_score": 0
+    },
+    "results": [
+      {
+        "aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "notes": [],
+          "penalty": 0.0,
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "audit_summary": {
+          "aix_decision": "accept",
+          "aix_score": 1.0,
+          "boundary_supported": true,
+          "boundary_type": "tool_to_agent",
+          "contract_version_compatible": true,
+          "evidence_fingerprints": [
+            "d62a6806fe42fe7b342b31f6d56b5e9ae55c50a55b6c261d9fea385989b0cb28",
+            "4cae3988ec9524b511725b075312bda3251657756562c4e8fb47d1eeff54f471",
+            "2831c61faf633237eb0fe0c611d3214ee46393e70505ad61fd652e82ba479e7e"
+          ],
+          "gate_decision": "pass",
+          "handoff_aix_decision": "accept",
+          "handoff_aix_score": 1.0,
+          "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+          "hard_blockers": [],
+          "message_fingerprint": "c55dd804fce2cce04214afd010bae890a10a33cb0f08f646fbf5540ec7723dfd",
+          "mi_contract_registry_version": "0.1",
+          "recipient_id": "research_agent",
+          "recommended_action": "accept",
+          "sender_id": "repository_evidence_connector",
+          "violation_codes": []
+        },
+        "boundary_supported": true,
+        "boundary_type": "tool_to_agent",
+        "candidate_gate": "pass",
+        "constraint_results": [
+          {
+            "hard": true,
+            "id": "allowed-sources-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "supported-claims-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "layer": "B",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "research-summary-policy",
+            "layer": "C",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "layer": "F",
+            "source_status": "pass",
+            "status": "pass"
+          }
+        ],
+        "contract_version": "0.1",
+        "evidence_registry_binding": {
+          "checked_evidence": 3,
+          "errors": 0,
+          "issues": [],
+          "production_ready": true,
+          "resolved_source_ids": [
+            "source-a"
+          ],
+          "source_contracts": [
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            }
+          ],
+          "unresolved_source_ids": [],
+          "valid": true,
+          "warnings": 0
+        },
+        "evidence_summary": [
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/0",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Only Source A and Source B are available for the requested summary.",
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/1",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+              "Only Source A and Source B are available for the requested summary.",
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/2",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+              "Only Source A and Source B are available for the requested summary.",
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete."
+            ],
+            "trust_tier": "verified"
+          }
+        ],
+        "feasible_region": {
+          "K_B": [
+            "no-misleading-research-certainty"
+          ],
+          "K_C": [
+            "research-summary-policy"
+          ],
+          "K_P": [
+            "allowed-sources-only",
+            "supported-claims-only"
+          ]
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "handoff_aix_version": "0.1",
+          "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+          "hard_blockers": [],
+          "message_fingerprint": "c55dd804fce2cce04214afd010bae890a10a33cb0f08f646fbf5540ec7723dfd",
+          "notes": [],
+          "penalty": 0.0,
+          "recipient_id": "research_agent",
+          "score": 1.0,
+          "sender_id": "repository_evidence_connector",
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          },
+          "verifier_components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "verifier_statuses": {
+            "B": "pass",
+            "C": "pass",
+            "F": "pass",
+            "P": "pass"
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+        "message": {
+          "assumptions": [
+            {
+              "description": "The summary uses only the provided Source A and Source B evidence and preserves source limits.",
+              "evidence_source_id": "source-a",
+              "id": "source-bounded-summary",
+              "support_status": "supported"
+            }
+          ],
+          "claims": [
+            "Only Source A and Source B are available for the requested summary.",
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "payload_redaction_status": "redacted",
+          "summary": "Repository evidence retrieved for a source-bounded research summary."
+        },
+        "metadata": {
+          "boundary_type": "tool_to_agent",
+          "connectivity": 1,
+          "workflow_id": "demo-workflow-research-summary-structured-001"
+        },
+        "mi_boundary_gate_version": "0.1",
+        "mi_contract_compatibility": {
+          "boundary_type": "tool_to_agent",
+          "compatible": true,
+          "contract_version": "0.1",
+          "declared_boundary_type": "tool_to_agent",
+          "inferred_boundary_type": "tool_to_agent",
+          "mi_contract_registry_version": "0.1",
+          "missing_constraint_layers": [],
+          "missing_fields": [],
+          "missing_verifier_layers": [],
+          "registry_shape_version": "0.1",
+          "version_compatible": true,
+          "violations": []
+        },
+        "recipient": {
+          "id": "research_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "recommended_action": "accept",
+        "sender": {
+          "id": "repository_evidence_connector",
+          "trust_tier": "verified",
+          "type": "connector"
+        },
+        "verifier_scores": {
+          "B": {
+            "confidence": 0.9,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "certainty"
+            ]
+          },
+          "C": {
+            "confidence": 0.91,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "summary_policy"
+            ]
+          },
+          "F": {
+            "confidence": 0.88,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "provenance"
+            ]
+          },
+          "P": {
+            "confidence": 0.92,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "source_support"
+            ]
+          },
+          "overall": 1.0
+        },
+        "violations": []
+      },
+      {
+        "aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "notes": [],
+          "penalty": 0.0,
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "audit_summary": {
+          "aix_decision": "accept",
+          "aix_score": 1.0,
+          "boundary_supported": true,
+          "boundary_type": "agent_to_agent",
+          "contract_version_compatible": true,
+          "evidence_fingerprints": [
+            "3682aa4ea0ed9cd358a469056ad2af0e256f6c556f36e065a37eb21f2c6b3416",
+            "6cee5b18a2265793a0f8722aa27fb1172cc7274a8ca5aa8088ac54cbc848cdb6",
+            "f1c800a0c479f08957cbef511b669ed968dee5f25540ba62647bf0515b00014c"
+          ],
+          "gate_decision": "pass",
+          "handoff_aix_decision": "accept",
+          "handoff_aix_score": 1.0,
+          "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+          "hard_blockers": [],
+          "message_fingerprint": "4472d038e70d1ea7325e016471309202d0e88e1693da901f8b048a849525c142",
+          "mi_contract_registry_version": "0.1",
+          "recipient_id": "citation_guard",
+          "recommended_action": "accept",
+          "sender_id": "research_agent",
+          "violation_codes": []
+        },
+        "boundary_supported": true,
+        "boundary_type": "agent_to_agent",
+        "candidate_gate": "pass",
+        "constraint_results": [
+          {
+            "hard": true,
+            "id": "allowed-sources-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "supported-claims-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "layer": "B",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "research-summary-policy",
+            "layer": "C",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "layer": "F",
+            "source_status": "pass",
+            "status": "pass"
+          }
+        ],
+        "contract_version": "0.1",
+        "evidence_registry_binding": {
+          "checked_evidence": 3,
+          "errors": 0,
+          "issues": [],
+          "production_ready": true,
+          "resolved_source_ids": [
+            "source-a"
+          ],
+          "source_contracts": [
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            }
+          ],
+          "unresolved_source_ids": [],
+          "valid": true,
+          "warnings": 0
+        },
+        "evidence_summary": [
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/0",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/1",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/2",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete."
+            ],
+            "trust_tier": "verified"
+          }
+        ],
+        "feasible_region": {
+          "K_B": [
+            "no-misleading-research-certainty"
+          ],
+          "K_C": [
+            "research-summary-policy"
+          ],
+          "K_P": [
+            "allowed-sources-only",
+            "supported-claims-only"
+          ]
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "handoff_aix_version": "0.1",
+          "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+          "hard_blockers": [],
+          "message_fingerprint": "4472d038e70d1ea7325e016471309202d0e88e1693da901f8b048a849525c142",
+          "notes": [],
+          "penalty": 0.0,
+          "recipient_id": "citation_guard",
+          "score": 1.0,
+          "sender_id": "research_agent",
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          },
+          "verifier_components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "verifier_statuses": {
+            "B": "pass",
+            "C": "pass",
+            "F": "pass",
+            "P": "pass"
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+        "message": {
+          "assumptions": [
+            {
+              "description": "The summary uses only the provided Source A and Source B evidence and preserves source limits.",
+              "evidence_source_id": "source-a",
+              "id": "source-bounded-summary",
+              "support_status": "supported"
+            }
+          ],
+          "claims": [
+            "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+            "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "payload_redaction_status": "redacted",
+          "summary": "AANA-style verifier loops can help knowledge-work summaries by making constraints explicit and routing failures to revise, ask, defer, refuse, or accept. The supplied evidence does not provide a measured productivity percentage or a Source C citation, so those claims are removed and uncertainty remains labeled."
+        },
+        "metadata": {
+          "boundary_type": "agent_to_agent",
+          "connectivity": 2,
+          "workflow_id": "demo-workflow-research-summary-structured-001"
+        },
+        "mi_boundary_gate_version": "0.1",
+        "mi_contract_compatibility": {
+          "boundary_type": "agent_to_agent",
+          "compatible": true,
+          "contract_version": "0.1",
+          "declared_boundary_type": "agent_to_agent",
+          "inferred_boundary_type": "agent_to_agent",
+          "mi_contract_registry_version": "0.1",
+          "missing_constraint_layers": [],
+          "missing_fields": [],
+          "missing_verifier_layers": [],
+          "registry_shape_version": "0.1",
+          "version_compatible": true,
+          "violations": []
+        },
+        "recipient": {
+          "id": "citation_guard",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "recommended_action": "accept",
+        "sender": {
+          "id": "research_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "verifier_scores": {
+          "B": {
+            "confidence": 0.9,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "certainty"
+            ]
+          },
+          "C": {
+            "confidence": 0.91,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "summary_policy"
+            ]
+          },
+          "F": {
+            "confidence": 0.88,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "provenance"
+            ]
+          },
+          "P": {
+            "confidence": 0.92,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "source_support"
+            ]
+          },
+          "overall": 1.0
+        },
+        "violations": []
+      },
+      {
+        "aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "hard_blockers": [],
+          "notes": [],
+          "penalty": 0.0,
+          "score": 1.0,
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          }
+        },
+        "audit_summary": {
+          "aix_decision": "accept",
+          "aix_score": 1.0,
+          "boundary_supported": true,
+          "boundary_type": "agent_to_tool",
+          "contract_version_compatible": true,
+          "evidence_fingerprints": [
+            "d8eae9418402b9dec0f838a3eb6aed50c317facac36f440d14d53be98c92f326",
+            "664f02e3e3b258e8c743b2e1451b42abbda0a5501f634cdcc1e332599ee4c2b9",
+            "223e2f3bf4baf6a7c34a97e1c4ce37fed43740d3147606c9b85f2286e381a14f"
+          ],
+          "gate_decision": "pass",
+          "handoff_aix_decision": "accept",
+          "handoff_aix_score": 1.0,
+          "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+          "hard_blockers": [],
+          "message_fingerprint": "40b8f4cf4c6e94edab33a8d57e547be3b61eec243b787be8e2df066fb0f2de1a",
+          "mi_contract_registry_version": "0.1",
+          "recipient_id": "publication_checker",
+          "recommended_action": "accept",
+          "sender_id": "publication_agent",
+          "violation_codes": []
+        },
+        "boundary_supported": true,
+        "boundary_type": "agent_to_tool",
+        "candidate_gate": "pass",
+        "constraint_results": [
+          {
+            "hard": true,
+            "id": "allowed-sources-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "supported-claims-only",
+            "layer": "P",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "no-misleading-research-certainty",
+            "layer": "B",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": true,
+            "id": "research-summary-policy",
+            "layer": "C",
+            "source_status": "pass",
+            "status": "pass"
+          },
+          {
+            "hard": false,
+            "id": "citation-provenance-visible",
+            "layer": "F",
+            "source_status": "pass",
+            "status": "pass"
+          }
+        ],
+        "contract_version": "0.1",
+        "evidence_registry_binding": {
+          "checked_evidence": 3,
+          "errors": 0,
+          "issues": [],
+          "production_ready": true,
+          "resolved_source_ids": [
+            "source-a"
+          ],
+          "source_contracts": [
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            },
+            {
+              "allowed_redaction_statuses": [
+                "redacted",
+                "public"
+              ],
+              "allowed_trust_tiers": [
+                "verified",
+                "repository_fixture"
+              ],
+              "enabled": true,
+              "max_age_hours": null,
+              "owner": "AANA Maintainers",
+              "source_id": "source-a"
+            }
+          ],
+          "unresolved_source_ids": [],
+          "valid": true,
+          "warnings": 0
+        },
+        "evidence_summary": [
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/0",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source A: AANA-style workflows can make constraints explicit and route failures to revise, ask, defer, refuse, or accept.",
+              "Corrected research summary is source-bounded and ready for publication checking.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/1",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Source B: One-shot confident summaries can miss source limits when task pressure is high or source coverage is incomplete.",
+              "Corrected research summary is source-bounded and ready for publication checking.",
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+            ],
+            "trust_tier": "verified"
+          },
+          {
+            "citation_url": null,
+            "limits": [],
+            "metadata": {
+              "freshness_status": "fresh",
+              "source_mode": "repository_fixture"
+            },
+            "redaction_status": "redacted",
+            "retrieval_url": "aana://pilot/research-summary/source-a/2",
+            "retrieved_at": "2026-05-05T00:00:00Z",
+            "source_id": "source-a",
+            "supports": [
+              "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided.",
+              "Corrected research summary is source-bounded and ready for publication checking."
+            ],
+            "trust_tier": "verified"
+          }
+        ],
+        "feasible_region": {
+          "K_B": [
+            "no-misleading-research-certainty"
+          ],
+          "K_C": [
+            "research-summary-policy"
+          ],
+          "K_P": [
+            "allowed-sources-only",
+            "supported-claims-only"
+          ]
+        },
+        "gate_decision": "pass",
+        "handoff_aix": {
+          "aix_version": "0.1",
+          "base_score": 1.0,
+          "beta": 1.0,
+          "components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "decision": "accept",
+          "handoff_aix_version": "0.1",
+          "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+          "hard_blockers": [],
+          "message_fingerprint": "40b8f4cf4c6e94edab33a8d57e547be3b61eec243b787be8e2df066fb0f2de1a",
+          "notes": [],
+          "penalty": 0.0,
+          "recipient_id": "publication_checker",
+          "score": 1.0,
+          "sender_id": "publication_agent",
+          "thresholds": {
+            "accept": 0.85,
+            "defer": 0.5,
+            "revise": 0.65
+          },
+          "verifier_components": {
+            "B": 1.0,
+            "C": 1.0,
+            "F": 1.0,
+            "P": 1.0
+          },
+          "verifier_statuses": {
+            "B": "pass",
+            "C": "pass",
+            "F": "pass",
+            "P": "pass"
+          }
+        },
+        "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+        "message": {
+          "assumptions": [
+            {
+              "description": "The corrected upstream research summary no longer contains unsupported productivity or Source C claims.",
+              "evidence_source_id": "source-a",
+              "id": "corrected-research-summary-ready",
+              "support_status": "supported"
+            }
+          ],
+          "claims": [
+            "Corrected research summary is source-bounded and ready for publication checking.",
+            "Allowed citations: [Source A], [Source B]. No measured productivity percentage or peer-reviewed benchmark claim is provided."
+          ],
+          "payload_redaction_status": "redacted",
+          "summary": "Publication step checks the corrected source-bounded research summary."
+        },
+        "metadata": {
+          "boundary_type": "agent_to_tool",
+          "connectivity": 3,
+          "mi_risk_tier": "elevated",
+          "workflow_id": "demo-workflow-research-summary-structured-001"
+        },
+        "mi_boundary_gate_version": "0.1",
+        "mi_contract_compatibility": {
+          "boundary_type": "agent_to_tool",
+          "compatible": true,
+          "contract_version": "0.1",
+          "declared_boundary_type": "agent_to_tool",
+          "inferred_boundary_type": "agent_to_tool",
+          "mi_contract_registry_version": "0.1",
+          "missing_constraint_layers": [],
+          "missing_fields": [],
+          "missing_verifier_layers": [],
+          "registry_shape_version": "0.1",
+          "version_compatible": true,
+          "violations": []
+        },
+        "recipient": {
+          "adapter_id": "publication_check",
+          "id": "publication_checker",
+          "trust_tier": "system",
+          "type": "adapter"
+        },
+        "recommended_action": "accept",
+        "sender": {
+          "id": "publication_agent",
+          "trust_tier": "system",
+          "type": "agent"
+        },
+        "verifier_scores": {
+          "B": {
+            "confidence": 0.9,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "certainty"
+            ]
+          },
+          "C": {
+            "confidence": 0.91,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "summary_policy"
+            ]
+          },
+          "F": {
+            "confidence": 0.88,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "provenance"
+            ]
+          },
+          "P": {
+            "confidence": 0.92,
+            "score": 1.0,
+            "status": "pass",
+            "verifier_ids": [
+              "source_support"
+            ]
+          },
+          "overall": 1.0
+        },
+        "violations": []
+      }
+    ],
+    "shared_correction": {
+      "action_count": 0,
+      "actions": [],
+      "allowed_triggers": [
+        "retrieve_evidence",
+        "revise_upstream_output",
+        "ask_clarification",
+        "defer_human_review"
+      ],
+      "shared_correction_policy_version": "0.1",
+      "summary": {
+        "action_counts": {},
+        "capacity_sufficient": true,
+        "has_network_correction": false,
+        "highest_severity": "info",
+        "risk_tier": "elevated"
+      }
+    },
+    "summary": {
+      "accepted": 3,
+      "blocked": 0,
+      "boundary_types": {
+        "agent_to_agent": 1,
+        "agent_to_tool": 1,
+        "tool_to_agent": 1
+      },
+      "capacity_sufficient": true,
+      "gate_decisions": {
+        "pass": 3
+      },
+      "has_network_correction": false,
+      "has_propagated_risk": false,
+      "mi_audit_record_count": 3,
+      "propagated_risk_count": 0,
+      "propagation_count": 0,
+      "recommended_actions": {
+        "accept": 3
+      },
+      "risk_tier": "elevated",
+      "shared_correction_action_count": 0,
+      "total": 3,
+      "workflow_aix_decision": "accept",
+      "workflow_aix_score": 1.0,
+      "workflow_drift_detected": false
+    },
+    "workflow_aix": {
+      "components": {
+        "B": 1.0,
+        "C": 1.0,
+        "F": 1.0,
+        "P": 1.0
+      },
+      "connectivity_risk": {
+        "beta": 1.15,
+        "capacity_gap": 0,
+        "capacity_sufficient": true,
+        "connectivity_risk_version": "0.1",
+        "declared_risk_tier": "elevated",
+        "inferred_risk_tier": "elevated",
+        "irreversible": false,
+        "max_connectivity": 3,
+        "notes": [],
+        "observed_correction_capacity": 3,
+        "principle": "C_global >= D_global",
+        "required_correction_capacity": 2,
+        "risk_tier": "elevated",
+        "thresholds": {
+          "accept": 0.9,
+          "defer": 0.55,
+          "drift": 0.075,
+          "revise": 0.7
+        },
+        "total_connectivity": 6
+      },
+      "decision": "accept",
+      "drift_detected": false,
+      "handoff_count": 3,
+      "handoff_scores": [
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:retrieval-to-research-agent",
+          "recommended_action": "accept",
+          "score": 1.0
+        },
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:research-agent-to-citation-guard",
+          "recommended_action": "accept",
+          "score": 1.0
+        },
+        {
+          "decision": "accept",
+          "gate_decision": "pass",
+          "handoff_id": "demo-workflow-research-summary-structured-001:publication-agent-to-publication-check",
+          "recommended_action": "accept",
+          "score": 1.0
+        }
+      ],
+      "hard_blockers": [],
+      "local_all_pass": true,
+      "notes": [],
+      "recommended_action": "accept",
+      "risk_tier": "elevated",
+      "score": 1.0,
+      "score_drift": {
+        "delta": 0.0,
+        "first_score": 1.0,
+        "last_score": 1.0,
+        "max_drop": 0.0,
+        "trend": "flat"
+      },
+      "thresholds": {
+        "accept": 0.9,
+        "defer": 0.55,
+        "drift": 0.1,
+        "revise": 0.7
+      },
+      "workflow_aix_version": "0.1",
+      "workflow_id": "demo-workflow-research-summary-structured-001"
+    }
+  },
+  "mi_pilot_version": "0.1",
+  "pilot_id": "research_citation_mi_pilot_remediated",
+  "recommended_action": "accept",
+  "source_workflow_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\examples\\workflow_research_summary_structured.json",
+  "summary": {
+    "gate_decisions": {
+      "pass": 3
+    },
+    "mi_audit_record_count": 3,
+    "propagated_risk_count": 0,
+    "recommended_actions": {
+      "accept": 3
+    },
+    "shared_correction_action_count": 0,
+    "workflow_aix_decision": "accept",
+    "workflow_risk_tier": "elevated"
+  },
+  "workflow_id": "demo-workflow-research-summary-structured-001"
+}

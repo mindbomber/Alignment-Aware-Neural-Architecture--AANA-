@@ -1,0 +1,133 @@
+{
+  "allow_direct_execution": false,
+  "artifacts": {
+    "audit_jsonl": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl",
+    "audit_manifest": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl.sha256.json",
+    "benchmark_dashboard": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_benchmark\\mi_observability_dashboard.json",
+    "benchmark_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_benchmark\\mi_benchmark_report.json",
+    "benchmark_workflows": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_benchmark\\mi_benchmark_workflows.json",
+    "dashboard": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_dashboard.json",
+    "pilot_handoffs": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\pilot_handoffs.json",
+    "readiness": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_readiness.json",
+    "release_candidate_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\aana_mi_release_candidate_report.json",
+    "release_readiness_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_release_report.json"
+  },
+  "blocking_check_count": 0,
+  "check_count": 11,
+  "checks": [
+    {
+      "artifacts": {},
+      "details": "Interoperability schema validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "schema",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "Pilot handoffs validate against interoperability schema.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "pilot_handoff_contracts",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "10 benchmark workflow(s) evaluated.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "benchmark",
+      "status": "pass"
+    },
+    {
+      "artifacts": {
+        "guarded_live_result": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\guarded_live_result.json",
+        "human_review_queue": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_human_review_queue.jsonl",
+        "mi_audit_jsonl": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl",
+        "mi_dashboard": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_dashboard.json",
+        "pilot_handoffs": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\pilot_handoffs.json",
+        "pilot_result": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\pilot_result.json",
+        "production_mi_readiness": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_readiness.json",
+        "release_blocker_remediation": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\release_blocker_remediation.json",
+        "release_readiness_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_release_report.json"
+      },
+      "details": "3 pilot handoff(s) checked; readiness=ready; remediation=pass.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "pilot",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "Redacted MI audit JSONL validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "audit",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "MI audit SHA-256 integrity validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "audit_integrity",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "Production MI readiness validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "readiness",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "MI observability dashboard validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "dashboard",
+      "status": "pass"
+    },
+    {
+      "artifacts": {
+        "release_readiness_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_release_report.json"
+      },
+      "details": "release_readiness=pass unresolved=0.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "release_readiness",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "Release readiness report contract validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "release_report_contract",
+      "status": "pass"
+    },
+    {
+      "artifacts": {
+        "audit_jsonl": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl",
+        "audit_manifest": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl.sha256.json",
+        "dashboard": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_dashboard.json",
+        "pilot_handoffs": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\pilot_handoffs.json",
+        "production_readiness": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_readiness.json",
+        "release_readiness_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_release_report.json",
+        "schema": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\schemas\\interoperability_contract.schema.json",
+        "versioning_policy": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\schemas\\mi_schema_versioning_policy.json"
+      },
+      "details": "End-to-end MI contract validation.",
+      "issue_count": 0,
+      "issues": [],
+      "name": "contract_validation",
+      "status": "pass"
+    }
+  ],
+  "created_at": "2026-05-06T17:31:57Z",
+  "mi_release_candidate_version": "0.1",
+  "release_candidate": "aana_mi",
+  "status": "pass",
+  "unresolved_items": []
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "governance_compliance_v1_hf_policy_diagnostic",
+  "title": "AANA Governance / Compliance Policy Diagnostic",
+  "public_claim_boundary": "This experiment evaluates AANA as a policy-bound audit/routing layer. It does not claim legal, regulatory, platform-policy, or compliance certification. Human-reviewed labels are required before stronger claims.",
+  "objective": "Measure whether AANA can route policy-bound answers/actions using policy evidence, citation coverage, missing-evidence checks, and human-review escalation.",
+  "adapter_family": "governance_compliance",
+  "datasets": [
+    {
+      "dataset_name": "huggingface/policy-docs",
+      "config": "default",
+      "split": "train",
+      "allowed_use": "heldout_validation",
+      "schema": "policy_docs_metadata",
+      "loader": "hf_rows",
+      "sample_offsets": [0],
+      "purpose": "External policy-document source boundary and metadata validation. PDF contents are not used for automatic labels in v1."
+    },
+    {
+      "dataset_name": "aana/governance-compliance-heldout-policy-cases",
+      "config": "default",
+      "split": "heldout",
+      "allowed_use": "heldout_validation",
+      "schema": "repo_heldout_policy_cases",
+      "loader": "repo_json",
+      "path": "examples/governance_compliance_heldout_policy_cases.json",
+      "purpose": "Small AANA-heldout policy cases with explicit labels for route, missing evidence, and human-review escalation."
+    }
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "calibration_splits": [],
+    "heldout_validation_splits": [
+      "huggingface/policy-docs default/train",
+      "aana/governance-compliance-heldout-policy-cases default/heldout"
+    ],
+    "external_reporting_splits": []
+  },
+  "comparisons": [
+    "base_accept_blindly",
+    "aana_policy_gate",
+    "aana_human_review_route"
+  ],
+  "metrics": [
+    "policy_citation_coverage",
+    "risk_route_accuracy",
+    "missing_evidence_recall",
+    "human_review_escalation_recall",
+    "safe_allow_rate",
+    "over_refusal_rate"
+  ],
+  "outputs": {
+    "default_result": "eval_outputs/governance_compliance_hf_experiment_results.json",
+    "raw_text_storage": "Raw policy text, requests, and candidates are not written to result artifacts; rows contain ids, hashes, expected/actual routes, evidence counts, risk domain, missing-evidence flags, and human-review flags."
+  }
+}

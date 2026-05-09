@@ -6,7 +6,7 @@
     <title>AANA Evaluation Pipeline</title>
     <meta
       name="description"
-      content="A public-friendly introduction to the Alignment-Aware Neural Architecture evaluation pipeline: testing whether AI answers stay useful while preserving important constraints."
+      content="AANA makes agents more auditable, safer, more grounded, and more controllable."
     >
     <link rel="canonical" href="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
     <link rel="icon" href="assets/site/favicon.png" type="image/png">
@@ -14,7 +14,7 @@
     <meta property="og:title" content="AANA Evaluation Pipeline">
     <meta
       property="og:description"
-      content="A fun, visual tour of verifier-grounded correction, constraint checks, and alignment evaluation."
+      content="AANA makes agents more auditable, safer, more grounded, and more controllable."
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
@@ -22,7 +22,7 @@
     <meta property="og:image:alt" content="AANA evaluation pipeline hero image showing an AI answer passing through verification checkpoints.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AANA Evaluation Pipeline">
-    <meta name="twitter:description" content="A public-friendly tour of verifier-grounded correction, constraint checks, and alignment evaluation.">
+    <meta name="twitter:description" content="AANA makes agents more auditable, safer, more grounded, and more controllable.">
     <meta name="twitter:image" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/assets/site/aana-hero.png">
     <link rel="stylesheet" href="site.css">
   </head>
@@ -58,21 +58,24 @@
       <div class="hero-content">
         <div class="hero-copy">
           <p class="eyebrow">AI answers through an obstacle course</p>
-          <h1>AANA helps test whether AI stays helpful when the rules matter.</h1>
+          <h1>AANA makes agents more auditable, safer, more grounded, and more controllable.</h1>
           <p class="hero-lede">
-            This project turns tricky AI behavior into something people can see: generate an answer,
-            check it against constraints, repair it when possible, and measure whether usefulness and
-            responsibility move together.
+            AANA is a runtime architecture around agents and models: generate an answer or action,
+            check it against evidence and constraints, repair it when possible, and route unsafe or
+            unsupported cases to ask, defer, or refuse.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#plain-language">Start the tour</a>
             <a class="button secondary" href="#videos">Watch videos</a>
             <a class="button secondary" href="try-demo/">Try demo</a>
+            <a class="button secondary" href="tool-call-demo/">Tool call gate</a>
+            <a class="button secondary" href="aana-head-to-head-findings.md">Head-to-head findings</a>
+            <a class="button secondary" href="aana-agent-action-technical-report.md">Technical report</a>
             <a class="button secondary" href="integrate-runtime/">Integrate runtime</a>
             <a class="button secondary" href="build-adapter/">Build adapter</a>
             <a class="button secondary" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-">View the code</a>
           </div>
-          <p class="hero-note">Early model-judged evidence. Useful signal, not a certified benchmark claim.</p>
+          <p class="hero-note">Production-candidate as an audit/control/verification/correction layer. Not yet proven as a raw agent-performance engine.</p>
         </div>
         <div class="hero-snapshot" aria-label="Current project highlights">
           <div class="snap">
@@ -275,13 +278,14 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Why this is different</p>
-              <h2>AANA is not just a stronger model. It is a runtime correction architecture around the model.</h2>
+              <h2>AANA makes agents more auditable, safer, more grounded, and more controllable.</h2>
             </div>
             <p>
               Frontier LLMs and multimodal models already use alignment training, safety policies,
               tool use, retrieval, and hidden refusal behavior. AANA makes the verification loop
               explicit so teams can inspect what evidence was checked, what failed, and why an
-              answer or action was accepted, revised, refused, or deferred.
+              answer or action was accepted, revised, refused, or deferred. The goal is to wrap
+              capable base agents with a control layer, not replace them as the raw task engine.
             </p>
           </div>
 
@@ -340,6 +344,40 @@
               <h3>More checking is worth it when false accepts are costly.</h3>
               <p>The loop adds latency and infrastructure, so it fits consequential actions better than casual low-stakes chat.</p>
             </article>
+          </div>
+
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">What AANA adds</p>
+              <h2>AANA standardizes the decision before execution.</h2>
+            </div>
+            <p>
+              Prompt guardrails, classifiers, LLM judges, and framework
+              middleware can all help, but they often leave the action decision
+              implicit, provider-hidden, or tied to one runtime. AANA makes that
+              decision a typed contract and a consistent audit surface.
+            </p>
+          </div>
+
+          <div class="architecture-contrast" aria-label="AANA action contract flow">
+            <div class="contrast-lane aana-lane">
+              <div class="lane-head">
+                <strong>Agent Action Contract</strong>
+                <span>Tool name, category, authorization, evidence, risk, arguments, and route</span>
+              </div>
+              <div class="lane-flow aana-flow">
+                <span>Agent proposes</span>
+                <span>AANA checks</span>
+                <span>Accept, revise, retrieve, ask, defer, or refuse</span>
+                <span>Execute only on accept</span>
+                <span>Audit-safe log</span>
+              </div>
+              <ul class="contrast-list">
+                <li>Wrapped tools do not execute unless AANA returns accept with no hard blockers.</li>
+                <li>Missing evidence, missing authorization, and unknown tools become explicit routes instead of hidden assumptions.</li>
+                <li>CLI, SDK, FastAPI, MCP, and middleware surfaces return the same decision shape.</li>
+              </ul>
+            </div>
           </div>
 
           <div class="section-actions">
@@ -719,10 +757,14 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
             </div>
             <p>
               AANA is alpha research software, so the caveats matter. The docs collect the design
-              choices, evaluation setup, results notes, and limitations in one place.
+              choices, evaluation setup, results notes, evidence pack, and limitations in one place.
             </p>
           </div>
           <div class="resource-grid">
+            <a class="resource-card" href="aana-production-candidate-evidence-pack.md">
+              <h3>Evidence Pack</h3>
+              <p>The public claim boundary: production-candidate control layer, not a proven raw agent-performance engine.</p>
+            </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/architecture.md" target="_blank" rel="noopener">
               <h3>Architecture</h3>
               <p>How the moving parts fit together: generator, verifier, corrector, scorer, and gate.</p>
@@ -1025,3 +1067,4 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
     <script src="site.js"></script>
   </body>
 </html>
+

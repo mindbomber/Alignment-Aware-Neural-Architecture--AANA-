@@ -1,0 +1,72 @@
+{
+  "allow_direct_execution": false,
+  "blocking_stage_count": 0,
+  "created_at": "2026-05-06T17:31:57Z",
+  "deployment_manifest": {
+    "blockers": [
+      "human_signoff_not_approved"
+    ],
+    "deployment_authorized": false,
+    "deployment_status": "blocked",
+    "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\production_deployment_manifest.json",
+    "valid": true
+  },
+  "dry_run": true,
+  "gate_confirmation": {
+    "deployment_gate": "blocked",
+    "external_actions_blocked": true,
+    "release_gates": "pass",
+    "unresolved_items_explicit": true
+  },
+  "live_external_actions_attempted": false,
+  "production_dry_run_version": "0.1",
+  "release_report": {
+    "blocking_stage_count": 0,
+    "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\aana_mi_release_report.json",
+    "skipped_stage_count": 0,
+    "status": "pass"
+  },
+  "report_type": "aana_mi_production_dry_run_report",
+  "stage_count": 4,
+  "stages": [
+    {
+      "artifacts": {
+        "live_connector_readiness_plan": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\live_connector_readiness_plan.json"
+      },
+      "details": "connectors=12 live_enabled=0",
+      "name": "live_connector_readiness_plan",
+      "status": "pass"
+    },
+    {
+      "artifacts": {
+        "mi_release_report": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\aana_mi_release_report.json"
+      },
+      "details": "stages=3 blocking=0 skipped=0",
+      "name": "local_mi_release",
+      "status": "pass"
+    },
+    {
+      "artifacts": {
+        "production_deployment_manifest": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\production_deployment_manifest.json"
+      },
+      "details": "deployment_status=blocked blockers=1",
+      "name": "deployment_manifest",
+      "status": "pass"
+    },
+    {
+      "artifacts": {},
+      "details": "No live external actions were attempted; allow_direct_execution=false.",
+      "name": "live_external_actions",
+      "status": "pass"
+    }
+  ],
+  "status": "block",
+  "unresolved_item_count": 1,
+  "unresolved_items": [
+    {
+      "code": "human_signoff_not_approved",
+      "required_action": "resolve before live deployment",
+      "source": "production_deployment_manifest"
+    }
+  ]
+}

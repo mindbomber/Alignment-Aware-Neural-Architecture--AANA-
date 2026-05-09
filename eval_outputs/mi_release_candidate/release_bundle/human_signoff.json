@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-05-06T17:15:05Z",
+  "decision": "pending",
+  "evidence_bundle": {
+    "global_aix": {
+      "accept_threshold": 0.9,
+      "decision": "accept",
+      "recommended_action": "accept",
+      "risk_tier": "elevated",
+      "score": 1.0
+    },
+    "rc_status": "pass",
+    "readiness_status": "ready",
+    "release_manifest_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_manifest.json",
+    "release_manifest_sha256": "ad069e390157921c600b95c6e4af3044aca3df6e07233720a029cfc6ab88a214",
+    "unresolved_blocker_count": 0,
+    "verification_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_bundle_verification.json",
+    "verification_status": "pass"
+  },
+  "human_signoff_version": "0.1",
+  "notes": "Human/domain-owner approval has not been granted yet.",
+  "record_type": "aana_mi_human_signoff",
+  "reviewer": {
+    "id": "pending-domain-owner",
+    "name": "Pending domain owner",
+    "role": "domain_owner"
+  },
+  "scope": {
+    "approval_boundary": "local_mi_release_bundle",
+    "external_production_deployment": false,
+    "release_candidate": "aana_mi"
+  },
+  "signoff_fingerprint": "0df09779a0388c010113cfa8537995f869b6dc4a2cfadce5b9b64f81d1659949"
+}

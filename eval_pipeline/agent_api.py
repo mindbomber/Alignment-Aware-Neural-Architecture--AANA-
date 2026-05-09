@@ -14,6 +14,8 @@ import run_adapter
 import validate_adapter_gallery
 from eval_pipeline import agent_contract, audit, aix, evidence as evidence_registry, evidence_integrations, workflow_contract
 from eval_pipeline.adapter_runner import results as result_assembly
+from eval_pipeline.adapter_runner.verifier_modules.grounded_qa import grounded_qa_repair, grounded_qa_tool_report
+from eval_pipeline.semantic_verifier import build_semantic_verifier
 
 
 AGENT_EVENT_VERSION = agent_contract.AGENT_EVENT_VERSION
@@ -311,7 +313,50 @@ def candidate_from_event(event):
     return candidate
 
 
-def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
+def _route_from_semantic_grounded_report(report):
+    routes = report.get("correction_routes") if isinstance(report, dict) else {}
+    if not isinstance(routes, dict):
+        return "revise"
+    for code in ("grounded_qa_semantic_unanswerable", "grounded_qa_semantic_uncertain", "grounded_qa_semantic_unsupported"):
+        if code in routes:
+            return routes[code]
+    return "revise"
+
+
+def _apply_optional_semantic_grounded_qa(adapter_id, event, adapter_result, semantic_verifier):
+    if semantic_verifier is None or adapter_id not in {"grounded_qa", "hallucination_guardrail"}:
+        return adapter_result
+    candidate = candidate_from_event(event)
+    if not candidate:
+        return adapter_result
+    prompt = prompt_from_event(event)
+    semantic_report = grounded_qa_tool_report(prompt, candidate, semantic_verifier=semantic_verifier)
+    semantic_checks = semantic_report.get("checks") or []
+    semantic_result = semantic_checks[0].get("semantic_verifier") if semantic_checks and isinstance(semantic_checks[0], dict) else None
+    if not semantic_result or semantic_result.get("route") == "accept":
+        adapter_result["semantic_verifier"] = semantic_result
+        return adapter_result
+    final_answer = grounded_qa_repair(prompt)
+    final_report = grounded_qa_tool_report(prompt, final_answer)
+    payload = dict(adapter_result)
+    payload.update(
+        {
+            "candidate_gate": "fail",
+            "final_answer": final_answer,
+            "gate_decision": "pass" if not final_report.get("violations") else "fail",
+            "recommended_action": _route_from_semantic_grounded_report(semantic_report),
+            "candidate_tool_report": semantic_report,
+            "tool_report": final_report,
+            "semantic_verifier": semantic_result,
+        }
+    )
+    caveats = list(payload.get("caveats") or [])
+    caveats.append("Optional semantic verifier tightened the grounded-QA route; deterministic AANA still owns final route enforcement.")
+    payload["caveats"] = caveats
+    return payload
+
+
+def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None, semantic_verifier=None, semantic_verifier_kind=None, semantic_model=None):
     if isinstance(event, dict) and adapter_id and event.get("adapter_id") and adapter_id != event.get("adapter_id"):
         raise ValueError(f"Route mismatch: adapter_id override {adapter_id!r} does not match event adapter_id {event.get('adapter_id')!r}.")
     contract_report = agent_contract.validate_agent_event(event, policy_presets=POLICY_PRESETS)
@@ -327,6 +372,8 @@ def check_event(event, gallery_path=DEFAULT_GALLERY, adapter_id=None):
     entry = find_entry(gallery, resolved_adapter_id)
     adapter = run_adapter.load_adapter(ROOT / entry["adapter_path"])
     result = run_adapter.run_adapter(adapter, prompt_from_event(event), candidate_from_event(event))
+    semantic = semantic_verifier or build_semantic_verifier(semantic_verifier_kind, model=semantic_model)
+    result = _apply_optional_semantic_grounded_qa(resolved_adapter_id, event, result, semantic)
     return result_assembly.assemble_agent_check_result(
         event,
         resolved_adapter_id,
@@ -521,6 +568,26 @@ def audit_workflow_batch(batch_request, result=None, created_at=None, shadow_mod
         "summary": result.get("summary", {}) if isinstance(result, dict) else {},
         "records": records,
     }
+
+
+def audit_tool_precheck(
+    event,
+    result,
+    created_at=None,
+    latency_ms=None,
+    surface="runtime",
+    route="/pre-tool-check",
+    shadow_mode=False,
+):
+    return audit.tool_precheck_audit_record(
+        event,
+        result,
+        created_at=created_at,
+        latency_ms=latency_ms,
+        surface=surface,
+        route=route,
+        shadow_mode=shadow_mode,
+    )
 
 
 def append_audit_record(path, record):

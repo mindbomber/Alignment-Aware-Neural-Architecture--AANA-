@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1",
+  "artifact_id": "privacy_pii_v2_heldout_diagnostic",
+  "status": "frozen_diagnostic",
+  "adapter_family": "privacy_pii",
+  "claim_boundary": "AANA is evaluated here as an audit/control/verification/correction layer for privacy and PII handling. This artifact does not claim production-grade PII detection or raw agent-performance superiority.",
+  "source_result_artifact": "eval_outputs/privacy_pii_hf_experiment_live_300_v2_ssn_safe_tuned.json",
+  "source_category_report": "eval_outputs/privacy_pii_high_risk_category_report_ssn_safe_tuned.json",
+  "source_safe_miss_inspection": "eval_outputs/privacy_pii_safe_miss_inspection_ssn_safe_tuned.json",
+  "datasets": [
+    "piimb/pii-masking-benchmark sentences/test",
+    "ai4privacy/pii-masking-openpii-1m default/validation",
+    "nvidia/Nemotron-PII default/test"
+  ],
+  "split_role": "heldout_validation",
+  "public_claim_status": "do_not_strengthen_public_claims",
+  "measured_metrics": {
+    "case_count": 900,
+    "pii_recall": 0.8501783590963139,
+    "category_recall": 0.6122098022355976,
+    "high_risk_recall": 0.7482352941176471,
+    "multilingual_recall": 0.7662835249042146,
+    "false_positive_rate": 0.01694915254237288,
+    "safe_allow_rate": 0.9830508474576272,
+    "redaction_correctness": 0.7681331747919143,
+    "route_accuracy": 0.7088888888888889
+  },
+  "known_limitations": [
+    "High-risk category recall remains below production-grade targets.",
+    "Remaining SSN misses are category-ambiguous under safe span-masked inspection.",
+    "Further PII gains should use better calibration data or human-reviewed category labels rather than broader pattern rules."
+  ],
+  "next_adapter_family": "grounded_qa"
+}

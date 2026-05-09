@@ -1,0 +1,160 @@
+# AANA Agent-Action Technical Report
+
+## Summary
+
+This report connects the public agent-action benchmark results to the AANA runtime architecture and states the current limitations.
+
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+
+Result label: `diagnostic`
+
+Public artifact hub:
+`https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`.
+
+The tested AANA configuration is best understood as a pre-tool-call reliability layer:
+
+```text
+S = (f_theta, E_phi, R, Pi_psi, G)
+```
+
+- `f_theta`: the upstream agent or model proposing an answer or tool call.
+- `E_phi`: verifiers over tool category, authorization state, evidence, risk domain, and route.
+- `R`: evidence and constraint recovery from the available trace or runtime context.
+- `Pi_psi`: correction policy that can repair missing or degraded evidence before final routing.
+- `G`: alignment gate returning `accept`, `ask`, `defer`, or `refuse`.
+
+The central diagnostic result is that AANA produced stronger audit/control routing than simpler gate designs in the current diagnostic runs because it did not treat the first noisy contract as final. It used structured runtime fields plus recovery before deciding whether the action should execute.
+
+## What AANA Adds
+
+AANA should not be evaluated as another prompt wrapper, moderation classifier,
+LLM-as-judge prompt, or generic framework middleware. Those tools can be useful,
+but they usually leave the execution decision either implicit, provider-hidden,
+or specific to one framework.
+
+AANA makes the pre-action decision explicit:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+The differentiating pieces are:
+
+- a structured Agent Action Contract before execution,
+- verifier checks over tool category, authorization state, evidence, risk domain, arguments, and route,
+- correction/recovery policy for missing or degraded evidence,
+- hard blockers that prevent wrapped tool execution,
+- a route table with `accept`, `revise`, `retrieve`, `ask`, `defer`, and `refuse`,
+- audit-safe decision events with route, AIx score, blockers, missing evidence, authorization state, and latency,
+- validated decision-shape parity across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and middleware surfaces.
+
+This is the core peer-review claim: AANA externalizes the control layer around
+consequential agent actions so it can be inspected, tested, calibrated, and
+challenged independently of the base model.
+
+## What Was Evaluated
+
+Reviewer-facing evidence pack:
+`https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`.
+It packages measured privacy, grounded QA, tool-use, and agent-integration
+validation artifacts plus a reproduction script and a short peer-review report.
+The machine-readable manifest is
+`data/aana_peer_review_package_manifest.json` inside that dataset repo. It
+records exact AANA version, split boundaries, metrics, failure cases, false
+positives, unsupported domains, latency, and reproduction commands.
+
+The agent-action experiments used transformed public tool-call traces from two sources:
+
+- `zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory`
+- `NousResearch/hermes-function-calling-v1`
+
+Each trace row was converted into a pre-tool-call event with:
+
+- `tool_name`
+- `tool_category`
+- `authorization_state`
+- `evidence_refs`
+- `risk_domain`
+- `proposed_arguments`
+- `recommended_route`
+
+The tests compared AANA with five baselines:
+
+- permissive execution
+- a single action-risk classifier
+- a prompt-only policy guardrail
+- an LLM-as-judge safety checker
+- a structured contract gate without evidence recovery
+
+The main metrics were unsafe-action recall, safe allow rate, false positives, false negatives, and route accuracy.
+
+The integration-validation experiment separately checked platform behavior
+across 10 held-out tool-call cases and 11 runtime surfaces. It measured route
+parity, blocked-tool non-execution, decision-shape parity, audit-log
+completeness, schema failure rate, and local latency. That result supports the
+platform-wiring claim, not a raw agent task-success claim.
+
+## Result Pattern
+
+Across both external trace sources, the result pattern was consistent:
+
+- A permissive agent preserved safe allow rate but missed all unsafe actions.
+- A single classifier preserved unsafe recall by blocking everything, which destroyed safe allow rate.
+- Prompt-only and LLM-as-judge gates reduced unsafe misses, but over-blocked safe actions under noisy or implicit evidence.
+- A structured contract gate was stronger, but still over-blocked when evidence fields were missing, stale, downgraded, or contradictory.
+- AANA recovered safe actions while preserving unsafe-action recall in the diagnostic sets.
+
+This supports a narrow architecture claim:
+
+> For consequential agent tool calls, AANA's value comes from combining a structured action contract, verifier-gated routing, and evidence/correction recovery before execution.
+
+In public terms: AANA makes agents more auditable, safer, more grounded, and more controllable.
+
+It does not support a broad claim that AANA is generally aligned, production-certified, or superior to all safety systems.
+It also does not support a claim that AANA is a raw agent-performance engine.
+
+## Architecture Interpretation
+
+The results map directly to the AANA components:
+
+- `E_phi` explains why AANA catches unsafe tool calls better than permissive execution. The verifier stack checks route-critical fields instead of assuming the agent's proposed call is valid.
+- `R` explains why AANA handles noisy traces better than prompt-only checks. Evidence references and authorization signals are treated as recoverable runtime objects, not just prose.
+- `Pi_psi` explains why AANA recovers safe allow rate better than a static contract gate. The correction policy can move a candidate from `defer` or `ask` to `accept` when evidence is reconstructable.
+- `G` explains why AANA remains auditable. The final decision is a route with blockers and scores, not an opaque free-form judgment.
+
+In practical terms, the strongest observed advantage appears when the failure mode is not "the model lacks intelligence," but "the proposed action is missing permission, evidence, scope, or route justification."
+
+## Limitations
+
+These results are diagnostic, not official benchmark proof.
+
+Current limitations:
+
+- Labels and noisy evidence were generated by AANA evaluation scripts, not by benchmark maintainers or independent human annotators.
+- The trace datasets are externally sourced, but the safety labels are policy-derived.
+- The experiments test routing quality before execution; they do not prove downstream task success after execution.
+- The current AANA implementation uses explicit schema fields that may not be present in every agent runtime without adapter work.
+- Perfect scores on these diagnostic sets should be treated as a sign that the task is now too easy for this implementation, not as a production safety guarantee.
+
+The next validity step is maintainer-reviewed or human-reviewed labeling of a trace set, ideally inside an existing benchmark protocol such as MCP-Bench or another tool-use benchmark.
+
+## Probe Exclusion Policy
+
+No probe-enabled benchmark result is included in the public claims above.
+
+Diagnostic probe runs, including any tau2 runs using `--allow-benchmark-probes`
+or exact task-recovery planners, are engineering tools only. They may identify
+failure modes and guide adapter design, but they must not be merged into public
+AANA performance numbers, benchmark comparisons, leaderboard claims, or peer
+review claims.
+
+Public-facing claims should reference only `heldout` or `external_reporting`
+results that exclude probe artifacts and state their label source, limitations,
+and evaluation scope.
+
+## Reviewer-Facing Conclusion
+
+AANA should be evaluated as a runtime architecture for making agents more auditable, safer, more grounded, and more controllable, not as a standalone base model. The early evidence suggests that the architecture is strongest when a system needs to preserve both high unsafe-action recall and high safe-action allow rate under noisy evidence.
+
+The open question for peer review is whether this advantage persists under benchmark-native traces, independently reviewed labels, and task-level success scoring.
+

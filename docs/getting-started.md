@@ -15,6 +15,8 @@ python -m pip install -e .
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+aana evidence-pack --require-existing-artifacts
 aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
 ```
@@ -25,6 +27,8 @@ What each step proves:
 - `aana doctor` checks Python, schemas, gallery examples, agent examples, and optional provider config.
 - `aana run travel_planning` runs a catalog-backed adapter example through the public contract path.
 - `aana workflow-check ... --audit-log ...` checks a Workflow Contract payload and writes a redacted decision record.
+- `aana pre-tool-check ...` shows the agent action gate with route, AIx score, blockers, evidence refs, authorization state, correction path, and audit-safe log metadata.
+- `aana evidence-pack ...` prints the public claim boundary and validates the evidence pack.
 - `aana-server ... --audit-log ...` starts the local HTTP bridge for playground, gallery, and API integration.
 - `aana audit-summary ...` verifies that audit output is inspectable without raw prompts, candidates, evidence, or safe responses.
 
@@ -91,6 +95,8 @@ python scripts/aana_cli.py workflow-check --adapter research_summary --request "
 python scripts/aana_cli.py validate-gallery --run-examples
 python scripts/aana_cli.py validate-event --event examples/agent_event_support_reply.json
 aana agent-check --event examples/agent_event_support_reply.json
+python scripts/aana_cli.py pre-tool-check --event examples/agent_tool_precheck_private_read.json
+python scripts/aana_cli.py evidence-pack --require-existing-artifacts
 python scripts/aana_cli.py run-agent-examples
 python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event

@@ -4,6 +4,8 @@ Canonical entry point: [Integrate Runtime](integrate-runtime/index.md). Treat th
 
 AANA can sit around an AI agent as a verification and correction layer. The agent still plans and acts; AANA checks whether the next answer or action should pass, be revised, ask for missing information, defer to a stronger workflow, or be blocked.
 
+Fastest path: [Agent Action Contract Quickstart](agent-action-contract-quickstart.md).
+
 The Agent Event Contract is one of AANA's two primary public APIs, alongside the Workflow Contract. Agent integrations should build and validate Agent Event payloads, then call the Python API, CLI, or HTTP bridge that accepts that payload. They should not depend on adapter runner internals, verifier helper names, or repair-policy implementation details.
 
 Security boundary: an agent integration should call AANA only through a trusted interface that the user or administrator has configured and reviewed. Do not let an agent infer a local script path, run an unreviewed helper, or treat an untrusted checker as authoritative.
@@ -307,7 +309,13 @@ Content-Type: application/json
 Body: the AANA agent event
 ```
 
-Use `/validate-event` to catch malformed events before execution. The `/agent-check` response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `aix`, `candidate_aix`, `violations`, `safe_response`, and the full adapter result.
+Use `/validate-event` to catch malformed events before execution. The `/agent-check` response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `aix`, `candidate_aix`, `violations`, `safe_response`, and the full adapter result. CLI and SDK responses also expose `architecture_decision`, the public AANA decision surface with route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
+
+For direct pre-tool-call checks:
+
+```powershell
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+```
 
 For tools that ingest OpenAPI, point them at:
 

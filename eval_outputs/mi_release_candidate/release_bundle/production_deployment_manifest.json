@@ -1,0 +1,103 @@
+{
+  "audit_policy": {
+    "append_only_storage_required": true,
+    "artifact_paths": {
+      "audit_jsonl": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_audit.jsonl",
+      "audit_manifest": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_audit.jsonl.sha256.json"
+    },
+    "mode": "redacted_decision_metadata_only",
+    "raw_evidence_allowed": false,
+    "raw_private_content_allowed": false,
+    "raw_prompts_allowed": false,
+    "retention_owner": "pending-security-owner",
+    "sha256_manifest_required": true
+  },
+  "blockers": [
+    "human_signoff_not_approved"
+  ],
+  "created_at": "2026-05-06T17:31:57Z",
+  "deployment_authorized": false,
+  "deployment_status": "blocked",
+  "environment_assumptions": {
+    "deployment_mode": "guarded_live_after_approval",
+    "network_boundary": "external_connectors_disabled_until_connector_specific_enablement",
+    "required_controls": [
+      "verified_release_bundle",
+      "approved_human_signoff",
+      "immutable_audit_storage",
+      "live_connector_readiness_review",
+      "secrets_in_environment_or_vault_only",
+      "rollback_owner_available"
+    ],
+    "required_python": ">=3.10",
+    "runtime_entrypoint": "aana-mi-release plus production pre-execution hooks",
+    "target_environment": "production"
+  },
+  "external_control_refs": {
+    "human_signoff": {
+      "bytes": 1358,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\human_signoff.json",
+      "sha256": "6e2af4fc2196e69bcf04b0f03316f2f0f9cba8a9e9eb12a0a873a13a0c6aaba2"
+    },
+    "live_connector_readiness_plan": {
+      "bytes": 25900,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\live_connector_readiness_plan.json",
+      "sha256": "357c8db41364562d57192c6459a91a2c6e26af2b106f17fa1dccbc96fcf8b73c"
+    }
+  },
+  "manifest_type": "aana_mi_production_deployment_manifest",
+  "production_deployment_manifest_version": "0.1",
+  "rollback": {
+    "decision_routes": {
+      "audit_integrity_failure": "block",
+      "bundle_verification_failure": "block",
+      "connector_failure": "rollback_or_defer",
+      "global_aix_regression": "defer"
+    },
+    "default_strategy": "disable_live_connectors_and_restore_previous_verified_bundle",
+    "owner": {
+      "id": "pending-release-owner",
+      "name": "Pending release owner",
+      "role": "release_manager"
+    },
+    "rollback_required_before_live_enablement": true
+  },
+  "secrets_policy": {
+    "plaintext_files_allowed": false,
+    "required_secret_names": [
+      "AANA_BRIDGE_TOKEN"
+    ],
+    "rotation_required": true,
+    "scan_required_before_deploy": true,
+    "secrets_in_logs_allowed": false,
+    "secrets_in_release_bundle_allowed": false,
+    "storage": "environment_or_managed_secret_vault_only"
+  },
+  "verified_mi_release_bundle": {
+    "global_aix": {
+      "accept_threshold": 0.9,
+      "decision": "accept",
+      "recommended_action": "accept",
+      "risk_tier": "elevated",
+      "score": 1.0
+    },
+    "rc_status": "pass",
+    "readiness_status": "ready",
+    "release_bundle_verification": {
+      "bytes": 5000,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_bundle_verification.json",
+      "sha256": "82e91415225b206f9f442bb36af97de251041b1e3862831a84bcbafc945a48dd"
+    },
+    "release_manifest": {
+      "bytes": 4757,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_manifest.json",
+      "sha256": "bccec14d64aaa4556b1560671732d93b80793963ff5937f4b99f52421b38d658"
+    },
+    "unresolved_blocker_count": 0,
+    "verification_status": "pass"
+  }
+}

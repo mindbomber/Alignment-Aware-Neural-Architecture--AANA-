@@ -1,0 +1,1 @@
+"""Domain-risk adapter family."""

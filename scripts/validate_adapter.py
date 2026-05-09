@@ -353,9 +353,11 @@ def validate_adapter(adapter):
         ("booking_purchase_guardrail_aana_adapter", "booking_purchase_guardrail"),
         ("calendar_scheduling_aana_adapter", "calendar_scheduling"),
         ("data_export_guardrail_aana_adapter", "data_export_guardrail"),
+        ("agent_action_safety_guardrail_aana_adapter", "agent_action_safety_guardrail"),
         ("publication_check_aana_adapter", "publication_check"),
         ("meeting_summary_checker_aana_adapter", "meeting_summary_checker"),
         ("ticket_update_checker_aana_adapter", "ticket_update_checker"),
+        ("privacy_pii_redaction_aana_adapter", "privacy_pii_redaction"),
         ("research_answer_grounding_aana_adapter", "research_answer_grounding"),
         ("research_summary_aana_adapter", "grounded_research_summary"),
     }

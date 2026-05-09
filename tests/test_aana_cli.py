@@ -442,7 +442,68 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn('"agent": "openclaw"', output)
         self.assertIn('"gate_decision": "pass"', output)
         self.assertIn('"recommended_action": "revise"', output)
+        self.assertIn('"architecture_decision"', output)
+        self.assertIn('"route": "revise"', output)
+        self.assertIn('"audit_safe_log_event"', output)
         self.assertIn('"safe_response"', output)
+
+    def test_pre_tool_check_exposes_architecture_decision(self):
+        code, output = self.run_cli(["pre-tool-check", "--event", "examples/agent_tool_precheck_private_read.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"tool_name": "get_recent_transactions"', output)
+        self.assertIn('"recommended_action": "accept"', output)
+        self.assertIn('"architecture_decision"', output)
+        self.assertIn('"route": "accept"', output)
+        self.assertIn('"authorization_state": "authenticated"', output)
+        self.assertIn('"auth.demo-session"', output)
+
+    def test_pre_tool_check_writes_redacted_audit_log(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            event_path = tmp_path / "pre_tool_secret.json"
+            audit_log = tmp_path / "audit.jsonl"
+            event_path.write_text(
+                json.dumps(
+                    {
+                        "tool_name": "send_email",
+                        "tool_category": "write",
+                        "authorization_state": "confirmed",
+                        "evidence_refs": ["draft_id:123"],
+                        "risk_domain": "customer_support",
+                        "proposed_arguments": {
+                            "to": "customer@example.com",
+                            "api_key": "sk_live_12345678901234567890",
+                        },
+                        "recommended_route": "accept",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            code, output = self.run_cli(["pre-tool-check", "--event", str(event_path), "--audit-log", str(audit_log)])
+            validate_code, validate_output = self.run_cli(["audit-validate", "--audit-log", str(audit_log)])
+            summary_code, summary_output = self.run_cli(["audit-summary", "--audit-log", str(audit_log)])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(validate_code, 0)
+            self.assertEqual(summary_code, 0)
+            log_text = audit_log.read_text(encoding="utf-8")
+            self.assertIn("tool_precheck", log_text)
+            self.assertIn("[redacted_sensitive_key]", log_text)
+            self.assertIn("AANA audit validation: valid", validate_output)
+            self.assertIn("AANA audit summary", summary_output)
+            self.assertNotIn("customer@example.com", log_text)
+            self.assertNotIn("sk_live", log_text)
+            self.assertIn('"audit_record_type": "tool_precheck"', output)
+
+    def test_evidence_pack_command_summarizes_public_boundary(self):
+        code, output = self.run_cli(["evidence-pack", "--require-existing-artifacts"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA evidence pack", output)
+        self.assertIn("AANA makes agents more auditable, safer, more grounded, and more controllable.", output)
+        self.assertIn("validation: pass", output)
 
     def test_agent_check_writes_redacted_audit_log(self):
         with tempfile.TemporaryDirectory() as tmp:

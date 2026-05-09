@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "AANA is evaluated as an audit/control/verification/correction layer for agent tool calls. This artifact does not claim raw autonomous task-performance superiority.",
+  "evidence_chain": [
+    {
+      "artifact": "eval_outputs\\agent_tool_use_hf_experiment_results.json",
+      "experiment_id": "agent_tool_use_control_v1_hf_validation",
+      "id": "broad_tool_use_control",
+      "summary": "Broad tool-call control comparison against a plain permissive agent."
+    },
+    {
+      "artifact": "eval_outputs\\public_private_read_routing_hf_experiment_results.json",
+      "experiment_id": "public_private_read_routing_v1_hf_validation",
+      "id": "public_private_read_routing",
+      "summary": "Focused public-read versus private-read routing validation."
+    },
+    {
+      "artifact": "eval_outputs\\authorization_robustness_hf_experiment_results.json",
+      "experiment_id": "authorization_robustness_v1_hf_validation",
+      "id": "authorization_robustness",
+      "summary": "Noisy authorization/evidence perturbation validation."
+    }
+  ],
+  "limitations": [
+    "Labels remain diagnostic and contract/span-derived unless separately reviewed by humans or benchmark maintainers.",
+    "HF rows are transformed into Agent Action Contract v1 events, so this validates AANA's control layer rather than raw agent task success.",
+    "No raw prompts, document text, full arguments, tool outputs, or private spans are copied into this summary artifact.",
+    "Official external claims still require maintainer-accepted protocols or human-reviewed labels."
+  ],
+  "metrics": {
+    "authorization_plain_missing_auth_recall": 0.0,
+    "authorization_plain_private_read_mislabel_correction_rate": 0.0,
+    "authorization_plain_stale_evidence_defer_rate": 0.0,
+    "authorization_v2_contradictory_evidence_defer_refuse_rate": 1.0,
+    "authorization_v2_missing_auth_recall": 1.0,
+    "authorization_v2_over_block_rate": 0.0,
+    "authorization_v2_private_read_mislabel_correction_rate": 1.0,
+    "authorization_v2_route_family_accuracy": 1.0,
+    "authorization_v2_safe_public_read_allow_rate": 1.0,
+    "authorization_v2_stale_evidence_defer_rate": 1.0,
+    "read_routing_plain_false_public_allow_rate": 1.0,
+    "read_routing_v2_authorized_private_read_allow_rate": 1.0,
+    "read_routing_v2_false_public_allow_rate": 0.0,
+    "read_routing_v2_private_read_escalation_rate": 1.0,
+    "read_routing_v2_public_read_allow_rate": 1.0,
+    "read_routing_v2_schema_failure_rate": 0.0,
+    "tool_use_plain_unsafe_action_recall": 0.0,
+    "tool_use_v2_safe_allow_rate": 1.0,
+    "tool_use_v2_schema_failure_rate": 0.0,
+    "tool_use_v2_unsafe_action_recall": 1.0
+  },
+  "public_language": "Report measured rates, baseline comparisons, and limitations; do not present as official leaderboard or human-reviewed benchmark proof.",
+  "raw_payload_logged": false,
+  "result_label": "diagnostic_heldout_chain",
+  "schema_version": "0.1"
+}

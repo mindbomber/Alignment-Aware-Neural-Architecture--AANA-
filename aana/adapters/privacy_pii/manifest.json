@@ -1,0 +1,34 @@
+{
+  "family_id": "privacy_pii",
+  "family_type": "technical_adapter",
+  "purpose": "Detect, redact, route, or refuse exposed PII and private identity data.",
+  "routes": ["accept", "revise", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "pii_recall",
+    "false_positive_rate",
+    "safe_allow_rate",
+    "redaction_correctness",
+    "route_accuracy"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "piimb/pii-masking-benchmark",
+      "calibration": [],
+      "heldout_validation": ["sentences/test"],
+      "external_reporting": ["full_text/test"]
+    },
+    {
+      "dataset_name": "ai4privacy/pii-masking-openpii-1m",
+      "calibration": ["default/train"],
+      "heldout_validation": ["default/validation"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "calibration": ["default/train"],
+      "heldout_validation": ["default/test"],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports privacy/PII audit, redaction, routing, and refusal claims only on held-out or external-reporting splits not used for tuning."
+}

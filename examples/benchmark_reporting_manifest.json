@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "main_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
+    "not_raw_engine_claim": "AANA is not yet proven as a raw agent-performance engine.",
+    "never_merge_probe_results_into_public_claims": true,
+    "require_scope_label": true,
+    "require_result_label": true,
+    "require_limitations_for_public_claims": true,
+    "do_not_claim_raw_agent_performance_engine": true,
+    "do_not_claim_raw_agent_performance_superiority": true,
+    "publish_limitations_alongside_wins": true,
+    "allowed_scope_labels": [
+      "public_general_result",
+      "diagnostic_probe_only",
+      "engineering_smoke_only"
+    ],
+    "allowed_result_labels": [
+      "calibration",
+      "diagnostic",
+      "heldout",
+      "probe",
+      "external_reporting"
+    ]
+  },
+  "benchmark_reports": [
+    {
+      "report_id": "agent-action-head-to-head-external-traces",
+      "benchmark": "External agent-action trace comparison",
+      "run_type": "general",
+      "scope_label": "public_general_result",
+      "result_label": "external_reporting",
+      "summary": "AANA is reported as a runtime action-gating architecture evaluated on externally sourced traces with policy-derived labels.",
+      "public_claim": true,
+      "public_claim_eligible": true,
+      "includes_probe_results": false,
+      "uses_allow_benchmark_probes": false,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Labels were policy-derived rather than benchmark-maintainer labels.",
+        "The result supports a narrow action-routing claim, not a broad alignment or production-certification claim."
+      ],
+      "wins": [
+        "Measured action-gating comparisons showed stronger audit/control behavior than permissive or static guardrail baselines on the reported trace artifact."
+      ],
+      "artifacts": {
+        "primary_results": [
+          "docs/aana-agent-action-technical-report.md",
+          "docs/aana-benchmark-maintainer-review-protocol.md"
+        ],
+        "probe_results": []
+      }
+    },
+    {
+      "report_id": "tau2-diagnostic-probe-runs",
+      "benchmark": "tau2-bench diagnostic probe experiments",
+      "run_type": "diagnostic_probe",
+      "scope_label": "diagnostic_probe_only",
+      "result_label": "probe",
+      "summary": "Probe-enabled tau2 runs are engineering diagnostics for finding planner failure modes and are not public AANA performance claims.",
+      "public_claim": false,
+      "public_claim_eligible": false,
+      "includes_probe_results": true,
+      "uses_allow_benchmark_probes": true,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Probe planners may contain exact task literals or discovered recovery flows.",
+        "Probe metrics must not be merged into public AANA benchmark claims."
+      ],
+      "wins": [],
+      "artifacts": {
+        "primary_results": [],
+        "probe_results": [
+          "examples/tau2/aana_tau2_probe_planners.py"
+        ]
+      }
+    },
+    {
+      "report_id": "tau2-general-scaffold-smoke",
+      "benchmark": "tau2-bench general scaffold smoke checks",
+      "run_type": "general",
+      "scope_label": "engineering_smoke_only",
+      "result_label": "diagnostic",
+      "summary": "Default scaffold runs without benchmark probes can be used as engineering evidence, but small smoke tests are not leaderboard claims.",
+      "public_claim": false,
+      "public_claim_eligible": false,
+      "includes_probe_results": false,
+      "uses_allow_benchmark_probes": false,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Small smoke tests are useful for regression detection only.",
+        "Leaderboard or peer-review claims require maintainer-approved protocol and full reported artifacts."
+      ],
+      "wins": [],
+      "artifacts": {
+        "primary_results": [
+          "examples/tau2/aana_contract_agent.py"
+        ],
+        "probe_results": []
+      }
+    }
+  ]
+}

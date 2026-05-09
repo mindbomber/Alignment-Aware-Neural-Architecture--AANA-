@@ -14,14 +14,14 @@ class FamilyPackTests(unittest.TestCase):
         payload = family_packs.family_packs()
         families = {pack["family_id"]: pack for pack in payload["families"]}
 
-        self.assertEqual(set(families), {"enterprise", "personal_productivity", "civic_government"})
+        self.assertEqual(set(families), {"enterprise", "personal_productivity", "government_civic"})
         self.assertIn("customer, code, deployment, data, access, billing", families["enterprise"]["boundary"])
         self.assertIn("send, schedule, delete, move, write, buy, publish, or cite", families["personal_productivity"]["boundary"])
-        self.assertIn("Public-service, procurement, grant, records, privacy", families["civic_government"]["boundary"])
+        self.assertIn("Public-service, procurement, grant, records, privacy", families["government_civic"]["boundary"])
 
         self.assertEqual(families["enterprise"]["adapter_count"], 8)
         self.assertEqual(families["personal_productivity"]["adapter_count"], 7)
-        self.assertEqual(families["civic_government"]["adapter_count"], 8)
+        self.assertEqual(families["government_civic"]["adapter_count"], 8)
         for pack in families.values():
             self.assertGreater(len(pack["required_evidence"]), 0)
             self.assertIn("command", pack["starter_kit"])

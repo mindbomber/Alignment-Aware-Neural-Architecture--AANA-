@@ -1,0 +1,83 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "grounded_qa_v1_hf_validation",
+  "title": "AANA Grounded QA / Hallucination HF Validation",
+  "public_claim_boundary": "This experiment evaluates AANA as an audit/control/verification/correction layer for grounded answers. It does not claim raw agent-performance superiority.",
+  "objective": "Measure whether AANA detects unsupported or hallucinated answers and routes them to revise/defer instead of accepting them blindly.",
+  "adapter_family": "grounded_qa",
+  "datasets": [
+    {
+      "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+      "config": "20k_subset",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "schema": "rag_grounded_qa",
+      "context_field": "context",
+      "question_field": "question",
+      "answer_field": "answer",
+      "label_field": "type",
+      "id_field": "id",
+      "sample_offsets": [0],
+      "purpose": "Held-out grounded QA validation for answerable and unanswerable evidence contexts."
+    },
+    {
+      "dataset_name": "PatronusAI/HaluBench",
+      "config": "default",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "schema": "halubench",
+      "context_field": "passage",
+      "question_field": "question",
+      "answer_field": "answer",
+      "label_field": "label",
+      "id_field": "id",
+      "sample_offsets": [0, 500],
+      "purpose": "Held-out hallucination validation with PASS/FAIL labels."
+    },
+    {
+      "dataset_name": "wandb/RAGTruth-processed",
+      "config": "default",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "schema": "ragtruth_processed",
+      "context_field": "context",
+      "question_field": "query",
+      "answer_field": "output",
+      "label_field": "hallucination_labels_processed",
+      "id_field": "id",
+      "sample_offsets": [0],
+      "purpose": "Held-out RAG hallucination validation using processed conflict/baseless labels."
+    }
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "calibration_splits": [
+      "NovachronoAI/RAG-Grounded-QA-188k 20k_subset/train",
+      "wandb/RAGTruth-processed default/train"
+    ],
+    "heldout_validation_splits": [
+      "NovachronoAI/RAG-Grounded-QA-188k 20k_subset/test",
+      "PatronusAI/HaluBench default/test",
+      "wandb/RAGTruth-processed default/test"
+    ],
+    "external_reporting_splits": [
+      "NovachronoAI/RAG-Grounded-QA-188k full/test"
+    ]
+  },
+  "comparisons": [
+    "base_accept_blindly",
+    "aana_groundedness_gate",
+    "aana_revise_defer_route"
+  ],
+  "metrics": [
+    "unsupported_claim_recall",
+    "answerable_safe_allow_rate",
+    "citation_evidence_coverage",
+    "over_refusal_rate",
+    "route_accuracy"
+  ],
+  "outputs": {
+    "default_result": "eval_outputs/grounded_qa_hf_experiment_results.json",
+    "raw_text_storage": "Raw context, question, and answer text are not written to result artifacts; rows contain ids, labels, hashes, short previews, routes, and classification metadata."
+  }
+}

@@ -16,6 +16,19 @@ Usage:
     python scripts/dev.py starter-kits
     python scripts/dev.py design-partner-pilots
     python scripts/dev.py github-guardrails
+    python scripts/dev.py adapter-heldout
+    python scripts/dev.py benchmark-reporting
+    python scripts/dev.py benchmark-fit-lint
+    python scripts/dev.py adapter-generalization
+    python scripts/dev.py hf-dataset-registry
+    python scripts/dev.py hf-calibration
+    python scripts/dev.py privacy-pii-adapter
+    python scripts/dev.py grounded-qa-adapter
+    python scripts/dev.py agent-tool-use-control
+    python scripts/dev.py cross-domain-families
+    python scripts/dev.py production-evidence-pack
+    python scripts/dev.py security-hardening
+    python scripts/dev.py packaging-hardening
 """
 
 import argparse
@@ -145,6 +158,12 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Run unit and compatibility tests for API behavior, adapters, audit, catalog, and docs.",
         ),
         ReleaseGate(
+            "platform_ci_gate",
+            "platform",
+            [PYTHON, "scripts/validate_aana_platform.py"],
+            "Run the standard AANA platform CI gate for adapter layout, contracts, integrations, bundles, HF split governance, claims, security, and packaging.",
+        ),
+        ReleaseGate(
             "contract_freeze",
             "api",
             [PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"],
@@ -179,6 +198,78 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "adapter",
             [PYTHON, "scripts/compare_adapter_runner_baseline.py", "--ref", "HEAD"],
             "Compare current adapter runner support and core decision surfaces against the selected baseline ref.",
+        ),
+        ReleaseGate(
+            "adapter_heldout_validation",
+            "adapter",
+            [PYTHON, "scripts/validate_adapter_heldout.py"],
+            "Require held-out, blind, external, or maintainer-eval evidence after every adapter improvement.",
+        ),
+        ReleaseGate(
+            "benchmark_fit_lint",
+            "adapter",
+            [PYTHON, "scripts/validate_benchmark_fit_lint.py"],
+            "Reject known benchmark-answer literals from general AANA adapter paths.",
+        ),
+        ReleaseGate(
+            "benchmark_reporting",
+            "docs",
+            [PYTHON, "scripts/validate_benchmark_reporting.py"],
+            "Ensure diagnostic probe results are never merged into public AANA benchmark claims.",
+        ),
+        ReleaseGate(
+            "adapter_generalization",
+            "adapter",
+            [PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"],
+            "Validate config-backed adapter hints, held-out validation, benchmark-fit linting, and public-claim separation as one generalization gate.",
+        ),
+        ReleaseGate(
+            "hf_dataset_registry",
+            "data",
+            [PYTHON, "scripts/validate_hf_dataset_registry.py"],
+            "Validate HF dataset split-use isolation for calibration, held-out validation, and external reporting.",
+        ),
+        ReleaseGate(
+            "hf_calibration",
+            "data",
+            [PYTHON, "scripts/validate_hf_calibration.py"],
+            "Validate per-family HF calibration targets, metric tracking, and calibration/reporting split isolation.",
+        ),
+        ReleaseGate(
+            "hf_dataset_proof",
+            "data",
+            [PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"],
+            "Fail CI if any public HF dataset proof claim references a calibration split or unregistered split.",
+        ),
+        ReleaseGate(
+            "privacy_pii_adapter",
+            "adapter",
+            [PYTHON, "scripts/run_privacy_pii_adapter_eval.py"],
+            "Validate PII recall, false positives, safe allow rate, redaction correctness, and route accuracy.",
+        ),
+        ReleaseGate(
+            "grounded_qa_adapter",
+            "adapter",
+            [PYTHON, "scripts/run_grounded_qa_adapter_eval.py"],
+            "Validate unsupported-claim recall, answerable safe allow, citation/evidence coverage, and over-refusal.",
+        ),
+        ReleaseGate(
+            "agent_tool_use_control",
+            "adapter",
+            [PYTHON, "scripts/run_agent_tool_use_control_eval.py"],
+            "Validate agent tool-call schema conversion, unsafe recall, private-read/write gating, route quality, schema failures, and safe allow.",
+        ),
+        ReleaseGate(
+            "cross_domain_adapter_families",
+            "adapter",
+            [PYTHON, "scripts/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"],
+            "Require privacy/security, research/grounded QA, support, finance, ecommerce/retail, and agent tool-use/MCP families to have external HF held-out validation before stronger claims.",
+        ),
+        ReleaseGate(
+            "production_candidate_evidence_pack",
+            "docs",
+            [PYTHON, "scripts/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"],
+            "Validate the public claim boundary: production-candidate control layer, not proven raw agent-performance engine.",
         ),
         ReleaseGate(
             "gallery_metadata",
@@ -233,6 +324,18 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "production-profile",
             [PYTHON, "scripts/validate_secrets_scan.py"],
             "Run allowlist-backed secrets scanning for deployment, runtime, docs, examples, scripts, and tests.",
+        ),
+        ReleaseGate(
+            "security_hardening",
+            "production-profile",
+            [PYTHON, "scripts/validate_security_hardening.py"],
+            "Validate CI secret scanning, dependency audit wiring, demo-safe defaults, and malicious-agent threat-model coverage.",
+        ),
+        ReleaseGate(
+            "packaging_hardening",
+            "publication",
+            [PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"],
+            "Validate Python, TypeScript, FastAPI, eval tooling, docs/card boundaries, distribution rename rules, and publication checklists.",
         ),
         ReleaseGate(
             "audit_retention_policy",
@@ -487,6 +590,62 @@ def github_guardrails():
     run([PYTHON, "scripts/run_github_action_guardrails.py", "--force", "--fail-on", "never"])
 
 
+def adapter_heldout():
+    run([PYTHON, "scripts/validate_adapter_heldout.py"])
+
+
+def benchmark_reporting():
+    run([PYTHON, "scripts/validate_benchmark_reporting.py"])
+
+
+def benchmark_fit_lint():
+    run([PYTHON, "scripts/validate_benchmark_fit_lint.py"])
+
+
+def adapter_generalization():
+    run([PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"])
+
+
+def hf_dataset_registry():
+    run([PYTHON, "scripts/validate_hf_dataset_registry.py"])
+
+
+def hf_calibration():
+    run([PYTHON, "scripts/validate_hf_calibration.py"])
+
+
+def hf_dataset_proof():
+    run([PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"])
+
+
+def privacy_pii_adapter():
+    run([PYTHON, "scripts/run_privacy_pii_adapter_eval.py"])
+
+
+def grounded_qa_adapter():
+    run([PYTHON, "scripts/run_grounded_qa_adapter_eval.py"])
+
+
+def agent_tool_use_control():
+    run([PYTHON, "scripts/run_agent_tool_use_control_eval.py"])
+
+
+def cross_domain_families():
+    run([PYTHON, "scripts/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"])
+
+
+def production_evidence_pack():
+    run([PYTHON, "scripts/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"])
+
+
+def security_hardening():
+    run([PYTHON, "scripts/validate_security_hardening.py"])
+
+
+def packaging_hardening():
+    run([PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"])
+
+
 COMMANDS = {
     "compile": compile_python,
     "test": test,
@@ -500,6 +659,20 @@ COMMANDS = {
     "starter-kits": starter_kits,
     "design-partner-pilots": design_partner_pilots,
     "github-guardrails": github_guardrails,
+    "adapter-heldout": adapter_heldout,
+    "benchmark-reporting": benchmark_reporting,
+    "benchmark-fit-lint": benchmark_fit_lint,
+    "adapter-generalization": adapter_generalization,
+    "hf-dataset-registry": hf_dataset_registry,
+    "hf-calibration": hf_calibration,
+    "hf-dataset-proof": hf_dataset_proof,
+    "privacy-pii-adapter": privacy_pii_adapter,
+    "grounded-qa-adapter": grounded_qa_adapter,
+    "agent-tool-use-control": agent_tool_use_control,
+    "cross-domain-families": cross_domain_families,
+    "production-evidence-pack": production_evidence_pack,
+    "security-hardening": security_hardening,
+    "packaging-hardening": packaging_hardening,
     "production-profiles": production_profiles,
     "release-gate": release_gate,
 }

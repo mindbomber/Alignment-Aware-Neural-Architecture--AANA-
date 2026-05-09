@@ -1,0 +1,132 @@
+{
+  "artifact_refs": {
+    "human_signoff": {
+      "bytes": 1358,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\human_signoff.json",
+      "sha256": "6e2af4fc2196e69bcf04b0f03316f2f0f9cba8a9e9eb12a0a873a13a0c6aaba2"
+    },
+    "post_release_monitoring_policy": {
+      "bytes": 6718,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\post_release_monitoring_policy.json",
+      "sha256": "09d319463101b3f125a99a8e368b36ff0a5fa98216e3e0812809536f380ddb9c"
+    },
+    "production_deployment_manifest": {
+      "bytes": 4099,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\production_deployment_manifest.json",
+      "sha256": "d71ec7cc020f002ab77a0aed359f7786f9700f1a1c731bfaf8392095bfd98f1d"
+    },
+    "production_dry_run_report": {
+      "bytes": 2569,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\production_dry_run_report.json",
+      "sha256": "8cacfbe2c7721328d85c57eec469dd7c684043765d4d01c79c729a592c2e1812"
+    },
+    "release_bundle_verification": {
+      "bytes": 5000,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_bundle_verification.json",
+      "sha256": "82e91415225b206f9f442bb36af97de251041b1e3862831a84bcbafc945a48dd"
+    },
+    "release_manifest": {
+      "bytes": 4757,
+      "exists": true,
+      "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\release_manifest.json",
+      "sha256": "bccec14d64aaa4556b1560671732d93b80793963ff5937f4b99f52421b38d658"
+    }
+  },
+  "blocker_count": 4,
+  "blockers": [
+    {
+      "code": "human_signoff_invalid",
+      "required_action": "repair human signoff record.",
+      "source": "human_signoff"
+    },
+    {
+      "code": "human_signoff_not_approved",
+      "required_action": "obtain domain-owner approval before production go.",
+      "source": "human_signoff"
+    },
+    {
+      "code": "deployment_not_authorized",
+      "required_action": "resolve deployment manifest blockers before live deployment.",
+      "source": "production_deployment_manifest"
+    },
+    {
+      "code": "production_dry_run_not_pass",
+      "required_action": "resolve dry-run unresolved items.",
+      "source": "production_dry_run_report"
+    }
+  ],
+  "created_at": "2026-05-06T17:35:11Z",
+  "decisions": [
+    {
+      "details": "Release candidate status from verified bundle.",
+      "name": "release_candidate",
+      "required_for_go": true,
+      "status": "pass"
+    },
+    {
+      "details": "Production readiness status from verified bundle.",
+      "name": "production_readiness",
+      "required_for_go": true,
+      "status": "ready"
+    },
+    {
+      "details": "issues=0 artifacts=9",
+      "name": "release_bundle_verification",
+      "required_for_go": true,
+      "status": "pass"
+    },
+    {
+      "details": "score=1.0 threshold=0.9",
+      "name": "global_aix",
+      "required_for_go": true,
+      "status": "pass"
+    },
+    {
+      "details": "valid=False reviewer=pending-domain-owner",
+      "name": "human_signoff",
+      "required_for_go": true,
+      "status": "pending"
+    },
+    {
+      "details": "valid=True blockers=1",
+      "name": "deployment_manifest",
+      "required_for_go": true,
+      "status": "blocked"
+    },
+    {
+      "details": "alerts=6 metrics=9",
+      "name": "monitoring_policy",
+      "required_for_go": true,
+      "status": "pass"
+    },
+    {
+      "details": "unresolved=1 live_actions=False",
+      "name": "production_dry_run",
+      "required_for_go": true,
+      "status": "block"
+    }
+  ],
+  "go": false,
+  "production_go_no_go_version": "0.1",
+  "report_type": "aana_mi_production_go_no_go_report",
+  "status": "no_go",
+  "summary": {
+    "bundle_verification_status": "pass",
+    "deployment_authorized": false,
+    "deployment_status": "blocked",
+    "dry_run_status": "block",
+    "dry_run_unresolved_item_count": 1,
+    "global_aix_accept_threshold": 0.9,
+    "global_aix_score": 1.0,
+    "human_signoff_decision": "pending",
+    "live_external_actions_attempted": false,
+    "monitoring_policy_valid": true,
+    "rc_status": "pass",
+    "readiness_status": "ready"
+  }
+}

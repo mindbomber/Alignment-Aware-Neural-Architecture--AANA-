@@ -19,13 +19,14 @@ python scripts/dev.py release-gate
 The release gate is aligned with CI around the hardened core:
 
 - `api`: Python compile, unit tests, and public contract freeze.
+- `platform`: the standard `python scripts/validate_aana_platform.py` CI gate.
 - `catalog`: adapter gallery metadata, docs links, evidence requirements, and completeness.
 - `adapter`: executable adapter examples and expected gate/action/AIx behavior.
 - `docs`: public docs bundle and onboarding surfaces.
 - `audit`: redacted audit write and audit redaction validation.
 - `production_profile`: deployment, governance, observability, evidence, release, and audit-profile checks.
 
-Failure annotations include the gate category so it is clear whether the issue is API, adapter, catalog, audit, docs, or production-profile related.
+Failure annotations include the gate category so it is clear whether the issue is API, platform, adapter, catalog, audit, docs, or production-profile related.
 
 3. Run the post-refactor stability pass before updating release docs.
 

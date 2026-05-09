@@ -1,0 +1,80 @@
+{
+  "bundle_id": "enterprise",
+  "canonical_id": "enterprise",
+  "aliases": [],
+  "bundle_type": "product_bundle",
+  "purpose": "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control.",
+  "adapter_families": [
+    "privacy_pii",
+    "grounded_qa",
+    "agent_tool_use",
+    "governance_compliance",
+    "security_devops",
+    "domain_risk"
+  ],
+  "core_adapter_ids": [
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "data_export_guardrail",
+    "access_permission_change",
+    "code_change_review",
+    "deployment_readiness",
+    "incident_response_update"
+  ],
+  "sdk_adapter_aliases": {
+    "access": "access_permission_change",
+    "billing": "invoice_billing_reply",
+    "code_review": "code_change_review",
+    "crm": "crm_support_reply",
+    "crm_support": "crm_support_reply",
+    "data_export": "data_export_guardrail",
+    "deployment": "deployment_readiness",
+    "draft": "support_reply",
+    "email": "email_send_guardrail",
+    "incident": "incident_response_update",
+    "ticket": "ticket_update_checker"
+  },
+  "required_evidence_connectors": [
+    "crm_support",
+    "ticketing",
+    "email_send",
+    "iam",
+    "ci",
+    "deployment",
+    "billing",
+    "data_export"
+  ],
+  "evidence_connector_aliases": {
+    "data_warehouse_export": "data_export"
+  },
+  "human_review_required_for": [
+    "privileged access changes",
+    "production deployments",
+    "security incidents",
+    "customer-visible incident communications",
+    "data exports",
+    "billing or SLA exceptions",
+    "regulated customer workflows"
+  ],
+  "minimum_validation": {
+    "required_adapter_families": [
+      "privacy_pii",
+      "grounded_qa",
+      "agent_tool_use",
+      "governance_compliance",
+      "security_devops",
+      "domain_risk"
+    ],
+    "heldout_validation_coverage": [
+      {"adapter_family": "privacy_pii", "source": "piimb/pii-masking-benchmark sentences/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "grounded_qa", "source": "PatronusAI/HaluBench default/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "agent_tool_use", "source": "ScaleAI/MCP-Atlas default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "governance_compliance", "source": "tests/test_production_candidate_evidence_pack.py", "coverage_type": "repo_heldout_fixture"},
+      {"adapter_family": "security_devops", "source": "ScaleAI/MCP-Atlas default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "domain_risk", "source": "nvidia/Nemotron-PII default/test", "coverage_type": "hf_dataset_split"}
+    ]
+  },
+  "required_split_rule": "Never tune and claim on the same dataset/config/split.",
+  "claim_boundary": "Enterprise bundle claims inherit only the held-out evidence of its referenced adapter families."
+}

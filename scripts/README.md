@@ -27,6 +27,9 @@ python scripts/aana_cli.py audit-reviewer-report --audit-log eval_outputs/audit/
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
 python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl
 python scripts/aana_cli.py pilot-certify
+python scripts/aana_cli.py certify-bundle enterprise
+python scripts/aana_cli.py certify-bundle personal_productivity
+python scripts/aana_cli.py certify-bundle government_civic
 python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
 docker compose up --build
 Get-Content docs/integration-recipes.md
@@ -72,6 +75,7 @@ Commands:
 - `aana_cli.py audit-drift` - Generate an AIx drift report from redacted audit JSONL.
 - `aana_cli.py audit-reviewer-report` - Write a Markdown reviewer report from audit, metrics, drift, and manifest artifacts.
 - `aana_cli.py pilot-certify` - Print the public pilot readiness score plus surface matrix, and fail on missing CLI, API, bridge, adapter, evidence, audit/metrics, docs, contract, or skill/plugin gates.
+- `aana_cli.py certify-bundle <enterprise|personal_productivity|government_civic>` - Certify one product bundle's manifest declarations, required evidence connectors, human-review requirements, minimum validation coverage, adapter layout, and existing family certification surfaces.
 - `aana_cli.py production-certify` - Certify the stricter production boundary: shadow-mode duration and volume, required metrics, human-review routing, connector evidence, audit retention, and production signoff.
 - `docker compose up --build` - Run the Dockerized local HTTP bridge on `http://localhost:8765` with the bundled adapter gallery, local token auth, mounted redacted audit logs, and internal pilot profiles. See `docs/docker-http-bridge.md` for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch` examples.
 - `docs/integration-recipes.md` - Copyable recipes for GitHub Actions, local agents, CRM support drafts, deployment reviews, and shadow-mode pilots.

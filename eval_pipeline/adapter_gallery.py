@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import pathlib
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PUBLISHED_GALLERY_VERSION = "0.1"
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
@@ -31,35 +30,30 @@ LOCAL_DEMO_ADAPTERS = {
     "file_operation_guardrail",
     "research_answer_grounding",
 }
-ENTERPRISE_PACK = {
-    "access_permission_change",
-    "code_change_review",
-    "crm_support_reply",
-    "data_export_guardrail",
-    "deployment_readiness",
-    "email_send_guardrail",
-    "incident_response_update",
-    "ticket_update_checker",
-}
-PERSONAL_PACK = {
-    "booking_purchase_guardrail",
-    "calendar_scheduling",
-    "email_send_guardrail",
-    "file_operation_guardrail",
-    "meeting_summary_checker",
-    "publication_check",
-    "research_answer_grounding",
-}
-CIVIC_PACK = {
-    "casework_response_checker",
-    "foia_public_records_response_checker",
-    "grant_application_review",
-    "insurance_claim_triage",
-    "policy_memo_grounding",
-    "procurement_vendor_risk",
-    "publication_check",
-    "public_records_privacy_redaction",
-}
+
+
+def _load_bundle_manifests():
+    bundles = {}
+    for path in sorted((ROOT / "aana" / "bundles").glob("*/manifest.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError(f"{path} must contain a JSON object.")
+        bundle_id = str(payload.get("bundle_id") or path.parent.name)
+        bundles[bundle_id] = payload
+    return bundles
+
+
+def _bundle_adapter_sets():
+    return {
+        bundle_id: set(payload.get("core_adapter_ids", []))
+        for bundle_id, payload in _load_bundle_manifests().items()
+    }
+
+
+BUNDLE_PACKS = _bundle_adapter_sets()
+ENTERPRISE_PACK = BUNDLE_PACKS.get("enterprise", set())
+PERSONAL_PACK = BUNDLE_PACKS.get("personal_productivity", set())
+CIVIC_PACK = BUNDLE_PACKS.get("government_civic", set())
 STRICT_ROUTER_ADAPTERS = {
     "financial_advice_router",
     "legal_safety_router",
@@ -113,10 +107,12 @@ ROLE_ADAPTERS = {
         "public_records_privacy_redaction",
     },
 }
+def _bundle_label(bundle_id, payload):
+    return str(payload.get("label") or payload.get("title") or payload.get("purpose") or bundle_id).split(".")[0]
+
+
 FAMILY_LABELS = {
-    "enterprise": "Enterprise",
-    "personal_productivity": "Personal Productivity",
-    "government_civic": "Government/Civic",
+    **{bundle_id: _bundle_label(bundle_id, payload) for bundle_id, payload in _load_bundle_manifests().items()},
     "developer_tooling": "Developer Tooling",
 }
 READINESS_STATES = ("ready", "partial", "external_required", "not_packaged")

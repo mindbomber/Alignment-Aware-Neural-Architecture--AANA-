@@ -8,6 +8,7 @@ import pathlib
 import platform
 import subprocess
 import sys
+import time
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -22,6 +23,7 @@ from eval_pipeline import (
     civic_family,
     common,
     contract_freeze,
+    bundle_certification,
     enterprise_family,
     evidence_integrations,
     personal_family,
@@ -31,9 +33,17 @@ from eval_pipeline import (
     support_aix_calibration,
 )
 from eval_pipeline import agent_api
+from eval_pipeline.production_candidate_evidence_pack import (
+    load_manifest as load_evidence_pack_manifest,
+    validate_production_candidate_evidence_pack,
+)
+from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
+from eval_pipeline.semantic_verifier import build_semantic_verifier
+from aana.sdk import architecture_decision, with_architecture_decision
 
 
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
+DEFAULT_EVIDENCE_PACK = ROOT / "examples" / "production_candidate_evidence_pack.json"
 CLI_CONTRACT_VERSION = "0.1"
 EXIT_OK = 0
 EXIT_VALIDATION = 1
@@ -46,6 +56,8 @@ EXIT_CODE_CONTRACT = {
 READ_FILE_ARGS_BY_COMMAND = {
     "run-file": ["adapter", "candidate_file"],
     "agent-check": ["event", "evidence_registry"],
+    "pre-tool-check": ["event"],
+    "evidence-pack": ["manifest"],
     "workflow-check": ["workflow", "evidence_registry"],
     "workflow-batch": ["batch", "evidence_registry"],
     "validate-workflow": ["workflow"],
@@ -63,6 +75,7 @@ READ_FILE_ARGS_BY_COMMAND = {
     "audit-verify": ["manifest"],
     "production-preflight": ["deployment_manifest", "evidence_registry", "observability_policy"],
     "pilot-certify": ["gallery", "evidence_registry"],
+    "certify-bundle": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "enterprise-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "personal-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "civic-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
@@ -178,6 +191,16 @@ def cli_command_matrix():
             "writes": ["--audit-log"],
             "dry_run": False,
             "example": "python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/aana-audit.jsonl --shadow-mode",
+        },
+        {
+            "command": "pre-tool-check",
+            "category": "agent",
+            "json_output": True,
+            "public_api": "agent_action_contract",
+            "reads": ["--event", "--gate-version", "--validate-only", "--strict-validation"],
+            "writes": ["--audit-log"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py pre-tool-check --event examples/agent_tool_precheck_send_email.json --audit-log eval_outputs/audit/aana-audit.jsonl",
         },
         {
             "command": "workflow-check",
@@ -378,6 +401,15 @@ def cli_command_matrix():
             "writes": [],
             "dry_run": False,
             "example": "python scripts/aana_cli.py pilot-certify --evidence-registry examples/evidence_registry.json --json",
+        },
+        {
+            "command": "certify-bundle",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["bundle_id", "--gallery", "--evidence-registry", "--mock-fixtures", "--certification-policy"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py certify-bundle enterprise --json",
         },
         {
             "command": "enterprise-certify",
@@ -811,6 +843,7 @@ def command_run_file(args):
 
 
 def command_agent_check(args):
+    started_at = time.perf_counter()
     event = agent_api.load_json_file(args.event)
     if args.evidence_registry or args.require_structured_evidence:
         registry = agent_api.load_evidence_registry(args.evidence_registry) if args.evidence_registry else None
@@ -822,17 +855,120 @@ def command_agent_check(args):
         if not report["valid"]:
             print_json({"event_validation": report})
             return 1
-    response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
+    response = agent_api.check_event(
+        event,
+        gallery_path=args.gallery,
+        adapter_id=args.adapter_id,
+        semantic_verifier_kind=args.semantic_verifier,
+        semantic_model=args.semantic_model,
+    )
+    response.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     if args.shadow_mode:
         response = agent_api.apply_shadow_mode(response)
     if args.audit_log:
         record = agent_api.audit_event_check(event, response)
         agent_api.append_audit_record(args.audit_log, record)
+    else:
+        record = agent_api.audit_event_check(event, response)
+    response = with_architecture_decision(response, event, audit_record=record)
     print_json(response)
     return 0 if args.shadow_mode or response["gate_decision"] == "pass" else 1
 
 
+def command_pre_tool_check(args):
+    started_at = time.perf_counter()
+    event = agent_api.load_json_file(args.event)
+    validation_errors = validate_tool_precheck_event(event)
+    if args.validate_only:
+        response = {
+            "valid": not validation_errors,
+            "errors": validation_errors,
+            "schema_version": "aana.agent_tool_precheck.v1",
+        }
+        print_json(response)
+        return 0 if response["valid"] else 1
+    if validation_errors and args.strict_validation:
+        result = {
+            "gate_decision": "fail",
+            "recommended_action": "refuse",
+            "hard_blockers": ["schema_validation_failed"],
+            "aix": {"score": 0.0, "decision": "refuse", "hard_blockers": ["schema_validation_failed"]},
+            "audit_metadata": {"latency_ms": round((time.perf_counter() - started_at) * 1000, 3)},
+        }
+        record = agent_api.audit_tool_precheck(
+            event,
+            result,
+            latency_ms=result["audit_metadata"]["latency_ms"],
+            surface="cli",
+            route="pre-tool-check",
+        )
+        if args.audit_log:
+            agent_api.append_audit_record(args.audit_log, record)
+        print_json(
+            {
+                "valid": False,
+                "errors": validation_errors,
+                "schema_version": "aana.agent_tool_precheck.v1",
+                "architecture_decision": architecture_decision(result, event, audit_record=record),
+            }
+        )
+        return 1
+    semantic_verifier = build_semantic_verifier(args.semantic_verifier, model=args.semantic_model)
+    result = (
+        gate_pre_tool_call_v2(event, semantic_verifier=semantic_verifier)
+        if args.gate_version == "v2"
+        else gate_pre_tool_call(event)
+    )
+    result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
+    record = agent_api.audit_tool_precheck(
+        event,
+        result,
+        latency_ms=result["audit_metadata"]["latency_ms"],
+        surface="cli",
+        route="pre-tool-check",
+    )
+    if args.audit_log:
+        agent_api.append_audit_record(args.audit_log, record)
+    response = with_architecture_decision(result, event, audit_record=record)
+    print_json(response)
+    return 0 if response.get("gate_decision") == "pass" else 1
+
+
+def command_evidence_pack(args):
+    manifest = load_evidence_pack_manifest(args.manifest)
+    report = validate_production_candidate_evidence_pack(
+        manifest,
+        root=ROOT,
+        require_existing_artifacts=args.require_existing_artifacts,
+    )
+    response = {
+        "architecture_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
+        "claim_boundary": manifest.get("claim_boundary", {}),
+        "evidence_status": manifest.get("evidence_status"),
+        "report_path": manifest.get("report_path"),
+        "required_artifacts": manifest.get("required_artifacts", []),
+        "limitations": manifest.get("limitations", {}),
+        "validation": report,
+    }
+    if args.json:
+        print_json(response)
+    else:
+        print("AANA evidence pack")
+        print(f"- architecture_claim: {response['architecture_claim']}")
+        print(f"- production_candidate_layer: {response['claim_boundary'].get('production_candidate_layer')}")
+        print(f"- not_proven_engine: {response['claim_boundary'].get('not_proven_engine')}")
+        print(f"- evidence_status: {response['evidence_status']}")
+        print(f"- report_path: {response['report_path']}")
+        print(f"- artifacts: {len(response['required_artifacts'])}")
+        print(f"- validation: {'pass' if report['valid'] else 'block'} ({report['errors']} errors, {report['warnings']} warnings)")
+        if report["issues"]:
+            for issue in report["issues"]:
+                print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
 def command_workflow_check(args):
+    started_at = time.perf_counter()
     if args.workflow:
         workflow_request = agent_api.load_json_file(args.workflow)
         if args.evidence_registry:
@@ -846,6 +982,7 @@ def command_workflow_check(args):
                 print_json({"evidence_validation": evidence_report})
                 return 1
         result = agent_api.check_workflow_request(workflow_request, gallery_path=args.gallery)
+        result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
         if args.shadow_mode:
             result = agent_api.apply_shadow_mode(result)
         if args.audit_log:
@@ -884,6 +1021,7 @@ def command_workflow_check(args):
         workflow_id=args.workflow_id,
         gallery_path=args.gallery,
     )
+    result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     if args.shadow_mode:
         result = agent_api.apply_shadow_mode(result)
     if args.audit_log:
@@ -894,6 +1032,7 @@ def command_workflow_check(args):
 
 
 def command_workflow_batch(args):
+    started_at = time.perf_counter()
     batch_request = agent_api.load_json_file(args.batch)
     if args.evidence_registry:
         registry = agent_api.load_evidence_registry(args.evidence_registry)
@@ -906,6 +1045,10 @@ def command_workflow_batch(args):
             print_json({"evidence_validation": evidence_report})
             return 1
     result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
+    latency_ms = round((time.perf_counter() - started_at) * 1000, 3)
+    for item in result.get("results", []) if isinstance(result, dict) else []:
+        if isinstance(item, dict):
+            item.setdefault("audit_metadata", {})["latency_ms"] = latency_ms
     if args.shadow_mode:
         result = agent_api.apply_shadow_mode(result)
     if args.audit_log:
@@ -1151,6 +1294,9 @@ def command_audit_summary(args):
     print("Recommended actions:")
     for key, value in sorted(summary["recommended_actions"].items()):
         print(f"- {key}: {value}")
+    print("Decision cases:")
+    for key, value in sorted(summary.get("decision_cases", {}).items()):
+        print(f"- {key}: {value}")
     print("Top violation codes:")
     for key, value in list(summary["violation_codes"].items())[:10]:
         print(f"- {key}: {value}")
@@ -1293,6 +1439,36 @@ def command_pilot_certify(args):
         )
         for gate in surface["gates"]:
             print(f"  - {gate['id']}: {gate['status']} ({gate['score']}/{gate['weight']}) - {gate['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_certify_bundle(args):
+    report = bundle_certification.certify_bundle_report(
+        args.bundle_id,
+        gallery_path=args.gallery,
+        evidence_registry_path=args.evidence_registry,
+        mock_fixtures_path=args.mock_fixtures,
+        certification_policy_path=args.certification_policy,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    status = "pass" if report["valid"] else "fail"
+    print(
+        f"AANA bundle certification ({report['bundle_id']}): "
+        f"{status} - {summary['score_percent']}/100 "
+        f"({summary['readiness_level']}, {summary['surfaces']} surface(s), {summary['failures']} failure(s))."
+    )
+    print("Required bundle declarations:")
+    print(f"- core_adapter_ids: {len(report['manifest']['core_adapter_ids'])}")
+    print(f"- required_evidence_connectors: {len(report['manifest']['required_evidence_connectors'])}")
+    print(f"- human_review_required_for: {len(report['manifest']['human_review_required_for'])}")
+    print(f"- minimum_validation: {'present' if report['manifest']['minimum_validation'] else 'missing'}")
+    for surface in report["surfaces"]:
+        print(f"- {surface['surface_id']}: {surface['status']} {surface['score_percent']}/100")
+        for check in surface.get("checks", []):
+            print(f"  - {check['id']}: {check['status']} - {check['message']}")
     return 0 if report["valid"] else 1
 
 
@@ -2209,8 +2385,26 @@ def build_parser():
     agent_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
     agent_parser.add_argument("--evidence-registry", default=None, help="Validate structured event evidence against this registry before checking.")
     agent_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured event evidence strings before checking.")
+    agent_parser.add_argument("--semantic-verifier", choices=["none", "openai"], default="none", help="Optional semantic verifier/reviser layer. Deterministic AANA remains the route/enforcement source of truth.")
+    agent_parser.add_argument("--semantic-model", default=None, help="Optional model for --semantic-verifier openai.")
     agent_parser.add_argument("--shadow-mode", action="store_true", help="Observe and audit what AANA would recommend without returning a blocking exit code.")
     agent_parser.set_defaults(func=command_agent_check)
+
+    pre_tool_parser = subparsers.add_parser("pre-tool-check", help="Check an AANA pre-tool-call contract before executing a tool.")
+    pre_tool_parser.add_argument("--event", required=True, help="Path to agent tool precheck JSON.")
+    pre_tool_parser.add_argument("--gate-version", choices=["v1", "v2"], default="v1", help="Pre-tool-call gate version.")
+    pre_tool_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
+    pre_tool_parser.add_argument("--semantic-verifier", choices=["none", "openai"], default="none", help="Optional semantic verifier for ambiguous tool calls. It can tighten but not bypass deterministic blockers.")
+    pre_tool_parser.add_argument("--semantic-model", default=None, help="Optional model for --semantic-verifier openai.")
+    pre_tool_parser.add_argument("--validate-only", action="store_true", help="Only validate the pre-tool-call contract.")
+    pre_tool_parser.add_argument("--strict-validation", action="store_true", help="Return schema validation failures before running the gate.")
+    pre_tool_parser.set_defaults(func=command_pre_tool_check)
+
+    evidence_pack_parser = subparsers.add_parser("evidence-pack", help="Summarize and validate the AANA production-candidate evidence pack.")
+    evidence_pack_parser.add_argument("--manifest", default=str(DEFAULT_EVIDENCE_PACK), help="Path to production-candidate evidence-pack manifest.")
+    evidence_pack_parser.add_argument("--require-existing-artifacts", action="store_true", help="Require all linked evidence artifacts to exist.")
+    evidence_pack_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    evidence_pack_parser.set_defaults(func=command_evidence_pack)
 
     workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
     workflow_parser.add_argument("--workflow", default=None, help="Path to workflow request JSON. When provided, other workflow fields are ignored.")
@@ -2359,6 +2553,34 @@ def build_parser():
     pilot_certify_parser.add_argument("--evidence-registry", default=str(ROOT / "examples" / "evidence_registry.json"), help="Evidence registry JSON.")
     pilot_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     pilot_certify_parser.set_defaults(func=command_pilot_certify)
+
+    bundle_certify_parser = subparsers.add_parser(
+        "certify-bundle",
+        help="Certify one AANA product bundle manifest, connector requirements, human-review gates, and family surfaces.",
+    )
+    bundle_certify_parser.add_argument(
+        "bundle_id",
+        choices=bundle_certification.certification_target_choices(),
+        help="Bundle to certify.",
+    )
+    bundle_certify_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    bundle_certify_parser.add_argument(
+        "--evidence-registry",
+        default=str(ROOT / "examples" / "evidence_registry.json"),
+        help="Evidence registry JSON.",
+    )
+    bundle_certify_parser.add_argument(
+        "--mock-fixtures",
+        default=str(ROOT / "examples" / "evidence_mock_connector_fixtures.json"),
+        help="Evidence mock connector fixtures JSON.",
+    )
+    bundle_certify_parser.add_argument(
+        "--certification-policy",
+        default=None,
+        help="Optional bundle certification policy JSON. Defaults to the policy for the selected bundle.",
+    )
+    bundle_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    bundle_certify_parser.set_defaults(func=command_certify_bundle)
 
     enterprise_certify_parser = subparsers.add_parser(
         "enterprise-certify",

@@ -136,7 +136,7 @@
             "support"
           ],
           "family_labels": [
-            "Enterprise",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
             "support"
           ],
           "human_review_path": [
@@ -337,8 +337,8 @@
             "support"
           ],
           "family_labels": [
-            "Enterprise",
-            "Personal Productivity",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions",
             "support"
           ],
           "human_review_path": [
@@ -532,7 +532,7 @@
             "support"
           ],
           "family_labels": [
-            "Enterprise",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
             "support"
           ],
           "human_review_path": [
@@ -706,7 +706,7 @@
             "enterprise"
           ],
           "family_labels": [
-            "Enterprise"
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -863,7 +863,7 @@
             "enterprise"
           ],
           "family_labels": [
-            "Enterprise"
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -1024,7 +1024,7 @@
             "developer_tooling"
           ],
           "family_labels": [
-            "Enterprise",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
             "Developer Tooling"
           ],
           "human_review_path": [],
@@ -1191,7 +1191,7 @@
             "developer_tooling"
           ],
           "family_labels": [
-            "Enterprise",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
             "Developer Tooling"
           ],
           "human_review_path": [],
@@ -1351,7 +1351,7 @@
             "enterprise"
           ],
           "family_labels": [
-            "Enterprise"
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -1611,8 +1611,8 @@
             "support"
           ],
           "family_labels": [
-            "Enterprise",
-            "Personal Productivity",
+            "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control",
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions",
             "support"
           ],
           "human_review_path": [
@@ -1790,7 +1790,7 @@
             "personal_productivity"
           ],
           "family_labels": [
-            "Personal Productivity"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -1948,7 +1948,7 @@
             "personal_productivity"
           ],
           "family_labels": [
-            "Personal Productivity"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2107,7 +2107,7 @@
             "personal_productivity"
           ],
           "family_labels": [
-            "Personal Productivity"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2262,7 +2262,7 @@
             "personal_productivity"
           ],
           "family_labels": [
-            "Personal Productivity"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2422,8 +2422,8 @@
             "government_civic"
           ],
           "family_labels": [
-            "Personal Productivity",
-            "Government/Civic"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions",
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2581,7 +2581,7 @@
             "personal_productivity"
           ],
           "family_labels": [
-            "Personal Productivity"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2808,7 +2808,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -2961,7 +2961,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3117,7 +3117,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3272,7 +3272,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3427,7 +3427,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3586,8 +3586,8 @@
             "government_civic"
           ],
           "family_labels": [
-            "Personal Productivity",
-            "Government/Civic"
+            "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions",
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3743,7 +3743,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3897,7 +3897,7 @@
             "government_civic"
           ],
           "family_labels": [
-            "Government/Civic"
+            "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows"
           ],
           "human_review_path": [],
           "human_review_requirements": [],
@@ -3954,7 +3954,7 @@
       ],
       "boundary": "Public-service, procurement, grant, records, privacy, eligibility, policy, and public-communication workflows.",
       "eyebrow": "Government and civic family",
-      "family_id": "civic_government",
+      "family_id": "government_civic",
       "family_pack_version": "0.1",
       "gallery_pack": "government_civic",
       "not_for": [

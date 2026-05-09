@@ -7,6 +7,7 @@ import json
 import pathlib
 
 from eval_pipeline import adapter_gallery
+from aana.bundles import canonicalize_bundle_id
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -51,7 +52,7 @@ FAMILY_DEFINITIONS = {
         ],
         "primary_surfaces": ["local desktop/browser demos", "web playground", "Docker HTTP bridge", "shadow mode"],
     },
-    "civic_government": {
+    "government_civic": {
         "slug": "government-civic",
         "gallery_pack": "government_civic",
         "title": "Government And Civic AANA Pack",
@@ -81,10 +82,12 @@ def load_json(path):
 
 
 def _kit_path(family_id, kit_root=DEFAULT_KIT_ROOT):
+    family_id = canonicalize_bundle_id(family_id)
     return pathlib.Path(kit_root) / FAMILY_DEFINITIONS[family_id]["starter_kit"]
 
 
 def _workflow_specs(family_id, kit_root=DEFAULT_KIT_ROOT):
+    family_id = canonicalize_bundle_id(family_id)
     payload = load_json(_kit_path(family_id, kit_root) / "workflows.json")
     workflows = payload.get("workflows")
     if not isinstance(workflows, list) or not workflows:
@@ -97,6 +100,7 @@ def _adapter_cards_by_id(gallery_payload):
 
 
 def _ordered_adapter_cards(family_id, gallery_payload, kit_root=DEFAULT_KIT_ROOT):
+    family_id = canonicalize_bundle_id(family_id)
     cards = _adapter_cards_by_id(gallery_payload)
     ordered = []
     seen = set()
@@ -112,6 +116,7 @@ def _ordered_adapter_cards(family_id, gallery_payload, kit_root=DEFAULT_KIT_ROOT
 
 
 def family_pack(family_id, gallery_payload=None, kit_root=DEFAULT_KIT_ROOT):
+    family_id = canonicalize_bundle_id(family_id)
     if family_id not in FAMILY_DEFINITIONS:
         raise ValueError(f"Unknown family id: {family_id}")
     gallery_payload = gallery_payload or adapter_gallery.published_gallery()

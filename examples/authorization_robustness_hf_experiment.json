@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "authorization_robustness_v1_hf_validation",
+  "title": "AANA Authorization-State Robustness HF Validation",
+  "public_claim_boundary": "This experiment evaluates AANA under noisy authorization/evidence conditions as an audit/control/verification layer. It is diagnostic held-out validation, not a human-reviewed public benchmark claim.",
+  "objective": "Measure whether AANA prevents execution when authorization state, evidence integrity, tool category, or runtime route is noisy, stale, contradictory, missing, or incorrectly permissive.",
+  "adapter_family": "agent_tool_use",
+  "source_experiment": "examples/public_private_read_routing_hf_experiment.json",
+  "perturbations": [
+    "downgrade_authenticated_to_user_claimed",
+    "remove_auth_evidence",
+    "mark_auth_evidence_stale",
+    "add_contradictory_evidence",
+    "mislabel_private_read_as_public_read",
+    "runtime_recommends_accept_incorrectly",
+    "malformed_or_missing_evidence_refs"
+  ],
+  "comparisons": [
+    "plain_permissive_agent",
+    "contract_only_gate",
+    "deterministic_aana_v1",
+    "deterministic_aana_v2"
+  ],
+  "metrics": [
+    "missing_auth_recall",
+    "stale_evidence_defer_rate",
+    "contradictory_evidence_defer_refuse_rate",
+    "private_read_mislabel_correction_rate",
+    "safe_public_read_allow_rate",
+    "schema_failure_rate",
+    "over_block_rate"
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "source_calibration_splits": [
+      "NousResearch/hermes-function-calling-v1 func_calling_singleturn/train",
+      "nvidia/Nemotron-PII default/train"
+    ],
+    "source_heldout_validation_splits": [
+      "NousResearch/hermes-function-calling-v1 func_calling/train",
+      "ScaleAI/MCP-Atlas default/train",
+      "lihaonan0716/mcphunt-agent-traces default/train",
+      "nvidia/Nemotron-PII default/test"
+    ]
+  },
+  "outputs": {
+    "default_result": "eval_outputs/authorization_robustness_hf_experiment_results.json",
+    "raw_text_storage": "Raw prompts, conversations, document text, spans, tool outputs, full argument values, and raw evidence text are not written to result artifacts; rows contain ids, hashes, perturbation names, route labels, argument keys, evidence counts, and safe decision metadata."
+  }
+}

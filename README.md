@@ -1,4 +1,4 @@
-# Alignment-Aware Neural Architecture (AANA) Evaluation Pipeline
+# Alignment-Aware Neural Architecture (AANA)
 
 [![CI](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/actions/workflows/ci.yml/badge.svg)](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,24 +11,79 @@
 
 ![AANA repository social preview](assets/github-social-preview.png)
 
-This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
+This repository contains AANA as a runtime control architecture for AI agents. In plain language: an agent proposes an answer or tool call, AANA checks the evidence, authorization, constraints, and risk, and the action executes only when the route is `accept`.
 
-The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+
+The project includes the AANA CLI, Python SDK, TypeScript SDK, FastAPI service, MCP surface, middleware examples, adapter families, evaluation tools, and peer-review evidence artifacts.
 
 Platform boundary: AANA is a runtime guardrail layer that sits between an agent and consequential outputs or actions. It receives a Workflow Contract or Agent Event, checks the candidate output/action against adapter-specific constraints, applies verifier-grounded correction policy, returns `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, and emits audit-safe metadata. See [docs/product-boundary.md](docs/product-boundary.md).
+
+Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
+
+## What AANA Adds
+
+Most agent safety tools fit into one bucket: prompt instructions, moderation/classification, LLM-as-judge review, framework middleware, or opaque provider-side model alignment. AANA is different because it standardizes the pre-action decision itself:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+AANA adds:
+
+- **A structured action contract**: `tool_name`, `tool_category`, `authorization_state`, `evidence_refs`, `risk_domain`, `proposed_arguments`, and `recommended_route`.
+- **Evidence/auth-aware routing**: the decision can be `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, based on what evidence and authorization are actually present.
+- **Hard execution rules**: wrapped tools do not execute unless AANA returns `accept` with no hard blockers or schema failures.
+- **Correction and recovery guidance**: AANA tells the agent whether to ask for confirmation, retrieve evidence, revise, defer to review, or refuse.
+- **Audit-safe logs**: decisions include route, AIx score, hard blockers, missing evidence, authorization state, and redacted audit metadata.
+- **Cross-surface parity**: the same decision shape is validated across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, OpenAI Agents SDK, LangChain, AutoGen, and CrewAI-style wrappers.
+
+The value is not that AANA is a smarter base agent. The value is that AANA makes consequential agent actions inspectable, enforceable, and reviewable before execution.
 
 First deployable support boundary: draft support replies, CRM support replies, refund/account-fact checks, support email-send checks, and customer-visible ticket updates. Invoice/billing replies are an adjacent later adapter family.
 
 Start with the path that matches what you are doing:
 
 - **Try Demo**: [docs/try-demo/index.md](docs/try-demo/index.md)
+- **Tool Call Gate Demo**: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
+- **Head-to-Head Findings**: [docs/aana-head-to-head-findings.md](docs/aana-head-to-head-findings.md)
+- **Technical Report**: [docs/aana-agent-action-technical-report.md](docs/aana-agent-action-technical-report.md)
+- **Public Artifact Hub**: [docs/aana-public-artifact-hub.md](docs/aana-public-artifact-hub.md)
+- **Peer Review Evidence Pack**: [Hugging Face dataset](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
 - **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
+- **Agent Tool Contract SDK**: [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md)
+- **Agent Framework Middleware**: [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md)
+- **OpenAI Agents Quickstart**: [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md)
+- **Agent Action Contract v1**: [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md)
+- **Agent Action Contract Quickstart**: [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md)
+- **Agent Action Contract Cases**: [examples/agent_action_contract_cases.json](examples/agent_action_contract_cases.json)
+- **FastAPI Service**: [docs/fastapi-service.md](docs/fastapi-service.md)
+- **Evidence Handling**: [docs/evidence-handling.md](docs/evidence-handling.md)
+- **Auditability**: [docs/auditability.md](docs/auditability.md)
+- **Security Threat Model**: [docs/aana-security-threat-model.md](docs/aana-security-threat-model.md)
+- **Authorization State**: [docs/authorization-state.md](docs/authorization-state.md)
+- **AANA Standard Publication Package**: [docs/aana-standard-publication.md](docs/aana-standard-publication.md)
+- **Packaging Release Checklist**: [docs/packaging-release-checklist.md](docs/packaging-release-checklist.md)
+- **Public Claims Policy**: [docs/public-claims-policy.md](docs/public-claims-policy.md)
+- **HF Dataset Strategy**: [docs/hf-dataset-strategy.md](docs/hf-dataset-strategy.md)
+- **HF Dataset Proof Report**: [docs/hf-dataset-proof-report.md](docs/hf-dataset-proof-report.md)
 - **Build Adapter**: [docs/build-adapter/index.md](docs/build-adapter/index.md)
 
 Try AANA without cloning the repo:
 
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo): enter a candidate answer/action, evidence, and constraints; get an AANA route, AIx score, hard blockers, suggested revision, and audit summary.
+- [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4): the canonical model, dataset, Space, and report map.
+- [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack): measured privacy, grounded QA, tool-use, and integration validation artifacts with a reproduction script and reviewer-facing report.
 - [AANA hosted synthetic demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/): precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
+- [AANA head-to-head findings](docs/aana-head-to-head-findings.md): a concise public summary of the agent-action comparisons against permissive agents, classifiers, prompt-only guards, LLM judges, and static contract gates.
+- [AANA agent-action technical report](docs/aana-agent-action-technical-report.md): a short architecture report tying the results to `S = (f_theta, E_phi, R, Pi_psi, G)` and the current validity limits.
+
+Current diagnostic updates in the evidence pack:
+
+- Safety/adversarial prompt routing: deterministic AANA preserves safe allow but misses many harmful prompts; a diversified request-level verifier improves harmful-request recall while conservative calibration protects safe allow. AdvBench transfer remains weak, so this is not a content-moderation claim.
+- Finance/high-risk QA: a controlled FinanceBench diagnostic shows supported filing answers are allowed and unsupported finance overclaims are routed to revise/defer. This is not official FinanceBench leaderboard evidence or investment-advice evaluation.
+- Governance/compliance policy routing: a small diagnostic over Hugging Face policy-doc metadata plus repo-heldout policy cases shows citation, missing-evidence, private-data export, destructive-action, and human-review routing behavior. This is not legal, regulatory, or platform-policy certification.
+- Integration validation v1: held-out tool-call cases show route parity, blocked-tool non-execution, decision-shape parity, audit completeness, and zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and middleware surfaces. This validates platform wiring, not raw agent task success.
 
 Production positioning: this repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
 
@@ -39,6 +94,8 @@ Language models can produce answers that look capable while quietly violating im
 ## Where AANA is useful
 
 AANA is strongest where failures are mechanically checkable. The point is not to make the model "more careful" by asking nicely. The point is to give the system a correction path that cannot hand-wave constraints away.
+
+The intended direction is base agent plus AANA, not AANA as a replacement for the base agent. Strong models and planners handle raw task execution; AANA checks evidence, authorization, constraints, correction paths, and action routing around them.
 
 Good fit examples:
 
@@ -65,6 +122,36 @@ The docs are organized around three entry points: [Try Demo](docs/try-demo/index
 - Product engineers testing whether assistants preserve user constraints under pressure.
 - Students and independent researchers learning how model-evaluation pipelines are structured.
 
+## Main Agent-Integration Proof
+
+Run the integration validator to prove the Python SDK, TypeScript SDK, OpenAI
+Agents SDK wrapper, LangChain, AutoGen, CrewAI, FastAPI policy service, MCP
+tool surface, and controlled-agent eval harness all work:
+
+```powershell
+python scripts/validate_agent_integrations.py
+```
+
+Expected result:
+
+```text
+pass -- passed=12/12
+- pass: cli_decision_shape_smoke
+- pass: python_sdk_smoke
+- pass: typescript_sdk_smoke
+- pass: openai_wrapped_tools_smoke
+- pass: langchain_middleware_smoke
+- pass: autogen_middleware_smoke
+- pass: crewai_middleware_smoke
+- pass: middleware_decision_shape_smoke
+- pass: fastapi_policy_service_smoke
+- pass: mcp_tool_smoke
+- pass: mcp_decision_shape_smoke
+- pass: controlled_agent_eval_harness
+```
+
+For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md).
+
 ## Recommended Local Path
 
 Use this path for platform onboarding:
@@ -74,13 +161,42 @@ python -m pip install -e .
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+python scripts/aana_mcp_server.py --list-tools
+python examples/chatgpt_app/aana_mcp_app.py
+python evals/aana_controlled_agents/run_local.py
+python scripts/validate_agent_integrations.py
+python scripts/validate_aana_platform.py
+aana evidence-pack --require-existing-artifacts
 aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
 ```
 
-This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, and `/openapi.json`.
+This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, a pre-tool-call gate, the MCP-style `aana_pre_tool_check` surface, the Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP integration validator, the platform harmony gate, the evidence pack, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, `/tool-precheck`, and `/openapi.json`.
 
 Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
+
+Benchmark reporting boundary: diagnostic probe results are engineering artifacts only and must not be merged into public AANA performance claims. See [docs/benchmark-reporting-policy.md](docs/benchmark-reporting-policy.md) and validate with `python scripts/validate_public_claims_policy.py`.
+
+Public claims boundary: keep the main claim to “AANA makes agents more auditable, safer, more grounded, and more controllable.” Do not claim AANA is proven as a raw agent-performance engine or has raw agent-performance superiority. Label results as `calibration`, `heldout`, `diagnostic`, `probe`, or `external_reporting`, and publish limitations beside wins. See [docs/public-claims-policy.md](docs/public-claims-policy.md).
+
+For Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI,
+FastAPI policy-service, MCP, and ChatGPT App prototype
+integration, start with [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md).
+
+Adapter generalization gate: general adapters must use config-backed domain/tool hints, pass held-out validation, pass benchmark-fit linting, and keep diagnostic/probe results out of public claims. Validate the combined gate with `python scripts/validate_adapter_generalization.py --require-existing-artifacts`.
+
+Adapter family layout: technical verifier/control families live under `aana/adapters/` (`privacy_pii`, `grounded_qa`, `agent_tool_use`, `governance_compliance`, `security_devops`, and `domain_risk`). Product bundles live under `aana/bundles/` (`enterprise`, `personal_productivity`, and `government_civic`) and declare which adapter families they use. Validate split isolation and bundle references with `python scripts/validate_adapter_layout.py`.
+
+Bundle ID policy: `government_civic` is the canonical product-bundle ID. `civic_government` remains a backward-compatible alias for older starter-pilot-kit paths and commands.
+
+Manifest and canonical ID policy: `aana/adapters/*/manifest.json` and `aana/bundles/*/manifest.json` are the source of truth for adapter-family IDs, bundle IDs, bundle aliases, core adapter membership, required connectors, and SDK adapter aliases. `aana/canonical_ids.py`, SDK helpers, gallery metadata, and family certification modules read from those manifests instead of maintaining separate product-bundle constants. Alias maps are only for backward compatibility and must target canonical IDs directly. Validate alias or manifest drift with `python scripts/validate_canonical_ids.py`.
+
+CI platform gate: run `python scripts/validate_aana_platform.py`. This is the standard one-command gate for adapter layout, contract freeze, agent integrations, bundle certification, HF dataset split governance, public claims policy, security hardening, packaging hardening, versioning, and publication surfaces.
+
+Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
+
+Packaging gate: keep Python package, TypeScript SDK, FastAPI service, benchmark/eval tooling, docs, and cards separated with `python scripts/validate_packaging_hardening.py --require-existing-artifacts`. The current Python distribution remains `aana-eval-pipeline`; any future rename needs a documented migration window and compatibility plan.
 
 ## Result Shape
 
@@ -167,7 +283,25 @@ Check an AI-agent event before the agent acts:
 ```powershell
 aana validate-event --event examples/agent_event_support_reply.json
 aana agent-check --event examples/agent_event_support_reply.json
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+aana evidence-pack --require-existing-artifacts
 ```
+
+The agent and tool-check outputs include `architecture_decision`: route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
+
+Wrap tools with AANA when integrating agents:
+
+```python
+guarded = aana.wrap_agent_tool(send_email)
+```
+
+The wrapper infers common reads/writes, gates every call, stores the latest
+decision on `guarded.aana_last_gate`, and executes only when AANA returns
+`accept`. Add metadata for confirmed writes, private reads, or domain-specific
+evidence.
+
+The integration pattern is `agent proposes -> AANA checks -> agent executes only if allowed`. See [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md) and the runnable examples in [examples/integrations](examples/integrations).
+For the smallest copy-paste example, use the [Agent Action Contract Quickstart](docs/agent-action-contract-quickstart.md).
 
 Use event-file checks only from a trusted local AANA install or reviewed repository checkout. For standalone agent skills, prefer an approved in-memory tool/API connector, keep review payloads redacted, and do not ask the agent to infer or execute local script paths.
 
