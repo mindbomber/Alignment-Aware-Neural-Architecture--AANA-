@@ -86,6 +86,7 @@ aana-validate-adapter-generalization = "scripts.validate_adapter_generalization:
 aana-validate-security-hardening = "scripts.validate_security_hardening:main"
 aana-validate-packaging-hardening = "scripts.validate_packaging_hardening:main"
 aana-validate-adapter-layout = "scripts.validate_adapter_layout:main"
+aana-validate-platform = "scripts.validate_aana_platform:main"
 
 [tool.setuptools.packages.find]
 include = ["aana*", "eval_pipeline*", "scripts*"]

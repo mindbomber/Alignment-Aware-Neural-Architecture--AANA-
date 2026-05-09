@@ -131,12 +131,13 @@ python scripts/aana_mcp_server.py --list-tools
 python examples/chatgpt_app/aana_mcp_app.py
 python evals/aana_controlled_agents/run_local.py
 python scripts/validate_agent_integrations.py
+python scripts/validate_aana_platform.py
 aana evidence-pack --require-existing-artifacts
 aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
 ```
 
-This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, a pre-tool-call gate, the MCP-style `aana_pre_tool_check` surface, the OpenAI/FastAPI/MCP integration validator, the evidence pack, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, `/tool-precheck`, and `/openapi.json`.
+This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, a pre-tool-call gate, the MCP-style `aana_pre_tool_check` surface, the OpenAI/FastAPI/MCP integration validator, the platform harmony gate, the evidence pack, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, `/tool-precheck`, and `/openapi.json`.
 
 Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
 
@@ -152,6 +153,8 @@ Adapter generalization gate: general adapters must use config-backed domain/tool
 Adapter family layout: technical verifier/control families live under `aana/adapters/` (`privacy_pii`, `grounded_qa`, `agent_tool_use`, `governance_compliance`, `security_devops`, and `domain_risk`). Product bundles live under `aana/bundles/` (`enterprise`, `personal_productivity`, and `government_civic`) and declare which adapter families they use. Validate split isolation and bundle references with `python scripts/validate_adapter_layout.py`.
 
 Bundle ID policy: `government_civic` is the canonical product-bundle ID. `civic_government` remains a backward-compatible alias for older starter-pilot-kit paths and commands.
+
+Platform harmony gate: run `python scripts/validate_aana_platform.py` to validate that contracts, adapter/bundle layout, HF dataset governance, adapter evals, agent integrations, public-claim boundaries, security hardening, packaging hardening, versioning, and publication surfaces still agree with the standard AANA architecture.
 
 Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
 
