@@ -23,6 +23,7 @@ from eval_pipeline import (
     civic_family,
     common,
     contract_freeze,
+    bundle_certification,
     enterprise_family,
     evidence_integrations,
     personal_family,
@@ -73,6 +74,7 @@ READ_FILE_ARGS_BY_COMMAND = {
     "audit-verify": ["manifest"],
     "production-preflight": ["deployment_manifest", "evidence_registry", "observability_policy"],
     "pilot-certify": ["gallery", "evidence_registry"],
+    "certify-bundle": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "enterprise-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "personal-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
     "civic-certify": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
@@ -388,6 +390,15 @@ def cli_command_matrix():
             "writes": [],
             "dry_run": False,
             "example": "python scripts/aana_cli.py pilot-certify --evidence-registry examples/evidence_registry.json --json",
+        },
+        {
+            "command": "certify-bundle",
+            "category": "readiness",
+            "json_output": True,
+            "reads": ["bundle_id", "--gallery", "--evidence-registry", "--mock-fixtures", "--certification-policy"],
+            "writes": [],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py certify-bundle enterprise --json",
         },
         {
             "command": "enterprise-certify",
@@ -1389,6 +1400,36 @@ def command_pilot_certify(args):
         )
         for gate in surface["gates"]:
             print(f"  - {gate['id']}: {gate['status']} ({gate['score']}/{gate['weight']}) - {gate['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_certify_bundle(args):
+    report = bundle_certification.certify_bundle_report(
+        args.bundle_id,
+        gallery_path=args.gallery,
+        evidence_registry_path=args.evidence_registry,
+        mock_fixtures_path=args.mock_fixtures,
+        certification_policy_path=args.certification_policy,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    status = "pass" if report["valid"] else "fail"
+    print(
+        f"AANA bundle certification ({report['bundle_id']}): "
+        f"{status} - {summary['score_percent']}/100 "
+        f"({summary['readiness_level']}, {summary['surfaces']} surface(s), {summary['failures']} failure(s))."
+    )
+    print("Required bundle declarations:")
+    print(f"- core_adapter_ids: {len(report['manifest']['core_adapter_ids'])}")
+    print(f"- required_evidence_connectors: {len(report['manifest']['required_evidence_connectors'])}")
+    print(f"- human_review_required_for: {len(report['manifest']['human_review_required_for'])}")
+    print(f"- minimum_validation: {'present' if report['manifest']['minimum_validation'] else 'missing'}")
+    for surface in report["surfaces"]:
+        print(f"- {surface['surface_id']}: {surface['status']} {surface['score_percent']}/100")
+        for check in surface.get("checks", []):
+            print(f"  - {check['id']}: {check['status']} - {check['message']}")
     return 0 if report["valid"] else 1
 
 
@@ -2468,6 +2509,34 @@ def build_parser():
     pilot_certify_parser.add_argument("--evidence-registry", default=str(ROOT / "examples" / "evidence_registry.json"), help="Evidence registry JSON.")
     pilot_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     pilot_certify_parser.set_defaults(func=command_pilot_certify)
+
+    bundle_certify_parser = subparsers.add_parser(
+        "certify-bundle",
+        help="Certify one AANA product bundle manifest, connector requirements, human-review gates, and family surfaces.",
+    )
+    bundle_certify_parser.add_argument(
+        "bundle_id",
+        choices=bundle_certification.certification_target_choices(),
+        help="Bundle to certify.",
+    )
+    bundle_certify_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    bundle_certify_parser.add_argument(
+        "--evidence-registry",
+        default=str(ROOT / "examples" / "evidence_registry.json"),
+        help="Evidence registry JSON.",
+    )
+    bundle_certify_parser.add_argument(
+        "--mock-fixtures",
+        default=str(ROOT / "examples" / "evidence_mock_connector_fixtures.json"),
+        help="Evidence mock connector fixtures JSON.",
+    )
+    bundle_certify_parser.add_argument(
+        "--certification-policy",
+        default=None,
+        help="Optional bundle certification policy JSON. Defaults to the policy for the selected bundle.",
+    )
+    bundle_certify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    bundle_certify_parser.set_defaults(func=command_certify_bundle)
 
     enterprise_certify_parser = subparsers.add_parser(
         "enterprise-certify",

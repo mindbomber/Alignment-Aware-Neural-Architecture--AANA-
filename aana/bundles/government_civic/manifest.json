@@ -42,6 +42,9 @@
     "benefits_claims",
     "civic_source_registry"
   ],
+  "evidence_connector_aliases": {
+    "case_ticket_history": "civic_case_history"
+  },
   "human_review_required_for": [
     "eligibility determinations",
     "benefits decisions",

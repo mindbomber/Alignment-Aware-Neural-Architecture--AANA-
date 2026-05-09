@@ -17,7 +17,9 @@ def _bundle_manifest():
 
 
 def _connector_map(bundle):
-    return {connector: connector for connector in bundle.get("required_evidence_connectors", [])}
+    connectors = {connector: connector for connector in bundle.get("required_evidence_connectors", [])}
+    connectors.update(bundle.get("evidence_connector_aliases", {}))
+    return connectors
 
 
 ENTERPRISE_CORE_ADAPTERS = tuple(_bundle_manifest().get("core_adapter_ids", []))

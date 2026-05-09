@@ -45,6 +45,9 @@
     "billing",
     "data_export"
   ],
+  "evidence_connector_aliases": {
+    "data_warehouse_export": "data_export"
+  },
   "human_review_required_for": [
     "privileged access changes",
     "production deployments",
