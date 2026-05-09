@@ -1,0 +1,47 @@
+import unittest
+
+from aana.adapter_layout import validate_adapter_layout
+from aana.adapters import FAMILY_IDS, load_adapter_families
+from aana.bundles import BUNDLE_IDS, load_bundles
+
+
+class AdapterLayoutTests(unittest.TestCase):
+    def test_adapter_families_match_public_layout(self):
+        families = load_adapter_families()
+        self.assertEqual(set(families), set(FAMILY_IDS))
+        self.assertEqual(
+            set(FAMILY_IDS),
+            {
+                "privacy_pii",
+                "grounded_qa",
+                "agent_tool_use",
+                "governance_compliance",
+                "security_devops",
+                "domain_risk",
+            },
+        )
+        for family in families.values():
+            self.assertEqual(family["family_type"], "technical_adapter")
+            self.assertTrue(family["primary_metrics"])
+            self.assertIn("claim_boundary", family)
+
+    def test_product_bundles_reference_existing_adapter_families(self):
+        families = load_adapter_families()
+        bundles = load_bundles()
+        self.assertEqual(set(bundles), set(BUNDLE_IDS))
+        self.assertEqual(set(BUNDLE_IDS), {"enterprise", "personal_productivity", "government_civic"})
+        for bundle in bundles.values():
+            self.assertEqual(bundle["bundle_type"], "product_bundle")
+            self.assertTrue(set(bundle["adapter_families"]).issubset(families))
+            self.assertIn("Never tune and claim on the same", bundle["required_split_rule"])
+
+    def test_split_isolation_is_enforced(self):
+        report = validate_adapter_layout()
+        self.assertTrue(report["valid"], report)
+        issue_codes = {issue["code"] for issue in report["issues"]}
+        self.assertNotIn("same_split_for_tuning_and_public_claims", issue_codes)
+        self.assertNotIn("same_split_for_tuning_and_heldout_validation", issue_codes)
+
+
+if __name__ == "__main__":
+    unittest.main()

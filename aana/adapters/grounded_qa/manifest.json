@@ -1,0 +1,34 @@
+{
+  "family_id": "grounded_qa",
+  "family_type": "technical_adapter",
+  "purpose": "Check whether answers are supported, unsupported, unanswerable, missing citations, or require retrieval/defer.",
+  "routes": ["accept", "revise", "retrieve", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "unsupported_claim_recall",
+    "answerable_safe_allow_rate",
+    "citation_evidence_coverage",
+    "over_refusal_rate",
+    "route_accuracy"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+      "calibration": ["20k_subset/train"],
+      "heldout_validation": ["20k_subset/test"],
+      "external_reporting": ["full/test"]
+    },
+    {
+      "dataset_name": "PatronusAI/HaluBench",
+      "calibration": [],
+      "heldout_validation": ["default/test"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "RAGTruth-style schema",
+      "calibration": [],
+      "heldout_validation": [],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports groundedness, citation, unsupported-claim, and unanswerable-routing claims; RAGTruth-style fixtures are schema-only until a registered public split is added."
+}

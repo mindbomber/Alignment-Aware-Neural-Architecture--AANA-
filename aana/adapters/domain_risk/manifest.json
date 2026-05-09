@@ -1,0 +1,28 @@
+{
+  "family_id": "domain_risk",
+  "family_type": "technical_adapter",
+  "purpose": "Apply domain-specific risk boundaries for finance, legal, medical/pharma, HR, education, support, retail, and civic workflows.",
+  "routes": ["accept", "revise", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "domain_unsafe_recall",
+    "safe_allow_rate",
+    "false_positive_rate",
+    "route_accuracy",
+    "human_escalation_quality"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "calibration": ["default/train"],
+      "heldout_validation": ["default/test"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "PatronusAI/HaluBench",
+      "calibration": [],
+      "heldout_validation": ["default/test"],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports domain-risk routing only within validated adapter scopes; regulated advice or approval workflows require human/domain-owner review."
+}

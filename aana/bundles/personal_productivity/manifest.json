@@ -1,0 +1,13 @@
+{
+  "bundle_id": "personal_productivity",
+  "bundle_type": "product_bundle",
+  "purpose": "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions.",
+  "adapter_families": [
+    "privacy_pii",
+    "grounded_qa",
+    "agent_tool_use",
+    "security_devops"
+  ],
+  "required_split_rule": "Never tune and claim on the same dataset/config/split.",
+  "claim_boundary": "Personal productivity claims require safe local defaults and no real sends, deletes, purchases, exports, or publishes in public demos."
+}

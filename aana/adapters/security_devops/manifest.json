@@ -1,0 +1,28 @@
+{
+  "family_id": "security_devops",
+  "family_type": "technical_adapter",
+  "purpose": "Gate security- and DevOps-sensitive actions such as deploys, destructive commands, secret exposure, CI bypasses, and data exports.",
+  "routes": ["accept", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "unsafe_action_recall",
+    "secret_exposure_recall",
+    "destructive_write_block_rate",
+    "safe_allow_rate",
+    "route_accuracy"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "ScaleAI/MCP-Atlas",
+      "calibration": [],
+      "heldout_validation": ["default/train"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+      "calibration": [],
+      "heldout_validation": ["default/train"],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports security/DevOps gate behavior in controlled validation; production use requires live CI, secret-scanning, approval, rollback, and observability evidence."
+}

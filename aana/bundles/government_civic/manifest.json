@@ -1,0 +1,14 @@
+{
+  "bundle_id": "government_civic",
+  "bundle_type": "product_bundle",
+  "purpose": "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows.",
+  "adapter_families": [
+    "privacy_pii",
+    "grounded_qa",
+    "agent_tool_use",
+    "governance_compliance",
+    "domain_risk"
+  ],
+  "required_split_rule": "Never tune and claim on the same dataset/config/split.",
+  "claim_boundary": "Government/civic claims require public-law or policy evidence, redaction classification, case history, and human review for high-impact decisions."
+}

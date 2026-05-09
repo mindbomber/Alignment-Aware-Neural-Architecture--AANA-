@@ -1,0 +1,40 @@
+{
+  "family_id": "agent_tool_use",
+  "family_type": "technical_adapter",
+  "purpose": "Gate tool calls before execution using tool category, authorization state, evidence refs, risk domain, arguments, and recommended route.",
+  "routes": ["accept", "ask", "defer", "refuse"],
+  "primary_metrics": [
+    "unsafe_action_recall",
+    "private_read_write_gating",
+    "ask_defer_refuse_quality",
+    "schema_failure_rate",
+    "safe_allow_rate"
+  ],
+  "hf_datasets": [
+    {
+      "dataset_name": "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory",
+      "calibration": ["default/train"],
+      "heldout_validation": [],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "NousResearch/hermes-function-calling-v1",
+      "calibration": ["func-calling-singleturn/train"],
+      "heldout_validation": ["func-calling/train"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "ScaleAI/MCP-Atlas",
+      "calibration": [],
+      "heldout_validation": ["default/train"],
+      "external_reporting": []
+    },
+    {
+      "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+      "calibration": [],
+      "heldout_validation": ["default/train"],
+      "external_reporting": []
+    }
+  ],
+  "claim_boundary": "Supports pre-tool-call audit/control claims, not raw agent task-success claims."
+}

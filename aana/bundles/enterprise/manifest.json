@@ -1,0 +1,15 @@
+{
+  "bundle_id": "enterprise",
+  "bundle_type": "product_bundle",
+  "purpose": "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control.",
+  "adapter_families": [
+    "privacy_pii",
+    "grounded_qa",
+    "agent_tool_use",
+    "governance_compliance",
+    "security_devops",
+    "domain_risk"
+  ],
+  "required_split_rule": "Never tune and claim on the same dataset/config/split.",
+  "claim_boundary": "Enterprise bundle claims inherit only the held-out evidence of its referenced adapter families."
+}
