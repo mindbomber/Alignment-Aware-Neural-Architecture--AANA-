@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1",
+  "banking": {
+    "policy_markers": [
+      "rho-bank"
+    ],
+    "subscription_terms": [
+      "rho-bank+ subscription",
+      "rho bank+ subscription"
+    ],
+    "identity_trigger_terms": [
+      "change the email",
+      "change my email",
+      "bypass code",
+      "human agent",
+      "verify my identity",
+      "account balance"
+    ],
+    "system_prompt_guidance": "For configured banking product recommendation tasks, compare the configured product policy documents before recommending a product. Use the user's stated subscription status, annual-income context, spend, fee tolerance, and rewards preference. Do not try to verify the user's actual credit score or profile for a general recommendation; state the published minimum score if relevant and let the user apply with their own user tool.",
+    "card_policy_query": "personal credit card comparison Gold Rewards Card Platinum Rewards Card Silver Rewards Card Bronze Rewards Card cash back annual fee Rho-Bank+ subscription monthly spend eligibility apply",
+    "card_planner_instruction": "Banking credit-card recommendation planner:\n- Use the retrieved personal card policy evidence, not account/profile lookup, for general product advice.\n- Ask only for user facts needed to compare configured cards: subscription status, annual-fee tolerance, annual income, and expected monthly spend.\n- Do not verify a user's actual credit score or profile unless they request an account-specific action; state published eligibility terms instead.\n- Once the best configured card is clear, name one card directly so the user can apply with their discoverable user tool.",
+    "identity_planner_instruction": "Banking identity/change workflow planner:\n- For account-specific reads or writes, verify two matching identity factors from date of birth, email, phone, or address before continuing.\n- If a customer-provided email does not match the located account and the user cannot provide enough additional factors, treat it as an account ownership dispute and transfer to a human with reason account_ownership_dispute.\n- Do not perform account email changes for mismatched-email disputes unless a documented recovery workflow has been retrieved and exactly matched.\n- If a customer presents a special support or bypass code, search policy for the recovery-code workflow before accepting or rejecting it.",
+    "card_profiles": {
+      "Gold Rewards Card": {
+        "annual_fee": 0,
+        "cash_back_rank": 4,
+        "requires_subscription": true,
+        "foreign_travel_rank": 1,
+        "purchase_protection_rank": 1,
+        "large_credit_limit_rank": 1
+      },
+      "Platinum Rewards Card": {
+        "annual_fee": 95,
+        "cash_back_rank": 5,
+        "requires_subscription": false,
+        "foreign_travel_rank": 2,
+        "purchase_protection_rank": 3,
+        "large_credit_limit_rank": 3
+      },
+      "Silver Rewards Card": {
+        "annual_fee": 0,
+        "cash_back_rank": 3,
+        "requires_subscription": false,
+        "foreign_travel_rank": 5,
+        "purchase_protection_rank": 5,
+        "large_credit_limit_rank": 5
+      },
+      "Bronze Rewards Card": {
+        "annual_fee": 0,
+        "cash_back_rank": 1,
+        "requires_subscription": false,
+        "foreign_travel_rank": 1,
+        "purchase_protection_rank": 1,
+        "large_credit_limit_rank": 1
+      }
+    }
+  }
+}

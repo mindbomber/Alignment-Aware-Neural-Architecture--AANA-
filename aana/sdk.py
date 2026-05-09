@@ -17,6 +17,7 @@ from eval_pipeline import agent_api, agent_contract, workflow_contract
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
+PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable."
 TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
 TOOL_CATEGORIES = {"public_read", "private_read", "write", "unknown"}
 AUTHORIZATION_STATES = {"none", "user_claimed", "authenticated", "validated", "confirmed"}
@@ -289,6 +290,137 @@ def check_tool_precheck_v2(event=None, **kwargs):
     return gate_pre_tool_call_v2(payload)
 
 
+def _hard_blockers(result):
+    if not isinstance(result, dict):
+        return []
+    blockers = result.get("hard_blockers")
+    if not blockers and isinstance(result.get("aix"), dict):
+        blockers = result["aix"].get("hard_blockers")
+    return list(blockers or [])
+
+
+def _evidence_ref_ids(event):
+    if not isinstance(event, dict):
+        return []
+    refs = event.get("evidence_refs")
+    if isinstance(refs, list):
+        return [
+            str(ref.get("source_id") or ref.get("id") or ref.get("kind") or f"evidence_ref:{index}")
+            for index, ref in enumerate(refs, start=1)
+            if isinstance(ref, dict)
+        ]
+    evidence = event.get("available_evidence") or event.get("evidence") or []
+    if isinstance(evidence, str):
+        evidence = [evidence]
+    if not isinstance(evidence, list):
+        return []
+    output = []
+    for index, item in enumerate(evidence, start=1):
+        if isinstance(item, dict):
+            output.append(str(item.get("source_id") or item.get("raw_record_id") or f"evidence:{index}"))
+        elif isinstance(item, str) and item.strip():
+            output.append(f"evidence:{index}")
+    return output
+
+
+def _missing_evidence_markers(result):
+    blockers = _hard_blockers(result)
+    missing = [
+        blocker
+        for blocker in blockers
+        if any(marker in str(blocker) for marker in ("missing", "evidence", "authorization", "citation", "source"))
+    ]
+    for violation in (result.get("violations") if isinstance(result, dict) else []) or []:
+        if not isinstance(violation, dict):
+            continue
+        code = str(violation.get("code") or "")
+        message = str(violation.get("message") or "")
+        if any(marker in f"{code} {message}".lower() for marker in ("missing", "evidence", "authorization", "citation", "source", "unsupported")):
+            missing.append(code or message)
+    return list(dict.fromkeys(item for item in missing if item))
+
+
+def _correction_recovery_suggestion(route, result):
+    safe_response = result.get("safe_response") if isinstance(result, dict) else None
+    if route == "accept":
+        return "Execute only within the checked scope and append the audit-safe decision event."
+    if route == "revise":
+        return "Use the corrected safe response, then recheck before execution." if safe_response else "Revise the candidate against blockers, then recheck."
+    if route == "ask":
+        return "Ask the user or runtime for the missing authorization, confirmation, or evidence before execution."
+    if route == "defer":
+        return "Defer to stronger evidence retrieval, a domain owner, or human review before execution."
+    if route == "refuse":
+        return "Refuse the proposed action or answer because a hard blocker prevents safe execution."
+    return "Route is unknown; do not execute until a supported AANA route is produced."
+
+
+def architecture_decision(result, event=None, *, audit_record=None):
+    """Return the public AANA decision surface for agents and tool calls.
+
+    The envelope makes the architecture explicit: route, AIx, blockers,
+    evidence/authorization state, correction path, and audit-safe metadata.
+    """
+
+    result = result if isinstance(result, dict) else {}
+    event = event if isinstance(event, dict) else {}
+    aix = result.get("aix") if isinstance(result.get("aix"), dict) else {}
+    route = result.get("recommended_action") or aix.get("decision") or "defer"
+    audit_safe_log_event = audit_record or result.get("audit_summary") or {
+        "gate_decision": result.get("gate_decision"),
+        "recommended_action": route,
+        "aix": {
+            "score": aix.get("score"),
+            "decision": aix.get("decision"),
+            "hard_blockers": aix.get("hard_blockers", []),
+        },
+        "hard_blockers": _hard_blockers(result),
+    }
+    return {
+        "architecture_claim": PUBLIC_ARCHITECTURE_CLAIM,
+        "route": route,
+        "gate_decision": result.get("gate_decision"),
+        "candidate_gate": result.get("candidate_gate"),
+        "aix_score": aix.get("score"),
+        "aix_decision": aix.get("decision"),
+        "hard_blockers": _hard_blockers(result),
+        "evidence_refs": {
+            "used": _evidence_ref_ids(event),
+            "missing": _missing_evidence_markers(result),
+        },
+        "authorization_state": event.get("authorization_state")
+        or (event.get("metadata") or {}).get("authorization_state")
+        if isinstance(event.get("metadata"), dict)
+        else event.get("authorization_state") or "not_declared",
+        "tool_name": event.get("tool_name") or result.get("tool_name"),
+        "tool_category": event.get("tool_category") or result.get("tool_category"),
+        "risk_domain": event.get("risk_domain") or result.get("risk_domain"),
+        "correction_recovery_suggestion": _correction_recovery_suggestion(route, result),
+        "audit_safe_log_event": audit_safe_log_event,
+    }
+
+
+def with_architecture_decision(result, event=None, *, audit_record=None):
+    """Attach an architecture_decision envelope to a result dictionary."""
+
+    payload = dict(result or {})
+    payload["architecture_decision"] = architecture_decision(payload, event, audit_record=audit_record)
+    return payload
+
+
+def check_tool_call(event=None, **kwargs):
+    """Check a proposed tool call and return the architecture-shaped decision."""
+
+    payload = event or build_tool_precheck_event(**kwargs)
+    return with_architecture_decision(check_tool_precheck(payload), payload)
+
+
+def gate_action(event=None, **kwargs):
+    """Alias for `check_tool_call` for agent runtimes that gate actions."""
+
+    return check_tool_call(event, **kwargs)
+
+
 def should_execute_tool(result):
     """Return True only when the AANA pre-tool-call result allows execution."""
 
@@ -435,21 +567,28 @@ class AANAClient:
     def agent_check(self, event=None, **kwargs):
         payload = event or self.agent_event(**kwargs)
         if self.uses_bridge:
-            return self._post("/agent-check", payload, shadow_mode=self.shadow_mode)
+            return with_architecture_decision(self._post("/agent-check", payload, shadow_mode=self.shadow_mode), payload)
         result = agent_api.check_event(payload, gallery_path=self.gallery_path or agent_api.DEFAULT_GALLERY)
-        return agent_api.apply_shadow_mode(result) if self.shadow_mode else result
+        result = agent_api.apply_shadow_mode(result) if self.shadow_mode else result
+        return with_architecture_decision(result, payload)
 
     def tool_precheck(self, event=None, **kwargs):
         payload = event or self.tool_precheck_event(**kwargs)
         if self.uses_bridge:
-            return self._post("/tool-precheck", payload, shadow_mode=self.shadow_mode)
-        return check_tool_precheck(payload)
+            return with_architecture_decision(self._post("/tool-precheck", payload, shadow_mode=self.shadow_mode), payload)
+        return with_architecture_decision(check_tool_precheck(payload), payload)
 
     def tool_precheck_v2(self, event=None, **kwargs):
         payload = event or self.tool_precheck_event(**kwargs)
         if self.uses_bridge:
             raise AANAClientError("tool_precheck_v2 is currently available only in local in-process mode.")
-        return check_tool_precheck_v2(payload)
+        return with_architecture_decision(check_tool_precheck_v2(payload), payload)
+
+    def check_tool_call(self, event=None, **kwargs):
+        return self.tool_precheck(event, **kwargs)
+
+    def gate_action(self, event=None, **kwargs):
+        return self.check_tool_call(event, **kwargs)
 
     def workflow_batch(self, requests, batch_id=None):
         payload = {

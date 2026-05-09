@@ -1,0 +1,82 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "never_merge_probe_results_into_public_claims": true,
+    "require_scope_label": true,
+    "require_limitations_for_public_claims": true,
+    "allowed_scope_labels": [
+      "public_general_result",
+      "diagnostic_probe_only",
+      "engineering_smoke_only"
+    ]
+  },
+  "benchmark_reports": [
+    {
+      "report_id": "agent-action-head-to-head-external-traces",
+      "benchmark": "External agent-action trace comparison",
+      "run_type": "general",
+      "scope_label": "public_general_result",
+      "summary": "AANA is reported as a runtime action-gating architecture evaluated on externally sourced traces with policy-derived labels.",
+      "public_claim": true,
+      "public_claim_eligible": true,
+      "includes_probe_results": false,
+      "uses_allow_benchmark_probes": false,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Labels were policy-derived rather than benchmark-maintainer labels.",
+        "The result supports a narrow action-routing claim, not a broad alignment or production-certification claim."
+      ],
+      "artifacts": {
+        "primary_results": [
+          "docs/aana-agent-action-technical-report.md",
+          "docs/aana-benchmark-maintainer-review-protocol.md"
+        ],
+        "probe_results": []
+      }
+    },
+    {
+      "report_id": "tau2-diagnostic-probe-runs",
+      "benchmark": "tau2-bench diagnostic probe experiments",
+      "run_type": "diagnostic_probe",
+      "scope_label": "diagnostic_probe_only",
+      "summary": "Probe-enabled tau2 runs are engineering diagnostics for finding planner failure modes and are not public AANA performance claims.",
+      "public_claim": false,
+      "public_claim_eligible": false,
+      "includes_probe_results": true,
+      "uses_allow_benchmark_probes": true,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Probe planners may contain exact task literals or discovered recovery flows.",
+        "Probe metrics must not be merged into public AANA benchmark claims."
+      ],
+      "artifacts": {
+        "primary_results": [],
+        "probe_results": [
+          "examples/tau2/aana_tau2_probe_planners.py"
+        ]
+      }
+    },
+    {
+      "report_id": "tau2-general-scaffold-smoke",
+      "benchmark": "tau2-bench general scaffold smoke checks",
+      "run_type": "general",
+      "scope_label": "engineering_smoke_only",
+      "summary": "Default scaffold runs without benchmark probes can be used as engineering evidence, but small smoke tests are not leaderboard claims.",
+      "public_claim": false,
+      "public_claim_eligible": false,
+      "includes_probe_results": false,
+      "uses_allow_benchmark_probes": false,
+      "probe_results_policy": "excluded_from_public_claims",
+      "limitations": [
+        "Small smoke tests are useful for regression detection only.",
+        "Leaderboard or peer-review claims require maintainer-approved protocol and full reported artifacts."
+      ],
+      "artifacts": {
+        "primary_results": [
+          "examples/tau2/aana_contract_agent.py"
+        ],
+        "probe_results": []
+      }
+    }
+  ]
+}

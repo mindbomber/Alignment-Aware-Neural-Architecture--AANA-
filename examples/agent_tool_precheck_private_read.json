@@ -1,0 +1,23 @@
+{
+  "schema_version": "aana.agent_tool_precheck.v1",
+  "request_id": "demo-tool-precheck-001",
+  "agent_id": "demo-agent",
+  "tool_name": "get_recent_transactions",
+  "tool_category": "private_read",
+  "authorization_state": "authenticated",
+  "evidence_refs": [
+    {
+      "source_id": "auth.demo-session",
+      "kind": "auth_event",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "summary": "User authenticated for the account lookup."
+    }
+  ],
+  "risk_domain": "finance",
+  "proposed_arguments": {
+    "account_id": "acct_redacted",
+    "limit": 10
+  },
+  "recommended_route": "accept"
+}

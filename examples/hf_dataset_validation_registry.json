@@ -1,0 +1,279 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "purpose": "Use Hugging Face datasets to improve and validate AANA adapter families without turning public datasets into benchmark-fitting targets.",
+    "allowed_uses": [
+      "calibration",
+      "heldout_validation",
+      "external_reporting"
+    ],
+    "never_use_same_split_for_tuning_and_public_claims": true,
+    "public_claim_rule": "A dataset/config/split used for calibration or tuning cannot also support external_reporting claims.",
+    "adapter_claim_boundary": "Datasets may support auditability, control, verification, correction, privacy, groundedness, and routing claims before any raw agent-performance claim."
+  },
+  "implementation_tasks": [
+    {
+      "task": "Create a machine-readable HF dataset validation registry.",
+      "status": "completed"
+    },
+    {
+      "task": "Track dataset name, license, task type, split use, adapter family, and allowed use.",
+      "status": "completed"
+    },
+    {
+      "task": "Enforce split isolation so tuning/calibration splits cannot become public-claim splits.",
+      "status": "completed"
+    },
+    {
+      "task": "Add CLI and tests so the registry is part of repo governance.",
+      "status": "completed"
+    }
+  ],
+  "datasets": [
+    {
+      "dataset_name": "piimb/pii-masking-benchmark",
+      "license": "cc-by-nc-4.0",
+      "task_type": "privacy_pii_masking",
+      "adapter_families": [
+        "privacy",
+        "security",
+        "support",
+        "agent_tool_gate"
+      ],
+      "source_url": "https://huggingface.co/datasets/piimb/pii-masking-benchmark",
+      "split_uses": [
+        {
+          "config": "sentences",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "privacy",
+          "notes": "Use for PII recall, redaction routing, false positives, and safe allow rate."
+        },
+        {
+          "config": "full_text",
+          "split": "test",
+          "allowed_use": "external_reporting",
+          "split_purpose": "public_claim",
+          "adapter_family": "privacy",
+          "notes": "Use only for externally reported privacy-control claims; do not tune on this config/split."
+        }
+      ]
+    },
+    {
+      "dataset_name": "ai4privacy/pii-masking-openpii-1m",
+      "license": "other; dataset card describes CC-BY-4.0",
+      "task_type": "multilingual_privacy_pii_detection",
+      "adapter_families": [
+        "privacy",
+        "security",
+        "support"
+      ],
+      "source_url": "https://huggingface.co/datasets/ai4privacy/pii-masking-openpii-1m",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "train",
+          "allowed_use": "calibration",
+          "split_purpose": "tuning",
+          "adapter_family": "privacy",
+          "notes": "Use for multilingual PII detector calibration and entity taxonomy expansion only."
+        },
+        {
+          "config": "default",
+          "split": "validation",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "privacy",
+          "notes": "Use for held-out multilingual privacy validation after calibration."
+        }
+      ]
+    },
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "license": "cc-by-4.0",
+      "task_type": "pii_phi_detection",
+      "adapter_families": [
+        "privacy",
+        "medical",
+        "finance",
+        "legal"
+      ],
+      "source_url": "https://huggingface.co/datasets/nvidia/Nemotron-PII",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "train",
+          "allowed_use": "calibration",
+          "split_purpose": "tuning",
+          "adapter_family": "privacy",
+          "notes": "Use for domain/entity coverage expansion, especially PII/PHI-like text."
+        },
+        {
+          "config": "default",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "privacy",
+          "notes": "Use for privacy and regulated-domain held-out checks."
+        }
+      ]
+    },
+    {
+      "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+      "license": "cc-by-sa-4.0",
+      "task_type": "grounded_qa_unanswerable_detection",
+      "adapter_families": [
+        "research_grounding",
+        "support",
+        "education",
+        "legal",
+        "pharma"
+      ],
+      "source_url": "https://huggingface.co/datasets/NovachronoAI/RAG-Grounded-QA-188k",
+      "split_uses": [
+        {
+          "config": "20k_subset",
+          "split": "train",
+          "allowed_use": "calibration",
+          "split_purpose": "tuning",
+          "adapter_family": "research_grounding",
+          "notes": "Use for groundedness thresholds, unanswerable routing, and citation sufficiency calibration."
+        },
+        {
+          "config": "20k_subset",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "research_grounding",
+          "notes": "Use for held-out grounded QA validation."
+        },
+        {
+          "config": "full",
+          "split": "test",
+          "allowed_use": "external_reporting",
+          "split_purpose": "public_claim",
+          "adapter_family": "research_grounding",
+          "notes": "Use only for externally reported groundedness/control claims after no tuning on this split."
+        }
+      ]
+    },
+    {
+      "dataset_name": "PatronusAI/HaluBench",
+      "license": "cc-by-nc-2.0",
+      "task_type": "hallucination_detection",
+      "adapter_families": [
+        "research_grounding",
+        "support",
+        "medical",
+        "legal"
+      ],
+      "source_url": "https://huggingface.co/datasets/PatronusAI/HaluBench",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "research_grounding",
+          "notes": "Use for unsupported-claim recall and over-refusal measurement; license restricts commercial use."
+        }
+      ]
+    },
+    {
+      "dataset_name": "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory",
+      "license": "apache-2.0",
+      "task_type": "agent_tool_calling_trajectories",
+      "adapter_families": [
+        "agent_tool_gate",
+        "finance",
+        "retail",
+        "support"
+      ],
+      "source_url": "https://huggingface.co/datasets/zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "train",
+          "allowed_use": "calibration",
+          "split_purpose": "tuning",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use only for schema extraction and route calibration; do not use as public-claim evidence because only train is available."
+        }
+      ]
+    },
+    {
+      "dataset_name": "ScaleAI/MCP-Atlas",
+      "license": "cc-by-4.0",
+      "task_type": "mcp_tool_use_tasks",
+      "adapter_families": [
+        "agent_tool_gate",
+        "devops",
+        "research_grounding",
+        "file_operations"
+      ],
+      "source_url": "https://huggingface.co/datasets/ScaleAI/MCP-Atlas",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use as external task-level tool-use validation, not calibration, unless a separate split is created."
+        }
+      ]
+    },
+    {
+      "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+      "license": "cc-by-4.0",
+      "task_type": "mcp_agent_safety_traces",
+      "adapter_families": [
+        "agent_tool_gate",
+        "security",
+        "privacy",
+        "mcp"
+      ],
+      "source_url": "https://huggingface.co/datasets/lihaonan0716/mcphunt-agent-traces",
+      "split_uses": [
+        {
+          "config": "default",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use for cross-boundary data-propagation and MCP agent-safety validation; do not tune on this split before reporting validation."
+        }
+      ]
+    },
+    {
+      "dataset_name": "NousResearch/hermes-function-calling-v1",
+      "license": "apache-2.0",
+      "task_type": "function_calling_tool_use",
+      "adapter_families": [
+        "agent_tool_gate",
+        "devops",
+        "support"
+      ],
+      "source_url": "https://huggingface.co/datasets/NousResearch/hermes-function-calling-v1",
+      "split_uses": [
+        {
+          "config": "func-calling-singleturn",
+          "split": "train",
+          "allowed_use": "calibration",
+          "split_purpose": "tuning",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use for tool-call schema and argument-shape calibration only."
+        },
+        {
+          "config": "func-calling",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "split_purpose": "validation",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use a disjoint config for validation if single-turn was used for calibration."
+        }
+      ]
+    }
+  ]
+}

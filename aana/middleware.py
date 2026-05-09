@@ -6,7 +6,7 @@ import inspect
 from functools import wraps
 from typing import Any, Callable
 
-from aana.sdk import AANAClient, build_tool_precheck_event, check_tool_precheck, should_execute_tool, tool_evidence_ref
+from aana.sdk import AANAClient, build_tool_precheck_event, check_tool_call, should_execute_tool, tool_evidence_ref
 
 
 WRITE_PREFIXES = (
@@ -171,6 +171,7 @@ def gate_tool_call(
     agent_id: str | None = None,
     user_intent: str | None = None,
     raise_on_block: bool = True,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Run AANA before a framework executes a tool call."""
 
@@ -183,10 +184,42 @@ def gate_tool_call(
         agent_id=agent_id,
         user_intent=user_intent,
     )
-    result = client.tool_precheck(event) if client else check_tool_precheck(event)
-    if raise_on_block and not should_execute_tool(result):
+    result = client.tool_precheck(event) if client else check_tool_call(event)
+    gate = {"event": event, "result": result, "allowed": should_execute_tool(result)}
+    if on_decision:
+        on_decision(gate)
+    if raise_on_block and not gate["allowed"]:
         raise AANAToolExecutionBlocked(result, event)
-    return {"event": event, "result": result, "allowed": should_execute_tool(result)}
+    return gate
+
+
+def execute_tool_if_allowed(
+    tool: Callable[..., Any],
+    *,
+    tool_name: str | None = None,
+    arguments: dict[str, Any] | None = None,
+    client: AANAClient | None = None,
+    metadata: dict[str, Any] | None = None,
+    evidence_refs: list[dict[str, Any]] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """Gate one proposed tool call, execute only if allowed, and return both outputs."""
+
+    name = tool_name or getattr(tool, "__name__", "unknown_tool")
+    call_args = dict(arguments or {})
+    gate = gate_tool_call(
+        tool_name=name,
+        arguments=call_args,
+        client=client,
+        metadata=metadata,
+        evidence_refs=evidence_refs,
+        on_decision=on_decision,
+    )
+    return {
+        "aana": gate["result"].get("architecture_decision", gate["result"]),
+        "gate": gate,
+        "tool_result": _call_with_arguments(tool, call_args),
+    }
 
 
 def _call_with_arguments(func: Callable[..., Any], arguments: dict[str, Any]) -> Any:
@@ -202,6 +235,8 @@ def guard_tool_function(
     tool_name: str | None = None,
     client: AANAClient | None = None,
     metadata: dict[str, Any] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+    raise_on_block: bool = True,
 ) -> Callable[..., Any]:
     """Wrap a plain sync or async Python tool function with AANA."""
 
@@ -212,21 +247,57 @@ def guard_tool_function(
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             arguments = dict(kwargs) if kwargs else {"args": list(args)}
-            gate_tool_call(tool_name=name, arguments=arguments, client=client, metadata=metadata)
+            gate = gate_tool_call(tool_name=name, arguments=arguments, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            async_wrapper.aana_last_gate = gate
+            if not gate["allowed"]:
+                return gate
             return await func(*args, **kwargs)
 
+        async_wrapper.aana_last_gate = None
         return async_wrapper
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         arguments = dict(kwargs) if kwargs else {"args": list(args)}
-        gate_tool_call(tool_name=name, arguments=arguments, client=client, metadata=metadata)
+        gate = gate_tool_call(tool_name=name, arguments=arguments, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+        wrapper.aana_last_gate = gate
+        if not gate["allowed"]:
+            return gate
         return func(*args, **kwargs)
 
+    wrapper.aana_last_gate = None
     return wrapper
 
 
-def langchain_tool_middleware(tool: Any, *, client: AANAClient | None = None, metadata: dict[str, Any] | None = None) -> Any:
+def wrap_agent_tool(
+    tool: Callable[..., Any],
+    *,
+    tool_name: str | None = None,
+    client: AANAClient | None = None,
+    metadata: dict[str, Any] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+    raise_on_block: bool = True,
+) -> Callable[..., Any]:
+    """Plain Python SDK alias for the core agent pattern: propose, gate, execute."""
+
+    return guard_tool_function(
+        tool,
+        tool_name=tool_name,
+        client=client,
+        metadata=metadata,
+        on_decision=on_decision,
+        raise_on_block=raise_on_block,
+    )
+
+
+def langchain_tool_middleware(
+    tool: Any,
+    *,
+    client: AANAClient | None = None,
+    metadata: dict[str, Any] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+    raise_on_block: bool = True,
+) -> Any:
     """Return a LangChain-compatible guarded tool proxy.
 
     Supports common `invoke`, `ainvoke`, `run`, `arun`, and plain-call tool
@@ -240,27 +311,36 @@ def langchain_tool_middleware(tool: Any, *, client: AANAClient | None = None, me
             self.wrapped = wrapped
             self.name = name
             self.description = getattr(wrapped, "description", None)
+            self.aana_last_gate = None
 
         def invoke(self, input: Any, *args: Any, **kwargs: Any) -> Any:
             call_args = input if isinstance(input, dict) else {"input": input}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             return self.wrapped.invoke(input, *args, **kwargs) if hasattr(self.wrapped, "invoke") else _call_with_arguments(self.wrapped, call_args)
 
         async def ainvoke(self, input: Any, *args: Any, **kwargs: Any) -> Any:
             call_args = input if isinstance(input, dict) else {"input": input}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             if hasattr(self.wrapped, "ainvoke"):
                 return await self.wrapped.ainvoke(input, *args, **kwargs)
             return self.invoke(input, *args, **kwargs)
 
         def run(self, *args: Any, **kwargs: Any) -> Any:
             call_args = dict(kwargs) if kwargs else {"args": list(args)}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             return self.wrapped.run(*args, **kwargs) if hasattr(self.wrapped, "run") else self.wrapped(*args, **kwargs)
 
         async def arun(self, *args: Any, **kwargs: Any) -> Any:
             call_args = dict(kwargs) if kwargs else {"args": list(args)}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             if hasattr(self.wrapped, "arun"):
                 return await self.wrapped.arun(*args, **kwargs)
             return self.run(*args, **kwargs)
@@ -275,7 +355,14 @@ def openai_agents_tool_middleware(func: Callable[..., Any] | None = None, **opti
     """Decorator for OpenAI Agents SDK tool functions."""
 
     def decorate(target: Callable[..., Any]) -> Callable[..., Any]:
-        return guard_tool_function(target, tool_name=options.get("tool_name"), client=options.get("client"), metadata=options.get("metadata"))
+        return guard_tool_function(
+            target,
+            tool_name=options.get("tool_name"),
+            client=options.get("client"),
+            metadata=options.get("metadata"),
+            on_decision=options.get("on_decision"),
+            raise_on_block=options.get("raise_on_block", True),
+        )
 
     return decorate(func) if func is not None else decorate
 
@@ -286,11 +373,18 @@ def autogen_tool_middleware(func: Callable[..., Any] | None = None, **options: A
     return openai_agents_tool_middleware(func, **options)
 
 
-def crewai_tool_middleware(tool: Any, *, client: AANAClient | None = None, metadata: dict[str, Any] | None = None) -> Any:
+def crewai_tool_middleware(
+    tool: Any,
+    *,
+    client: AANAClient | None = None,
+    metadata: dict[str, Any] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+    raise_on_block: bool = True,
+) -> Any:
     """Wrap a CrewAI BaseTool-like object or plain function."""
 
     if callable(tool) and not hasattr(tool, "_run"):
-        return guard_tool_function(tool, tool_name=getattr(tool, "__name__", "crewai_tool"), client=client, metadata=metadata)
+        return guard_tool_function(tool, tool_name=getattr(tool, "__name__", "crewai_tool"), client=client, metadata=metadata, on_decision=on_decision, raise_on_block=raise_on_block)
 
     name = getattr(tool, "name", None) or tool.__class__.__name__
 
@@ -299,15 +393,20 @@ def crewai_tool_middleware(tool: Any, *, client: AANAClient | None = None, metad
             self.wrapped = wrapped
             self.name = name
             self.description = getattr(wrapped, "description", None)
+            self.aana_last_gate = None
 
         def _run(self, *args: Any, **kwargs: Any) -> Any:
             call_args = dict(kwargs) if kwargs else {"args": list(args)}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             return self.wrapped._run(*args, **kwargs)
 
         async def _arun(self, *args: Any, **kwargs: Any) -> Any:
             call_args = dict(kwargs) if kwargs else {"args": list(args)}
-            gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata)
+            self.aana_last_gate = gate_tool_call(tool_name=self.name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            if not self.aana_last_gate["allowed"]:
+                return self.aana_last_gate
             if hasattr(self.wrapped, "_arun"):
                 return await self.wrapped._arun(*args, **kwargs)
             return self._run(*args, **kwargs)
@@ -315,7 +414,15 @@ def crewai_tool_middleware(tool: Any, *, client: AANAClient | None = None, metad
     return GuardedCrewAITool(tool)
 
 
-def mcp_tool_middleware(handler: Callable[..., Any], *, tool_name: str | None = None, client: AANAClient | None = None, metadata: dict[str, Any] | None = None) -> Callable[..., Any]:
+def mcp_tool_middleware(
+    handler: Callable[..., Any],
+    *,
+    tool_name: str | None = None,
+    client: AANAClient | None = None,
+    metadata: dict[str, Any] | None = None,
+    on_decision: Callable[[dict[str, Any]], None] | None = None,
+    raise_on_block: bool = True,
+) -> Callable[..., Any]:
     """Wrap an MCP tool-call handler.
 
     The wrapper accepts either `(arguments)` or keyword arguments, gates them,
@@ -329,17 +436,25 @@ def mcp_tool_middleware(handler: Callable[..., Any], *, tool_name: str | None = 
         @wraps(handler)
         async def async_mcp_wrapper(arguments: dict[str, Any] | None = None, **kwargs: Any) -> Any:
             call_args = dict(arguments or kwargs or {})
-            gate_tool_call(tool_name=name, arguments=call_args, client=client, metadata=metadata)
+            gate = gate_tool_call(tool_name=name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+            async_mcp_wrapper.aana_last_gate = gate
+            if not gate["allowed"]:
+                return gate
             return await handler(arguments) if arguments is not None and not kwargs else await handler(**kwargs)
 
+        async_mcp_wrapper.aana_last_gate = None
         return async_mcp_wrapper
 
     @wraps(handler)
     def mcp_wrapper(arguments: dict[str, Any] | None = None, **kwargs: Any) -> Any:
         call_args = dict(arguments or kwargs or {})
-        gate_tool_call(tool_name=name, arguments=call_args, client=client, metadata=metadata)
+        gate = gate_tool_call(tool_name=name, arguments=call_args, client=client, metadata=metadata, raise_on_block=raise_on_block, on_decision=on_decision)
+        mcp_wrapper.aana_last_gate = gate
+        if not gate["allowed"]:
+            return gate
         return handler(arguments) if arguments is not None and not kwargs else handler(**kwargs)
 
+    mcp_wrapper.aana_last_gate = None
     return mcp_wrapper
 
 
@@ -350,9 +465,11 @@ __all__ = [
     "crewai_tool_middleware",
     "gate_tool_call",
     "guard_tool_function",
+    "execute_tool_if_allowed",
     "infer_risk_domain",
     "infer_tool_category",
     "langchain_tool_middleware",
     "mcp_tool_middleware",
     "openai_agents_tool_middleware",
+    "wrap_agent_tool",
 ]

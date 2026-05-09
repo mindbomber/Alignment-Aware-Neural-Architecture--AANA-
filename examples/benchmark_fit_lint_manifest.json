@@ -1,0 +1,64 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "decision_rule": "reject_answer_known_benchmark_fits_from_general_path",
+    "scan_include": [
+      "examples/*_adapter.json",
+      "examples/starter_pilot_kits/*/adapter_config.json",
+      "examples/tau2/*.py",
+      "eval_pipeline/adapter_runner/**/*.py",
+      "scripts/aana_*_eval.py"
+    ],
+    "required_adapter_family_surfaces": [
+      "examples/*_adapter.json",
+      "examples/starter_pilot_kits/*/adapter_config.json",
+      "examples/tau2/*.py",
+      "eval_pipeline/adapter_runner/**/*.py"
+    ],
+    "allowed_literal_paths": [
+      "examples/tau2/aana_tau2_probe_planners.py",
+      "examples/tau2/aana_tau2_adapter_config.json",
+      "tests/**",
+      "docs/**",
+      "examples/*manifest*.json",
+      "examples/adapter_heldout_validation.json",
+      "examples/benchmark_reporting_manifest.json"
+    ],
+    "allowed_reason": "Benchmark literals may exist only in diagnostic probes, adapter config, tests, docs, expected outputs, or reporting manifests."
+  },
+  "forbidden_literal_groups": [
+    {
+      "id": "tau2_retail_known_entities",
+      "description": "Retail task entities that must not appear in the general tau2 scaffold.",
+      "literals": [
+        "#W2378156",
+        "#W6390527",
+        "#W6247578",
+        "#W9711842",
+        "#W4776164",
+        "#W6679257",
+        "yusuf_rossi",
+        "mei_kovacs",
+        "credit_card_9513926",
+        "paypal_7644869",
+        "8384507844",
+        "7453605304",
+        "7624783998",
+        "9523456873"
+      ]
+    },
+    {
+      "id": "tau2_banking_bypass_probe",
+      "description": "Exact banking bypass probe literals that belong only in diagnostic probe files.",
+      "literals": [
+        "BANKING_BYPASS_CODE",
+        "BANKING_BYPASS_QUERY",
+        "_banking_bypass_step",
+        "9K2X7M4P1N8Q3R5T6A",
+        "kenji.tanaka@gmail.com",
+        "kenji.tanaka@outlook.com",
+        "6680a37184"
+      ]
+    }
+  ]
+}

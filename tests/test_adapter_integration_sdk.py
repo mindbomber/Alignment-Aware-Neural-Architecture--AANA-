@@ -119,11 +119,39 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
 
         validation = aana.validate_tool_precheck_event(event)
         result = aana.check_tool_precheck(event)
+        decision = aana.check_tool_call(event)
 
         self.assertEqual(validation, [])
         self.assertEqual(event["schema_version"], aana.TOOL_PRECHECK_SCHEMA_VERSION)
         self.assertEqual(result["gate_decision"], "pass")
+        self.assertEqual(decision["architecture_decision"]["route"], "accept")
+        self.assertEqual(decision["architecture_decision"]["authorization_state"], "authenticated")
+        self.assertEqual(decision["architecture_decision"]["evidence_refs"]["used"], ["auth.email.lookup"])
         self.assertTrue(aana.should_execute_tool(result))
+
+    def test_python_sdk_gate_action_alias_returns_architecture_decision(self):
+        result = aana.gate_action(
+            tool_name="send_refund",
+            tool_category="write",
+            authorization_state="validated",
+            evidence_refs=[
+                aana.tool_evidence_ref(
+                    source_id="policy.refund",
+                    kind="policy",
+                    trust_tier="verified",
+                    redaction_status="public",
+                    summary="Refund policy is present, but confirmation is missing.",
+                )
+            ],
+            risk_domain="commerce",
+            proposed_arguments={"order_id": "order_redacted"},
+            recommended_route="accept",
+        )
+
+        self.assertEqual(result["recommended_action"], "ask")
+        self.assertEqual(result["architecture_decision"]["route"], "ask")
+        self.assertIn("write_missing_explicit_confirmation", result["architecture_decision"]["hard_blockers"])
+        self.assertIn("Ask the user", result["architecture_decision"]["correction_recovery_suggestion"])
 
     def test_python_sdk_tool_precheck_blocks_missing_authorization_evidence(self):
         client = aana.AANAClient()
@@ -147,6 +175,8 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
 
         self.assertEqual(result["recommended_action"], "defer")
         self.assertEqual(result["gate_decision"], "fail")
+        self.assertEqual(result["architecture_decision"]["route"], "defer")
+        self.assertIn("audit_safe_log_event", result["architecture_decision"])
         self.assertFalse(aana.should_execute_tool(result))
 
     def test_python_sdk_shadow_mode_observes_without_blocking(self):

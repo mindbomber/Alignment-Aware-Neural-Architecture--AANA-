@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1",
+  "report_path": "docs/aana-production-candidate-evidence-pack.md",
+  "claim_boundary": {
+    "production_candidate_layer": "AANA is production-candidate as an audit/control/verification/correction layer.",
+    "not_proven_engine": "AANA is not yet proven as a raw agent-performance engine."
+  },
+  "policy": {
+    "allow_raw_agent_performance_claim": false,
+    "require_failures_section": true,
+    "require_false_positives_section": true,
+    "require_latency_section": true,
+    "require_unsupported_domains_section": true,
+    "never_merge_probe_results_into_public_claims": true,
+    "require_measured_non_probe_results_for_benchmark_claims": true
+  },
+  "implementation_tasks": [
+    {
+      "task": "Define the exact production-candidate boundary language.",
+      "status": "completed"
+    },
+    {
+      "task": "Publish a report that states AANA is production-candidate as a control layer and not yet proven as a raw agent-performance engine.",
+      "status": "completed"
+    },
+    {
+      "task": "Include failures, false positives, latency, and unsupported domains.",
+      "status": "completed"
+    },
+    {
+      "task": "Link existing governance, dataset, adapter, and reporting artifacts.",
+      "status": "completed"
+    },
+    {
+      "task": "Add a validator, CLI, dev command, package script, and tests for the evidence pack.",
+      "status": "completed"
+    }
+  ],
+  "required_report_sections": [
+    "## Executive Boundary",
+    "## Evidence Included",
+    "## Failures",
+    "## False Positives",
+    "## Latency",
+    "## Unsupported Domains",
+    "## Public Claim Rules",
+    "## Next Evidence Needed"
+  ],
+  "required_artifacts": [
+    "examples/hf_dataset_validation_registry.json",
+    "examples/benchmark_reporting_manifest.json",
+    "examples/benchmark_fit_lint_manifest.json",
+    "examples/cross_domain_adapter_family_validation.json",
+    "eval_outputs/privacy_pii_adapter_upgrade_results.json",
+    "eval_outputs/grounded_qa_adapter_upgrade_results.json",
+    "eval_outputs/agent_tool_use_control_upgrade_results.json"
+  ],
+  "limitations": {
+    "failures": [
+      "Tau2-style raw task completion remains mixed when AANA is paired with a weak base scaffold.",
+      "Some long all-domain benchmark runs are incomplete or diagnostic because local run timeouts were reached.",
+      "Fixture-level held-out validation is not the same as large human-reviewed external validation."
+    ],
+    "false_positives": [
+      "Safe public reads may be delayed if runtime metadata is incomplete.",
+      "Safe grounded answers may be deferred when evidence exists but is not referenced.",
+      "Conservative thresholds can reduce safe allow rate while preserving unsafe recall."
+    ],
+    "latency": [
+      "No production p95 or p99 latency claim is made by this evidence pack.",
+      "Runtime latency depends on schema validation, retrieval, verifier depth, model-judged classifiers, and human-review paths."
+    ],
+    "unsupported_domains": [
+      "raw autonomous task performance as a standalone engine",
+      "medical diagnosis or treatment",
+      "legal advice or legal strategy",
+      "financial advice, trading, lending, underwriting, or irreversible financial transactions",
+      "unregistered tool families without AANA-compatible metadata",
+      "domains without held-out validation and evidence connectors",
+      "broad multilingual or multimodal claims without domain-specific validation"
+    ]
+  },
+  "evidence_status": "production_candidate_control_layer_only"
+}

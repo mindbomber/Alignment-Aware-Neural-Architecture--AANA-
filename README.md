@@ -13,9 +13,13 @@
 
 This repository contains a small Python evaluation pipeline for testing Alignment-Aware Neural Architecture (AANA) ideas. In plain language, it runs prompt-based stress tests against language models, compares baseline answers with AANA-style correction loops, scores the outputs, and generates CSV/SVG summaries that help show where capability and alignment diverge.
 
+Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+
 The project is meant for researchers, builders, and curious beginners who want a reproducible starting point for experimenting with verifier-grounded correction, constraint preservation, abstention, and originality in AI assistant outputs.
 
 Platform boundary: AANA is a runtime guardrail layer that sits between an agent and consequential outputs or actions. It receives a Workflow Contract or Agent Event, checks the candidate output/action against adapter-specific constraints, applies verifier-grounded correction policy, returns `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, and emits audit-safe metadata. See [docs/product-boundary.md](docs/product-boundary.md).
+
+Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
 
 First deployable support boundary: draft support replies, CRM support replies, refund/account-fact checks, support email-send checks, and customer-visible ticket updates. Invoice/billing replies are an adjacent later adapter family.
 
@@ -46,6 +50,8 @@ Language models can produce answers that look capable while quietly violating im
 ## Where AANA is useful
 
 AANA is strongest where failures are mechanically checkable. The point is not to make the model "more careful" by asking nicely. The point is to give the system a correction path that cannot hand-wave constraints away.
+
+The intended direction is base agent plus AANA, not AANA as a replacement for the base agent. Strong models and planners handle raw task execution; AANA checks evidence, authorization, constraints, correction paths, and action routing around them.
 
 Good fit examples:
 
@@ -81,13 +87,17 @@ python -m pip install -e .
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+aana evidence-pack --require-existing-artifacts
 aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
 aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
 ```
 
-This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, and `/openapi.json`.
+This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, a pre-tool-call gate, the evidence pack, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, `/tool-precheck`, and `/openapi.json`.
 
 Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
+
+Benchmark reporting boundary: diagnostic probe results are engineering artifacts only and must not be merged into public AANA performance claims. See [docs/benchmark-reporting-policy.md](docs/benchmark-reporting-policy.md) and validate with `python scripts/validate_benchmark_reporting.py`.
 
 ## Result Shape
 
@@ -174,7 +184,11 @@ Check an AI-agent event before the agent acts:
 ```powershell
 aana validate-event --event examples/agent_event_support_reply.json
 aana agent-check --event examples/agent_event_support_reply.json
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+aana evidence-pack --require-existing-artifacts
 ```
+
+The agent and tool-check outputs include `architecture_decision`: route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
 
 Use event-file checks only from a trusted local AANA install or reviewed repository checkout. For standalone agent skills, prefer an approved in-memory tool/API connector, keep review payloads redacted, and do not ask the agent to infer or execute local script paths.
 

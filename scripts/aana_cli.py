@@ -31,9 +31,16 @@ from eval_pipeline import (
     support_aix_calibration,
 )
 from eval_pipeline import agent_api
+from eval_pipeline.production_candidate_evidence_pack import (
+    load_manifest as load_evidence_pack_manifest,
+    validate_production_candidate_evidence_pack,
+)
+from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
+from aana.sdk import architecture_decision, with_architecture_decision
 
 
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
+DEFAULT_EVIDENCE_PACK = ROOT / "examples" / "production_candidate_evidence_pack.json"
 CLI_CONTRACT_VERSION = "0.1"
 EXIT_OK = 0
 EXIT_VALIDATION = 1
@@ -46,6 +53,8 @@ EXIT_CODE_CONTRACT = {
 READ_FILE_ARGS_BY_COMMAND = {
     "run-file": ["adapter", "candidate_file"],
     "agent-check": ["event", "evidence_registry"],
+    "pre-tool-check": ["event"],
+    "evidence-pack": ["manifest"],
     "workflow-check": ["workflow", "evidence_registry"],
     "workflow-batch": ["batch", "evidence_registry"],
     "validate-workflow": ["workflow"],
@@ -828,8 +837,79 @@ def command_agent_check(args):
     if args.audit_log:
         record = agent_api.audit_event_check(event, response)
         agent_api.append_audit_record(args.audit_log, record)
+    else:
+        record = agent_api.audit_event_check(event, response)
+    response = with_architecture_decision(response, event, audit_record=record)
     print_json(response)
     return 0 if args.shadow_mode or response["gate_decision"] == "pass" else 1
+
+
+def command_pre_tool_check(args):
+    event = agent_api.load_json_file(args.event)
+    validation_errors = validate_tool_precheck_event(event)
+    if args.validate_only:
+        response = {
+            "valid": not validation_errors,
+            "errors": validation_errors,
+            "schema_version": "aana.agent_tool_precheck.v1",
+        }
+        print_json(response)
+        return 0 if response["valid"] else 1
+    if validation_errors and args.strict_validation:
+        print_json(
+            {
+                "valid": False,
+                "errors": validation_errors,
+                "schema_version": "aana.agent_tool_precheck.v1",
+                "architecture_decision": architecture_decision(
+                    {
+                        "gate_decision": "fail",
+                        "recommended_action": "refuse",
+                        "hard_blockers": ["schema_validation_failed"],
+                        "aix": {"score": 0.0, "decision": "refuse", "hard_blockers": ["schema_validation_failed"]},
+                    },
+                    event,
+                ),
+            }
+        )
+        return 1
+    result = gate_pre_tool_call_v2(event) if args.gate_version == "v2" else gate_pre_tool_call(event)
+    response = with_architecture_decision(result, event)
+    print_json(response)
+    return 0 if response.get("gate_decision") == "pass" else 1
+
+
+def command_evidence_pack(args):
+    manifest = load_evidence_pack_manifest(args.manifest)
+    report = validate_production_candidate_evidence_pack(
+        manifest,
+        root=ROOT,
+        require_existing_artifacts=args.require_existing_artifacts,
+    )
+    response = {
+        "architecture_claim": "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.",
+        "claim_boundary": manifest.get("claim_boundary", {}),
+        "evidence_status": manifest.get("evidence_status"),
+        "report_path": manifest.get("report_path"),
+        "required_artifacts": manifest.get("required_artifacts", []),
+        "limitations": manifest.get("limitations", {}),
+        "validation": report,
+    }
+    if args.json:
+        print_json(response)
+    else:
+        print("AANA evidence pack")
+        print(f"- architecture_claim: {response['architecture_claim']}")
+        print(f"- production_candidate_layer: {response['claim_boundary'].get('production_candidate_layer')}")
+        print(f"- not_proven_engine: {response['claim_boundary'].get('not_proven_engine')}")
+        print(f"- evidence_status: {response['evidence_status']}")
+        print(f"- report_path: {response['report_path']}")
+        print(f"- artifacts: {len(response['required_artifacts'])}")
+        print(f"- validation: {'pass' if report['valid'] else 'block'} ({report['errors']} errors, {report['warnings']} warnings)")
+        if report["issues"]:
+            for issue in report["issues"]:
+                print(f"  - {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
 
 
 def command_workflow_check(args):
@@ -2211,6 +2291,19 @@ def build_parser():
     agent_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured event evidence strings before checking.")
     agent_parser.add_argument("--shadow-mode", action="store_true", help="Observe and audit what AANA would recommend without returning a blocking exit code.")
     agent_parser.set_defaults(func=command_agent_check)
+
+    pre_tool_parser = subparsers.add_parser("pre-tool-check", help="Check an AANA pre-tool-call contract before executing a tool.")
+    pre_tool_parser.add_argument("--event", required=True, help="Path to agent tool precheck JSON.")
+    pre_tool_parser.add_argument("--gate-version", choices=["v1", "v2"], default="v1", help="Pre-tool-call gate version.")
+    pre_tool_parser.add_argument("--validate-only", action="store_true", help="Only validate the pre-tool-call contract.")
+    pre_tool_parser.add_argument("--strict-validation", action="store_true", help="Return schema validation failures before running the gate.")
+    pre_tool_parser.set_defaults(func=command_pre_tool_check)
+
+    evidence_pack_parser = subparsers.add_parser("evidence-pack", help="Summarize and validate the AANA production-candidate evidence pack.")
+    evidence_pack_parser.add_argument("--manifest", default=str(DEFAULT_EVIDENCE_PACK), help="Path to production-candidate evidence-pack manifest.")
+    evidence_pack_parser.add_argument("--require-existing-artifacts", action="store_true", help="Require all linked evidence artifacts to exist.")
+    evidence_pack_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    evidence_pack_parser.set_defaults(func=command_evidence_pack)
 
     workflow_parser = subparsers.add_parser("workflow-check", help="Check a workflow request with the AANA Workflow Contract.")
     workflow_parser.add_argument("--workflow", default=None, help="Path to workflow request JSON. When provided, other workflow fields are ignored.")

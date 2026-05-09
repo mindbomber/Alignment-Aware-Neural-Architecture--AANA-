@@ -61,6 +61,12 @@ aana-mi-production-deployment-manifest = "scripts.production_deployment_manifest
 aana-mi-post-release-monitoring = "scripts.post_release_monitoring:main"
 aana-mi-production-dry-run = "scripts.production_dry_run:main"
 aana-mi-production-go-no-go = "scripts.production_go_no_go:main"
+aana-validate-hf-dataset-registry = "scripts.validate_hf_dataset_registry:main"
+aana-privacy-pii-adapter-eval = "scripts.run_privacy_pii_adapter_eval:main"
+aana-grounded-qa-adapter-eval = "scripts.run_grounded_qa_adapter_eval:main"
+aana-agent-tool-use-control-eval = "scripts.run_agent_tool_use_control_eval:main"
+aana-validate-cross-domain-adapter-families = "scripts.validate_cross_domain_adapter_families:main"
+aana-validate-production-candidate-evidence-pack = "scripts.validate_production_candidate_evidence_pack:main"
 
 [tool.setuptools.packages.find]
 include = ["aana*", "eval_pipeline*", "scripts*"]

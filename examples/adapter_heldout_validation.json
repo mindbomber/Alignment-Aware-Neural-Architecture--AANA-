@@ -1,0 +1,310 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "require_after_every_adapter_improvement": true,
+    "allow_training_or_tuned_split": false,
+    "adapter_family_surfaces": [
+      "examples/*_adapter.json",
+      "examples/cross_domain_adapter_family_validation.json",
+      "examples/production_candidate_evidence_pack.json",
+      "examples/starter_pilot_kits/**/adapter_config.json",
+      "examples/tau2/aana_contract_agent.py",
+      "examples/tau2/aana_tau2_adapter_config.json",
+      "eval_pipeline/adapter_runner/**",
+      "eval_pipeline/agent_tool_use_control.py",
+      "eval_pipeline/benchmark_*.py",
+      "scripts/validate_benchmark_*.py",
+      "scripts/run_agent_tool_use_control_eval.py",
+      "examples/hf_dataset_validation_registry.json",
+      "eval_pipeline/cross_domain_adapter_family_validation.py",
+      "eval_pipeline/production_candidate_evidence_pack.py",
+      "eval_pipeline/hf_dataset_registry.py",
+      "scripts/validate_cross_domain_adapter_families.py",
+      "scripts/validate_production_candidate_evidence_pack.py",
+      "scripts/validate_hf_dataset_registry.py",
+      "docs/families/**",
+      "docs/adapter-gallery/**"
+    ],
+    "required_label_visibility": [
+      "hidden_from_gate",
+      "benchmark_maintainer",
+      "human_reviewed",
+      "public_benchmark_labels_hidden"
+    ],
+    "required_metrics": [
+      "task_success",
+      "pass1",
+      "action_check_pass_rate",
+      "unsafe_recall",
+      "safe_allow_rate",
+      "false_positive_rate",
+      "schema_failure_rate"
+    ]
+  },
+  "adapter_improvements": [
+    {
+      "improvement_id": "tau2-retail-order-workflow-general-planner-v1",
+      "adapter_id": "tau2/aana_contract_agent",
+      "summary": "Replace retail order probe logic with a general evidence-derived order workflow planner.",
+      "changed_paths": [
+        "examples/tau2/aana_contract_agent.py"
+      ],
+      "heldout_validation": {
+        "task_set": "tau2 retail held-out smoke task outside the hardcoded probe set",
+        "task_set_path": "eval_outputs/benchmark_scout/tau2_retail_general_planner_smoke_1_v3.log",
+        "result_artifact": "eval_outputs/benchmark_scout/tau2_retail_general_planner_smoke_1_v3.log",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "pass1": 1.0,
+          "schema_failure_rate": 0.0
+        },
+        "notes": "Diagnostic smoke only; public claims still require broader held-out or maintainer-accepted runs."
+      }
+    },
+    {
+      "improvement_id": "tau2-banking-bypass-probe-separation-v1",
+      "adapter_id": "tau2/aana_contract_agent",
+      "summary": "Move exact banking bypass probe code out of the general scaffold and keep it behind the opt-in diagnostic probe flag.",
+      "changed_paths": [
+        "examples/tau2/aana_contract_agent.py",
+        "examples/tau2/aana_tau2_probe_planners.py"
+      ],
+      "heldout_validation": {
+        "task_set": "general scaffold literal scan and regression checks",
+        "task_set_path": "tests/test_tau2_retail_planner_generalization.py",
+        "result_artifact": "tests/test_tau2_retail_planner_generalization.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0
+        },
+        "notes": "This is a structural generalization guard, not a benchmark score claim."
+      }
+    },
+    {
+      "improvement_id": "tau2-banking-product-config-v1",
+      "adapter_id": "tau2/aana_contract_agent",
+      "summary": "Move banking product constants, query text, planner guidance, subscription markers, and card scorer weights into adapter configuration.",
+      "changed_paths": [
+        "examples/tau2/aana_contract_agent.py",
+        "examples/tau2/aana_tau2_adapter_config.json"
+      ],
+      "heldout_validation": {
+        "task_set": "general scaffold product-literal scan and config regression checks",
+        "task_set_path": "tests/test_tau2_retail_planner_generalization.py",
+        "result_artifact": "tests/test_tau2_retail_planner_generalization.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0
+        },
+        "notes": "Structural validation that product literals live in configuration rather than the general scaffold; broader held-out benchmark scoring is still required for public performance claims."
+      }
+    },
+    {
+      "improvement_id": "benchmark-fit-decision-rule-lint-v1",
+      "adapter_id": "generalization-governance",
+      "summary": "Turn the benchmark-fitting decision rule into a lint that blocks known answer literals from general AANA paths.",
+      "changed_paths": [
+        "eval_pipeline/benchmark_fit_lint.py",
+        "scripts/validate_benchmark_fit_lint.py",
+        "examples/benchmark_fit_lint_manifest.json"
+      ],
+      "heldout_validation": {
+        "task_set": "decision-rule lint regression tests",
+        "task_set_path": "tests/test_benchmark_fit_lint.py",
+        "result_artifact": "tests/test_benchmark_fit_lint.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0
+        },
+        "notes": "Structural governance validation; not a benchmark performance claim."
+      }
+    },
+    {
+      "improvement_id": "tau2-default-non-probe-workflow-v1",
+      "adapter_id": "tau2/aana_contract_agent",
+      "summary": "Make the tau2 default workflow explicitly non-probe only and require an environment variable for diagnostic probe activation.",
+      "changed_paths": [
+        "examples/tau2/aana_contract_agent.py"
+      ],
+      "heldout_validation": {
+        "task_set": "default workflow non-probe regression checks",
+        "task_set_path": "tests/test_tau2_retail_planner_generalization.py",
+        "result_artifact": "tests/test_tau2_retail_planner_generalization.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0
+        },
+        "notes": "Structural workflow validation; not a benchmark performance claim."
+      }
+    },
+    {
+      "improvement_id": "hf-dataset-validation-registry-v1",
+      "adapter_id": "dataset-governance",
+      "summary": "Create a Hugging Face dataset validation registry with split-use isolation for calibration, held-out validation, and external reporting.",
+      "changed_paths": [
+        "examples/hf_dataset_validation_registry.json",
+        "eval_pipeline/hf_dataset_registry.py",
+        "scripts/validate_hf_dataset_registry.py"
+      ],
+      "heldout_validation": {
+        "task_set": "HF dataset registry governance tests",
+        "task_set_path": "tests/test_hf_dataset_registry.py",
+        "result_artifact": "tests/test_hf_dataset_registry.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0
+        },
+        "notes": "Structural dataset-governance validation; not a benchmark performance claim."
+      }
+    },
+    {
+      "improvement_id": "privacy-pii-adapter-upgrade-v1",
+      "adapter_id": "privacy_pii_redaction",
+      "summary": "Add a privacy/PII adapter upgrade using the registered PIIMB, OpenPII, and Nemotron-PII split policy with metrics for recall, false positives, safe allow, redaction correctness, and route accuracy.",
+      "changed_paths": [
+        "examples/privacy_pii_redaction_adapter.json",
+        "examples/privacy_pii_validation_cases.json",
+        "eval_pipeline/adapter_runner/verifier_modules/privacy_pii.py",
+        "scripts/run_privacy_pii_adapter_eval.py"
+      ],
+      "heldout_validation": {
+        "task_set": "privacy PII held-out validation cases sourced against the HF dataset registry",
+        "task_set_path": "examples/privacy_pii_validation_cases.json",
+        "result_artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "redaction_correctness": 1.0,
+          "route_accuracy": 1.0
+        },
+        "notes": "Fixture-level implementation validation only. Public claims still require measured runs on registered held-out or external-reporting splits without tuning on those splits."
+      }
+    },
+    {
+      "improvement_id": "grounded-qa-hallucination-adapter-upgrade-v1",
+      "adapter_id": "research_answer_grounding",
+      "summary": "Add a grounded QA / hallucination verifier using RAG-Grounded-QA, HaluBench, and RAGTruth-style schemas for supported, unsupported, unanswerable, needs-citation, and defer routing.",
+      "changed_paths": [
+        "examples/grounded_qa_validation_cases.json",
+        "eval_pipeline/adapter_runner/verifier_modules/grounded_qa.py",
+        "scripts/run_grounded_qa_adapter_eval.py",
+        "eval_pipeline/adapter_runner/verifier_catalog.py"
+      ],
+      "heldout_validation": {
+        "task_set": "grounded QA and hallucination held-out validation cases sourced against the HF dataset registry",
+        "task_set_path": "examples/grounded_qa_validation_cases.json",
+        "result_artifact": "eval_outputs/grounded_qa_adapter_upgrade_results.json",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "notes": "Fixture-level implementation validation only. Public claims still require measured runs on registered held-out or external-reporting splits without tuning on those splits."
+      }
+    },
+    {
+      "improvement_id": "agent-tool-use-control-upgrade-v1",
+      "adapter_id": "agent_action_safety_guardrail",
+      "summary": "Add an agent tool-use control converter and validation suite for Qwen, Hermes, MCP-Atlas, and MCPHunt-style tool calls using the AANA pre-tool-call schema.",
+      "changed_paths": [
+        "examples/agent_tool_use_control_validation_cases.json",
+        "eval_pipeline/agent_tool_use_control.py",
+        "scripts/run_agent_tool_use_control_eval.py"
+      ],
+      "heldout_validation": {
+        "task_set": "agent tool-use control validation cases sourced against the HF dataset registry",
+        "task_set_path": "examples/agent_tool_use_control_validation_cases.json",
+        "result_artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "schema_failure_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "notes": "Fixture-level implementation validation only. Public claims still require measured runs on registered held-out or external-reporting splits without tuning on those splits."
+      }
+    },
+    {
+      "improvement_id": "cross-domain-adapter-family-validation-v1",
+      "adapter_id": "cross-domain-family-governance",
+      "summary": "Map external Hugging Face held-out datasets to required adapter families and block stronger claims until every family has a passing external HF held-out validation.",
+      "changed_paths": [
+        "examples/cross_domain_adapter_family_validation.json",
+        "eval_pipeline/cross_domain_adapter_family_validation.py",
+        "scripts/validate_cross_domain_adapter_families.py"
+      ],
+      "heldout_validation": {
+        "task_set": "cross-domain adapter family validation governance tests",
+        "task_set_path": "tests/test_cross_domain_adapter_family_validation.py",
+        "result_artifact": "tests/test_cross_domain_adapter_family_validation.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0,
+          "safe_allow_rate": 1.0
+        },
+        "notes": "Structural governance validation; not a benchmark performance claim."
+      }
+    },
+    {
+      "improvement_id": "production-candidate-evidence-pack-v1",
+      "adapter_id": "public-claim-governance",
+      "summary": "Publish and validate the production-candidate evidence pack that bounds AANA as an audit/control/verification/correction layer and blocks raw agent-performance claims.",
+      "changed_paths": [
+        "docs/aana-production-candidate-evidence-pack.md",
+        "examples/production_candidate_evidence_pack.json",
+        "eval_pipeline/production_candidate_evidence_pack.py",
+        "scripts/validate_production_candidate_evidence_pack.py"
+      ],
+      "heldout_validation": {
+        "task_set": "production-candidate evidence-pack governance tests",
+        "task_set_path": "tests/test_production_candidate_evidence_pack.py",
+        "result_artifact": "tests/test_production_candidate_evidence_pack.py",
+        "split": "held_out",
+        "label_visibility": "hidden_from_gate",
+        "status": "pass",
+        "run_without_benchmark_probes": true,
+        "metrics": {
+          "schema_failure_rate": 0.0,
+          "safe_allow_rate": 1.0
+        },
+        "notes": "Structural public-claim governance validation; not a benchmark performance claim."
+      }
+    }
+  ]
+}

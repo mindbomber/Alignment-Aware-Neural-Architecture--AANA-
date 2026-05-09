@@ -4,6 +4,8 @@
 
 This report connects the public agent-action benchmark results to the AANA runtime architecture and states the current limitations.
 
+Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+
 The tested AANA configuration is best understood as a pre-tool-call reliability layer:
 
 ```text
@@ -59,7 +61,10 @@ This supports a narrow architecture claim:
 
 > For consequential agent tool calls, AANA's value comes from combining a structured action contract, verifier-gated routing, and evidence/correction recovery before execution.
 
+In public terms: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+
 It does not support a broad claim that AANA is generally aligned, production-certified, or superior to all safety systems.
+It also does not support a claim that AANA is a raw agent-performance engine.
 
 ## Architecture Interpretation
 
@@ -86,8 +91,21 @@ Current limitations:
 
 The next validity step is maintainer-reviewed or human-reviewed labeling of a trace set, ideally inside an existing benchmark protocol such as MCP-Bench or another tool-use benchmark.
 
+## Probe Exclusion Policy
+
+No probe-enabled benchmark result is included in the public claims above.
+
+Diagnostic probe runs, including any tau2 runs using `--allow-benchmark-probes`
+or exact task-recovery planners, are engineering tools only. They may identify
+failure modes and guide adapter design, but they must not be merged into public
+AANA performance numbers, benchmark comparisons, leaderboard claims, or peer
+review claims.
+
+Public-facing claims should reference only measured general runs that exclude
+probe artifacts and state their label source, limitations, and evaluation scope.
+
 ## Reviewer-Facing Conclusion
 
-AANA should be evaluated as a runtime architecture for correctable agent action routing, not as a standalone base model. The early evidence suggests that the architecture is strongest when a system needs to preserve both high unsafe-action recall and high safe-action allow rate under noisy evidence.
+AANA should be evaluated as a runtime architecture for making agents more auditable, safer, more grounded, and more controllable, not as a standalone base model. The early evidence suggests that the architecture is strongest when a system needs to preserve both high unsafe-action recall and high safe-action allow rate under noisy evidence.
 
 The open question for peer review is whether this advantage persists under benchmark-native traces, independently reviewed labels, and task-level success scoring.

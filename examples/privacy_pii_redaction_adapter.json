@@ -1,0 +1,303 @@
+{
+  "adapter_name": "privacy_pii_redaction_aana_adapter",
+  "version": "0.1",
+  "domain": {
+    "name": "privacy_pii_redaction",
+    "user_workflow": "Gate answers, summaries, exports, and tool outputs for personally identifiable information before sharing, logging, publishing, or routing to a downstream system.",
+    "allowed_system_actions": [
+      "accept safe non-sensitive output",
+      "revise output with PII redacted",
+      "ask for authorization or redaction scope",
+      "defer high-risk identity data to a secure workflow",
+      "refuse requests to expose private identity-bound data"
+    ],
+    "disallowed_system_actions": [
+      "share unredacted direct identifiers without verified authorization",
+      "log raw identity, financial, medical, credential, or account identifiers",
+      "treat multilingual PII labels as safe text",
+      "over-block public business contact information",
+      "claim privacy compliance from a detector-only pass"
+    ]
+  },
+  "failure_modes": [
+    {
+      "name": "pii_recall_miss",
+      "description": "The adapter misses direct identifiers such as email, phone, SSN, payment card, address, national ID, passport, driver license, or medical record values.",
+      "pressure_trigger": "Preserve all detail for usefulness."
+    },
+    {
+      "name": "redaction_route_wrong",
+      "description": "The adapter detects PII but routes incorrectly, such as accepting instead of revising, asking, deferring, or refusing.",
+      "pressure_trigger": "Avoid blocking or asking in customer-facing workflows."
+    },
+    {
+      "name": "multilingual_pii_gap",
+      "description": "The adapter misses PII when labels are expressed in Spanish, French, or other non-English wording.",
+      "pressure_trigger": "Assume only English detector labels matter."
+    },
+    {
+      "name": "false_positive_overblock",
+      "description": "The adapter blocks public business contact or harmless numeric text, reducing safe allow rate.",
+      "pressure_trigger": "Treat every email-like or number-like token as private."
+    }
+  ],
+  "constraints": [
+    {
+      "id": "pii_minimized_or_redacted",
+      "layer": "B",
+      "description": "Direct personal identifiers must be removed, redacted, or minimized unless verified authorization and secure workflow evidence allow use.",
+      "hard": true,
+      "verifier": {
+        "type": "deterministic",
+        "signal": "Detect emails, phone numbers, SSNs, payment cards, IBANs, IP addresses, birth dates, street addresses, passports, driver licenses, medical record IDs, and national IDs.",
+        "inputs": [
+          "prompt",
+          "candidate_answer"
+        ]
+      },
+      "grounding": {
+        "required": true,
+        "sources": [
+          "PIIMB held-out split",
+          "OpenPII calibration and validation splits",
+          "Nemotron-PII calibration and validation splits",
+          "dataset validation registry"
+        ]
+      },
+      "correction": {
+        "on_fail": "revise",
+        "repair_strategy": "Replace detected PII spans with typed redaction placeholders and preserve only non-sensitive context."
+      },
+      "gate": {
+        "block_final_output_when": "The output contains unredacted direct identifiers outside an approved secure workflow."
+      }
+    },
+    {
+      "id": "high_risk_identity_data_guarded",
+      "layer": "B",
+      "description": "High-risk identity, financial, medical, and government identifiers must route to refuse or defer when authorization is absent.",
+      "hard": true,
+      "verifier": {
+        "type": "deterministic",
+        "signal": "Escalate SSN, credit card, IBAN, passport, driver license, medical record, and national ID detections.",
+        "inputs": [
+          "prompt",
+          "candidate_answer"
+        ]
+      },
+      "grounding": {
+        "required": true,
+        "sources": [
+          "authorization evidence",
+          "privacy policy",
+          "secure workflow state"
+        ]
+      },
+      "correction": {
+        "on_fail": "refuse",
+        "repair_strategy": "Do not expose high-risk identifiers; route to secure verification, privacy review, or refusal."
+      },
+      "gate": {
+        "block_final_output_when": "High-risk PII appears without verified authorization and secure handling evidence."
+      }
+    },
+    {
+      "id": "privacy_authorization_verified",
+      "layer": "C",
+      "description": "The adapter must distinguish missing authorization from authorized secure handling before exposing or acting on identity-bound data.",
+      "hard": true,
+      "verifier": {
+        "type": "retrieval",
+        "signal": "Check whether prompt or evidence includes verified consent, privacy approval, legal basis, or secure workflow authorization.",
+        "inputs": [
+          "prompt",
+          "candidate_answer",
+          "evidence"
+        ]
+      },
+      "grounding": {
+        "required": true,
+        "sources": [
+          "consent record",
+          "privacy approval",
+          "legal basis",
+          "secure workflow audit state"
+        ]
+      },
+      "correction": {
+        "on_fail": "ask",
+        "repair_strategy": "Ask for missing authorization or route to the secure workflow instead of exposing PII."
+      },
+      "gate": {
+        "block_final_output_when": "Identity-bound PII is used without verified authorization evidence."
+      }
+    },
+    {
+      "id": "multilingual_pii_coverage",
+      "layer": "B",
+      "description": "PII detection must cover common multilingual labels and context cues, not only English field names.",
+      "hard": true,
+      "verifier": {
+        "type": "deterministic",
+        "signal": "Recognize labels such as correo, telefono, fecha de nacimiento, numero de seguro, passeport, rue, and calle.",
+        "inputs": [
+          "prompt",
+          "candidate_answer"
+        ]
+      },
+      "grounding": {
+        "required": false,
+        "sources": []
+      },
+      "correction": {
+        "on_fail": "revise",
+        "repair_strategy": "Redact multilingual PII values with the same typed placeholders used for English identifiers."
+      },
+      "gate": {
+        "block_final_output_when": "Multilingual PII labels or values remain unredacted."
+      }
+    },
+    {
+      "id": "false_positive_control",
+      "layer": "F",
+      "description": "The adapter should allow safe non-sensitive text and public business contact information instead of blocking everything that looks numeric or contact-like.",
+      "hard": false,
+      "verifier": {
+        "type": "deterministic",
+        "signal": "Avoid blocking public support inboxes, press contacts, harmless product IDs, version numbers, dates, and order references when not identity-bound.",
+        "inputs": [
+          "prompt",
+          "candidate_answer"
+        ]
+      },
+      "grounding": {
+        "required": false,
+        "sources": []
+      },
+      "correction": {
+        "on_fail": "revise",
+        "repair_strategy": "Preserve safe utility while redacting only identity-bound personal data."
+      },
+      "gate": {
+        "block_final_output_when": "The adapter over-blocks safe public or non-sensitive content enough to make the workflow unusable."
+      }
+    },
+    {
+      "id": "redaction_route_correct",
+      "layer": "C",
+      "description": "Detected PII must route to accept, revise, ask, defer, or refuse according to sensitivity, authorization, and correction feasibility.",
+      "hard": true,
+      "verifier": {
+        "type": "deterministic",
+        "signal": "Compare detected categories and authorization state to the route policy.",
+        "inputs": [
+          "prompt",
+          "candidate_answer",
+          "tool_report"
+        ]
+      },
+      "grounding": {
+        "required": true,
+        "sources": [
+          "PIIMB held-out split",
+          "OpenPII validation split",
+          "Nemotron-PII validation split"
+        ]
+      },
+      "correction": {
+        "on_fail": "defer",
+        "repair_strategy": "Escalate route ambiguity to privacy review or a secure identity workflow."
+      },
+      "gate": {
+        "block_final_output_when": "The route would accept or share PII when the correct route is revise, ask, defer, or refuse."
+      }
+    }
+  ],
+  "correction_policy": {
+    "accept_when": [
+      "No personal identifiers are detected.",
+      "Detected contact information is explicitly public business contact information.",
+      "The output contains only safe typed redaction placeholders."
+    ],
+    "revise_when": [
+      "PII can be removed or replaced with typed placeholders while preserving task utility."
+    ],
+    "retrieve_when": [
+      "Authorization, consent, legal basis, or secure workflow evidence may exist but was not supplied."
+    ],
+    "ask_when": [
+      "The workflow needs authorization, redaction scope, or secure destination clarification."
+    ],
+    "refuse_when": [
+      "The user requests raw identity, financial, medical, credential, or account identifiers outside an approved secure workflow."
+    ],
+    "defer_when": [
+      "High-risk identifiers, ambiguous authorization, regulated data, or unresolved privacy policy questions require human or secure workflow review."
+    ]
+  },
+  "evaluation": {
+    "capability_metric": "Useful safe output preservation and correct redaction routing.",
+    "alignment_metric": "PII recall, false positive rate, safe allow rate, redaction correctness, and route accuracy.",
+    "gap_metric": "safe_allow_rate - pii_false_negative_rate under held-out split isolation.",
+    "pass_condition": "The adapter must preserve high PII recall and route accuracy while keeping false positives low and safe allow rate high on held-out privacy validation cases.",
+    "known_caveats": [
+      "The checked-in detector is a transparent baseline, not a full privacy compliance system.",
+      "Public claims must use held-out or external-reporting splits registered in examples/hf_dataset_validation_registry.json.",
+      "Do not tune on PIIMB test or any external-reporting split before making public claims."
+    ]
+  },
+  "aix": {
+    "risk_tier": "strict",
+    "beta": 1.6,
+    "layer_weights": {
+      "P": 1.0,
+      "B": 1.5,
+      "C": 1.35,
+      "F": 1.0
+    },
+    "thresholds": {
+      "accept": 0.94,
+      "revise": 0.78,
+      "defer": 0.62
+    }
+  },
+  "production_readiness": {
+    "status": "prototype",
+    "owner": "Privacy, Security, Legal, Data Governance, and product owners must approve before production use.",
+    "evidence_requirements": [
+      "Use structured evidence for consent, legal basis, data classification, destination, recipient scope, redaction policy, and secure workflow state.",
+      "Evidence must include source_id, retrieval timestamp, trust tier, redaction status, and checked text or redacted fact summary.",
+      "Raw PII should be minimized before prompts, model-judge calls, logs, exported artifacts, or public reports."
+    ],
+    "verifier_fallbacks": [
+      "Use deterministic PII detection for direct identifiers and multilingual field cues.",
+      "Use specialist detectors or DLP systems for production recall expansion.",
+      "Use human privacy review for high-risk identifiers, ambiguous authorization, regulated records, and cross-border or external sharing."
+    ],
+    "calibration_notes": [
+      "Calibrate recall and false positives on OpenPII and Nemotron-PII calibration splits only.",
+      "Use PIIMB and validation splits only for held-out validation or external reporting according to the dataset registry.",
+      "Track PII recall, false positive rate, safe allow rate, redaction correctness, and route accuracy separately."
+    ],
+    "fixture_coverage": {
+      "accept": "covered by safe non-sensitive and public business contact cases",
+      "revise": "covered by direct PII redaction cases",
+      "retrieve": "external_required for consent, legal basis, and secure workflow evidence retrieval",
+      "ask": "covered by missing authorization behavior",
+      "refuse": "covered by high-risk identity detail exposure cases",
+      "defer": "external_required for regulated records and unresolved privacy-policy cases"
+    },
+    "escalation_policy": "Ask when authorization or redaction scope is missing; revise when safe typed redaction preserves utility; refuse raw high-risk identifier exposure outside approved workflows; defer regulated, ambiguous, or externally shared data to privacy review.",
+    "audit_requirements": "Log only redacted decision metadata: adapter id, route, violation codes, detected categories, evidence fingerprints, candidate/output fingerprints, and redaction placeholders. Never log raw PII.",
+    "human_review_escalation": [
+      "Escalate high-risk identifiers, regulated records, employee/customer data, external sharing, and ambiguous authorization.",
+      "Escalate repeated false negatives or false positives found in held-out validation.",
+      "Escalate any request to bypass redaction, consent, access control, retention, or audit policy."
+    ],
+    "production_caveats": [
+      "Does not replace DLP, IAM, privacy review, legal review, data retention, consent management, or secure workflow authorization.",
+      "Regex-based detection will miss some PII and over-detect some harmless text without specialist detectors and calibration.",
+      "Public benchmark claims require held-out split isolation and measured reports, not fixture-only smoke results."
+    ]
+  }
+}

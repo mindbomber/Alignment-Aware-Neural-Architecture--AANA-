@@ -19,9 +19,27 @@ from adapter_runner.verifier_modules.engineering_release import *  # noqa: F401,
 from adapter_runner.verifier_modules.business_ops import *  # noqa: F401,F403
 from adapter_runner.verifier_modules.regulated_advice import *  # noqa: F401,F403
 from adapter_runner.verifier_modules.research_civic import *  # noqa: F401,F403
+from adapter_runner.verifier_modules.grounded_qa import *  # noqa: F401,F403
+from adapter_runner.verifier_modules.privacy_pii import *  # noqa: F401,F403
 
 VERIFIER_REGISTRY = build_verifier_registry(
     {
+        "grounded_qa": {
+            "family": "grounded_qa",
+            "supported_adapters": ('research_answer_grounding', 'grounded_qa', 'hallucination_guardrail'),
+            "report_function": grounded_qa_tool_report,
+            "safe_response_function": grounded_qa_repair,
+            "correction_routes": GROUNDED_QA_CORRECTION_ROUTES,
+            "fallback_action": "ask",
+        },
+        "privacy_pii": {
+            "family": "privacy_pii",
+            "supported_adapters": ('privacy_pii_redaction', 'privacy_pii', 'pii_redaction'),
+            "report_function": privacy_pii_tool_report,
+            "safe_response_function": privacy_pii_repair,
+            "correction_routes": PRIVACY_PII_CORRECTION_ROUTES,
+            "fallback_action": "ask",
+        },
         "support": {
             "family": "support_product",
             "supported_adapters": ('support_reply', 'crm_support_reply', 'privacy_safe_support_reply'),

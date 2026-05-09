@@ -140,6 +140,15 @@ DATA_EXPORT_VIOLATION_TO_CONSTRAINTS = {
 }
 
 
+PRIVACY_PII_VIOLATION_TO_CONSTRAINTS = {
+    "pii_unredacted": ["pii_minimized_or_redacted"],
+    "pii_redaction_missing": ["redaction_route_correct"],
+    "private_identity_detail_exposed": ["high_risk_identity_data_guarded"],
+    "pii_authorization_missing": ["privacy_authorization_verified"],
+    "pii_multilingual_identifier_unredacted": ["multilingual_pii_coverage"],
+}
+
+
 AGENT_ACTION_SAFETY_VIOLATION_TO_CONSTRAINTS = {
     "harmful_or_illegal_tool_action": ["agent_action_harmful_or_illegal_blocked"],
     "private_data_or_credential_risk": ["agent_action_private_data_guarded"],
@@ -184,6 +193,12 @@ RESEARCH_ANSWER_GROUNDING_VIOLATION_TO_CONSTRAINTS = {
     "grounding_unsupported_claim": ["answer_claims_supported_by_retrieval"],
     "grounding_uncertainty_missing": ["answer_uncertainty_and_limits_labeled"],
     "grounding_source_registry_policy_bypassed": ["source_registry_policy_verified"],
+    "grounded_qa_invalid_citation": ["answer_citations_index_verified"],
+    "grounded_qa_citation_missing": ["answer_citations_index_verified"],
+    "grounded_qa_unsupported_claim": ["answer_claims_supported_by_retrieval"],
+    "grounded_qa_unanswerable_answered": ["answer_uncertainty_and_limits_labeled"],
+    "grounded_qa_evidence_gap_unlabeled": ["answer_uncertainty_and_limits_labeled"],
+    "grounded_qa_high_impact_defer": ["source_registry_policy_verified"],
 }
 
 
@@ -391,6 +406,7 @@ VIOLATION_MAPPING_SPECS = (
     ("grant_eligibility_verified", GRANT_APPLICATION_REVIEW_VIOLATION_TO_CONSTRAINTS),
     ("publication_claims_supported", PUBLICATION_VIOLATION_TO_CONSTRAINTS),
     ("agent_action_harmful_or_illegal_blocked", AGENT_ACTION_SAFETY_VIOLATION_TO_CONSTRAINTS),
+    ("pii_minimized_or_redacted", PRIVACY_PII_VIOLATION_TO_CONSTRAINTS),
     ("data_export_scope_verified", DATA_EXPORT_VIOLATION_TO_CONSTRAINTS),
     ("calendar_availability_verified", CALENDAR_VIOLATION_TO_CONSTRAINTS),
     ("live_quote_price_verified", BOOKING_PURCHASE_VIOLATION_TO_CONSTRAINTS),

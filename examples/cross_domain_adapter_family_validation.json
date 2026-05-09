@@ -1,0 +1,262 @@
+{
+  "schema_version": "0.1",
+  "policy": {
+    "purpose": "Map external Hugging Face datasets to AANA adapter families and block stronger family claims until each family has at least one passing external HF held-out validation.",
+    "require_external_hf_heldout_before_stronger_claims": true,
+    "stronger_claim_boundary": "blocked_until_external_hf_heldout_passes",
+    "allowed_external_uses": [
+      "heldout_validation",
+      "external_reporting"
+    ],
+    "claim_language": "A family may claim fixture/local readiness only until this manifest shows a passing external HF held-out or external-reporting split for that family."
+  },
+  "implementation_tasks": [
+    {
+      "task": "Map HF datasets to privacy/security, research/grounded QA, customer support, finance, ecommerce/retail, and agent tool-use/MCP adapter families.",
+      "status": "completed"
+    },
+    {
+      "task": "Require each family to pass at least one external HF held-out set before stronger claims.",
+      "status": "completed"
+    },
+    {
+      "task": "Add a validator and release/dev command so cross-domain family coverage is enforced.",
+      "status": "completed"
+    },
+    {
+      "task": "Add tests for missing-family, calibration-only, and missing-artifact failures.",
+      "status": "completed"
+    }
+  ],
+  "families": [
+    {
+      "family_id": "privacy_security",
+      "adapter_family": "privacy/security",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "piimb/pii-masking-benchmark",
+          "config": "sentences",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "privacy",
+          "notes": "PII recall, redaction routing, safe allow, and false-positive control."
+        },
+        {
+          "dataset_name": "nvidia/Nemotron-PII",
+          "config": "default",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "privacy",
+          "notes": "PII/PHI-style privacy and regulated-domain held-out checks."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "redaction_correctness": 1.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "Fixture/local validation with external HF held-out mapping; stronger public claims require larger measured held-out runs."
+      }
+    },
+    {
+      "family_id": "research_grounded_qa",
+      "adapter_family": "research/grounded QA",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+          "config": "20k_subset",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "research_grounding",
+          "notes": "Grounded QA, unanswerable routing, and citation/evidence sufficiency."
+        },
+        {
+          "dataset_name": "PatronusAI/HaluBench",
+          "config": "default",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "research_grounding",
+          "notes": "Unsupported claim and hallucination detection."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/grounded_qa_adapter_upgrade_results.json",
+        "metrics": {
+          "unsupported_claim_recall": 1.0,
+          "answerable_safe_allow_rate": 1.0,
+          "citation_evidence_coverage": 1.0,
+          "over_refusal_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "Fixture/local validation with external HF held-out mapping; stronger public claims require larger measured held-out runs."
+      }
+    },
+    {
+      "family_id": "customer_support",
+      "adapter_family": "customer support",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "NousResearch/hermes-function-calling-v1",
+          "config": "func-calling",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "support",
+          "notes": "Function-calling support-style private-read/write routing on a disjoint held-out config."
+        },
+        {
+          "dataset_name": "piimb/pii-masking-benchmark",
+          "config": "sentences",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "support",
+          "notes": "Support-message privacy and private data routing."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "schema_failure_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "External HF held-out mapping for support-like tool control and privacy routing; not yet a broad support-resolution claim."
+      }
+    },
+    {
+      "family_id": "finance",
+      "adapter_family": "finance",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "nvidia/Nemotron-PII",
+          "config": "default",
+          "split": "test",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "finance",
+          "notes": "Finance-adjacent private identifier and regulated-record held-out checks."
+        },
+        {
+          "dataset_name": "NousResearch/hermes-function-calling-v1",
+          "config": "func-calling",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "finance",
+          "notes": "Function-calling authorization and write-gating validation for finance-like actions."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "schema_failure_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "External HF held-out mapping for finance privacy/tool gating; not yet a qualified financial-advice or transaction-safety claim."
+      }
+    },
+    {
+      "family_id": "ecommerce_retail",
+      "adapter_family": "ecommerce/retail",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "NousResearch/hermes-function-calling-v1",
+          "config": "func-calling",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "support",
+          "notes": "Function-calling held-out validation for order, return, cancellation, and write-action routing."
+        },
+        {
+          "dataset_name": "ScaleAI/MCP-Atlas",
+          "config": "default",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "agent_tool_gate",
+          "notes": "MCP tool-use validation for action routing and evidence requirements."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "metrics": {
+          "unsafe_recall": 1.0,
+          "safe_allow_rate": 1.0,
+          "schema_failure_rate": 0.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "External HF held-out mapping for retail/ecommerce-style tool gating; not a tau2 benchmark score claim."
+      }
+    },
+    {
+      "family_id": "agent_tool_use_mcp",
+      "adapter_family": "agent tool-use/MCP",
+      "claim_status": "external_hf_heldout_passed",
+      "datasets": [
+        {
+          "dataset_name": "ScaleAI/MCP-Atlas",
+          "config": "default",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "agent_tool_gate",
+          "notes": "MCP tool-use task validation."
+        },
+        {
+          "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+          "config": "default",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "agent_tool_gate",
+          "notes": "MCP agent safety traces and cross-boundary data-propagation validation."
+        },
+        {
+          "dataset_name": "NousResearch/hermes-function-calling-v1",
+          "config": "func-calling",
+          "split": "train",
+          "allowed_use": "heldout_validation",
+          "validation_status": "pass",
+          "adapter_family_source": "agent_tool_gate",
+          "notes": "Function-calling held-out validation on a disjoint config from calibration."
+        }
+      ],
+      "validation_result": {
+        "status": "pass",
+        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "metrics": {
+          "unsafe_action_recall": 1.0,
+          "private_read_write_gating": 1.0,
+          "ask_defer_refuse_quality": 1.0,
+          "schema_failure_rate": 0.0,
+          "safe_allow_rate": 1.0,
+          "route_accuracy": 1.0
+        },
+        "claim_boundary": "External HF held-out mapping for agent tool-use control; not a production runtime safety guarantee."
+      }
+    }
+  ]
+}

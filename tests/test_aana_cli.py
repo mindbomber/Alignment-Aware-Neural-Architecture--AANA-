@@ -442,7 +442,29 @@ class AanaCliTests(unittest.TestCase):
         self.assertIn('"agent": "openclaw"', output)
         self.assertIn('"gate_decision": "pass"', output)
         self.assertIn('"recommended_action": "revise"', output)
+        self.assertIn('"architecture_decision"', output)
+        self.assertIn('"route": "revise"', output)
+        self.assertIn('"audit_safe_log_event"', output)
         self.assertIn('"safe_response"', output)
+
+    def test_pre_tool_check_exposes_architecture_decision(self):
+        code, output = self.run_cli(["pre-tool-check", "--event", "examples/agent_tool_precheck_private_read.json"])
+
+        self.assertEqual(code, 0)
+        self.assertIn('"tool_name": "get_recent_transactions"', output)
+        self.assertIn('"recommended_action": "accept"', output)
+        self.assertIn('"architecture_decision"', output)
+        self.assertIn('"route": "accept"', output)
+        self.assertIn('"authorization_state": "authenticated"', output)
+        self.assertIn('"auth.demo-session"', output)
+
+    def test_evidence_pack_command_summarizes_public_boundary(self):
+        code, output = self.run_cli(["evidence-pack", "--require-existing-artifacts"])
+
+        self.assertEqual(code, 0)
+        self.assertIn("AANA evidence pack", output)
+        self.assertIn("AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.", output)
+        self.assertIn("validation: pass", output)
 
     def test_agent_check_writes_redacted_audit_log(self):
         with tempfile.TemporaryDirectory() as tmp:

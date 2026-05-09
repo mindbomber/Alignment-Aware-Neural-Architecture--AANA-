@@ -4,6 +4,12 @@ The AANA agent contract SDK lets an agent runtime check tool calls before
 execution. The runtime emits a small `aana.agent_tool_precheck.v1` event, AANA
 validates it, and the gate returns `accept`, `ask`, `defer`, or `refuse`.
 
+Public claim: AANA is an architecture for making agents more auditable, safer,
+more grounded, and more controllable. The SDK exposes that architecture through
+an `architecture_decision` envelope that includes the route, AIx score, hard
+blockers, evidence refs, authorization state, correction/recovery suggestion,
+and audit-safe log event.
+
 Proceed with the tool call only when:
 
 - `gate_decision == "pass"`
@@ -34,9 +40,13 @@ event = aana.build_tool_precheck_event(
     recommended_route="accept",
 )
 
-result = aana.check_tool_precheck(event)
+result = aana.check_tool_call(event)
 if aana.should_execute_tool(result):
     pass  # Execute the tool call.
+
+print(result["architecture_decision"]["route"])
+print(result["architecture_decision"]["aix_score"])
+print(result["architecture_decision"]["hard_blockers"])
 ```
 
 Bridge client:
@@ -44,6 +54,19 @@ Bridge client:
 ```python
 client = aana.AANAClient(base_url="http://127.0.0.1:8765", token="...")
 result = client.tool_precheck(event)
+```
+
+Alias for action-first runtimes:
+
+```python
+decision = aana.gate_action(event)
+```
+
+CLI:
+
+```powershell
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+aana evidence-pack --require-existing-artifacts
 ```
 
 ## TypeScript

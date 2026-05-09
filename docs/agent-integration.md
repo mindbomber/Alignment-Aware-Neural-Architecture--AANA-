@@ -307,7 +307,13 @@ Content-Type: application/json
 Body: the AANA agent event
 ```
 
-Use `/validate-event` to catch malformed events before execution. The `/agent-check` response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `aix`, `candidate_aix`, `violations`, `safe_response`, and the full adapter result.
+Use `/validate-event` to catch malformed events before execution. The `/agent-check` response shape matches the CLI and Python API: `gate_decision`, `recommended_action`, `aix`, `candidate_aix`, `violations`, `safe_response`, and the full adapter result. CLI and SDK responses also expose `architecture_decision`, the public AANA decision surface with route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
+
+For direct pre-tool-call checks:
+
+```powershell
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+```
 
 For tools that ingest OpenAPI, point them at:
 
