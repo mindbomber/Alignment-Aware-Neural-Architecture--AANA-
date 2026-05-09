@@ -29,6 +29,10 @@ Reviewer-facing evidence pack:
 `https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`.
 It packages measured privacy, grounded QA, tool-use, and agent-integration
 validation artifacts plus a reproduction script and a short peer-review report.
+The machine-readable manifest is
+`data/aana_peer_review_package_manifest.json` inside that dataset repo. It
+records exact AANA version, split boundaries, metrics, failure cases, false
+positives, unsupported domains, latency, and reproduction commands.
 
 The agent-action experiments used transformed public tool-call traces from two sources:
 

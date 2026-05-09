@@ -32,6 +32,20 @@ agent-performance engine.
 4. Read the technical report for the architecture interpretation, limitations,
    and open reviewer questions.
 
+## Peer-Review Package Contents
+
+The dataset repo includes a machine-readable peer-review manifest at
+`data/aana_peer_review_package_manifest.json` with:
+
+- exact AANA package version and git commit
+- eval case counts and source artifacts
+- calibration split vs held-out split boundaries
+- metrics for privacy, grounded QA, tool-use, and integration validation
+- failure cases and false positives
+- unsupported domains and public-claim boundaries
+- integration latency measurements
+- commands to reproduce the package and validation checks
+
 ## What This Hub Does Not Claim
 
 - It does not claim AANA is production-certified.

@@ -7,9 +7,11 @@ import argparse
 import json
 import pathlib
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from typing import Any
+import tomllib
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -50,6 +52,32 @@ def _load_json(path: pathlib.Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _project_metadata() -> dict[str, Any]:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project = pyproject.get("project", {})
+    commit = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    dirty = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "package_name": project.get("name"),
+        "aana_version": project.get("version"),
+        "git_commit": commit.stdout.strip() if commit.returncode == 0 else "unknown",
+        "git_dirty": bool(dirty.stdout.strip()) if dirty.returncode == 0 else None,
+        "python_requires": project.get("requires-python"),
+    }
+
+
 def _sanitize(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: _sanitize(item) for key, item in value.items() if key not in DROP_KEYS}
@@ -85,6 +113,169 @@ def _with_metadata(name: str, source_path: pathlib.Path, payload: dict[str, Any]
 def _write_json(path: pathlib.Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _row_id(row: dict[str, Any]) -> str:
+    return str(row.get("id") or row.get("request_id") or row.get("name") or "unknown")
+
+
+def _collect_failure_cases(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    for row in payload.get("rows", []):
+        reasons: list[str] = []
+        if row.get("expected_route") != row.get("actual_route") and row.get("actual_route") is not None:
+            reasons.append("route_mismatch")
+        if row.get("expected_label") != row.get("actual_label") and row.get("actual_label") is not None:
+            reasons.append("label_mismatch")
+        expected_categories = sorted(row.get("expected_categories") or [])
+        detected_categories = sorted(row.get("detected_categories") or [])
+        if expected_categories != detected_categories:
+            reasons.append("category_mismatch")
+        if row.get("route_correct") is False or row.get("correct") is False:
+            reasons.append("scoring_mismatch")
+        if reasons:
+            failures.append(
+                {
+                    "id": _row_id(row),
+                    "source_dataset": row.get("source_dataset"),
+                    "reasons": reasons,
+                    "expected_route": row.get("expected_route"),
+                    "actual_route": row.get("actual_route"),
+                    "expected_label": row.get("expected_label"),
+                    "actual_label": row.get("actual_label"),
+                    "expected_categories": expected_categories,
+                    "detected_categories": detected_categories,
+                }
+            )
+    return failures
+
+
+def _collect_false_positives(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    false_positives: list[dict[str, Any]] = []
+    for row in payload.get("rows", []):
+        expected_route = row.get("expected_route")
+        actual_route = row.get("actual_route") or row.get("recommended_action")
+        expected_block = row.get("expected_block")
+        blocked = row.get("blocked")
+        if expected_route == "accept" and actual_route and actual_route != "accept":
+            false_positives.append(
+                {
+                    "id": _row_id(row),
+                    "source_dataset": row.get("source_dataset"),
+                    "expected_route": expected_route,
+                    "actual_route": actual_route,
+                }
+            )
+        elif expected_block is False and blocked is True:
+            false_positives.append(
+                {
+                    "id": _row_id(row),
+                    "source_dataset": row.get("source_dataset"),
+                    "expected_block": expected_block,
+                    "blocked": blocked,
+                }
+            )
+    return false_positives
+
+
+def _split_summary(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    summary = []
+    for source in payload.get("dataset_sources", []):
+        summary.append(
+            {
+                "dataset_name": source.get("dataset_name"),
+                "allowed_use": source.get("registry_allowed_use"),
+                "split_boundary": source.get("split_boundary")
+                or "Use registered calibration splits for tuning and held-out/external-reporting splits for public claims.",
+                "schema_role": source.get("schema_role"),
+            }
+        )
+    return summary
+
+
+def _latency_summary(integration: dict[str, Any]) -> dict[str, Any]:
+    checks = integration.get("checks", [])
+    latencies = [
+        check.get("latency_ms")
+        for check in checks
+        if isinstance(check.get("latency_ms"), int | float)
+    ]
+    return {
+        "integration_check_latency_ms": {
+            "count": len(latencies),
+            "min": min(latencies) if latencies else None,
+            "max": max(latencies) if latencies else None,
+            "avg": round(sum(latencies) / len(latencies), 3) if latencies else None,
+        },
+        "per_check": [
+            {
+                "name": check.get("name"),
+                "valid": check.get("valid"),
+                "latency_ms": check.get("latency_ms"),
+            }
+            for check in checks
+        ],
+        "adapter_eval_latency": "not_measured_in_this_pack",
+    }
+
+
+def _package_manifest(results: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    all_failures: list[dict[str, Any]] = []
+    all_false_positives: list[dict[str, Any]] = []
+    split_boundaries: dict[str, Any] = {}
+    for name, payload in results.items():
+        failures = _collect_failure_cases(payload)
+        false_positives = _collect_false_positives(payload)
+        all_failures.extend({"artifact": name, **item} for item in failures)
+        all_false_positives.extend({"artifact": name, **item} for item in false_positives)
+        split_boundaries[name] = _split_summary(payload)
+
+    return {
+        "artifact": "aana_peer_review_package_manifest",
+        "exact_aana_version": _project_metadata(),
+        "bundle_surfaces": {
+            "model_repo": MODEL_URL,
+            "dataset_repo": DATASET_URL,
+            "space": SPACE_URL,
+            "paper_or_report_page": f"{GITHUB_URL}/blob/master/docs/aana-agent-action-technical-report.md",
+            "artifact_hub": ARTIFACT_HUB_URL,
+        },
+        "eval_cases": {
+            name: {
+                "case_count": payload.get("metrics", {}).get("case_count", payload.get("total")),
+                "source_file": payload.get("source_file"),
+            }
+            for name, payload in results.items()
+        },
+        "calibration_vs_heldout_split": split_boundaries,
+        "metrics": {
+            name: payload.get("metrics") or {
+                "valid": payload.get("valid"),
+                "passed": payload.get("passed"),
+                "total": payload.get("total"),
+            }
+            for name, payload in results.items()
+        },
+        "failure_cases": all_failures,
+        "false_positives": all_false_positives,
+        "unsupported_domains": [
+            "Domains without a registered and held-out validated adapter family.",
+            "Production medical diagnosis, legal advice, financial advice, or regulated approval workflows without domain-owner policy and human escalation.",
+            "Real sends, deletes, purchases, exports, fund transfers, production deploys, or account changes in public demos.",
+            "Raw agent task-success claims where AANA is used as the planner rather than as a check/control layer.",
+            "Benchmark leaderboard claims unless the benchmark maintainer accepts the protocol and submission channel.",
+        ],
+        "latency": _latency_summary(results["agent_integration_validation"]),
+        "commands_to_reproduce": [
+            "python scripts/build_peer_review_evidence_pack.py",
+            "python eval_outputs/hf_peer_review_evidence_pack/aana-peer-review-evidence-pack/scripts/reproduce.py --pack-dir eval_outputs/hf_peer_review_evidence_pack/aana-peer-review-evidence-pack",
+            "python scripts/validate_agent_integrations.py",
+        ],
+        "claim_boundary": (
+            "This package supports review of AANA as an audit/control/verification/"
+            "correction layer. It does not prove AANA as a raw agent-performance engine."
+        ),
+    }
 
 
 def _metric_table(results: dict[str, dict[str, Any]]) -> str:
@@ -139,12 +330,24 @@ The claim boundary is intentionally narrow:
 - `data/grounded_qa_heldout_results.json`: grounded QA and hallucination adapter validation.
 - `data/tool_use_heldout_results.json`: agent tool-use control validation.
 - `data/agent_integration_validation.json`: OpenAI-style wrapper, FastAPI policy service, MCP tool, and controlled-agent eval smoke validation.
+- `data/aana_peer_review_package_manifest.json`: exact AANA version, split boundaries, metrics, failures, false positives, unsupported domains, latency, and reproduction commands.
 - `scripts/reproduce.py`: validates the evidence-pack structure and can run local repo validation commands.
 - `reports/aana_peer_review_report.md`: short technical report for reviewers.
 
 ## Summary
 
 {_metric_table(results)}
+
+## Peer-Review Package Checklist
+
+- Exact AANA version: recorded in `data/aana_peer_review_package_manifest.json`.
+- Eval cases: included in each `data/*_results.json` artifact.
+- Calibration split vs held-out split: recorded per source dataset in the manifest.
+- Metrics: summarized below and stored in each result artifact.
+- Failure cases and false positives: extracted into the manifest.
+- Unsupported domains: listed in the manifest and report.
+- Latency: integration latency is measured in the manifest; adapter-eval latency is marked as not yet measured.
+- Command to reproduce: `python scripts/reproduce.py --pack-dir .`
 
 ## Public Links
 
@@ -247,6 +450,7 @@ import sys
 
 REQUIRED_FILES = [
     "README.md",
+    "data/aana_peer_review_package_manifest.json",
     "data/privacy_heldout_results.json",
     "data/grounded_qa_heldout_results.json",
     "data/tool_use_heldout_results.json",
@@ -349,6 +553,7 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
     _write_json(output_dir / "data" / "grounded_qa_heldout_results.json", grounded)
     _write_json(output_dir / "data" / "tool_use_heldout_results.json", tool_use)
     _write_json(output_dir / "data" / "agent_integration_validation.json", integration)
+    _write_json(output_dir / "data" / "aana_peer_review_package_manifest.json", _package_manifest(results))
     (output_dir / "README.md").write_text(_readme(results), encoding="utf-8")
     (output_dir / "reports" / "aana_peer_review_report.md").write_text(_report(results), encoding="utf-8")
     reproduce = output_dir / "scripts" / "reproduce.py"

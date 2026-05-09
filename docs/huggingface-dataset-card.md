@@ -45,6 +45,15 @@ It is not for training and reporting on the same split. Never use the same split
 - Safe allow rate.
 - Ask/defer/refuse route quality.
 - Schema failure rate.
+- Integration latency.
+
+## Peer-Review Manifest
+
+The public peer-review dataset includes
+`data/aana_peer_review_package_manifest.json`, which records the exact AANA
+package version, git commit, eval case counts, calibration-vs-held-out split
+boundaries, metrics, failure cases, false positives, unsupported domains,
+latency, and commands to reproduce the package.
 
 ## Split Isolation
 
