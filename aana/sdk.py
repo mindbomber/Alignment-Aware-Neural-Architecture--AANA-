@@ -27,7 +27,7 @@ from aana.canonical_ids import (
 )
 from aana.registry import bundle_adapter_aliases
 from eval_pipeline import agent_api, agent_contract, workflow_contract
-from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
+from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage, normalize_evidence_ref, public_audit_or_claim_ready
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
@@ -166,6 +166,7 @@ def tool_evidence_ref(
     redaction_status="unknown",
     summary=None,
     retrieved_at=None,
+    freshness=None,
     citation_url=None,
     retrieval_url=None,
     provenance=None,
@@ -202,6 +203,10 @@ def tool_evidence_ref(
         ref["supports"] = list(supports)
     if contradicts is not None:
         ref["contradicts"] = list(contradicts)
+    default_freshness_status = "fresh" if retrieved_at or trust_tier in {"verified", "runtime"} else "unknown"
+    ref = normalize_evidence_ref(ref, default_provenance=str(provenance or "runtime"), default_freshness_status=default_freshness_status)
+    if freshness is not None:
+        ref["freshness"] = dict(freshness) if isinstance(freshness, dict) else {"status": str(freshness)}
     return ref
 
 
@@ -224,6 +229,8 @@ def normalize_tool_evidence_refs(evidence_refs=None):
                     kind="other",
                     trust_tier="runtime",
                     redaction_status="redacted",
+                    freshness={"status": "fresh", "source": "runtime_quickstart"},
+                    provenance="runtime_quickstart",
                     summary="Quickstart evidence reference supplied by the agent runtime.",
                 )
             )
@@ -234,6 +241,8 @@ def normalize_tool_evidence_refs(evidence_refs=None):
         payload.setdefault("kind", "other")
         payload.setdefault("trust_tier", "unknown")
         payload.setdefault("redaction_status", "unknown")
+        payload.setdefault("provenance", "runtime")
+        payload.setdefault("freshness", {"status": "unknown"})
         refs.append(tool_evidence_ref(**payload))
     return refs
 
@@ -321,6 +330,7 @@ def normalize_tool_call_event(event=None, **kwargs):
         payload = dict(event)
         payload.update(kwargs)
         if payload.get("schema_version") == TOOL_PRECHECK_SCHEMA_VERSION:
+            payload["evidence_refs"] = normalize_tool_evidence_refs(payload.get("evidence_refs", []))
             return payload
     payload.setdefault("schema_version", TOOL_PRECHECK_SCHEMA_VERSION)
     recommended_route = _normalize_public_tool_route(
@@ -446,6 +456,8 @@ def audit_safe_decision_event(result, event=None, *, latency_ms=None):
             "missing": _missing_evidence_markers(result),
             "contradictory": _contradictory_evidence_markers(result),
         },
+        "public_audit_log_allowed": public_audit_or_claim_ready(result.get("evidence_integrity") or {}),
+        "public_claim_allowed": public_audit_or_claim_ready(result.get("evidence_integrity") or {}),
         "authorization_state": event.get("authorization_state")
         or (event.get("metadata") or {}).get("authorization_state")
         if isinstance(event.get("metadata"), dict)

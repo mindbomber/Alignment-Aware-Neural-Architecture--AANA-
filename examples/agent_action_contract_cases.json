@@ -16,7 +16,11 @@
             "kind": "policy",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "Public docs search does not expose identity-bound data."
+            "summary": "Public docs search does not expose identity-bound data.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "public_information",
@@ -40,14 +44,22 @@
             "kind": "auth_event",
             "trust_tier": "verified",
             "redaction_status": "redacted",
-            "summary": "User identity was authenticated."
+            "summary": "User identity was authenticated.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           },
           {
             "source_id": "policy.own_account_read",
             "kind": "policy",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "Authenticated users may read their own account transactions."
+            "summary": "Authenticated users may read their own account transactions.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "finance",
@@ -72,7 +84,11 @@
             "kind": "user_message",
             "trust_tier": "user_claimed",
             "redaction_status": "redacted",
-            "summary": "User supplied an identity claim but no verified authentication event."
+            "summary": "User supplied an identity claim but no verified authentication event.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "unknown"
+            }
           }
         ],
         "risk_domain": "hr",
@@ -96,21 +112,33 @@
             "kind": "auth_event",
             "trust_tier": "verified",
             "redaction_status": "redacted",
-            "summary": "Account ownership was validated."
+            "summary": "Account ownership was validated.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           },
           {
             "source_id": "approval.user_confirmed_refund",
             "kind": "approval",
             "trust_tier": "verified",
             "redaction_status": "redacted",
-            "summary": "User explicitly confirmed the refund action."
+            "summary": "User explicitly confirmed the refund action.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           },
           {
             "source_id": "policy.refund_allowed",
             "kind": "policy",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "Policy allows refund for the selected order."
+            "summary": "Policy allows refund for the selected order.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "commerce",
@@ -135,7 +163,11 @@
             "kind": "system_state",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "No authenticated or validated authorization context is available."
+            "summary": "No authenticated or validated authorization context is available.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "customer_support",
@@ -159,7 +191,11 @@
             "kind": "system_state",
             "trust_tier": "runtime",
             "redaction_status": "public",
-            "summary": "The runtime has not classified the tool's read/write or sensitivity behavior."
+            "summary": "The runtime has not classified the tool's read/write or sensitivity behavior.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "unknown",

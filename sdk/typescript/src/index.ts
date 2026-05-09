@@ -111,6 +111,14 @@ export interface ToolEvidenceRef {
     | "other";
   trust_tier?: "verified" | "runtime" | "user_claimed" | "unverified" | "unknown";
   redaction_status?: "public" | "redacted" | "sensitive" | "unknown";
+  freshness?: {
+    status: "fresh" | "stale" | "unknown";
+    checked_at?: string;
+    max_age_hours?: number;
+    age_hours?: number;
+    source?: string;
+  };
+  provenance?: string;
   summary?: string;
 }
 
@@ -384,6 +392,8 @@ export function toolEvidenceRef(input: ToolEvidenceRef): ToolEvidenceRef {
   return {
     trust_tier: "unknown",
     redaction_status: "unknown",
+    freshness: { status: input.trust_tier === "verified" || input.trust_tier === "runtime" ? "fresh" : "unknown" },
+    provenance: "runtime",
     ...input
   };
 }

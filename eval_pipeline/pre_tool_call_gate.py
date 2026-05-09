@@ -15,7 +15,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from eval_pipeline.adapter_generalization_config import configured_set
-from eval_pipeline.evidence_safety import analyze_tool_evidence_refs
+from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, normalize_evidence_ref
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -61,6 +61,41 @@ def validate_event(event: dict[str, Any], schema_path: pathlib.Path | str = DEFA
             }
         )
     return errors
+
+
+def normalize_evidence_refs_for_validation(event: dict[str, Any]) -> dict[str, Any]:
+    """Fill backward-compatible evidence-ref defaults before schema validation."""
+
+    payload = dict(event or {})
+    refs = []
+    for ref in payload.get("evidence_refs") or []:
+        if isinstance(ref, str):
+            refs.append(
+                normalize_evidence_ref(
+                    {
+                        "source_id": ref,
+                        "kind": "other",
+                        "trust_tier": "runtime",
+                        "redaction_status": "redacted",
+                        "summary": "Quickstart evidence reference supplied by the agent runtime.",
+                    },
+                    default_provenance="runtime_quickstart",
+                    default_freshness_status="fresh",
+                )
+            )
+        elif isinstance(ref, dict):
+            trust = str(ref.get("trust_tier") or "unknown")
+            refs.append(
+                normalize_evidence_ref(
+                    ref,
+                    default_provenance=str(ref.get("provenance") or "runtime"),
+                    default_freshness_status="fresh" if trust in {"verified", "runtime"} else "unknown",
+                )
+            )
+        else:
+            refs.append(ref)
+    payload["evidence_refs"] = refs
+    return payload
 
 
 def stricter_route(left: str, right: str) -> str:
@@ -543,6 +578,7 @@ def route_from_event(event: dict[str, Any]) -> tuple[str, list[str], list[str]]:
 
 def gate_pre_tool_call(event: dict[str, Any], schema_path: pathlib.Path | str = DEFAULT_SCHEMA) -> dict[str, Any]:
     event, prevalidation_reasons = normalize_authorization_for_validation(event)
+    event = normalize_evidence_refs_for_validation(event)
     validation_errors = validate_event(event, schema_path)
     if validation_errors:
         route = "refuse"
@@ -603,8 +639,10 @@ def gate_pre_tool_call_v2(
     rejected only because the runtime route was ``accept``.
     """
 
+    event = normalize_evidence_refs_for_validation(event)
     raw_validation_errors = validate_event(event, schema_path)
     normalized, normalization_reasons = normalize_event_for_v2(event)
+    normalized = normalize_evidence_refs_for_validation(normalized)
     validation_errors = validate_event(normalized, schema_path)
     tool_intent = infer_tool_intent(normalized)
 

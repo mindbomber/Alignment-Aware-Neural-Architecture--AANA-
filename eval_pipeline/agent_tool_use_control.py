@@ -14,6 +14,7 @@ from collections import Counter
 from typing import Any
 
 from aana import registry as aana_registry
+from eval_pipeline.evidence_safety import normalize_evidence_ref
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call_v2, validate_event
 
 
@@ -126,7 +127,14 @@ def evidence_refs_from_trace(row: dict[str, Any]) -> list[dict[str, Any]]:
         refs.append({"source_id": "trace.confirmation", "kind": "approval", "trust_tier": "user_claimed", "redaction_status": "redacted", "summary": "Trace context includes explicit user confirmation for the operation."})
     if features.get("counterfactual_missing_authorization"):
         refs.append({"source_id": "counterfactual.missing_authorization", "kind": "system_state", "trust_tier": "verified", "redaction_status": "public", "summary": "Counterfactual stressor removes authorization before execution."})
-    return refs
+    return [
+        normalize_evidence_ref(
+            ref,
+            default_provenance=str(ref.get("provenance") or row.get("source_dataset") or row.get("source_family") or "external_trace"),
+            default_freshness_status="fresh" if ref.get("trust_tier") in {"verified", "runtime"} else "unknown",
+        )
+        for ref in refs
+    ]
 
 
 def convert_tool_call_to_precheck_event(row: dict[str, Any]) -> dict[str, Any]:

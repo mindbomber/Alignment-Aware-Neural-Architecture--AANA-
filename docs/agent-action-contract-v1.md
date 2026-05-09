@@ -43,7 +43,7 @@ Runtimes must treat unknown future route values as fail-closed unless they expli
 | `tool_name` | yes | Exact tool/function name the agent intends to call. |
 | `tool_category` | yes | `public_read`, `private_read`, `write`, or `unknown`. |
 | `authorization_state` | yes | `none`, `user_claimed`, `authenticated`, `validated`, or `confirmed`. |
-| `evidence_refs` | yes | Redacted evidence references used to classify the action and authorization state. |
+| `evidence_refs` | yes | Redacted evidence references used to classify the action and authorization state. Production refs use the standardized evidence-ref schema below. |
 | `risk_domain` | yes | Primary risk surface, such as `customer_support`, `finance`, `devops`, `legal`, `pharma`, `research`, or `unknown`. |
 | `proposed_arguments` | yes | Tool arguments the agent intends to pass. Redact secrets and private values where possible. |
 | `recommended_route` | yes | Runtime's proposed route before AANA applies stricter checks: `accept`, `ask`, `defer`, or `refuse`. |
@@ -72,6 +72,22 @@ Only execute when all are true:
 
 No other route executes. `revise`, `retrieve`, `ask`, `defer`, and `refuse`
 are recovery/control routes that must complete and then recheck, or stop.
+
+## Evidence Ref Schema
+
+Every production evidence ref should include:
+
+- `source_id`: opaque source or record reference.
+- `kind`: `user_message`, `assistant_message`, `tool_result`, `policy`, `auth_event`, `approval`, `system_state`, `audit_record`, or `other`.
+- `trust_tier`: `verified`, `runtime`, `user_claimed`, `unverified`, or `unknown`.
+- `redaction_status`: `public`, `redacted`, `sensitive`, or `unknown`.
+- `freshness`: object with at least `status`, where status is `fresh`, `stale`, or `unknown`.
+- `provenance`: redacted source label such as `connector`, `policy`, `runtime`, or `fixture`.
+
+String refs are still accepted for quickstarts and are normalized into redacted
+runtime refs. Public audit logs and public claims are allowed only when evidence
+integrity checks do not find secret/PII leakage, unsafe redaction, stale
+freshness, missing provenance, or unknown freshness/redaction status.
 
 ## Route Semantics
 
@@ -122,3 +138,4 @@ The examples cover safe public reads, authenticated private reads, private reads
 - Treat `write` as consequential; it needs `validated` or `confirmed` authorization, and high-risk writes should require `confirmed`.
 - Treat `unknown` as non-executable until classified.
 - Keep raw private data out of `evidence_refs` and audit logs.
+- Use `public` or `redacted` evidence refs with fresh `freshness.status` and clear `provenance` before publishing audit logs or claims.

@@ -11,7 +11,11 @@
       "kind": "auth_event",
       "trust_tier": "verified",
       "redaction_status": "redacted",
-      "summary": "User authenticated for the account lookup."
+      "summary": "User authenticated for the account lookup.",
+      "provenance": "fixture",
+      "freshness": {
+        "status": "fresh"
+      }
     }
   ],
   "risk_domain": "finance",

@@ -15,7 +15,11 @@
             "kind": "policy",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "Game scores are public/non-sensitive reads."
+            "summary": "Game scores are public/non-sensitive reads.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "public_information",
@@ -40,14 +44,22 @@
             "kind": "auth_event",
             "trust_tier": "verified",
             "redaction_status": "redacted",
-            "summary": "User identity was authenticated through email lookup."
+            "summary": "User identity was authenticated through email lookup.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           },
           {
             "source_id": "policy.bank.transactions",
             "kind": "policy",
             "trust_tier": "verified",
             "redaction_status": "public",
-            "summary": "Authenticated users may read their own transaction history."
+            "summary": "Authenticated users may read their own transaction history.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "finance",
@@ -76,7 +88,11 @@
             "kind": "auth_event",
             "trust_tier": "verified",
             "redaction_status": "redacted",
-            "summary": "User identity was authenticated, but account status validation and explicit confirmation are missing."
+            "summary": "User identity was authenticated, but account status validation and explicit confirmation are missing.",
+            "provenance": "fixture",
+            "freshness": {
+              "status": "fresh"
+            }
           }
         ],
         "risk_domain": "finance",

@@ -66,7 +66,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["source_id", "kind"],
+        "required": ["source_id", "kind", "trust_tier", "redaction_status", "freshness", "provenance"],
         "properties": {
           "source_id": {
             "type": "string",
@@ -104,6 +104,32 @@
             "type": "string",
             "description": "Optional ISO timestamp for freshness checks."
           },
+          "freshness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status"],
+            "description": "Freshness status used before public audit logs or claims.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["fresh", "stale", "unknown"]
+              },
+              "checked_at": {
+                "type": "string",
+                "description": "Optional ISO timestamp for when freshness was checked."
+              },
+              "max_age_hours": {
+                "type": "number"
+              },
+              "age_hours": {
+                "type": "number"
+              },
+              "source": {
+                "type": "string",
+                "description": "Redacted source of the freshness assertion."
+              }
+            }
+          },
           "citation_url": {
             "type": "string",
             "description": "Optional public citation/provenance URL."
@@ -114,7 +140,8 @@
           },
           "provenance": {
             "type": "string",
-            "description": "Optional redacted provenance label such as connector, policy, user, runtime, or fixture."
+            "minLength": 1,
+            "description": "Required redacted provenance label such as connector, policy, user, runtime, or fixture."
           },
           "supports": {
             "type": "array",

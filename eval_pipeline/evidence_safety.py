@@ -9,9 +9,11 @@ from typing import Any
 
 EVIDENCE_SAFETY_VERSION = "0.1"
 DEFAULT_MAX_AGE_HOURS = 24 * 7
+EVIDENCE_REF_REQUIRED_FIELDS = ("source_id", "kind", "trust_tier", "redaction_status", "freshness", "provenance")
 TRUST_ORDER = {"unknown": 0, "unverified": 1, "user_claimed": 2, "runtime": 3, "verified": 4}
 SAFE_REDACTION_STATUSES = {"public", "redacted"}
 SENSITIVE_REDACTION_STATUSES = {"sensitive", "unredacted"}
+FRESHNESS_STATUSES = {"fresh", "stale", "unknown"}
 SECRET_PATTERNS = [
     re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
     re.compile(r"\bsk-or-v1-[A-Za-z0-9]{20,}\b"),
@@ -59,6 +61,92 @@ def _add_issue(issues: list[dict[str, Any]], level: str, code: str, path: str, m
     issues.append({"level": level, "code": code, "path": path, "message": message})
 
 
+def normalize_evidence_ref(ref: dict[str, Any], *, default_provenance: str = "runtime", default_freshness_status: str = "unknown") -> dict[str, Any]:
+    """Return a canonical AANA evidence ref with required public fields."""
+
+    payload = dict(ref)
+    payload.setdefault("kind", "other")
+    payload.setdefault("trust_tier", "unknown")
+    payload.setdefault("redaction_status", "unknown")
+    payload.setdefault("provenance", default_provenance)
+    freshness = payload.get("freshness")
+    if not isinstance(freshness, dict):
+        freshness = {}
+    freshness.setdefault("status", default_freshness_status if default_freshness_status in FRESHNESS_STATUSES else "unknown")
+    if payload.get("retrieved_at") and not freshness.get("checked_at"):
+        freshness["checked_at"] = payload.get("retrieved_at")
+    payload["freshness"] = freshness
+    return payload
+
+
+def evidence_ref_schema() -> dict[str, Any]:
+    """Return the canonical evidence-ref schema used by pre-tool contracts."""
+
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": list(EVIDENCE_REF_REQUIRED_FIELDS),
+        "properties": {
+            "source_id": {"type": "string", "minLength": 1},
+            "kind": {
+                "type": "string",
+                "enum": [
+                    "user_message",
+                    "assistant_message",
+                    "tool_result",
+                    "policy",
+                    "auth_event",
+                    "approval",
+                    "system_state",
+                    "audit_record",
+                    "other",
+                ],
+            },
+            "trust_tier": {"type": "string", "enum": ["verified", "runtime", "user_claimed", "unverified", "unknown"]},
+            "redaction_status": {"type": "string", "enum": ["public", "redacted", "sensitive", "unknown"]},
+            "freshness": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["status"],
+                "properties": {
+                    "status": {"type": "string", "enum": sorted(FRESHNESS_STATUSES)},
+                    "checked_at": {"type": "string"},
+                    "max_age_hours": {"type": "number"},
+                    "age_hours": {"type": "number"},
+                    "source": {"type": "string"},
+                },
+            },
+            "provenance": {"type": "string", "minLength": 1},
+            "summary": {"type": "string"},
+            "retrieved_at": {"type": "string"},
+            "citation_url": {"type": "string"},
+            "retrieval_url": {"type": "string"},
+            "supports": {"type": "array", "items": {"type": "string"}},
+            "contradicts": {"type": "array", "items": {"type": "string"}},
+        },
+    }
+
+
+def public_audit_or_claim_ready(evidence_report: dict[str, Any]) -> bool:
+    """Return whether evidence integrity is safe for public audit logs/claims."""
+
+    if not isinstance(evidence_report, dict):
+        return False
+    blocked = {
+        "evidence_secret_leak",
+        "evidence_pii_leak",
+        "unsafe_redaction_status",
+        "unknown_redaction_status",
+        "missing_freshness",
+        "unknown_freshness",
+        "stale_evidence",
+        "invalid_freshness",
+        "missing_provenance",
+    }
+    codes = set(evidence_report.get("error_codes") or []) | set(evidence_report.get("warning_codes") or [])
+    return not bool(codes & blocked)
+
+
 def analyze_tool_evidence_refs(
     evidence_refs: list[dict[str, Any]] | None,
     *,
@@ -87,9 +175,13 @@ def analyze_tool_evidence_refs(
         if not isinstance(ref, dict):
             _add_issue(issues, "error", "malformed_evidence_ref", path, "Evidence ref must be an object.")
             continue
+        for field in EVIDENCE_REF_REQUIRED_FIELDS:
+            if field not in ref:
+                level = "error" if field in {"source_id", "kind", "trust_tier", "redaction_status"} else "warning"
+                _add_issue(issues, level, f"missing_{field}", f"{path}.{field}", f"Evidence ref is missing required field {field}.")
         source_id = str(ref.get("source_id") or "")
         summary = str(ref.get("summary") or "")
-        text_for_scan = " ".join(str(ref.get(key) or "") for key in ("source_id", "summary", "citation_url", "retrieval_url"))
+        text_for_scan = " ".join(str(ref.get(key) or "") for key in ("source_id", "summary", "citation_url", "retrieval_url", "provenance"))
         if source_id:
             used.append(source_id)
         else:
@@ -113,6 +205,17 @@ def analyze_tool_evidence_refs(
             _add_issue(issues, "error", "evidence_pii_leak", path, "Evidence ref appears to contain raw PII without redaction.")
 
         retrieved_at = ref.get("retrieved_at")
+        freshness = ref.get("freshness") if isinstance(ref.get("freshness"), dict) else {}
+        freshness_status = str(freshness.get("status") or "unknown")
+        if freshness_status not in FRESHNESS_STATUSES:
+            _add_issue(issues, "error", "invalid_freshness", f"{path}.freshness.status", "freshness.status must be fresh, stale, or unknown.")
+        elif freshness_status == "stale":
+            _add_issue(issues, "error", "stale_evidence", f"{path}.freshness.status", "Evidence ref freshness status is stale.")
+        elif freshness_status == "unknown" and tool_category in {"private_read", "write"}:
+            _add_issue(issues, "warning", "unknown_freshness", f"{path}.freshness.status", "Private reads and writes should include fresh evidence.")
+        freshness_checked_at = freshness.get("checked_at")
+        if freshness_checked_at and not retrieved_at:
+            retrieved_at = freshness_checked_at
         if retrieved_at:
             parsed = _parse_time(retrieved_at)
             if parsed is None:

@@ -41,6 +41,14 @@ def test_agent_action_contract_v1_required_fields_are_frozen() -> None:
     assert schema["required"] == FROZEN_FIELDS
     assert schema["x-aana-contract-freeze"]["required_field_order"] == FROZEN_FIELDS
     assert "schema_version" not in schema["required"]
+    assert schema["properties"]["evidence_refs"]["items"]["required"] == [
+        "source_id",
+        "kind",
+        "trust_tier",
+        "redaction_status",
+        "freshness",
+        "provenance",
+    ]
 
 
 def test_agent_action_contract_v1_route_semantics_are_frozen() -> None:

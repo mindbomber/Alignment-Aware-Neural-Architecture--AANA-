@@ -93,4 +93,8 @@ if aana.should_execute_tool(decision):
 - `proposed_arguments`: redacted tool arguments.
 - `recommended_route`: the runtime route before AANA applies stricter checks.
 
-For production integrations, prefer structured evidence refs from `aana.tool_evidence_ref(...)` and keep raw private data out of the event.
+For production integrations, prefer structured evidence refs from
+`aana.tool_evidence_ref(...)`. Those refs standardize `source_id`, `kind`,
+`trust_tier`, `redaction_status`, `freshness`, and `provenance`. Keep raw
+private data out of the event; public audit logs and claims require safe
+redaction plus fresh, provenance-backed evidence.

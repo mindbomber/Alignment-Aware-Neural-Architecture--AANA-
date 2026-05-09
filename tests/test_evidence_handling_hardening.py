@@ -1,7 +1,7 @@
 import datetime as dt
 
 import aana
-from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
+from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage, public_audit_or_claim_ready
 
 
 def test_evidence_refs_do_not_return_raw_secret_values() -> None:
@@ -68,6 +68,41 @@ def test_evidence_integrity_checks_freshness_and_provenance() -> None:
 
     assert "stale_evidence" in report["error_codes"]
     assert report["provenance_source_ids"] == ["auth.old"]
+    assert not public_audit_or_claim_ready(report)
+
+
+def test_standardized_evidence_ref_fields_control_public_audit_claim_readiness() -> None:
+    safe = analyze_tool_evidence_refs(
+        [
+            aana.tool_evidence_ref(
+                source_id="policy.public",
+                kind="policy",
+                trust_tier="verified",
+                redaction_status="public",
+                provenance="policy_registry",
+                freshness={"status": "fresh", "source": "policy_registry"},
+            )
+        ],
+        tool_category="public_read",
+    )
+    unsafe = analyze_tool_evidence_refs(
+        [
+            {
+                "source_id": "auth.unknown",
+                "kind": "auth_event",
+                "trust_tier": "verified",
+                "redaction_status": "unknown",
+                "freshness": {"status": "unknown"},
+                "provenance": "auth_runtime",
+            }
+        ],
+        tool_category="write",
+    )
+
+    assert public_audit_or_claim_ready(safe)
+    assert not public_audit_or_claim_ready(unsafe)
+    assert "unknown_redaction_status" in unsafe["warning_codes"]
+    assert "unknown_freshness" in unsafe["warning_codes"]
 
 
 def test_missing_and_contradictory_evidence_are_distinct() -> None:
