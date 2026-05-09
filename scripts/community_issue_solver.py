@@ -10,12 +10,14 @@ import sys
 import urllib.parse
 import urllib.request
 
+from aana import registry as aana_registry
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CANDIDATES = ROOT / "examples" / "community_issue_candidates.json"
 DEFAULT_OUTPUT_DIR = ROOT / "eval_outputs" / "community_issue_solver"
 DEFAULT_AUDIT_LOG = ROOT / "eval_outputs" / "audit" / "community-issue-solver.jsonl"
-DEFAULT_ALLOWED_ACTIONS = ["accept", "revise", "retrieve", "ask", "defer", "refuse"]
+DEFAULT_ALLOWED_ACTIONS = list(aana_registry.ACTION_ROUTES)
 
 
 def load_json(path):

@@ -384,6 +384,7 @@ from aana.middleware import (
     openai_agents_tool_middleware,
     wrap_agent_tool,
 )
+from aana.registry import load_registry as load_platform_registry, registry as platform_registry
 
 
 __version__ = "0.1.0"
@@ -761,6 +762,8 @@ __all__ = [
     "result_object",
     "runtime_schemas",
     "ROUTE_TABLE",
+    "load_platform_registry",
+    "platform_registry",
     "schema_catalog",
     "normalize_evidence",
     "normalize_tool_call_event",

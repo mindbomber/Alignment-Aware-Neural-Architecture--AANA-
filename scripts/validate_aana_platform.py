@@ -41,6 +41,12 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
             "Validate one canonical ID source for adapter families, bundles, routes, evidence types, runtime modes, and aliases.",
         ),
         PlatformGate(
+            "registry",
+            "architecture",
+            [PYTHON, "scripts/validate_registry.py", "--json"],
+            "Validate the single AANA registry for adapters, bundles, datasets, evidence connectors, routes, and aliases.",
+        ),
+        PlatformGate(
             "contract_freeze",
             "contracts",
             [PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"],

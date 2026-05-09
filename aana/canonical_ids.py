@@ -6,7 +6,8 @@ import json
 import pathlib
 from typing import Any
 
-from eval_pipeline.route_semantics import ACTION_ROUTES, ROUTE_TABLE, route_allows_execution as _route_allows_execution
+from aana import registry as _registry
+from eval_pipeline.route_semantics import route_allows_execution as _route_allows_execution
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -41,110 +42,23 @@ def _bundle_ids_and_aliases_from_manifests() -> tuple[tuple[str, ...], dict[str,
     return tuple(ids), aliases
 
 
-ADAPTER_FAMILY_IDS = _adapter_family_ids_from_manifests()
-ADAPTER_FAMILY_ALIASES: dict[str, str] = {}
-
-BUNDLE_IDS, BUNDLE_ALIASES = _bundle_ids_and_aliases_from_manifests()
-
-TOOL_PRECHECK_ROUTES = (
-    "accept",
-    "ask",
-    "defer",
-    "refuse",
-)
-ROUTE_ALIASES = {
-    "block": "refuse",
-    "route_to_review": "defer",
-    "human_review": "defer",
-    "request_approval": "ask",
-    "request_confirmation": "ask",
-    "retrieve_evidence": "retrieve",
-    "revise_upstream_output": "revise",
-    "ask_clarification": "ask",
-    "defer_human_review": "defer",
-}
-
-TOOL_CATEGORIES = (
-    "public_read",
-    "private_read",
-    "write",
-    "unknown",
-)
-AUTHORIZATION_STATES = (
-    "none",
-    "user_claimed",
-    "authenticated",
-    "validated",
-    "confirmed",
-)
-RISK_DOMAINS = (
-    "devops",
-    "finance",
-    "education",
-    "hr",
-    "legal",
-    "pharma",
-    "healthcare",
-    "commerce",
-    "customer_support",
-    "security",
-    "research",
-    "personal_productivity",
-    "public_information",
-    "unknown",
-)
-TOOL_EVIDENCE_TYPES = (
-    "user_message",
-    "assistant_message",
-    "tool_result",
-    "policy",
-    "auth_event",
-    "approval",
-    "system_state",
-    "audit_record",
-    "other",
-)
-TOOL_EVIDENCE_TYPE_ALIASES = {
-    "user_instruction": "user_message",
-    "requested_action": "user_message",
-    "draft": "assistant_message",
-    "draft_email": "assistant_message",
-    "recipient_metadata": "tool_result",
-    "file_metadata": "tool_result",
-    "calendar_freebusy": "tool_result",
-    "attendee_list": "tool_result",
-    "live_quote": "tool_result",
-    "cart": "tool_result",
-    "retrieved_documents": "tool_result",
-    "citation_index": "tool_result",
-    "approval_policy": "policy",
-    "source_registry": "policy",
-    "evidence_limits": "policy",
-    "approval_state": "approval",
-}
-TRUST_TIERS = (
-    "verified",
-    "runtime",
-    "user_claimed",
-    "unverified",
-    "unknown",
-)
-REDACTION_STATUSES = (
-    "public",
-    "redacted",
-    "sensitive",
-    "unknown",
-)
-RUNTIME_MODES = (
-    "enforce",
-    "shadow",
-)
-RUNTIME_MODE_ALIASES = {
-    "enforced": "enforce",
-    "enforcement": "enforce",
-    "observe_only": "shadow",
-    "advisory": "shadow",
-}
+ADAPTER_FAMILY_IDS = _registry.adapter_family_ids()
+ADAPTER_FAMILY_ALIASES = dict(_registry.ADAPTER_FAMILY_ALIASES)
+BUNDLE_IDS = _registry.bundle_ids()
+BUNDLE_ALIASES = dict(_registry.registry().bundle_aliases)
+ACTION_ROUTES = _registry.ACTION_ROUTES
+ROUTE_TABLE = _registry.ROUTE_TABLE
+ROUTE_ALIASES = dict(_registry.ROUTE_ALIASES)
+TOOL_PRECHECK_ROUTES = _registry.TOOL_PRECHECK_ROUTES
+TOOL_CATEGORIES = _registry.TOOL_CATEGORIES
+AUTHORIZATION_STATES = _registry.AUTHORIZATION_STATES
+RISK_DOMAINS = _registry.RISK_DOMAINS
+TOOL_EVIDENCE_TYPES = _registry.TOOL_EVIDENCE_TYPES
+TOOL_EVIDENCE_TYPE_ALIASES = dict(_registry.TOOL_EVIDENCE_TYPE_ALIASES)
+TRUST_TIERS = _registry.TRUST_TIERS
+REDACTION_STATUSES = _registry.REDACTION_STATUSES
+RUNTIME_MODES = _registry.RUNTIME_MODES
+RUNTIME_MODE_ALIASES = dict(_registry.RUNTIME_MODE_ALIASES)
 
 
 def canonicalize(identifier: str, canonical_ids: tuple[str, ...], aliases: dict[str, str], *, surface: str) -> str:

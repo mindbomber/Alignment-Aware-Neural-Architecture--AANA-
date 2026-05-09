@@ -13,28 +13,14 @@ import re
 from collections import Counter
 from typing import Any
 
+from aana import registry as aana_registry
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call_v2, validate_event
 
 
-TOOL_CATEGORIES = {"public_read", "private_read", "write", "unknown"}
-AUTHORIZATION_STATES = {"none", "user_claimed", "authenticated", "validated", "confirmed"}
-ROUTES = {"accept", "ask", "defer", "refuse"}
-RISK_DOMAINS = {
-    "devops",
-    "finance",
-    "education",
-    "hr",
-    "legal",
-    "pharma",
-    "healthcare",
-    "commerce",
-    "customer_support",
-    "security",
-    "research",
-    "personal_productivity",
-    "public_information",
-    "unknown",
-}
+TOOL_CATEGORIES = set(aana_registry.TOOL_CATEGORIES)
+AUTHORIZATION_STATES = set(aana_registry.AUTHORIZATION_STATES)
+ROUTES = set(aana_registry.TOOL_PRECHECK_ROUTES)
+RISK_DOMAINS = set(aana_registry.RISK_DOMAINS)
 
 WRITE_RE = re.compile(
     r"\b(add|apply|book|cancel|change|create|delete|deploy|disable|enable|execute|grant|modify|pay|post|publish|purchase|refund|remove|reset|restart|revoke|send|submit|transfer|update|write)\b",

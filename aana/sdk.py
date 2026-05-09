@@ -25,7 +25,7 @@ from aana.canonical_ids import (
     TRUST_TIERS,
     route_allows_execution,
 )
-from aana.bundles import bundle_adapter_aliases
+from aana.registry import bundle_adapter_aliases
 from eval_pipeline import agent_api, agent_contract, workflow_contract
 from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
