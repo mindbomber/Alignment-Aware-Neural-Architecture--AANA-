@@ -4,6 +4,8 @@ Canonical entry point: [Integrate Runtime](integrate-runtime/index.md). Treat th
 
 AANA can sit around an AI agent as a verification and correction layer. The agent still plans and acts; AANA checks whether the next answer or action should pass, be revised, ask for missing information, defer to a stronger workflow, or be blocked.
 
+Fastest path: [Agent Action Contract Quickstart](agent-action-contract-quickstart.md).
+
 The Agent Event Contract is one of AANA's two primary public APIs, alongside the Workflow Contract. Agent integrations should build and validate Agent Event payloads, then call the Python API, CLI, or HTTP bridge that accepts that payload. They should not depend on adapter runner internals, verifier helper names, or repair-policy implementation details.
 
 Security boundary: an agent integration should call AANA only through a trusted interface that the user or administrator has configured and reviewed. Do not let an agent infer a local script path, run an unreviewed helper, or treat an untrusted checker as authoritative.

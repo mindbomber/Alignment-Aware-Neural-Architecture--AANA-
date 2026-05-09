@@ -39,7 +39,22 @@ PROHIBITED_AUDIT_FIELDS = {
     "constraints",
     "safe_response",
     "output",
+    "proposed_arguments",
+    "arguments",
+    "tool_arguments",
+    "full_tool_arguments",
+    "raw_tool_arguments",
 }
+PROHIBITED_AUDIT_KEY_PATTERN = re.compile(
+    r"(?i)(^|_)(api[_-]?key|auth[_-]?token|bearer[_-]?token|client[_-]?secret|"
+    r"password|private[_-]?account[_-]?id|raw[_-]?token|secret|session[_-]?token)($|_)"
+)
+PROHIBITED_AUDIT_VALUE_PATTERNS = [
+    ("bearer_token", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")),
+    ("api_key", re.compile(r"\b(?:sk|sk-or|sk-proj|hf|ghp|github_pat)_[A-Za-z0-9][A-Za-z0-9._-]{12,}")),
+    ("credential_assignment", re.compile(r"(?i)\b(?:api[_-]?key|token|secret|password)\s*[:=]\s*[^,\s}]{8,}")),
+    ("private_account_id", re.compile(r"\b(?:acct|account|customer|user|card|payment)_[A-Za-z0-9]{8,}\b")),
+]
 SUPPORT_REVIEW_ROUTE_CODES = {
     "missing_account_verification_path": "support_verification_review",
     "wrong_or_unverified_recipient": "support_security_review",
@@ -312,6 +327,36 @@ def _add_issue(issues, level, path, message):
     issues.append({"level": level, "path": path, "message": message})
 
 
+def _audit_sensitive_findings(value, path="$"):
+    findings = []
+    if isinstance(value, dict):
+        for key, child in value.items():
+            key_text = str(key)
+            child_path = f"{path}.{key_text}"
+            is_fingerprint_metadata = ".input_fingerprints." in child_path
+            if (key_text in PROHIBITED_AUDIT_FIELDS and not is_fingerprint_metadata) or PROHIBITED_AUDIT_KEY_PATTERN.search(key_text):
+                findings.append(
+                    {
+                        "path": child_path,
+                        "message": "Audit records must not store raw secrets, tokens, passwords, private account IDs, or full tool arguments.",
+                    }
+                )
+            findings.extend(_audit_sensitive_findings(child, child_path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            findings.extend(_audit_sensitive_findings(child, f"{path}[{index}]"))
+    elif isinstance(value, str):
+        for pattern_id, pattern in PROHIBITED_AUDIT_VALUE_PATTERNS:
+            if pattern.search(value):
+                findings.append(
+                    {
+                        "path": path,
+                        "message": f"Audit record contains a raw sensitive value matching {pattern_id}; store a fingerprint or redacted source id instead.",
+                    }
+                )
+    return findings
+
+
 def _aix_summary(result):
     if not isinstance(result, dict):
         return None
@@ -374,6 +419,54 @@ def _add_execution_metadata(record, result, shadow_mode=False):
     return record
 
 
+def _audit_safe_decision_event_from_record(record):
+    aix = record.get("aix") if isinstance(record.get("aix"), dict) else {}
+    return {
+        "audit_event_version": "aana.audit_safe_decision.v1",
+        "route": record.get("recommended_action"),
+        "gate_decision": record.get("gate_decision"),
+        "candidate_gate": record.get("candidate_gate"),
+        "aix_score": aix.get("score"),
+        "aix_decision": aix.get("decision"),
+        "hard_blockers": list(record.get("hard_blockers") or aix.get("hard_blockers") or []),
+        "missing_evidence": list(record.get("missing_evidence") or []),
+        "evidence_refs": {
+            "used": list(record.get("evidence_source_ids") or []),
+            "missing": list(record.get("missing_evidence") or []),
+            "contradictory": list(record.get("contradictory_evidence") or []),
+        },
+        "authorization_state": record.get("authorization_state") or "not_declared",
+        "latency_ms": record.get("latency_ms"),
+        "raw_payload_logged": False,
+    }
+
+
+def _missing_evidence_from_result(result):
+    missing = []
+    if not isinstance(result, dict):
+        return missing
+    for blocker in result.get("hard_blockers", []) or []:
+        text = str(blocker).lower()
+        if any(marker in text for marker in ("missing", "evidence", "authorization", "source", "citation", "approval")):
+            missing.append(str(blocker))
+    for violation in result.get("violations", []) or []:
+        if not isinstance(violation, dict):
+            continue
+        text = f"{violation.get('code', '')} {violation.get('message', '')}".lower()
+        if any(marker in text for marker in ("missing", "evidence", "authorization", "source", "citation", "unsupported")):
+            missing.append(str(violation.get("code") or violation.get("message")))
+    return sorted(set(item for item in missing if item))
+
+
+def _authorization_state_from_event(event):
+    if not isinstance(event, dict):
+        return "not_declared"
+    if event.get("authorization_state"):
+        return event.get("authorization_state")
+    metadata = event.get("metadata") if isinstance(event.get("metadata"), dict) else {}
+    return metadata.get("authorization_state") or "not_declared"
+
+
 def agent_audit_record(event, result, created_at=None, shadow_mode=False):
     """Create a redacted audit record for an agent event check.
 
@@ -415,6 +508,8 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
         "candidate_gate": result.get("candidate_gate") if isinstance(result, dict) else None,
         "aix": aix_summary,
         "hard_blockers": (aix_summary or {}).get("hard_blockers", []),
+        "missing_evidence": _missing_evidence_from_result(result),
+        "authorization_state": _authorization_state_from_event(event),
         "violation_count": len(violations),
         "violation_codes": _violation_codes(violations),
         "violation_severities": _violation_severities(violations),
@@ -436,6 +531,7 @@ def agent_audit_record(event, result, created_at=None, shadow_mode=False):
             "safe_response": _fingerprint(result.get("safe_response")) if isinstance(result, dict) else None,
         },
     }
+    record["audit_safe_log_event"] = _audit_safe_decision_event_from_record(record)
     return _add_execution_metadata(record, result, shadow_mode=shadow_mode)
 
 
@@ -473,6 +569,8 @@ def workflow_audit_record(workflow_request, result, created_at=None, shadow_mode
         "candidate_gate": result.get("candidate_gate") if isinstance(result, dict) else None,
         "aix": aix_summary,
         "hard_blockers": (aix_summary or {}).get("hard_blockers", []),
+        "missing_evidence": _missing_evidence_from_result(result),
+        "authorization_state": _authorization_state_from_event(workflow_request),
         "violation_count": len(violations),
         "violation_codes": _violation_codes(violations),
         "violation_severities": _violation_severities(violations),
@@ -497,6 +595,7 @@ def workflow_audit_record(workflow_request, result, created_at=None, shadow_mode
             "output": _fingerprint(result.get("output")) if isinstance(result, dict) else None,
         },
     }
+    record["audit_safe_log_event"] = _audit_safe_decision_event_from_record(record)
     return _add_execution_metadata(record, result, shadow_mode=shadow_mode)
 
 
@@ -568,6 +667,27 @@ def validate_audit_record(record, path="$"):
         _add_issue(issues, "error", f"{path}.adapter_version", "adapter_version must be a string or null.")
     if "latency_ms" in record and record.get("latency_ms") is not None and not isinstance(record.get("latency_ms"), (int, float)):
         _add_issue(issues, "error", f"{path}.latency_ms", "latency_ms must be numeric or null.")
+    if "missing_evidence" in record and not isinstance(record.get("missing_evidence"), list):
+        _add_issue(issues, "error", f"{path}.missing_evidence", "missing_evidence must be an array.")
+    if "authorization_state" in record and record.get("authorization_state") is not None and not isinstance(record.get("authorization_state"), str):
+        _add_issue(issues, "error", f"{path}.authorization_state", "authorization_state must be a string or null.")
+    audit_event = record.get("audit_safe_log_event")
+    if not isinstance(audit_event, dict):
+        _add_issue(issues, "error", f"{path}.audit_safe_log_event", "Audit record must include audit_safe_log_event.")
+    else:
+        if audit_event.get("audit_event_version") != "aana.audit_safe_decision.v1":
+            _add_issue(issues, "error", f"{path}.audit_safe_log_event.audit_event_version", "audit_safe_log_event must use aana.audit_safe_decision.v1.")
+        for key in ("route", "hard_blockers", "missing_evidence", "authorization_state", "latency_ms"):
+            if key not in audit_event:
+                _add_issue(issues, "error", f"{path}.audit_safe_log_event.{key}", "Required audit-safe decision field is missing.")
+        if not isinstance(audit_event.get("hard_blockers", []), list):
+            _add_issue(issues, "error", f"{path}.audit_safe_log_event.hard_blockers", "hard_blockers must be an array.")
+        if not isinstance(audit_event.get("missing_evidence", []), list):
+            _add_issue(issues, "error", f"{path}.audit_safe_log_event.missing_evidence", "missing_evidence must be an array.")
+        if audit_event.get("latency_ms") is not None and not isinstance(audit_event.get("latency_ms"), (int, float)):
+            _add_issue(issues, "error", f"{path}.audit_safe_log_event.latency_ms", "latency_ms must be numeric or null.")
+        if audit_event.get("raw_payload_logged") is not False:
+            _add_issue(issues, "error", f"{path}.audit_safe_log_event.raw_payload_logged", "audit-safe decision events must not log raw payloads.")
     for field in ("connector_failures", "evidence_freshness_failures"):
         if field in record and (
             not isinstance(record.get(field), list)
@@ -647,6 +767,8 @@ def validate_audit_record(record, path="$"):
 
     for field in sorted(PROHIBITED_AUDIT_FIELDS & set(record)):
         _add_issue(issues, "error", f"{path}.{field}", "Raw sensitive field is not allowed in redacted audit records.")
+    for finding in _audit_sensitive_findings(record, path=path):
+        _add_issue(issues, "error", finding["path"], finding["message"])
 
     errors = sum(1 for issue in issues if issue["level"] == "error")
     warnings = sum(1 for issue in issues if issue["level"] == "warning")
@@ -726,6 +848,7 @@ def validate_metrics_export(metrics_export):
     metrics = metrics_export.get("metrics", {}) if isinstance(metrics_export.get("metrics"), dict) else {}
     for required in (
         "audit_records_total",
+        "decision_case_count",
         "gate_decision_count",
         "recommended_action_count",
         "adapter_check_count",
@@ -767,7 +890,9 @@ def summarize_records(records):
     aix_scores = []
     aix_decisions = {}
     aix_hard_blockers = {}
+    decision_cases = {}
     for record in records:
+        _increment(decision_cases, _decision_case(record))
         record_type = record.get("record_type", "unknown")
         record_types[record_type] = record_types.get(record_type, 0) + 1
         execution_mode = record.get("execution_mode") or "enforce"
@@ -825,6 +950,7 @@ def summarize_records(records):
         "execution_modes": execution_modes,
         "gate_decisions": gate_decisions,
         "recommended_actions": recommended_actions,
+        "decision_cases": dict(sorted(decision_cases.items())),
         "adapters": adapters,
         "families": families,
         "roles": roles,
@@ -898,6 +1024,36 @@ def _record_has_missing_evidence(record):
     return False
 
 
+def _record_is_false_positive(record):
+    if not isinstance(record, dict):
+        return False
+    for key in ("review_outcome", "audit_review", "labels", "review"):
+        value = record.get(key)
+        if value == "false_positive":
+            return True
+        if isinstance(value, dict) and value.get("false_positive") is True:
+            return True
+        if isinstance(value, dict) and value.get("outcome") == "false_positive":
+            return True
+    return False
+
+
+def _decision_case(record):
+    if not isinstance(record, dict):
+        return "unknown"
+    action = record.get("recommended_action")
+    gate = record.get("gate_decision")
+    if _record_is_false_positive(record):
+        return "false_positive"
+    if action == "accept" and gate == "pass":
+        return "allowed"
+    if action == "defer":
+        return "deferred"
+    if gate == "fail" or action in {"ask", "refuse", "revise"}:
+        return "blocked"
+    return "unknown"
+
+
 def _rate(count, total):
     return round(count / total, 4) if total else 0.0
 
@@ -959,6 +1115,7 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         "audit_records_total": summary["total"],
         "gate_decision_count": _sum_counts(summary["gate_decisions"]),
         "recommended_action_count": _sum_counts(summary["recommended_actions"]),
+        "decision_case_count": _sum_counts(summary.get("decision_cases", {})),
         "violation_code_count": _sum_counts(summary["violation_codes"]),
         "adapter_check_count": _sum_counts(summary["adapters"]),
         "family_check_count": _sum_counts(summary.get("families", {})),
@@ -985,6 +1142,8 @@ def export_metrics(records, audit_log_path=None, created_at=None):
         metrics[_metric_key("gate_decision_count", decision)] = count
     for action, count in summary["recommended_actions"].items():
         metrics[_metric_key("recommended_action_count", action)] = count
+    for case, count in summary.get("decision_cases", {}).items():
+        metrics[_metric_key("decision_case_count", case)] = count
     for adapter, count in summary["adapters"].items():
         metrics[_metric_key("adapter_check_count", adapter)] = count
         for family in _adapter_families(adapter):
@@ -1285,6 +1444,10 @@ def dashboard_payload(records, audit_log_path=None, created_at=None):
             "revised": summary.get("recommended_actions", {}).get("revise", 0),
             "deferred": summary.get("recommended_actions", {}).get("defer", 0),
             "refused": summary.get("recommended_actions", {}).get("refuse", 0),
+            "allowed_cases": summary.get("decision_cases", {}).get("allowed", 0),
+            "blocked_cases": summary.get("decision_cases", {}).get("blocked", 0),
+            "deferred_cases": summary.get("decision_cases", {}).get("deferred", 0),
+            "false_positive_cases": summary.get("decision_cases", {}).get("false_positive", 0),
             "violation_total": metrics.get("violation_code_count", 0),
             "hard_blocker_total": hard_blocker_total,
             "human_review_rate": metrics.get("human_review_rate", 0.0),
@@ -1304,6 +1467,7 @@ def dashboard_payload(records, audit_log_path=None, created_at=None):
         "adapter_versions": summary.get("adapter_versions", {}),
         "gate_decisions": summary.get("gate_decisions", {}),
         "recommended_actions": summary.get("recommended_actions", {}),
+        "decision_cases": summary.get("decision_cases", {}),
         "violation_trends": trend_series,
         "top_violations": top_violations,
         "hard_blockers": {

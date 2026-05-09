@@ -5,6 +5,7 @@ from __future__ import annotations
 import fnmatch
 import json
 import pathlib
+import re
 from typing import Any
 
 
@@ -35,6 +36,16 @@ def _repo_files(root: pathlib.Path, include_patterns: list[str], allow_patterns:
 def _literal_groups(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     groups = manifest.get("forbidden_literal_groups", [])
     return groups if isinstance(groups, list) else []
+
+
+def _regex_groups(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    groups = manifest.get("forbidden_regex_groups", [])
+    return groups if isinstance(groups, list) else []
+
+
+def _group_allowed_paths(group: dict[str, Any]) -> list[str]:
+    allowed = group.get("allowed_paths", [])
+    return [str(pattern) for pattern in allowed] if isinstance(allowed, list) else []
 
 
 def validate_benchmark_fit_manifest(manifest: dict[str, Any], *, root: str | pathlib.Path = ".") -> dict[str, Any]:
@@ -68,6 +79,7 @@ def validate_benchmark_fit_manifest(manifest: dict[str, Any], *, root: str | pat
     groups = _literal_groups(manifest)
     if not groups:
         issues.append(_issue("error", "forbidden_literal_groups", "At least one forbidden literal group is required."))
+    regex_groups = _regex_groups(manifest)
 
     required_surfaces = policy.get("required_adapter_family_surfaces", [])
     if isinstance(required_surfaces, list):
@@ -105,6 +117,29 @@ def validate_benchmark_fit_manifest(manifest: dict[str, Any], *, root: str | pat
                             "group": str(group.get("id", "unknown")),
                             "literal": literal_text,
                             "message": "Known benchmark-answer literal found in a general path.",
+                        }
+                    )
+        for group in regex_groups:
+            if _matches(rel_path, _group_allowed_paths(group)):
+                continue
+            patterns = group.get("patterns", [])
+            if not isinstance(patterns, list):
+                issues.append(_issue("error", f"forbidden_regex_groups.{group.get('id', '<missing>')}.patterns", "patterns must be a list."))
+                continue
+            for pattern in patterns:
+                try:
+                    compiled = re.compile(str(pattern), re.IGNORECASE | re.MULTILINE)
+                except re.error as exc:
+                    issues.append(_issue("error", f"forbidden_regex_groups.{group.get('id', '<missing>')}.patterns", f"Invalid regex {pattern!r}: {exc}"))
+                    continue
+                match = compiled.search(text)
+                if match:
+                    findings.append(
+                        {
+                            "path": rel_path,
+                            "group": str(group.get("id", "unknown")),
+                            "literal": match.group(0)[:120],
+                            "message": "Probe-style or answer-key-style benchmark fitting pattern found in a general path.",
                         }
                     )
 

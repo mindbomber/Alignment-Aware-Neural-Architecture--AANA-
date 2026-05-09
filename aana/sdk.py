@@ -14,6 +14,7 @@ import urllib.request
 from urllib.parse import urlencode
 
 from eval_pipeline import agent_api, agent_contract, workflow_contract
+from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
@@ -22,6 +23,7 @@ TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
 TOOL_CATEGORIES = {"public_read", "private_read", "write", "unknown"}
 AUTHORIZATION_STATES = {"none", "user_claimed", "authenticated", "validated", "confirmed"}
 TOOL_PRECHECK_ROUTES = {"accept", "ask", "defer", "refuse"}
+EXECUTION_MODES = {"enforce", "shadow"}
 RISK_DOMAINS = {
     "devops",
     "finance",
@@ -196,6 +198,12 @@ def tool_evidence_ref(
     trust_tier="unknown",
     redaction_status="unknown",
     summary=None,
+    retrieved_at=None,
+    citation_url=None,
+    retrieval_url=None,
+    provenance=None,
+    supports=None,
+    contradicts=None,
 ):
     """Build one redacted evidence reference for a pre-tool-call event."""
 
@@ -221,7 +229,66 @@ def tool_evidence_ref(
     }
     if summary is not None:
         ref["summary"] = str(summary)
+    if retrieved_at is not None:
+        ref["retrieved_at"] = str(retrieved_at)
+    if citation_url is not None:
+        ref["citation_url"] = str(citation_url)
+    if retrieval_url is not None:
+        ref["retrieval_url"] = str(retrieval_url)
+    if provenance is not None:
+        ref["provenance"] = str(provenance)
+    if supports is not None:
+        ref["supports"] = list(supports)
+    if contradicts is not None:
+        ref["contradicts"] = list(contradicts)
     return ref
+
+
+def normalize_tool_evidence_refs(evidence_refs=None):
+    """Normalize public quickstart evidence refs into pre-tool-call refs.
+
+    Strings such as ``"draft_id:123"`` are accepted for quickstarts and become
+    redacted ``other`` refs. Strict schema validation still requires the
+    structured form after normalization.
+    """
+
+    refs = []
+    for index, ref in enumerate(_list(evidence_refs), start=1):
+        if isinstance(ref, str):
+            if not ref.strip():
+                raise AANAClientError("Tool evidence ref strings must be non-empty.")
+            refs.append(
+                tool_evidence_ref(
+                    source_id=ref.strip(),
+                    kind="other",
+                    trust_tier="runtime",
+                    redaction_status="redacted",
+                    summary="Quickstart evidence reference supplied by the agent runtime.",
+                )
+            )
+            continue
+        if not isinstance(ref, dict):
+            raise AANAClientError(f"Tool evidence ref at index {index} must be a string or object.")
+        payload = dict(ref)
+        payload.setdefault("kind", "other")
+        payload.setdefault("trust_tier", "unknown")
+        payload.setdefault("redaction_status", "unknown")
+        refs.append(tool_evidence_ref(**payload))
+    return refs
+
+
+def _normalize_public_tool_route(tool_category, authorization_state, recommended_route):
+    """Keep public helper inputs schema-valid without weakening the contract."""
+
+    if recommended_route != "accept":
+        return recommended_route
+    if tool_category == "write" and authorization_state not in {"validated", "confirmed"}:
+        return "ask"
+    if tool_category == "private_read" and authorization_state not in {"authenticated", "validated", "confirmed"}:
+        return "ask"
+    if tool_category == "unknown":
+        return "defer"
+    return recommended_route
 
 
 def build_tool_precheck_event(
@@ -260,7 +327,7 @@ def build_tool_precheck_event(
         "tool_name": str(tool_name),
         "tool_category": tool_category,
         "authorization_state": authorization_state,
-        "evidence_refs": [dict(ref) for ref in _list(evidence_refs)],
+        "evidence_refs": normalize_tool_evidence_refs(evidence_refs),
         "risk_domain": risk_domain,
         "proposed_arguments": dict(proposed_arguments),
         "recommended_route": recommended_route,
@@ -274,6 +341,45 @@ def build_tool_precheck_event(
     if authorization_subject is not None:
         event["authorization_subject"] = dict(authorization_subject)
     return event
+
+
+def normalize_tool_call_event(event=None, **kwargs):
+    """Normalize a public agent-action contract into the strict precheck event.
+
+    This accepts the quickstart shape used by developers:
+    ``tool_name``, ``tool_category``, ``authorization_state``, string or object
+    ``evidence_refs``, ``risk_domain``, ``proposed_arguments``, and
+    ``recommended_route``. It adds the schema version and normalizes evidence.
+    """
+
+    if event is None:
+        payload = dict(kwargs)
+    else:
+        if not isinstance(event, dict):
+            raise AANAClientError("Tool call event must be a dictionary.")
+        payload = dict(event)
+        payload.update(kwargs)
+        if payload.get("schema_version") == TOOL_PRECHECK_SCHEMA_VERSION:
+            return payload
+    payload.setdefault("schema_version", TOOL_PRECHECK_SCHEMA_VERSION)
+    recommended_route = _normalize_public_tool_route(
+        payload.get("tool_category"),
+        payload.get("authorization_state"),
+        payload.get("recommended_route", "accept"),
+    )
+    return build_tool_precheck_event(
+        request_id=payload.get("request_id"),
+        agent_id=payload.get("agent_id"),
+        tool_name=payload.get("tool_name"),
+        tool_category=payload.get("tool_category"),
+        authorization_state=payload.get("authorization_state"),
+        evidence_refs=payload.get("evidence_refs", []),
+        risk_domain=payload.get("risk_domain", "unknown"),
+        proposed_arguments=payload.get("proposed_arguments", {}),
+        recommended_route=recommended_route,
+        user_intent=payload.get("user_intent"),
+        authorization_subject=payload.get("authorization_subject"),
+    )
 
 
 def check_tool_precheck(event=None, **kwargs):
@@ -340,6 +446,59 @@ def _missing_evidence_markers(result):
     return list(dict.fromkeys(item for item in missing if item))
 
 
+def _contradictory_evidence_markers(result):
+    if not isinstance(result, dict):
+        return []
+    integrity = result.get("evidence_integrity") if isinstance(result.get("evidence_integrity"), dict) else {}
+    markers = list(integrity.get("contradictory_evidence_source_ids") or [])
+    for blocker in _hard_blockers(result):
+        if "contradict" in str(blocker):
+            markers.append(str(blocker))
+    return list(dict.fromkeys(item for item in markers if item))
+
+
+def audit_safe_decision_event(result, event=None, *, latency_ms=None):
+    """Build metadata-only audit event for one AANA decision.
+
+    The event intentionally excludes raw prompts, candidate text, evidence text,
+    safe responses, and proposed argument values.
+    """
+
+    result = result if isinstance(result, dict) else {}
+    event = event if isinstance(event, dict) else {}
+    aix = result.get("aix") if isinstance(result.get("aix"), dict) else {}
+    route = result.get("recommended_action") or aix.get("decision") or "defer"
+    metadata = result.get("audit_metadata") if isinstance(result.get("audit_metadata"), dict) else {}
+    observed_latency = latency_ms if latency_ms is not None else metadata.get("latency_ms") or result.get("latency_ms")
+    proposed_args = event.get("proposed_arguments") if isinstance(event.get("proposed_arguments"), dict) else {}
+    return {
+        "audit_event_version": "aana.audit_safe_decision.v1",
+        "route": route,
+        "gate_decision": result.get("gate_decision"),
+        "candidate_gate": result.get("candidate_gate"),
+        "aix_score": aix.get("score"),
+        "aix_decision": aix.get("decision"),
+        "hard_blockers": _hard_blockers(result),
+        "missing_evidence": _missing_evidence_markers(result),
+        "evidence_refs": {
+            "used": _evidence_ref_ids(event),
+            "missing": _missing_evidence_markers(result),
+            "contradictory": _contradictory_evidence_markers(result),
+        },
+        "authorization_state": event.get("authorization_state")
+        or (event.get("metadata") or {}).get("authorization_state")
+        if isinstance(event.get("metadata"), dict)
+        else event.get("authorization_state") or "not_declared",
+        "authorization_report": result.get("authorization_report"),
+        "tool_name": event.get("tool_name") or result.get("tool_name"),
+        "tool_category": event.get("tool_category") or result.get("tool_category"),
+        "risk_domain": event.get("risk_domain") or result.get("risk_domain"),
+        "proposed_argument_keys": sorted(str(key) for key in proposed_args.keys()),
+        "latency_ms": round(float(observed_latency), 3) if isinstance(observed_latency, (int, float)) and observed_latency >= 0 else None,
+        "raw_payload_logged": False,
+    }
+
+
 def _correction_recovery_suggestion(route, result):
     safe_response = result.get("safe_response") if isinstance(result, dict) else None
     if route == "accept":
@@ -366,16 +525,13 @@ def architecture_decision(result, event=None, *, audit_record=None):
     event = event if isinstance(event, dict) else {}
     aix = result.get("aix") if isinstance(result.get("aix"), dict) else {}
     route = result.get("recommended_action") or aix.get("decision") or "defer"
-    audit_safe_log_event = audit_record or result.get("audit_summary") or {
-        "gate_decision": result.get("gate_decision"),
-        "recommended_action": route,
-        "aix": {
-            "score": aix.get("score"),
-            "decision": aix.get("decision"),
-            "hard_blockers": aix.get("hard_blockers", []),
-        },
-        "hard_blockers": _hard_blockers(result),
-    }
+    audit_safe_log_event = audit_safe_decision_event(result, event)
+    if isinstance(audit_record, dict):
+        audit_safe_log_event["audit_record_type"] = audit_record.get("record_type")
+        audit_safe_log_event["audit_record_version"] = audit_record.get("audit_record_version")
+        audit_safe_log_event["audit_record_created_at"] = audit_record.get("created_at")
+    elif isinstance(result.get("audit_summary"), dict):
+        audit_safe_log_event["audit_summary"] = result["audit_summary"]
     return {
         "architecture_claim": PUBLIC_ARCHITECTURE_CLAIM,
         "route": route,
@@ -387,11 +543,14 @@ def architecture_decision(result, event=None, *, audit_record=None):
         "evidence_refs": {
             "used": _evidence_ref_ids(event),
             "missing": _missing_evidence_markers(result),
+            "contradictory": _contradictory_evidence_markers(result),
         },
+        "evidence_integrity": result.get("evidence_integrity"),
         "authorization_state": event.get("authorization_state")
         or (event.get("metadata") or {}).get("authorization_state")
         if isinstance(event.get("metadata"), dict)
         else event.get("authorization_state") or "not_declared",
+        "authorization_report": result.get("authorization_report"),
         "tool_name": event.get("tool_name") or result.get("tool_name"),
         "tool_category": event.get("tool_category") or result.get("tool_category"),
         "risk_domain": event.get("risk_domain") or result.get("risk_domain"),
@@ -405,13 +564,45 @@ def with_architecture_decision(result, event=None, *, audit_record=None):
 
     payload = dict(result or {})
     payload["architecture_decision"] = architecture_decision(payload, event, audit_record=audit_record)
+    payload.setdefault("route", payload["architecture_decision"]["route"])
+    payload["execution_policy"] = execution_policy(payload)
     return payload
+
+
+def fail_closed_tool_result(message, event=None, *, blocker="contract_normalization_failed"):
+    """Build a refusal result for malformed tool-call inputs."""
+
+    hard_blockers = [blocker]
+    return with_architecture_decision(
+        {
+            "contract_version": TOOL_PRECHECK_SCHEMA_VERSION,
+            "tool_name": (event or {}).get("tool_name") if isinstance(event, dict) else None,
+            "gate_decision": "fail",
+            "recommended_action": "refuse",
+            "candidate_gate": "fail",
+            "aix": {
+                "aix_version": "0.1",
+                "score": 0.0,
+                "components": {"P": 0.0, "F": 0.0, "C": 0.0},
+                "decision": "refuse",
+                "hard_blockers": hard_blockers,
+            },
+            "hard_blockers": hard_blockers,
+            "reasons": ["fail_closed_runtime_safety", str(message)],
+            "validation_errors": [{"path": "event", "message": str(message)}],
+        },
+        event if isinstance(event, dict) else {},
+    )
 
 
 def check_tool_call(event=None, **kwargs):
     """Check a proposed tool call and return the architecture-shaped decision."""
 
-    payload = event or build_tool_precheck_event(**kwargs)
+    try:
+        payload = normalize_tool_call_event(event, **kwargs)
+    except Exception as exc:
+        raw_event = event if isinstance(event, dict) else dict(kwargs)
+        return fail_closed_tool_result(exc, raw_event)
     return with_architecture_decision(check_tool_precheck(payload), payload)
 
 
@@ -424,14 +615,66 @@ def gate_action(event=None, **kwargs):
 def should_execute_tool(result):
     """Return True only when the AANA pre-tool-call result allows execution."""
 
+    return execution_policy(result, mode="enforce")["aana_allows_execution"]
+
+
+def execution_policy(result, *, mode=None):
+    """Return the uniform AANA runtime execution policy for tool wrappers.
+
+    Enforcement mode executes only when the AANA route is truly ``accept``:
+    gate pass, recommended action accept, architecture route accept, no schema
+    errors, and no hard blockers. Shadow mode is observe-only; it may allow the
+    host application to continue, but it does not convert a blocked AANA route
+    into an enforcement accept.
+    """
+
+    result = result if isinstance(result, dict) else {}
+    requested_mode = mode or ("shadow" if result.get("shadow_mode") or result.get("execution_mode") == "shadow" else "enforce")
+    if requested_mode not in EXECUTION_MODES:
+        requested_mode = "enforce"
     aix = result.get("aix") if isinstance(result, dict) else {}
-    hard_blockers = aix.get("hard_blockers") if isinstance(aix, dict) else None
-    return (
-        isinstance(result, dict)
-        and result.get("gate_decision") == "pass"
-        and result.get("recommended_action") == "accept"
-        and not (result.get("hard_blockers") or hard_blockers)
+    architecture = result.get("architecture_decision") if isinstance(result.get("architecture_decision"), dict) else {}
+    hard_blockers = list(result.get("hard_blockers") or [])
+    if isinstance(aix, dict):
+        hard_blockers.extend(aix.get("hard_blockers") or [])
+    hard_blockers.extend(architecture.get("hard_blockers") or [])
+    validation_errors = result.get("validation_errors") or []
+    gate_decision = result.get("gate_decision")
+    recommended_action = result.get("recommended_action")
+    architecture_route = architecture.get("route") or recommended_action
+    aana_allows = (
+        gate_decision == "pass"
+        and recommended_action == "accept"
+        and architecture_route == "accept"
+        and not hard_blockers
+        and not validation_errors
     )
+    execution_allowed = aana_allows if requested_mode == "enforce" else True
+    if validation_errors:
+        reason = "schema_or_contract_validation_failed"
+    elif hard_blockers:
+        reason = "hard_blockers_present"
+    elif not aana_allows:
+        reason = "route_not_accept"
+    elif requested_mode == "shadow":
+        reason = "shadow_mode_observe_only"
+    else:
+        reason = "enforcement_accept"
+    return {
+        "mode": requested_mode,
+        "aana_allows_execution": aana_allows,
+        "execution_allowed": execution_allowed,
+        "fail_closed": not aana_allows,
+        "reason": reason,
+        "required_route": "accept",
+        "observed": {
+            "gate_decision": gate_decision,
+            "recommended_action": recommended_action,
+            "architecture_route": architecture_route,
+            "hard_blocker_count": len(hard_blockers),
+            "validation_error_count": len(validation_errors),
+        },
+    }
 
 
 def build_family_workflow_request(family, **kwargs):
@@ -573,10 +816,15 @@ class AANAClient:
         return with_architecture_decision(result, payload)
 
     def tool_precheck(self, event=None, **kwargs):
-        payload = event or self.tool_precheck_event(**kwargs)
+        try:
+            payload = event or self.tool_precheck_event(**kwargs)
+        except Exception as exc:
+            return fail_closed_tool_result(exc, event if isinstance(event, dict) else dict(kwargs))
         if self.uses_bridge:
             return with_architecture_decision(self._post("/tool-precheck", payload, shadow_mode=self.shadow_mode), payload)
-        return with_architecture_decision(check_tool_precheck(payload), payload)
+        result = check_tool_precheck(payload)
+        result = agent_api.apply_shadow_mode(result) if self.shadow_mode else result
+        return with_architecture_decision(result, payload)
 
     def tool_precheck_v2(self, event=None, **kwargs):
         payload = event or self.tool_precheck_event(**kwargs)

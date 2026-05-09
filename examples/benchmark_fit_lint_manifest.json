@@ -18,6 +18,7 @@
     "allowed_literal_paths": [
       "examples/tau2/aana_tau2_probe_planners.py",
       "examples/tau2/aana_tau2_adapter_config.json",
+      "examples/adapter_generalization_config.json",
       "tests/**",
       "docs/**",
       "examples/*manifest*.json",
@@ -58,6 +59,23 @@
         "kenji.tanaka@gmail.com",
         "kenji.tanaka@outlook.com",
         "6680a37184"
+      ]
+    }
+  ],
+  "forbidden_regex_groups": [
+    {
+      "id": "probe_api_in_general_paths",
+      "description": "General runtime paths must not expose probe-enabled benchmark code paths.",
+      "allowed_paths": [
+        "examples/tau2/aana_contract_agent.py"
+      ],
+      "patterns": [
+        "allow[_-]?benchmark[_-]?probes",
+        "enable[_-]?diagnostic[_-]?probes",
+        "diagnostic[_-]?probe[_-]?only",
+        "answer_?key",
+        "known[_-]?answer",
+        "golden[_-]?task[_-]?id"
       ]
     }
   ]

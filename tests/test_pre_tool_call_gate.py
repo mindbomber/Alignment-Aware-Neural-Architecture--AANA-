@@ -70,3 +70,53 @@ def test_invalid_event_refuses():
     assert result["recommended_action"] == "refuse"
     assert result["gate_decision"] == "fail"
     assert "schema_validation_failed" in result["hard_blockers"]
+
+
+def test_agent_action_contract_v1_accepts_public_seven_field_minimum():
+    event = {
+        "tool_name": "get_game_score",
+        "tool_category": "public_read",
+        "authorization_state": "none",
+        "evidence_refs": [
+            {
+                "source_id": "policy.public_scores",
+                "kind": "policy",
+                "trust_tier": "verified",
+                "redaction_status": "public",
+            }
+        ],
+        "risk_domain": "public_information",
+        "proposed_arguments": {"game_id": "GAME-123"},
+        "recommended_route": "accept",
+    }
+
+    result = gate_pre_tool_call(event)
+
+    assert result["contract_version"] == "aana.agent_tool_precheck.v1"
+    assert result["recommended_action"] == "accept"
+    assert result["gate_decision"] == "pass"
+
+
+def test_agent_action_contract_v1_still_accepts_schema_version_compatibility_marker():
+    event = {
+        "schema_version": "aana.agent_tool_precheck.v1",
+        "tool_name": "get_game_score",
+        "tool_category": "public_read",
+        "authorization_state": "none",
+        "evidence_refs": [
+            {
+                "source_id": "policy.public_scores",
+                "kind": "policy",
+                "trust_tier": "verified",
+                "redaction_status": "public",
+            }
+        ],
+        "risk_domain": "public_information",
+        "proposed_arguments": {"game_id": "GAME-123"},
+        "recommended_route": "accept",
+    }
+
+    result = gate_pre_tool_call(event)
+
+    assert result["recommended_action"] == "accept"
+    assert result["gate_decision"] == "pass"

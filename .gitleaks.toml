@@ -1,0 +1,17 @@
+title = "AANA gitleaks config"
+
+[allowlist]
+description = "Synthetic fixtures and checked-in evidence snapshots used for redaction and demo tests."
+paths = [
+  '''docs/evidence/.*''',
+  '''eval_outputs/.*''',
+]
+regexes = [
+  '''secret-token''',
+  '''sk-live-secret-123''',
+  '''sk-test1234567890abcdef''',
+  '''sk-testsecret1234567890abcdef''',
+  '''aana-local-dev-token''',
+  '''pilot-certification-token''',
+  '''prod-secret-123''',
+]

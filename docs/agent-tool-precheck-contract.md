@@ -1,7 +1,10 @@
-# AANA Agent Tool Precheck Contract
+# AANA Agent Action Contract v1
 
-Every agent runtime should emit this event before executing a tool call. AANA
-uses it to route the action to `accept`, `ask`, `defer`, or `refuse`.
+Every agent runtime should emit this event before executing a tool call or
+consequential action. AANA uses it to route the action to `accept`, `ask`,
+`defer`, or `refuse`.
+
+Canonical public spec: [Agent Action Contract v1](agent-action-contract-v1.md)
 
 Schema: `schemas/agent_tool_precheck.schema.json`
 
@@ -18,6 +21,10 @@ Examples: `examples/sdk/agent_tool_precheck_examples.json`
 | `risk_domain` | Primary risk surface, such as `finance`, `devops`, `hr`, `legal`, or `public_information`. |
 | `proposed_arguments` | Arguments the agent intends to pass, with secrets/private values redacted where possible. |
 | `recommended_route` | Runtime's proposed route before AANA applies the final gate: `accept`, `ask`, `defer`, or `refuse`. |
+
+The public v1 minimum is the seven fields above. `schema_version:
+"aana.agent_tool_precheck.v1"` remains supported as an optional compatibility
+marker for existing pre-tool-check integrations.
 
 ## Routing Rule
 

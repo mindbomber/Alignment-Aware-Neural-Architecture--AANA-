@@ -265,7 +265,7 @@ class AgentServerTests(unittest.TestCase):
         self.assertEqual(result["gate_decision"], "pass")
         self.assertEqual(result["recommended_action"], "accept")
         self.assertEqual(schema_status, 200)
-        self.assertEqual(schema["title"], "AANA Agent Tool Precheck Contract")
+        self.assertEqual(schema["title"], "AANA Agent Action Contract v1")
 
     def test_playground_check_returns_result_and_audit_preview(self):
         workflow_request = {

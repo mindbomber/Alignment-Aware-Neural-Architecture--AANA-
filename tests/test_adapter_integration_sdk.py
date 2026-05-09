@@ -153,6 +153,51 @@ class AdapterIntegrationSdkTests(unittest.TestCase):
         self.assertIn("write_missing_explicit_confirmation", result["architecture_decision"]["hard_blockers"])
         self.assertIn("Ask the user", result["architecture_decision"]["correction_recovery_suggestion"])
 
+    def test_public_agent_action_quickstart_shape_asks_for_confirmation(self):
+        decision = aana.check_tool_call(
+            {
+                "tool_name": "send_email",
+                "tool_category": "write",
+                "authorization_state": "user_claimed",
+                "evidence_refs": ["draft_id:123"],
+                "risk_domain": "customer_support",
+                "proposed_arguments": {"to": "customer@example.com"},
+                "recommended_route": "accept",
+            }
+        )
+
+        self.assertEqual(decision["recommended_action"], "ask")
+        self.assertEqual(decision["architecture_decision"]["route"], "ask")
+        self.assertEqual(decision["architecture_decision"]["evidence_refs"]["used"], ["draft_id:123"])
+        self.assertIn("write_missing_validation_or_confirmation", decision["architecture_decision"]["hard_blockers"])
+        self.assertIn("Ask the user", decision["architecture_decision"]["correction_recovery_suggestion"])
+        audit_event = decision["architecture_decision"]["audit_safe_log_event"]
+        self.assertEqual(audit_event["audit_event_version"], "aana.audit_safe_decision.v1")
+        self.assertEqual(audit_event["route"], "ask")
+        self.assertEqual(audit_event["aix_score"], decision["aix"]["score"])
+        self.assertIn("write_missing_validation_or_confirmation", audit_event["hard_blockers"])
+        self.assertIn("write_missing_validation_or_confirmation", audit_event["missing_evidence"])
+        self.assertEqual(audit_event["authorization_state"], "user_claimed")
+        self.assertIn("latency_ms", audit_event)
+        self.assertFalse(audit_event["raw_payload_logged"])
+
+    def test_public_agent_action_quickstart_shape_accepts_confirmed_write(self):
+        decision = aana.check_tool_call(
+            {
+                "tool_name": "send_email",
+                "tool_category": "write",
+                "authorization_state": "confirmed",
+                "evidence_refs": ["draft_id:123", "approval:user-confirmed-send"],
+                "risk_domain": "customer_support",
+                "proposed_arguments": {"to": "customer@example.com"},
+                "recommended_route": "accept",
+            }
+        )
+
+        self.assertEqual(decision["recommended_action"], "accept")
+        self.assertTrue(aana.should_execute_tool(decision))
+        self.assertEqual(decision["architecture_decision"]["route"], "accept")
+
     def test_python_sdk_tool_precheck_blocks_missing_authorization_evidence(self):
         client = aana.AANAClient()
         result = client.tool_precheck(

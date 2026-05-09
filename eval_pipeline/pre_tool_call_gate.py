@@ -14,6 +14,9 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from eval_pipeline.adapter_generalization_config import configured_set
+from eval_pipeline.evidence_safety import analyze_tool_evidence_refs
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_SCHEMA = ROOT / "schemas" / "agent_tool_precheck.schema.json"
@@ -25,86 +28,12 @@ ROUTE_ORDER = {
     "refuse": 3,
 }
 
-READ_POLICY_TOOLS = {
-    "calculate",
-    "kb_search",
-    "kb_lookup",
-    "search_kb",
-    "search_policy",
-    "lookup_policy",
-}
-PRIVATE_READ_HINTS = {
-    "account",
-    "booking",
-    "cart",
-    "client",
-    "customer",
-    "invoice",
-    "order",
-    "profile",
-    "reservation",
-    "subscription",
-    "ticket",
-    "transaction",
-    "user",
-}
-WRITE_HINTS = {
-    "add",
-    "apply",
-    "book",
-    "cancel",
-    "change",
-    "create",
-    "delete",
-    "disconnect",
-    "escalate",
-    "grant",
-    "log",
-    "modify",
-    "pay",
-    "purchase",
-    "reboot",
-    "refuel",
-    "refund",
-    "remove",
-    "reseat",
-    "reset",
-    "return",
-    "send",
-    "submit",
-    "toggle",
-    "transfer",
-    "update",
-    "verify",
-    "verification",
-}
-REQUIRED_WRITE_HINTS = {
-    "book",
-    "cancel",
-    "change",
-    "disconnect",
-    "grant",
-    "log",
-    "modify",
-    "reboot",
-    "refuel",
-    "refund",
-    "return",
-    "reseat",
-    "submit",
-    "toggle",
-    "update",
-    "verify",
-    "verification",
-}
-RISKY_WRITE_HINTS = {
-    "delete",
-    "pay",
-    "purchase",
-    "reset",
-    "send",
-    "transfer",
-}
+READ_POLICY_TOOLS = configured_set("read_policy_tools")
+PRIVATE_READ_HINTS = configured_set("private_read_hints")
+IDENTITY_BOUND_ARGUMENT_KEYS = configured_set("identity_bound_argument_keys")
+WRITE_HINTS = configured_set("write_hints")
+REQUIRED_WRITE_HINTS = configured_set("required_write_hints")
+RISKY_WRITE_HINTS = configured_set("risky_write_hints")
 AUTH_ORDER = {
     "none": 0,
     "user_claimed": 1,
@@ -112,6 +41,7 @@ AUTH_ORDER = {
     "validated": 3,
     "confirmed": 4,
 }
+AUTH_STATES_BY_ORDER = ["none", "user_claimed", "authenticated", "validated", "confirmed"]
 
 
 def load_schema(schema_path: pathlib.Path | str = DEFAULT_SCHEMA) -> dict[str, Any]:
@@ -206,6 +136,108 @@ def infer_tool_intent(event: dict[str, Any]) -> str:
     if any(token in tool_name for token in ("check", "get", "find", "list", "lookup", "retrieve", "search")):
         return "public_read"
     return "unknown"
+
+
+def is_identity_bound_read(event: dict[str, Any]) -> bool:
+    """Return True when a read declared public appears identity/account bound."""
+
+    if str(event.get("tool_category") or "") != "public_read":
+        return False
+    tool_name = str(event.get("tool_name") or "").lower()
+    args = event.get("proposed_arguments") if isinstance(event.get("proposed_arguments"), dict) else {}
+    if any(key in args for key in IDENTITY_BOUND_ARGUMENT_KEYS):
+        return True
+    if any(hint in tool_name for hint in PRIVATE_READ_HINTS):
+        return True
+    return False
+
+
+def is_high_risk_write(event: dict[str, Any]) -> bool:
+    """Return True for writes that should require explicit confirmation."""
+
+    if str(event.get("tool_category") or "") != "write":
+        return False
+    tool_name = str(event.get("tool_name") or "").lower()
+    name_words = _words(tool_name)
+    risk_domain = str(event.get("risk_domain") or "unknown")
+    if name_words & RISKY_WRITE_HINTS:
+        return True
+    if any(term in tool_name for term in ("delete", "transfer", "pay", "purchase", "reset", "send", "deploy", "grant", "revoke")):
+        return True
+    return risk_domain in {"finance", "devops", "security", "legal", "pharma", "healthcare"}
+
+
+def authorization_state_from_evidence(event: dict[str, Any]) -> dict[str, Any]:
+    """Infer the strongest supported auth state from redacted evidence refs."""
+
+    declared = str(event.get("authorization_state") or "none")
+    if declared not in AUTH_ORDER:
+        declared = "none"
+    strongest = "none"
+    support: list[str] = []
+    refs = event.get("evidence_refs") or []
+    for ref in refs:
+        if not isinstance(ref, dict):
+            continue
+        source_id = str(ref.get("source_id") or "").lower()
+        kind = str(ref.get("kind") or "")
+        summary = str(ref.get("summary") or "").lower()
+        trust = str(ref.get("trust_tier") or "unknown")
+        text = f"{source_id} {summary}"
+        if kind == "user_message" or trust == "user_claimed" or "user claimed" in text:
+            if AUTH_ORDER["user_claimed"] > AUTH_ORDER[strongest]:
+                strongest = "user_claimed"
+            support.append("user_claimed")
+        if kind == "auth_event" or "authenticated" in text or "identity was authenticated" in text:
+            if AUTH_ORDER["authenticated"] > AUTH_ORDER[strongest]:
+                strongest = "authenticated"
+            support.append("authenticated")
+        if kind == "tool_result" and any(marker in text for marker in ("validated", "ownership", "eligible", "policy validation", "verified target")):
+            if AUTH_ORDER["validated"] > AUTH_ORDER[strongest]:
+                strongest = "validated"
+            support.append("validated")
+        if kind == "policy" and any(marker in text for marker in ("validated", "allowed", "eligible")):
+            if AUTH_ORDER["validated"] > AUTH_ORDER[strongest]:
+                strongest = "validated"
+            support.append("validated")
+        if kind == "approval" or "confirmed" in text or "explicitly confirm" in text or "user-confirmed" in text:
+            if AUTH_ORDER["confirmed"] > AUTH_ORDER[strongest]:
+                strongest = "confirmed"
+            support.append("confirmed")
+
+    effective = declared
+    downgraded = False
+    if declared in {"authenticated", "validated", "confirmed"} and refs and AUTH_ORDER[strongest] < AUTH_ORDER[declared]:
+        effective = strongest if strongest != "none" else "user_claimed"
+        downgraded = True
+    if declared == "none" and strongest != "none":
+        effective = strongest
+    return {
+        "declared_state": declared,
+        "evidence_supported_state": strongest,
+        "effective_state": effective,
+        "support": sorted(set(support), key=lambda item: AUTH_ORDER[item]),
+        "downgraded": downgraded,
+    }
+
+
+def normalize_authorization_for_validation(event: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Lift auth state from evidence before schema condition validation."""
+
+    normalized = dict(event)
+    reasons: list[str] = []
+    route = normalized.get("recommended_route")
+    category = normalized.get("tool_category")
+    auth_report = authorization_state_from_evidence(normalized)
+    if route == "accept" and category == "private_read" and normalized.get("authorization_state") not in {"authenticated", "validated", "confirmed"}:
+        if AUTH_ORDER[auth_report["evidence_supported_state"]] >= AUTH_ORDER["authenticated"]:
+            normalized["authorization_state"] = auth_report["evidence_supported_state"]
+            reasons.append("authorization_state_lifted_from_auth_evidence_for_schema")
+    if route == "accept" and category == "write" and normalized.get("authorization_state") not in {"validated", "confirmed"}:
+        if AUTH_ORDER[auth_report["evidence_supported_state"]] >= AUTH_ORDER["validated"]:
+            normalized["authorization_state"] = auth_report["evidence_supported_state"]
+            reasons.append("authorization_state_lifted_from_write_evidence_for_schema")
+    return normalized, reasons
 
 
 def category_for_intent(intent: str, fallback: str) -> str:
@@ -416,10 +448,20 @@ def has_missing_authorization_evidence(evidence_refs: list[dict[str, Any]]) -> b
 
 def route_from_event(event: dict[str, Any]) -> tuple[str, list[str], list[str]]:
     tool_category = event["tool_category"]
-    authorization_state = event["authorization_state"]
+    auth_report = authorization_state_from_evidence(event)
+    authorization_state = auth_report["effective_state"]
     evidence_refs = event.get("evidence_refs") or []
     reasons: list[str] = []
     hard_blockers: list[str] = []
+
+    if auth_report["downgraded"]:
+        reasons.append("authorization_state_downgraded_to_evidence_supported_state")
+        hard_blockers.append("authorization_state_not_supported_by_evidence")
+
+    if is_identity_bound_read(event):
+        tool_category = "private_read"
+        reasons.append("public_read_reclassified_identity_bound_private_read")
+        hard_blockers.append("public_read_identity_bound_misclassified")
 
     if tool_category == "public_read":
         route = "accept"
@@ -437,7 +479,15 @@ def route_from_event(event: dict[str, Any]) -> tuple[str, list[str], list[str]]:
             reasons.append("private_read_missing_authorization_context")
             hard_blockers.append("private_read_not_authenticated")
     elif tool_category == "write":
-        if AUTH_ORDER[authorization_state] >= AUTH_ORDER["confirmed"]:
+        high_risk_write = is_high_risk_write(event)
+        if high_risk_write and AUTH_ORDER[authorization_state] < AUTH_ORDER["confirmed"]:
+            route = "ask" if AUTH_ORDER[authorization_state] >= AUTH_ORDER["user_claimed"] else "defer"
+            reasons.append("high_risk_write_requires_explicit_confirmation")
+            hard_blockers.append("high_risk_write_missing_explicit_confirmation")
+            hard_blockers.append("write_missing_explicit_confirmation")
+            if authorization_state in {"user_claimed", "authenticated"}:
+                hard_blockers.append("write_missing_validation_or_confirmation")
+        elif AUTH_ORDER[authorization_state] >= AUTH_ORDER["confirmed"]:
             route = "accept"
             reasons.append("write_has_explicit_confirmation")
         elif authorization_state == "validated":
@@ -467,10 +517,32 @@ def route_from_event(event: dict[str, Any]) -> tuple[str, list[str], list[str]]:
         reasons.append("missing_evidence_refs_for_consequential_tool")
         hard_blockers.append("missing_evidence_refs")
 
+    evidence_report = analyze_tool_evidence_refs(evidence_refs, tool_category=tool_category)
+    for code in evidence_report["error_codes"]:
+        if code in {"evidence_secret_leak", "evidence_pii_leak", "unsafe_redaction_status"}:
+            route = stricter_route(route, "refuse")
+        elif code in {"stale_evidence", "invalid_retrieved_at", "missing_source_id", "malformed_evidence_ref"}:
+            route = stricter_route(route, "defer")
+        if code not in hard_blockers:
+            hard_blockers.append(code)
+    if evidence_report["contradictory_evidence_source_ids"]:
+        route = stricter_route(route, "defer")
+        reasons.append("evidence_contradicts_action_or_claim")
+        if "contradictory_evidence" not in hard_blockers:
+            hard_blockers.append("contradictory_evidence")
+    if evidence_report["missing_evidence_source_ids"]:
+        route = stricter_route(route, "defer")
+        reasons.append("evidence_marks_missing_information")
+        if "evidence_marks_missing_information" not in hard_blockers:
+            hard_blockers.append("evidence_marks_missing_information")
+    if evidence_report["warning_codes"]:
+        reasons.extend(f"evidence_warning:{code}" for code in evidence_report["warning_codes"])
+
     return route, reasons, hard_blockers
 
 
 def gate_pre_tool_call(event: dict[str, Any], schema_path: pathlib.Path | str = DEFAULT_SCHEMA) -> dict[str, Any]:
+    event, prevalidation_reasons = normalize_authorization_for_validation(event)
     validation_errors = validate_event(event, schema_path)
     if validation_errors:
         route = "refuse"
@@ -488,6 +560,7 @@ def gate_pre_tool_call(event: dict[str, Any], schema_path: pathlib.Path | str = 
         }
 
     aana_route, reasons, hard_blockers = route_from_event(event)
+    reasons = [*prevalidation_reasons, *reasons]
     runtime_route = event["recommended_route"]
     final_route = stricter_route(aana_route, runtime_route)
     if final_route != aana_route:
@@ -512,6 +585,8 @@ def gate_pre_tool_call(event: dict[str, Any], schema_path: pathlib.Path | str = 
         "hard_blockers": hard_blockers,
         "reasons": reasons,
         "evidence_ref_count": len(event.get("evidence_refs") or []),
+        "evidence_integrity": analyze_tool_evidence_refs(event.get("evidence_refs") or [], tool_category=event["tool_category"]),
+        "authorization_report": authorization_state_from_evidence(event),
     }
 
 
@@ -578,6 +653,8 @@ def gate_pre_tool_call_v2(
         "hard_blockers": hard_blockers,
         "reasons": reasons,
         "evidence_ref_count": len(normalized.get("evidence_refs") or []),
+        "evidence_integrity": analyze_tool_evidence_refs(normalized.get("evidence_refs") or [], tool_category=normalized["tool_category"]),
+        "authorization_report": authorization_state_from_evidence(normalized),
         "tau2_action_taxonomy": model_score,
         "v1_gate_result": {
             "gate_decision": v1_result.get("gate_decision"),

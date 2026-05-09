@@ -1,0 +1,145 @@
+{
+  "schema_version": "aana.packaging_hardening.v1",
+  "purpose": "Keep AANA package surfaces separated before PyPI, npm, Hugging Face, or service publication.",
+  "surfaces": [
+    {
+      "id": "python_package",
+      "purpose": "Python runtime SDK, CLI, local middleware helpers, audit utilities, and optional service/eval entrypoints.",
+      "current_distribution": "aana-eval-pipeline",
+      "import_package": "aana",
+      "paths": [
+        "pyproject.toml",
+        "aana/__init__.py",
+        "aana/sdk.py",
+        "aana/middleware.py",
+        "scripts/aana_cli.py"
+      ],
+      "runtime_entrypoints": [
+        "aana",
+        "aana-server",
+        "aana-fastapi"
+      ],
+      "optional_extras": [
+        "api",
+        "eval",
+        "dev",
+        "test"
+      ]
+    },
+    {
+      "id": "typescript_sdk",
+      "purpose": "Dependency-light TypeScript helpers and HTTP client for Agent Action Contract and middleware integrations.",
+      "package": "@aana/integration-sdk",
+      "paths": [
+        "sdk/typescript/package.json",
+        "sdk/typescript/src/index.ts",
+        "sdk/typescript/README.md",
+        "sdk/typescript/tsconfig.json"
+      ],
+      "publish_target": "npm"
+    },
+    {
+      "id": "fastapi_service",
+      "purpose": "Optional HTTP API service exposing /health, /pre-tool-check, /agent-check, token auth, OpenAPI docs, and redacted audit JSONL logging.",
+      "python_extra": "api",
+      "entrypoint": "aana-fastapi",
+      "paths": [
+        "eval_pipeline/fastapi_app.py",
+        "scripts/aana_fastapi.py",
+        "docs/fastapi-service.md",
+        "examples/api/pre_tool_check_write_ask.json",
+        "examples/api/agent_check_support_reply.json"
+      ],
+      "publish_target": "service_container_or_internal_api"
+    },
+    {
+      "id": "benchmark_eval_tooling",
+      "purpose": "Benchmark, HF dataset, calibration, and evidence-pack tooling used for measurement and validation, not runtime core claims.",
+      "python_extra": "eval",
+      "public_claim_boundary": "not_runtime_core",
+      "paths": [
+        "eval_pipeline/hf_dataset_registry.py",
+        "eval_pipeline/hf_calibration.py",
+        "eval_pipeline/hf_dataset_proof.py",
+        "scripts/validate_hf_dataset_registry.py",
+        "scripts/validate_hf_calibration.py",
+        "scripts/validate_hf_dataset_proof.py"
+      ],
+      "generated_outputs": [
+        "eval_outputs/"
+      ]
+    },
+    {
+      "id": "docs_and_cards",
+      "purpose": "Documentation, public claim boundaries, Hugging Face card templates, and publication guidance.",
+      "paths": [
+        "docs/aana-standard-publication.md",
+        "docs/packaging-release-checklist.md",
+        "docs/huggingface-model-card.md",
+        "docs/huggingface-dataset-card.md",
+        "docs/hf-dataset-proof-report.md",
+        "README.md"
+      ],
+      "publish_targets": [
+        "github_pages",
+        "huggingface_model_card",
+        "huggingface_dataset_card"
+      ]
+    }
+  ],
+  "distribution_rename_plan": {
+    "current_distribution": "aana-eval-pipeline",
+    "rename_now": false,
+    "future_candidates": [
+      "aana",
+      "aana-platform",
+      "aana-agent-control"
+    ],
+    "reason_to_consider_later": "The public package now includes runtime SDK/API surfaces, so a future distribution name may need to be cleaner than aana-eval-pipeline.",
+    "required_migration_rules": [
+      "keep_import_package_aana_stable",
+      "publish_deprecation_notice_before_distribution_rename",
+      "keep_old_distribution_available_for_migration_window",
+      "do_not_break_cli_entrypoints_without_aliases"
+    ]
+  },
+  "release_checklist": [
+    {
+      "target": "pypi",
+      "status": "required_before_publication",
+      "human_release_review_required": true,
+      "required_checks": [
+        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
+        "python scripts/validate_aana_standard_publication.py --require-existing-artifacts",
+        "python scripts/validate_security_hardening.py",
+        "python -m build",
+        "twine check dist/*",
+        "confirm distribution name and migration notes"
+      ]
+    },
+    {
+      "target": "npm",
+      "status": "required_before_publication",
+      "human_release_review_required": true,
+      "required_checks": [
+        "cd sdk/typescript && npm install",
+        "cd sdk/typescript && npm run build",
+        "cd sdk/typescript && npm pack --dry-run",
+        "confirm package owner and npm access"
+      ]
+    },
+    {
+      "target": "huggingface",
+      "status": "required_before_publication",
+      "human_release_review_required": true,
+      "required_checks": [
+        "python scripts/validate_hf_dataset_registry.py",
+        "python scripts/validate_hf_calibration.py",
+        "python scripts/validate_hf_dataset_proof.py --require-existing-artifacts",
+        "review docs/huggingface-model-card.md",
+        "review docs/huggingface-dataset-card.md",
+        "confirm no benchmark probe results are used as public claims"
+      ]
+    }
+  ]
+}

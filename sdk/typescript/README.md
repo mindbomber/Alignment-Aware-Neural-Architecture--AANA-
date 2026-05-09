@@ -30,7 +30,7 @@ const request = workflowRequest({
 const result = await aana.workflowCheck(request);
 ```
 
-Pre-tool-call gate:
+Agent Action Contract pre-tool-call gate:
 
 ```ts
 import {
@@ -95,3 +95,14 @@ const guardedAgentTool = openAIAgentsToolMiddleware(
 Proceed with the original action only when the returned AANA result has
 `gate_decision: "pass"`, `recommended_action: "accept"`, and no AIx hard
 blockers.
+
+If a wrapper blocks, it never calls the wrapped function in enforcement mode.
+With `raiseOnBlock: true`, wrappers throw `AanaToolExecutionBlocked` and expose
+the standardized `error` object on the exception. With `raiseOnBlock: false`,
+the wrapper returns the gate object with:
+
+```ts
+result.error?.error_type === "aana_tool_execution_blocked";
+result.error?.recovery_suggestion;
+result.execution_allowed === false;
+```

@@ -1,3 +1,5 @@
+const SAFE_DEMO_MODE = true;
+const forbiddenExecutionActions = new Set(["send", "delete", "purchase", "deploy", "export"]);
 const routeOrder = { accept: 0, ask: 1, defer: 2, refuse: 3 };
 const authOrder = { none: 0, user_claimed: 1, authenticated: 2, validated: 3, confirmed: 4 };
 const writePrefixes = [
@@ -227,6 +229,9 @@ function validateEvent(event) {
 }
 
 function gateEvent(event) {
+  if (!SAFE_DEMO_MODE) {
+    throw new Error("Public demo safety mode must remain enabled.");
+  }
   const validationErrors = validateEvent(event);
   if (validationErrors.length) {
     const route = "refuse";
@@ -305,6 +310,9 @@ function gateEvent(event) {
 
   return {
     contract_version: "aana.agent_tool_precheck.v1",
+    demo_mode: "safe_static_only",
+    real_execution: false,
+    forbidden_execution_actions: Array.from(forbiddenExecutionActions),
     tool_name: event.tool_name,
     tool_category: event.tool_category,
     authorization_state: event.authorization_state,

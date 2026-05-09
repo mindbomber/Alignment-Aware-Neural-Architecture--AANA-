@@ -19,12 +19,16 @@ Usage:
     python scripts/dev.py adapter-heldout
     python scripts/dev.py benchmark-reporting
     python scripts/dev.py benchmark-fit-lint
+    python scripts/dev.py adapter-generalization
     python scripts/dev.py hf-dataset-registry
+    python scripts/dev.py hf-calibration
     python scripts/dev.py privacy-pii-adapter
     python scripts/dev.py grounded-qa-adapter
     python scripts/dev.py agent-tool-use-control
     python scripts/dev.py cross-domain-families
     python scripts/dev.py production-evidence-pack
+    python scripts/dev.py security-hardening
+    python scripts/dev.py packaging-hardening
 """
 
 import argparse
@@ -208,10 +212,22 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Ensure diagnostic probe results are never merged into public AANA benchmark claims.",
         ),
         ReleaseGate(
+            "adapter_generalization",
+            "adapter",
+            [PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"],
+            "Validate config-backed adapter hints, held-out validation, benchmark-fit linting, and public-claim separation as one generalization gate.",
+        ),
+        ReleaseGate(
             "hf_dataset_registry",
             "data",
             [PYTHON, "scripts/validate_hf_dataset_registry.py"],
             "Validate HF dataset split-use isolation for calibration, held-out validation, and external reporting.",
+        ),
+        ReleaseGate(
+            "hf_calibration",
+            "data",
+            [PYTHON, "scripts/validate_hf_calibration.py"],
+            "Validate per-family HF calibration targets, metric tracking, and calibration/reporting split isolation.",
         ),
         ReleaseGate(
             "privacy_pii_adapter",
@@ -296,6 +312,18 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "production-profile",
             [PYTHON, "scripts/validate_secrets_scan.py"],
             "Run allowlist-backed secrets scanning for deployment, runtime, docs, examples, scripts, and tests.",
+        ),
+        ReleaseGate(
+            "security_hardening",
+            "production-profile",
+            [PYTHON, "scripts/validate_security_hardening.py"],
+            "Validate CI secret scanning, dependency audit wiring, demo-safe defaults, and malicious-agent threat-model coverage.",
+        ),
+        ReleaseGate(
+            "packaging_hardening",
+            "publication",
+            [PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"],
+            "Validate Python, TypeScript, FastAPI, eval tooling, docs/card boundaries, distribution rename rules, and publication checklists.",
         ),
         ReleaseGate(
             "audit_retention_policy",
@@ -562,8 +590,16 @@ def benchmark_fit_lint():
     run([PYTHON, "scripts/validate_benchmark_fit_lint.py"])
 
 
+def adapter_generalization():
+    run([PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"])
+
+
 def hf_dataset_registry():
     run([PYTHON, "scripts/validate_hf_dataset_registry.py"])
+
+
+def hf_calibration():
+    run([PYTHON, "scripts/validate_hf_calibration.py"])
 
 
 def privacy_pii_adapter():
@@ -586,6 +622,14 @@ def production_evidence_pack():
     run([PYTHON, "scripts/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"])
 
 
+def security_hardening():
+    run([PYTHON, "scripts/validate_security_hardening.py"])
+
+
+def packaging_hardening():
+    run([PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"])
+
+
 COMMANDS = {
     "compile": compile_python,
     "test": test,
@@ -602,12 +646,16 @@ COMMANDS = {
     "adapter-heldout": adapter_heldout,
     "benchmark-reporting": benchmark_reporting,
     "benchmark-fit-lint": benchmark_fit_lint,
+    "adapter-generalization": adapter_generalization,
     "hf-dataset-registry": hf_dataset_registry,
+    "hf-calibration": hf_calibration,
     "privacy-pii-adapter": privacy_pii_adapter,
     "grounded-qa-adapter": grounded_qa_adapter,
     "agent-tool-use-control": agent_tool_use_control,
     "cross-domain-families": cross_domain_families,
     "production-evidence-pack": production_evidence_pack,
+    "security-hardening": security_hardening,
+    "packaging-hardening": packaging_hardening,
     "production-profiles": production_profiles,
     "release-gate": release_gate,
 }

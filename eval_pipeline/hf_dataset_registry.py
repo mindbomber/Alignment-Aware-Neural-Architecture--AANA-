@@ -11,6 +11,20 @@ from typing import Any
 HF_DATASET_REGISTRY_VERSION = "0.1"
 ALLOWED_USES = {"calibration", "heldout_validation", "external_reporting"}
 ALLOWED_SPLIT_PURPOSES = {"tuning", "validation", "public_claim", "smoke", "audit"}
+REQUIRED_STRATEGIC_USES = {
+    "threshold_calibration",
+    "false_positive_reduction",
+    "heldout_generalization_testing",
+    "adapter_family_proof",
+}
+REQUIRED_TARGET_CAPABILITIES = {
+    "privacy_pii_recall",
+    "grounded_qa_hallucination_detection",
+    "unsafe_tool_call_gating",
+    "authorization_state_detection",
+    "public_vs_private_read_classification",
+    "ask_defer_refuse_route_quality",
+}
 REQUIRED_DATASET_FIELDS = {
     "dataset_name",
     "license",
@@ -63,6 +77,41 @@ def validate_hf_dataset_registry(registry: dict[str, Any]) -> dict[str, Any]:
     allowed_uses = policy.get("allowed_uses")
     if set(allowed_uses or []) != ALLOWED_USES:
         issues.append(_issue("error", "policy.allowed_uses", f"allowed_uses must be exactly {sorted(ALLOWED_USES)}."))
+    strategic_uses = set(policy.get("strategic_primary_uses") or [])
+    if not REQUIRED_STRATEGIC_USES <= strategic_uses:
+        missing = sorted(REQUIRED_STRATEGIC_USES - strategic_uses)
+        issues.append(_issue("error", "policy.strategic_primary_uses", f"Missing required strategic HF dataset uses: {missing}."))
+    target_capabilities = set(policy.get("target_capabilities") or [])
+    if not REQUIRED_TARGET_CAPABILITIES <= target_capabilities:
+        missing = sorted(REQUIRED_TARGET_CAPABILITIES - target_capabilities)
+        issues.append(_issue("error", "policy.target_capabilities", f"Missing required HF dataset target capabilities: {missing}."))
+
+    strategic_objectives = registry.get("strategic_objectives")
+    if not isinstance(strategic_objectives, list) or not strategic_objectives:
+        issues.append(_issue("error", "strategic_objectives", "Registry must include strategic HF dataset objectives."))
+        strategic_objectives = []
+    objective_ids = set()
+    for index, objective in enumerate(strategic_objectives):
+        base = f"strategic_objectives[{index}]"
+        if not isinstance(objective, dict):
+            issues.append(_issue("error", base, "Strategic objective must be an object."))
+            continue
+        objective_id = objective.get("id")
+        if not _has_text(objective_id):
+            issues.append(_issue("error", f"{base}.id", "Strategic objective id must be non-empty."))
+        else:
+            objective_ids.add(str(objective_id))
+        if not _nonempty_list(objective.get("adapter_families")):
+            issues.append(_issue("error", f"{base}.adapter_families", "Strategic objective must name adapter families."))
+        if not _nonempty_list(objective.get("target_metrics")):
+            issues.append(_issue("error", f"{base}.target_metrics", "Strategic objective must name target metrics."))
+        if objective.get("allowed_use") not in ALLOWED_USES:
+            issues.append(_issue("error", f"{base}.allowed_use", f"Strategic objective allowed_use must be one of {sorted(ALLOWED_USES)}."))
+        if objective.get("status") not in {"planned", "in_progress", "completed"}:
+            issues.append(_issue("error", f"{base}.status", "Strategic objective status must be planned, in_progress, or completed."))
+    missing_objectives = sorted(REQUIRED_TARGET_CAPABILITIES - objective_ids)
+    if missing_objectives:
+        issues.append(_issue("error", "strategic_objectives", f"Missing strategic objectives for target capabilities: {missing_objectives}."))
 
     tasks = registry.get("implementation_tasks")
     if not _nonempty_list(tasks):

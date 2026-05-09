@@ -15,8 +15,15 @@ def valid_manifest():
     return {
         "schema_version": "0.1",
         "policy": {
+            "main_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
+            "not_raw_engine_claim": "AANA is not yet proven as a raw agent-performance engine.",
             "never_merge_probe_results_into_public_claims": True,
             "require_scope_label": True,
+            "require_result_label": True,
+            "require_limitations_for_public_claims": True,
+            "do_not_claim_raw_agent_performance_engine": True,
+            "publish_limitations_alongside_wins": True,
+            "allowed_result_labels": ["measured", "diagnostic", "held-out", "probe-only"],
         },
         "benchmark_reports": [
             {
@@ -24,6 +31,7 @@ def valid_manifest():
                 "benchmark": "example benchmark",
                 "run_type": "general",
                 "scope_label": "public_general_result",
+                "result_label": "measured",
                 "summary": "Measured general run without probes.",
                 "public_claim": True,
                 "public_claim_eligible": True,
@@ -31,6 +39,7 @@ def valid_manifest():
                 "uses_allow_benchmark_probes": False,
                 "probe_results_policy": "excluded_from_public_claims",
                 "limitations": ["Labels are maintainer-reviewed."],
+                "wins": ["Measured control-layer win."],
                 "artifacts": {"primary_results": ["docs/example.md"], "probe_results": []},
             }
         ],
@@ -75,6 +84,30 @@ class BenchmarkReportingTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any(issue["path"].endswith("public_claim_eligible") for issue in report["issues"]))
+
+    def test_blocks_public_claim_labeled_diagnostic(self):
+        manifest = valid_manifest()
+        manifest["benchmark_reports"][0]["result_label"] = "diagnostic"
+        report = validate_benchmark_reporting_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"].endswith("result_label") for issue in report["issues"]))
+
+    def test_blocks_wins_without_limitations(self):
+        manifest = valid_manifest()
+        manifest["benchmark_reports"][0]["limitations"] = []
+        report = validate_benchmark_reporting_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"].endswith("limitations") for issue in report["issues"]))
+
+    def test_requires_exact_public_claim_policy(self):
+        manifest = valid_manifest()
+        manifest["policy"]["main_claim"] = "AANA is the standard raw agent engine."
+        report = validate_benchmark_reporting_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "policy.main_claim" for issue in report["issues"]))
 
     def test_cli_validates_manifest(self):
         with tempfile.TemporaryDirectory() as directory:

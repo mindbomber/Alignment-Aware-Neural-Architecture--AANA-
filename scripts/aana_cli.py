@@ -8,6 +8,7 @@ import pathlib
 import platform
 import subprocess
 import sys
+import time
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -820,6 +821,7 @@ def command_run_file(args):
 
 
 def command_agent_check(args):
+    started_at = time.perf_counter()
     event = agent_api.load_json_file(args.event)
     if args.evidence_registry or args.require_structured_evidence:
         registry = agent_api.load_evidence_registry(args.evidence_registry) if args.evidence_registry else None
@@ -832,6 +834,7 @@ def command_agent_check(args):
             print_json({"event_validation": report})
             return 1
     response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
+    response.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     if args.shadow_mode:
         response = agent_api.apply_shadow_mode(response)
     if args.audit_log:
@@ -845,6 +848,7 @@ def command_agent_check(args):
 
 
 def command_pre_tool_check(args):
+    started_at = time.perf_counter()
     event = agent_api.load_json_file(args.event)
     validation_errors = validate_tool_precheck_event(event)
     if args.validate_only:
@@ -874,6 +878,7 @@ def command_pre_tool_check(args):
         )
         return 1
     result = gate_pre_tool_call_v2(event) if args.gate_version == "v2" else gate_pre_tool_call(event)
+    result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     response = with_architecture_decision(result, event)
     print_json(response)
     return 0 if response.get("gate_decision") == "pass" else 1
@@ -913,6 +918,7 @@ def command_evidence_pack(args):
 
 
 def command_workflow_check(args):
+    started_at = time.perf_counter()
     if args.workflow:
         workflow_request = agent_api.load_json_file(args.workflow)
         if args.evidence_registry:
@@ -926,6 +932,7 @@ def command_workflow_check(args):
                 print_json({"evidence_validation": evidence_report})
                 return 1
         result = agent_api.check_workflow_request(workflow_request, gallery_path=args.gallery)
+        result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
         if args.shadow_mode:
             result = agent_api.apply_shadow_mode(result)
         if args.audit_log:
@@ -964,6 +971,7 @@ def command_workflow_check(args):
         workflow_id=args.workflow_id,
         gallery_path=args.gallery,
     )
+    result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     if args.shadow_mode:
         result = agent_api.apply_shadow_mode(result)
     if args.audit_log:
@@ -974,6 +982,7 @@ def command_workflow_check(args):
 
 
 def command_workflow_batch(args):
+    started_at = time.perf_counter()
     batch_request = agent_api.load_json_file(args.batch)
     if args.evidence_registry:
         registry = agent_api.load_evidence_registry(args.evidence_registry)
@@ -986,6 +995,10 @@ def command_workflow_batch(args):
             print_json({"evidence_validation": evidence_report})
             return 1
     result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
+    latency_ms = round((time.perf_counter() - started_at) * 1000, 3)
+    for item in result.get("results", []) if isinstance(result, dict) else []:
+        if isinstance(item, dict):
+            item.setdefault("audit_metadata", {})["latency_ms"] = latency_ms
     if args.shadow_mode:
         result = agent_api.apply_shadow_mode(result)
     if args.audit_log:
@@ -1230,6 +1243,9 @@ def command_audit_summary(args):
         print(f"- {key}: {value}")
     print("Recommended actions:")
     for key, value in sorted(summary["recommended_actions"].items()):
+        print(f"- {key}: {value}")
+    print("Decision cases:")
+    for key, value in sorted(summary.get("decision_cases", {}).items()):
         print(f"- {key}: {value}")
     print("Top violation codes:")
     for key, value in list(summary["violation_codes"].items())[:10]:

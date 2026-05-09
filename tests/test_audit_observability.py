@@ -26,6 +26,10 @@ def sample_record(**overrides):
             "thresholds": {"accept": 0.9, "revise": 0.7, "defer": 0.5},
             "hard_blockers": [],
         },
+        "hard_blockers": [],
+        "missing_evidence": [],
+        "authorization_state": "not_declared",
+        "latency_ms": 42.0,
         "violation_count": 1,
         "violation_codes": ["unsupported_claim"],
         "violation_severities": {"medium": 1},
@@ -37,7 +41,28 @@ def sample_record(**overrides):
             "safe_response": {"sha256": "d" * 64, "length": 24},
         },
     }
+    record["audit_safe_log_event"] = {
+        "audit_event_version": "aana.audit_safe_decision.v1",
+        "route": record["recommended_action"],
+        "gate_decision": record["gate_decision"],
+        "candidate_gate": record["candidate_gate"],
+        "aix_score": record["aix"]["score"],
+        "aix_decision": record["aix"]["decision"],
+        "hard_blockers": record["hard_blockers"],
+        "missing_evidence": record["missing_evidence"],
+        "evidence_refs": {"used": record.get("evidence_source_ids", []), "missing": [], "contradictory": []},
+        "authorization_state": record["authorization_state"],
+        "latency_ms": record["latency_ms"],
+        "raw_payload_logged": False,
+    }
     record.update(overrides)
+    record["audit_safe_log_event"]["route"] = record.get("recommended_action")
+    record["audit_safe_log_event"]["gate_decision"] = record.get("gate_decision")
+    record["audit_safe_log_event"]["candidate_gate"] = record.get("candidate_gate")
+    if isinstance(record.get("aix"), dict):
+        record["audit_safe_log_event"]["aix_score"] = record["aix"].get("score")
+        record["audit_safe_log_event"]["aix_decision"] = record["aix"].get("decision")
+        record["audit_safe_log_event"]["hard_blockers"] = record["aix"].get("hard_blockers", [])
     return record
 
 
@@ -84,6 +109,8 @@ class AuditObservabilityTests(unittest.TestCase):
         self.assertEqual(payload["audit_metrics_export_version"], "0.1")
         self.assertEqual(payload["record_count"], 1)
         self.assertEqual(payload["metrics"]["audit_records_total"], 1)
+        self.assertEqual(payload["metrics"]["decision_case_count"], 1)
+        self.assertEqual(payload["metrics"]["decision_case_count.blocked"], 1)
         self.assertEqual(payload["metrics"]["gate_decision_count.pass"], 1)
         self.assertEqual(payload["metrics"]["recommended_action_count.revise"], 1)
         self.assertEqual(payload["metrics"]["shadow_records_total"], 0)
@@ -136,6 +163,8 @@ class AuditObservabilityTests(unittest.TestCase):
 
         self.assertEqual(payload["audit_dashboard_version"], "0.1")
         self.assertEqual(payload["cards"]["total_records"], 2)
+        self.assertEqual(payload["cards"]["blocked_cases"], 1)
+        self.assertEqual(payload["cards"]["deferred_cases"], 1)
         self.assertEqual(payload["aix"]["average"], 0.715)
         self.assertEqual(payload["aix"]["min"], 0.52)
         self.assertEqual(payload["hard_blockers"]["total"], 1)
@@ -214,6 +243,21 @@ class AuditObservabilityTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any(issue["path"] == "$.metrics.audit_records_total" for issue in report["issues"]))
+
+    def test_audit_summary_counts_allowed_blocked_deferred_and_false_positive_cases(self):
+        records = [
+            sample_record(recommended_action="accept", gate_decision="pass"),
+            sample_record(recommended_action="refuse", gate_decision="fail"),
+            sample_record(recommended_action="defer", gate_decision="fail"),
+            sample_record(recommended_action="refuse", gate_decision="fail", review={"outcome": "false_positive"}),
+        ]
+
+        summary = agent_api.summarize_audit_records(records)
+
+        self.assertEqual(summary["decision_cases"]["allowed"], 1)
+        self.assertEqual(summary["decision_cases"]["blocked"], 1)
+        self.assertEqual(summary["decision_cases"]["deferred"], 1)
+        self.assertEqual(summary["decision_cases"]["false_positive"], 1)
 
 
 if __name__ == "__main__":

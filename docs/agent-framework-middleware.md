@@ -4,19 +4,113 @@ AANA middleware wraps a framework tool call before execution. Each wrapper
 normalizes the proposed tool call into `aana.agent_tool_precheck.v1`, runs the
 AANA gate, and executes only when `should_execute_tool(result)` is true.
 
+The product pattern is:
+
+```text
+agent proposes -> AANA checks -> agent executes only if allowed
+```
+
 The middleware is dependency-light: importing AANA does not require LangChain,
 OpenAI Agents SDK, AutoGen, CrewAI, or an MCP SDK.
 
+Runnable examples for every integration surface are in
+`examples/integrations/`:
+
+- `openai_agents_sdk.py`
+- `openai_agents/demo.py`
+- `langchain.py`
+- `autogen.py`
+- `crewai.py`
+- `mcp.py`
+
 ## Shared Rule
 
-Execute the original tool call only when:
+In enforcement mode, execute the original tool call only when:
 
 - `gate_decision == "pass"`
 - `recommended_action == "accept"`
+- `architecture_decision.route == "accept"`
 - no `hard_blockers`
 - no `aix.hard_blockers`
+- no schema or contract validation errors
 
-If the gate fails, the Python wrappers raise `AANAToolExecutionBlocked`.
+Schema errors, missing authorization, unknown tools, malformed evidence, and
+non-`accept` routes fail closed. If the gate fails, the Python wrappers raise
+`AANAToolExecutionBlocked`.
+Set `raise_on_block=False` when the agent runtime should receive the blocked
+gate result instead of an exception. Each wrapper stores the latest decision in
+`aana_last_gate`, and every gate result includes `architecture_decision` with
+route, AIx score, hard blockers, evidence refs, authorization state, recovery
+suggestion, and audit-safe log metadata.
+
+Blocked wrapper results are standardized across plain Python, OpenAI Agents SDK,
+LangChain, AutoGen, CrewAI, MCP, and TypeScript wrappers:
+
+```json
+{
+  "error_type": "aana_tool_execution_blocked",
+  "code": "hard_blockers_present",
+  "route": "ask",
+  "hard_blockers": ["write_missing_explicit_confirmation"],
+  "recovery_suggestion": "Ask the user or runtime for the missing authorization, confirmation, or evidence before execution.",
+  "execution_policy": {"mode": "enforce", "execution_allowed": false}
+}
+```
+
+When `raise_on_block=True`, the same object is available as
+`AANAToolExecutionBlocked.error`. When `raise_on_block=False`, it is returned as
+`gate["error"]`, and the wrapped tool body is not called.
+
+Shadow mode is explicit observe-only mode. It records the AANA would-route and
+lets the host application continue, but `allowed` remains false when AANA would
+block. Use `execution_allowed` and `execution_policy` to distinguish enforcement
+permission from shadow-mode production continuation.
+
+## Plain Python SDK
+
+```python
+import aana
+
+def get_public_status(service: str):
+    return {"service": service, "status": "ok"}
+
+guarded = aana.wrap_agent_tool(get_public_status)
+
+result = guarded(service="docs")
+decision = guarded.aana_last_gate["result"]["architecture_decision"]
+```
+
+The one-line wrapper infers common public reads, private reads, and writes from
+the tool name and arguments. For example, `get_public_status` is allowed as a
+public read, while `send_email` is treated as a write and blocked until the
+runtime provides stronger authorization/confirmation evidence.
+
+For consequential tools, pass metadata when registering the wrapper:
+
+```python
+guarded_send = aana.wrap_agent_tool(
+    send_email,
+    metadata={
+        "tool_category": "write",
+        "authorization_state": "confirmed",
+        "risk_domain": "customer_support",
+        "evidence_refs": [
+            aana.tool_evidence_ref(source_id="approval.user", kind="approval", trust_tier="verified")
+        ],
+    },
+)
+```
+
+For one-off calls that should return both the tool output and AANA decision:
+
+```python
+payload = aana.execute_tool_if_allowed(
+    get_public_status,
+    tool_name="get_public_status",
+    arguments={"service": "docs"},
+    metadata={"tool_category": "public_read", "authorization_state": "none"},
+)
+```
 
 ## LangChain
 
@@ -58,6 +152,45 @@ def send_customer_email(to: str, body: str):
 ```
 
 Use the decorator around tool functions registered with the agent runtime.
+For a manual OpenAI tool wrapper, the quickstart shape is:
+
+```python
+decision = aana.check_tool_call({
+    "tool_name": "send_email",
+    "tool_category": "write",
+    "authorization_state": "user_claimed",
+    "evidence_refs": ["draft_id:123"],
+    "risk_domain": "customer_support",
+    "proposed_arguments": {"to": "customer@example.com"},
+    "recommended_route": "accept",
+})
+
+if decision["route"] != "accept":
+    return {"blocked": True, "aana": decision}
+```
+
+The production wrappers use the stricter `execution_policy`, so they also block
+schema errors, hard blockers, and malformed evidence even if a route alias is
+present.
+For a repo-owned enforcement proof, run:
+
+```powershell
+python examples/integrations/openai_agents/demo.py
+```
+
+That demo simulates OpenAI-style tool proposals, gates each proposal through
+AANA, and prints a side-effect ledger showing that the blocked write proposal
+never reached the original `send_customer_email` body.
+
+For OpenAI-powered apps that should call AANA as a service instead of importing
+the Python package, use the HTTP guard:
+
+```powershell
+python examples/integrations/openai_agents/api_guard.py
+```
+
+It calls `POST /pre-tool-check` and executes the wrapped tool only when the API
+route and execution policy allow enforcement execution.
 
 ## AutoGen
 
@@ -122,4 +255,7 @@ const guarded = mcpToolMiddleware("get_public_status", (args) => ({ ok: true }))
 ```
 
 The TypeScript wrappers use the same local deterministic pre-tool-call gate as
-`checkToolPrecheck`.
+`checkToolPrecheck` and expose `architecture_decision` on the result. See
+`examples/sdk/agent_wrapping_examples.ts` and
+`examples/sdk/agent_wrapping_examples.py` for complete framework-neutral
+wrapping examples.

@@ -19,6 +19,7 @@ export type RiskDomain =
   | "unknown";
 
 export const TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1" as const;
+export const PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable." as const;
 
 export interface EvidenceObject {
   text: string;
@@ -119,6 +120,67 @@ export interface ToolPrecheckResult {
   reasons: string[];
   evidence_ref_count?: number;
   validation_errors?: Array<{ path: string; message: string }>;
+  architecture_decision?: ArchitectureDecision;
+  execution_policy?: ExecutionPolicy;
+}
+
+export interface ArchitectureDecision {
+  architecture_claim: typeof PUBLIC_ARCHITECTURE_CLAIM;
+  route: ToolPrecheckAction;
+  gate_decision?: "pass" | "fail";
+  candidate_gate?: "pass" | "fail";
+  aix_score?: number;
+  aix_decision?: ToolPrecheckAction;
+  hard_blockers: string[];
+  evidence_refs: {
+    used: string[];
+    missing: string[];
+  };
+  authorization_state: AuthorizationState | "not_declared";
+  tool_name?: string;
+  tool_category?: ToolCategory;
+  risk_domain?: RiskDomain;
+  correction_recovery_suggestion: string;
+  audit_safe_log_event: Record<string, unknown>;
+}
+
+export interface ExecutionPolicy {
+  mode: "enforce" | "shadow";
+  aana_allows_execution: boolean;
+  execution_allowed: boolean;
+  fail_closed: boolean;
+  reason: string;
+  required_route: "accept";
+  observed: {
+    gate_decision?: "pass" | "fail";
+    recommended_action?: ToolPrecheckAction;
+    architecture_route?: ToolPrecheckAction;
+    hard_blocker_count: number;
+    validation_error_count: number;
+  };
+}
+
+export interface AanaMiddlewareError {
+  error_type: "aana_tool_execution_blocked";
+  code: string;
+  message: string;
+  route: ToolPrecheckAction;
+  tool_name?: string;
+  tool_category?: ToolCategory;
+  risk_domain?: RiskDomain;
+  hard_blockers: string[];
+  recovery_suggestion: string;
+  execution_policy: ExecutionPolicy;
+  audit_safe_log_event?: Record<string, unknown>;
+}
+
+export interface AanaGateResult {
+  event: ToolPrecheckEvent;
+  result: ToolPrecheckResult;
+  allowed: boolean;
+  execution_allowed: boolean;
+  execution_policy: ExecutionPolicy;
+  error?: AanaMiddlewareError;
 }
 
 export interface AanaClientOptions {
@@ -353,6 +415,22 @@ function hasMissingAuthorizationEvidence(evidenceRefs: ToolEvidenceRef[]): boole
   });
 }
 
+function isIdentityBoundPublicRead(event: ToolPrecheckEvent): boolean {
+  if (event.tool_category !== "public_read") return false;
+  const name = event.tool_name.toLowerCase();
+  const keys = Object.keys(event.proposed_arguments ?? {});
+  const privateKeys = ["account_id", "card_id", "case_id", "client_id", "customer_id", "employee_id", "email", "invoice_id", "loan_id", "order_id", "patient_id", "payment_id", "profile_id", "student_id", "subscription_id", "ticket_id", "transaction_id", "user_id"];
+  const privateHints = ["account", "booking", "cart", "client", "customer", "invoice", "order", "profile", "reservation", "subscription", "ticket", "transaction", "user"];
+  return keys.some((key) => privateKeys.includes(key)) || privateHints.some((hint) => name.includes(hint));
+}
+
+function isHighRiskWrite(event: ToolPrecheckEvent): boolean {
+  if (event.tool_category !== "write") return false;
+  const name = event.tool_name.toLowerCase();
+  const highRisk = ["delete", "transfer", "pay", "purchase", "reset", "send", "deploy", "grant", "revoke"];
+  return highRisk.some((term) => name.includes(term)) || ["finance", "devops", "security", "legal", "pharma", "healthcare"].includes(event.risk_domain);
+}
+
 export function validateToolPrecheckEvent(event: ToolPrecheckEvent): { valid: boolean; errors: Array<{ path: string; message: string }> } {
   const errors: Array<{ path: string; message: string }> = [];
   if (event.schema_version !== TOOL_PRECHECK_SCHEMA_VERSION) errors.push({ path: "schema_version", message: "Unsupported schema_version." });
@@ -394,10 +472,15 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
   const reasons: string[] = [];
   const hardBlockers: string[] = [];
   let aanaRoute: ToolPrecheckAction;
-  if (event.tool_category === "public_read") {
+  const effectiveCategory = isIdentityBoundPublicRead(event) ? "private_read" : event.tool_category;
+  if (effectiveCategory !== event.tool_category) {
+    reasons.push("public_read_reclassified_identity_bound_private_read");
+    hardBlockers.push("public_read_identity_bound_misclassified");
+  }
+  if (effectiveCategory === "public_read") {
     aanaRoute = "accept";
     reasons.push("public_read_allowed_without_identity_auth");
-  } else if (event.tool_category === "private_read") {
+  } else if (effectiveCategory === "private_read") {
     if (authOrder[event.authorization_state] >= authOrder.authenticated) {
       aanaRoute = "accept";
       reasons.push("private_read_has_authenticated_context");
@@ -411,7 +494,12 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
       hardBlockers.push("private_read_not_authenticated");
     }
   } else if (event.tool_category === "write") {
-    if (authOrder[event.authorization_state] >= authOrder.confirmed) {
+    if (isHighRiskWrite(event) && authOrder[event.authorization_state] < authOrder.confirmed) {
+      aanaRoute = authOrder[event.authorization_state] >= authOrder.user_claimed ? "ask" : "defer";
+      reasons.push("high_risk_write_requires_explicit_confirmation");
+      hardBlockers.push("high_risk_write_missing_explicit_confirmation", "write_missing_explicit_confirmation");
+      if (event.authorization_state === "user_claimed" || event.authorization_state === "authenticated") hardBlockers.push("write_missing_validation_or_confirmation");
+    } else if (authOrder[event.authorization_state] >= authOrder.confirmed) {
       aanaRoute = "accept";
       reasons.push("write_has_explicit_confirmation");
     } else if (event.authorization_state === "validated") {
@@ -467,20 +555,130 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
   };
 }
 
+function correctionRecoverySuggestion(route: ToolPrecheckAction): string {
+  if (route === "accept") return "Execute only within the checked scope and append the audit-safe decision event.";
+  if (route === "ask") return "Ask the user or runtime for the missing authorization, confirmation, or evidence before execution.";
+  if (route === "defer") return "Defer to stronger evidence retrieval, a domain owner, or human review before execution.";
+  return "Refuse the proposed action because a hard blocker prevents safe execution.";
+}
+
+export function architectureDecision(result: ToolPrecheckResult, event: ToolPrecheckEvent): ArchitectureDecision {
+  const blockers = result.hard_blockers.length ? result.hard_blockers : result.aix.hard_blockers;
+  return {
+    architecture_claim: PUBLIC_ARCHITECTURE_CLAIM,
+    route: result.recommended_action,
+    gate_decision: result.gate_decision,
+    candidate_gate: result.candidate_gate,
+    aix_score: result.aix.score,
+    aix_decision: result.aix.decision,
+    hard_blockers: blockers,
+    evidence_refs: {
+      used: event.evidence_refs.map((ref) => ref.source_id),
+      missing: blockers.filter((item) => /missing|evidence|authorization|citation|source/.test(item))
+    },
+    authorization_state: event.authorization_state ?? "not_declared",
+    tool_name: event.tool_name,
+    tool_category: event.tool_category,
+    risk_domain: event.risk_domain,
+    correction_recovery_suggestion: correctionRecoverySuggestion(result.recommended_action),
+    audit_safe_log_event: {
+      gate_decision: result.gate_decision,
+      recommended_action: result.recommended_action,
+      aix: {
+        score: result.aix.score,
+        decision: result.aix.decision,
+        hard_blockers: result.aix.hard_blockers
+      },
+      hard_blockers: blockers
+    }
+  };
+}
+
+export function withArchitectureDecision(result: ToolPrecheckResult, event: ToolPrecheckEvent): ToolPrecheckResult {
+  const enriched = { ...result, architecture_decision: architectureDecision(result, event) };
+  return { ...enriched, execution_policy: executionPolicy(enriched) };
+}
+
+export function checkToolCall(event: ToolPrecheckEvent): ToolPrecheckResult {
+  return withArchitectureDecision(checkToolPrecheck(event), event);
+}
+
+export const gateAction = checkToolCall;
+
 export function shouldExecuteTool(result: ToolPrecheckResult): boolean {
-  return result.gate_decision === "pass" && result.recommended_action === "accept" && result.hard_blockers.length === 0 && result.aix.hard_blockers.length === 0;
+  return executionPolicy(result, "enforce").aana_allows_execution;
+}
+
+export function executionPolicy(result: ToolPrecheckResult, mode?: "enforce" | "shadow"): ExecutionPolicy {
+  const requestedMode = mode ?? ((result as { shadow_mode?: boolean; execution_mode?: string }).shadow_mode || (result as { execution_mode?: string }).execution_mode === "shadow" ? "shadow" : "enforce");
+  const architectureRoute = result.architecture_decision?.route ?? result.recommended_action;
+  const hardBlockerCount = (result.hard_blockers ?? []).length + (result.aix?.hard_blockers ?? []).length + (result.architecture_decision?.hard_blockers ?? []).length;
+  const validationErrorCount = (result.validation_errors ?? []).length;
+  const aanaAllows = result.gate_decision === "pass" && result.recommended_action === "accept" && architectureRoute === "accept" && hardBlockerCount === 0 && validationErrorCount === 0;
+  const executionAllowed = requestedMode === "enforce" ? aanaAllows : true;
+  const reason = validationErrorCount > 0
+    ? "schema_or_contract_validation_failed"
+    : hardBlockerCount > 0
+      ? "hard_blockers_present"
+      : !aanaAllows
+        ? "route_not_accept"
+        : requestedMode === "shadow"
+          ? "shadow_mode_observe_only"
+          : "enforcement_accept";
+  return {
+    mode: requestedMode,
+    aana_allows_execution: aanaAllows,
+    execution_allowed: executionAllowed,
+    fail_closed: !aanaAllows,
+    reason,
+    required_route: "accept",
+    observed: {
+      gate_decision: result.gate_decision,
+      recommended_action: result.recommended_action,
+      architecture_route: architectureRoute,
+      hard_blocker_count: hardBlockerCount,
+      validation_error_count: validationErrorCount
+    }
+  };
 }
 
 export class AanaToolExecutionBlocked extends Error {
   readonly result: ToolPrecheckResult;
   readonly event: ToolPrecheckEvent;
+  readonly error: AanaMiddlewareError;
 
-  constructor(result: ToolPrecheckResult, event: ToolPrecheckEvent) {
-    super(`AANA blocked tool call ${event.tool_name}: ${result.recommended_action}`);
+  constructor(result: ToolPrecheckResult, event: ToolPrecheckEvent, error?: AanaMiddlewareError) {
+    const blocked = error ?? middlewareError(result, event, executionPolicy(result));
+    super(blocked.message);
     this.name = "AanaToolExecutionBlocked";
     this.result = result;
     this.event = event;
+    this.error = blocked;
   }
+}
+
+export function middlewareError(result: ToolPrecheckResult, event: ToolPrecheckEvent, policy: ExecutionPolicy = executionPolicy(result)): AanaMiddlewareError {
+  const route = result.architecture_decision?.route ?? result.recommended_action ?? "refuse";
+  const hardBlockers = Array.from(new Set([...(result.hard_blockers ?? []), ...(result.architecture_decision?.hard_blockers ?? [])]));
+  const recovery = result.architecture_decision?.correction_recovery_suggestion
+    ?? (route === "ask"
+      ? "Ask for missing authorization or evidence before retrying."
+      : route === "defer"
+        ? "Defer to stronger evidence retrieval, a domain owner, or human review before execution."
+        : "Refuse the proposed action because a hard blocker prevents safe execution.");
+  return {
+    error_type: "aana_tool_execution_blocked",
+    code: policy.reason || "aana_execution_blocked",
+    message: `AANA blocked tool call ${event.tool_name}: route=${route}`,
+    route,
+    tool_name: event.tool_name,
+    tool_category: event.tool_category,
+    risk_domain: event.risk_domain,
+    hard_blockers: hardBlockers,
+    recovery_suggestion: recovery,
+    execution_policy: policy,
+    audit_safe_log_event: result.architecture_decision?.audit_safe_log_event
+  };
 }
 
 export function inferToolCategory(toolName: string, proposedArguments: Record<string, unknown> = {}, metadata: Record<string, unknown> = {}): ToolCategory {
@@ -551,26 +749,35 @@ export function gateToolCall(input: {
   metadata?: Record<string, unknown>;
   evidenceRefs?: ToolEvidenceRef[];
   raiseOnBlock?: boolean;
-}): { event: ToolPrecheckEvent; result: ToolPrecheckResult; allowed: boolean } {
+  executionMode?: "enforce" | "shadow";
+  onDecision?: (gate: AanaGateResult) => void;
+}): AanaGateResult {
   const event = buildPrecheckFromToolCall(input);
-  const result = checkToolPrecheck(event);
-  const allowed = shouldExecuteTool(result);
-  if ((input.raiseOnBlock ?? true) && !allowed) throw new AanaToolExecutionBlocked(result, event);
-  return { event, result, allowed };
+  const result = checkToolCall(event);
+  const policy = executionPolicy(result, input.executionMode ?? "enforce");
+  const allowed = policy.aana_allows_execution;
+  const gate: AanaGateResult = { event, result, allowed, execution_allowed: policy.execution_allowed, execution_policy: policy };
+  if (!gate.execution_allowed) gate.error = middlewareError(result, event, policy);
+  input.onDecision?.(gate);
+  if ((input.raiseOnBlock ?? true) && !gate.execution_allowed) throw new AanaToolExecutionBlocked(result, event, gate.error);
+  return gate;
 }
 
 export function guardToolFunction<TArgs extends unknown[], TResult>(
   toolName: string,
   fn: (...args: TArgs) => TResult,
-  metadata: Record<string, unknown> = {}
+  metadata: Record<string, unknown> = {},
+  options: { raiseOnBlock?: boolean; executionMode?: "enforce" | "shadow"; onDecision?: (gate: AanaGateResult) => void } = {}
 ): (...args: TArgs) => TResult {
   return (...args: TArgs) => {
     const proposedArguments = args.length === 1 && typeof args[0] === "object" && args[0] !== null ? (args[0] as Record<string, unknown>) : { args };
-    gateToolCall({ toolName, proposedArguments, metadata });
+    const gate = gateToolCall({ toolName, proposedArguments, metadata, raiseOnBlock: options.raiseOnBlock, executionMode: options.executionMode, onDecision: options.onDecision });
+    if (!gate.execution_allowed) return gate as TResult;
     return fn(...args);
   };
 }
 
+export const wrapAgentTool = guardToolFunction;
 export const langChainToolMiddleware = guardToolFunction;
 export const openAIAgentsToolMiddleware = guardToolFunction;
 export const autoGenToolMiddleware = guardToolFunction;

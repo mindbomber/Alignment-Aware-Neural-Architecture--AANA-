@@ -7,10 +7,156 @@
       "heldout_validation",
       "external_reporting"
     ],
+    "strategic_primary_uses": [
+      "threshold_calibration",
+      "false_positive_reduction",
+      "heldout_generalization_testing",
+      "adapter_family_proof"
+    ],
+    "target_capabilities": [
+      "privacy_pii_recall",
+      "grounded_qa_hallucination_detection",
+      "unsafe_tool_call_gating",
+      "authorization_state_detection",
+      "public_vs_private_read_classification",
+      "ask_defer_refuse_route_quality"
+    ],
     "never_use_same_split_for_tuning_and_public_claims": true,
     "public_claim_rule": "A dataset/config/split used for calibration or tuning cannot also support external_reporting claims.",
     "adapter_claim_boundary": "Datasets may support auditability, control, verification, correction, privacy, groundedness, and routing claims before any raw agent-performance claim."
   },
+  "strategic_objectives": [
+    {
+      "id": "privacy_pii_recall",
+      "allowed_use": "calibration",
+      "adapter_families": [
+        "privacy",
+        "security",
+        "support"
+      ],
+      "datasets": [
+        "piimb/pii-masking-benchmark",
+        "ai4privacy/pii-masking-openpii-1m",
+        "nvidia/Nemotron-PII"
+      ],
+      "target_metrics": [
+        "pii_recall",
+        "redaction_correctness",
+        "multilingual_coverage"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "grounded_qa_hallucination_detection",
+      "allowed_use": "calibration",
+      "adapter_families": [
+        "research_grounding",
+        "education",
+        "legal",
+        "pharma",
+        "support"
+      ],
+      "datasets": [
+        "NovachronoAI/RAG-Grounded-QA-188k",
+        "PatronusAI/HaluBench"
+      ],
+      "target_metrics": [
+        "unsupported_claim_recall",
+        "answerable_safe_allow_rate",
+        "citation_evidence_coverage",
+        "over_refusal_rate"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "unsafe_tool_call_gating",
+      "allowed_use": "calibration",
+      "adapter_families": [
+        "agent_tool_gate",
+        "mcp",
+        "devops",
+        "finance",
+        "retail"
+      ],
+      "datasets": [
+        "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory",
+        "NousResearch/hermes-function-calling-v1",
+        "ScaleAI/MCP-Atlas",
+        "lihaonan0716/mcphunt-agent-traces"
+      ],
+      "target_metrics": [
+        "unsafe_action_recall",
+        "schema_failure_rate",
+        "safe_allow_rate"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "authorization_state_detection",
+      "allowed_use": "heldout_validation",
+      "adapter_families": [
+        "agent_tool_gate",
+        "privacy",
+        "finance",
+        "support"
+      ],
+      "datasets": [
+        "NousResearch/hermes-function-calling-v1",
+        "lihaonan0716/mcphunt-agent-traces",
+        "nvidia/Nemotron-PII"
+      ],
+      "target_metrics": [
+        "private_read_write_gating",
+        "authorization_state_accuracy",
+        "missing_authorization_recall"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "public_vs_private_read_classification",
+      "allowed_use": "heldout_validation",
+      "adapter_families": [
+        "agent_tool_gate",
+        "mcp",
+        "support",
+        "finance"
+      ],
+      "datasets": [
+        "ScaleAI/MCP-Atlas",
+        "NousResearch/hermes-function-calling-v1",
+        "lihaonan0716/mcphunt-agent-traces"
+      ],
+      "target_metrics": [
+        "public_read_safe_allow_rate",
+        "private_read_block_or_ask_rate",
+        "false_positive_rate"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "ask_defer_refuse_route_quality",
+      "allowed_use": "heldout_validation",
+      "adapter_families": [
+        "agent_tool_gate",
+        "research_grounding",
+        "privacy",
+        "support"
+      ],
+      "datasets": [
+        "PatronusAI/HaluBench",
+        "piimb/pii-masking-benchmark",
+        "ScaleAI/MCP-Atlas",
+        "lihaonan0716/mcphunt-agent-traces"
+      ],
+      "target_metrics": [
+        "route_accuracy",
+        "ask_defer_refuse_quality",
+        "false_positive_rate",
+        "over_refusal_rate"
+      ],
+      "status": "planned"
+    }
+  ],
   "implementation_tasks": [
     {
       "task": "Create a machine-readable HF dataset validation registry.",
@@ -96,6 +242,7 @@
       "adapter_families": [
         "privacy",
         "medical",
+        "pharma",
         "finance",
         "legal"
       ],
@@ -166,6 +313,7 @@
         "research_grounding",
         "support",
         "medical",
+        "pharma",
         "legal"
       ],
       "source_url": "https://huggingface.co/datasets/PatronusAI/HaluBench",

@@ -1,0 +1,110 @@
+{
+  "schema_version": "aana.standard_publication.v1",
+  "standard_name": "AANA Agent Action Standard",
+  "public_claim": "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.",
+  "evidence_boundary": "AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine.",
+  "components": [
+    {
+      "id": "python_package",
+      "status": "publish_ready_local",
+      "distribution": "aana-eval-pipeline",
+      "import_package": "aana",
+      "required_paths": [
+        "pyproject.toml",
+        "aana/__init__.py",
+        "scripts/aana_cli.py"
+      ],
+      "required_scripts": [
+        "aana",
+        "aana-fastapi",
+        "aana-validate-standard-publication"
+      ]
+    },
+    {
+      "id": "typescript_sdk",
+      "status": "publish_ready_local",
+      "package": "@aana/integration-sdk",
+      "required_paths": [
+        "sdk/typescript/package.json",
+        "sdk/typescript/src/index.ts",
+        "sdk/typescript/README.md"
+      ],
+      "required_scripts": [
+        "build"
+      ]
+    },
+    {
+      "id": "fastapi_service",
+      "status": "publish_ready_local",
+      "required_paths": [
+        "eval_pipeline/fastapi_app.py",
+        "scripts/aana_fastapi.py",
+        "docs/fastapi-service.md",
+        "examples/api/pre_tool_check_write_ask.json",
+        "examples/api/agent_check_support_reply.json"
+      ],
+      "required_routes": [
+        "GET /health",
+        "POST /pre-tool-check",
+        "POST /agent-check"
+      ]
+    },
+    {
+      "id": "benchmark_eval_tooling",
+      "status": "publish_ready_local",
+      "required_paths": [
+        "eval_pipeline/hf_dataset_registry.py",
+        "eval_pipeline/hf_calibration.py",
+        "scripts/validate_hf_dataset_registry.py",
+        "scripts/validate_hf_calibration.py",
+        "examples/hf_dataset_validation_registry.json",
+        "examples/hf_calibration_plan.json"
+      ],
+      "boundary": "Calibration, benchmark, and evidence tooling is separate from the runtime SDK/API claim."
+    },
+    {
+      "id": "model_dataset_cards",
+      "status": "ready_template",
+      "required_paths": [
+        "docs/huggingface-model-card.md",
+        "docs/huggingface-dataset-card.md",
+        "docs/hf-dataset-proof-report.md"
+      ],
+      "cards": [
+        {
+          "type": "model",
+          "path": "docs/huggingface-model-card.md"
+        },
+        {
+          "type": "dataset",
+          "path": "docs/huggingface-dataset-card.md"
+        }
+      ]
+    },
+    {
+      "id": "agent_action_contract_spec",
+      "status": "standardized",
+      "required_paths": [
+        "docs/agent-action-contract-v1.md",
+        "schemas/agent_tool_precheck.schema.json",
+        "docs/agent-action-contract-quickstart.md"
+      ],
+      "required_fields": [
+        "tool_name",
+        "tool_category",
+        "authorization_state",
+        "evidence_refs",
+        "risk_domain",
+        "proposed_arguments",
+        "recommended_route"
+      ]
+    }
+  ],
+  "release_gates": [
+    "Run python scripts/validate_aana_standard_publication.py --require-existing-artifacts.",
+    "Run python scripts/validate_packaging_hardening.py --require-existing-artifacts.",
+    "Run focused Python tests for contract, API, middleware, and publication validation.",
+    "Run npm run build in sdk/typescript before npm publication.",
+    "Do not publish stronger raw agent-performance claims without held-out validation."
+  ]
+}

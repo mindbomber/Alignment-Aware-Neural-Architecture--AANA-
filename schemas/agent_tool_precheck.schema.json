@@ -1,12 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://aana.dev/schemas/agent_tool_precheck.schema.json",
-  "title": "AANA Agent Tool Precheck Contract",
-  "description": "Minimal pre-execution event every agent or tool runtime can emit before a tool call. AANA consumes this contract to decide whether the action should be accepted, clarified, deferred, or refused.",
+  "$id": "https://aana.dev/schemas/agent_action_contract_v1.schema.json",
+  "title": "AANA Agent Action Contract v1",
+  "description": "Public seven-field pre-execution contract every agent or tool runtime can emit before a consequential action. AANA consumes this contract to decide whether the action should be accepted, clarified, deferred, or refused.",
+  "x-aana-contract-freeze": {
+    "version": "v1",
+    "required_field_order": [
+      "tool_name",
+      "tool_category",
+      "authorization_state",
+      "evidence_refs",
+      "risk_domain",
+      "proposed_arguments",
+      "recommended_route"
+    ],
+    "route_order": ["accept", "ask", "defer", "refuse"],
+    "route_semantics": {
+      "accept": "execute only within the checked scope",
+      "ask": "request missing authorization, confirmation, evidence, or clarification",
+      "defer": "route to stronger evidence retrieval, domain owner, or human review",
+      "refuse": "do not execute because a hard blocker prevents safe action"
+    },
+    "versioning_rules": [
+      "v1 required fields must not be removed, renamed, reordered, or made optional in a v1-compatible schema.",
+      "Future v2/v3 schemas may add optional fields but must keep accepting valid v1 events unless an explicit new schema id is negotiated.",
+      "New route or enum values must be opt-in and old v1 clients should fail closed when they encounter them.",
+      "Result envelopes may add optional metadata, but gate_decision, recommended_action, hard_blockers, and audit-safe route information must remain backward-compatible."
+    ]
+  },
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version",
     "tool_name",
     "tool_category",
     "authorization_state",
@@ -18,7 +42,8 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "aana.agent_tool_precheck.v1"
+      "const": "aana.agent_tool_precheck.v1",
+      "description": "Optional compatibility marker for runtimes that use the original pre-tool-check wire name. The public v1 minimum is the seven required action fields."
     },
     "tool_name": {
       "type": "string",
@@ -74,6 +99,32 @@
           "summary": {
             "type": "string",
             "description": "Short redacted summary of what this evidence establishes."
+          },
+          "retrieved_at": {
+            "type": "string",
+            "description": "Optional ISO timestamp for freshness checks."
+          },
+          "citation_url": {
+            "type": "string",
+            "description": "Optional public citation/provenance URL."
+          },
+          "retrieval_url": {
+            "type": "string",
+            "description": "Optional retrieval/provenance URI."
+          },
+          "provenance": {
+            "type": "string",
+            "description": "Optional redacted provenance label such as connector, policy, user, runtime, or fixture."
+          },
+          "supports": {
+            "type": "array",
+            "description": "Optional redacted claim/action ids this evidence supports.",
+            "items": { "type": "string" }
+          },
+          "contradicts": {
+            "type": "array",
+            "description": "Optional redacted claim/action ids this evidence contradicts.",
+            "items": { "type": "string" }
           }
         }
       }

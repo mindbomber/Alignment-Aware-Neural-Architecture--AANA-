@@ -69,6 +69,25 @@ aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
 aana evidence-pack --require-existing-artifacts
 ```
 
+Agent wrapping helpers:
+
+```python
+guarded = aana.wrap_agent_tool(
+    send_customer_email,
+    metadata={
+        "tool_category": "write",
+        "authorization_state": "confirmed",
+        "risk_domain": "customer_support",
+        "evidence_refs": [
+            aana.tool_evidence_ref(source_id="approval.user-confirmed-send", kind="approval")
+        ],
+    },
+)
+
+result = guarded(to="customer@example.com", body="Approved draft")
+decision = guarded.aana_last_gate["result"]["architecture_decision"]
+```
+
 ## TypeScript
 
 ```ts

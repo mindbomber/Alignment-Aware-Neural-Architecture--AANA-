@@ -16,6 +16,28 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[api]
+          python -m pip install pip-audit
+
+      - name: Run gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run repo-local secret scan
+        run: python scripts/validate_secrets_scan.py
+
+      - name: Run dependency audit
+        run: pip-audit --desc --progress-spinner off
+
+      - name: Run security hardening gate
+        run: python scripts/validate_security_hardening.py
+
       - name: Run hardened release gates
         run: >
           python scripts/dev.py release-gate
@@ -31,7 +53,6 @@ jobs:
         with:
           name: aana-production-profile-audit-artifacts
           path: |
-            eval_outputs/audit/ci/aana-ci-audit.jsonl
             eval_outputs/audit/ci/aana-ci-metrics.json
             eval_outputs/audit/ci/aana-ci-aix-drift.json
             eval_outputs/audit/ci/aana-ci-reviewer-report.md

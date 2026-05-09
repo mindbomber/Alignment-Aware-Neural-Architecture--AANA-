@@ -16,8 +16,66 @@ def valid_registry():
         "schema_version": "0.1",
         "policy": {
             "allowed_uses": ["calibration", "heldout_validation", "external_reporting"],
+            "strategic_primary_uses": [
+                "threshold_calibration",
+                "false_positive_reduction",
+                "heldout_generalization_testing",
+                "adapter_family_proof",
+            ],
+            "target_capabilities": [
+                "privacy_pii_recall",
+                "grounded_qa_hallucination_detection",
+                "unsafe_tool_call_gating",
+                "authorization_state_detection",
+                "public_vs_private_read_classification",
+                "ask_defer_refuse_route_quality",
+            ],
             "never_use_same_split_for_tuning_and_public_claims": True,
         },
+        "strategic_objectives": [
+            {
+                "id": "privacy_pii_recall",
+                "allowed_use": "calibration",
+                "adapter_families": ["privacy"],
+                "target_metrics": ["pii_recall"],
+                "status": "planned",
+            },
+            {
+                "id": "grounded_qa_hallucination_detection",
+                "allowed_use": "calibration",
+                "adapter_families": ["research_grounding"],
+                "target_metrics": ["unsupported_claim_recall"],
+                "status": "planned",
+            },
+            {
+                "id": "unsafe_tool_call_gating",
+                "allowed_use": "calibration",
+                "adapter_families": ["agent_tool_gate"],
+                "target_metrics": ["unsafe_action_recall"],
+                "status": "planned",
+            },
+            {
+                "id": "authorization_state_detection",
+                "allowed_use": "heldout_validation",
+                "adapter_families": ["agent_tool_gate"],
+                "target_metrics": ["authorization_state_accuracy"],
+                "status": "planned",
+            },
+            {
+                "id": "public_vs_private_read_classification",
+                "allowed_use": "heldout_validation",
+                "adapter_families": ["agent_tool_gate"],
+                "target_metrics": ["public_read_safe_allow_rate"],
+                "status": "planned",
+            },
+            {
+                "id": "ask_defer_refuse_route_quality",
+                "allowed_use": "heldout_validation",
+                "adapter_families": ["agent_tool_gate"],
+                "target_metrics": ["route_accuracy"],
+                "status": "planned",
+            },
+        ],
         "implementation_tasks": [
             {"task": "Create registry.", "status": "completed"},
         ],
@@ -58,6 +116,26 @@ class HFDatasetRegistryTests(unittest.TestCase):
         self.assertGreater(report["split_use_counts"]["calibration"], 0)
         self.assertGreater(report["split_use_counts"]["heldout_validation"], 0)
         self.assertGreater(report["split_use_counts"]["external_reporting"], 0)
+
+    def test_requires_strategic_hf_dataset_targets(self):
+        registry = valid_registry()
+        registry["policy"]["target_capabilities"].remove("authorization_state_detection")
+        report = validate_hf_dataset_registry(registry)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("target capabilities" in issue["message"] for issue in report["issues"]))
+
+    def test_requires_objective_for_each_target_capability(self):
+        registry = valid_registry()
+        registry["strategic_objectives"] = [
+            objective
+            for objective in registry["strategic_objectives"]
+            if objective["id"] != "public_vs_private_read_classification"
+        ]
+        report = validate_hf_dataset_registry(registry)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("Missing strategic objectives" in issue["message"] for issue in report["issues"]))
 
     def test_blocks_same_split_for_calibration_and_external_reporting(self):
         registry = valid_registry()

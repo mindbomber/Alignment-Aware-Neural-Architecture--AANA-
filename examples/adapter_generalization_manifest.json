@@ -1,0 +1,17 @@
+{
+  "schema_version": "aana.adapter_generalization_gate.v1",
+  "policy": {
+    "default_workflow_scope": "general_non_probe",
+    "require_config_backed_domain_hints": true,
+    "require_heldout_after_every_adapter_improvement": true,
+    "require_benchmark_fit_lint": true,
+    "require_public_claim_probe_separation": true
+  },
+  "artifacts": {
+    "generalization_config": "examples/adapter_generalization_config.json",
+    "heldout_validation_manifest": "examples/adapter_heldout_validation.json",
+    "benchmark_fit_lint_manifest": "examples/benchmark_fit_lint_manifest.json",
+    "benchmark_reporting_manifest": "examples/benchmark_reporting_manifest.json",
+    "generalization_audit_doc": "docs/aana-generalization-audit.md"
+  }
+}

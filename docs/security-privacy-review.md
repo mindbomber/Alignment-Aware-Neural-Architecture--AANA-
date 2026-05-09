@@ -45,7 +45,10 @@ Validate the full security review with:
 ```powershell
 python scripts/validate_security_privacy_review.py
 python scripts/validate_secrets_scan.py
+python scripts/validate_security_hardening.py
 ```
+
+The broader security hardening gate also validates CI secret scanning, dependency audit wiring, public-demo safe defaults, and the malicious-agent threat model in [aana-security-threat-model.md](aana-security-threat-model.md).
 
 ## Audit Retention
 
@@ -66,6 +69,16 @@ This validator generates support Workflow Contract and Agent Event audit records
 ## Secrets Scanning
 
 The repository contains synthetic secret-like strings in tests and fixtures to verify redaction behavior. The repo-local gate uses `examples/secrets_scan_allowlist.json` and fails on unapproved credential-looking literals in source, deployment manifests, connector configuration, docs, tests, and examples. Production secret scanning must reuse this allowlist, add environment-specific secret-manager evidence, and fail on unapproved findings in deployment manifests, connector configuration, logs, and audit artifacts.
+
+CI runs both the repo-local scanner and a gitleaks scan with `.gitleaks.toml`. The allowlist is restricted to synthetic fixtures and generated evidence snapshots.
+
+## Dependency Audit
+
+CI installs the API extra and runs `pip-audit`. A dependency vulnerability should block promotion until the dependency is patched, pinned to a safe version, removed, or explicitly risk-accepted outside this repo-local gate.
+
+## Public Demo Safety
+
+Hosted demos must stay synthetic-only. Public browser demos must not store secrets or execute real sends, deletes, purchases, deploys, exports, or connector writes. The security hardening gate checks `docs/demo/scenarios.json` and `docs/tool-call-demo/app.js` for those safe defaults.
 
 ## Rate Limiting
 

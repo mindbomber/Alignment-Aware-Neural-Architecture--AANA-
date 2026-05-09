@@ -148,6 +148,9 @@ Required replacement:
 3. Convert domain constants into adapter configuration.
    - Product catalog names, card profiles, and policy query templates should live
      in adapter JSON or retrieved evidence, not hardcoded scaffold logic.
+   - Current enforcement: runtime tool classification hints are loaded from
+     `examples/adapter_generalization_config.json` through
+     `eval_pipeline.adapter_generalization_config`.
 
 4. Add a benchmark-fitting lint.
    - Flag task IDs, exact user IDs, order IDs, product IDs, item IDs, payment IDs,
@@ -159,6 +162,8 @@ Required replacement:
    - Coverage now includes checked-in adapter JSON files, starter pilot adapter
      configs, tau2 scaffolds, adapter-runner family modules, and benchmark/eval
      scripts.
+   - Regex coverage now also flags probe-style or answer-key-style APIs in
+     general paths, with a narrow allowlist for the guarded tau2 probe switch.
 
 5. Add held-out validation gates.
    - Every adapter improvement must be tested on at least one held-out slice.
@@ -198,6 +203,9 @@ eligible for the general AANA path.
 
 Operational gate:
 
+- `python scripts/validate_adapter_generalization.py --require-existing-artifacts`
+  runs the combined adapter-generalization gate: config-backed hints, held-out
+  validation, benchmark-fit linting, and public-claim separation.
 - `python scripts/validate_benchmark_fit_lint.py` blocks known answer literals in
   general scaffold paths.
 - `python scripts/validate_adapter_heldout.py` blocks adapter improvements that

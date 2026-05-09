@@ -1,7 +1,7 @@
 {
   "name": "@aana/integration-sdk",
   "version": "0.1.0",
-  "description": "TypeScript helpers and HTTP client for AANA Agent Event, Workflow Contract, and Agent Tool Precheck integrations.",
+  "description": "TypeScript helpers and HTTP client for the AANA Agent Action Contract, Agent Event, Workflow Contract, and middleware integrations.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

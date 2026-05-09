@@ -32,6 +32,19 @@ Start with the path that matches what you are doing:
 - **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
 - **Agent Tool Contract SDK**: [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md)
 - **Agent Framework Middleware**: [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md)
+- **Agent Action Contract v1**: [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md)
+- **Agent Action Contract Quickstart**: [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md)
+- **Agent Action Contract Cases**: [examples/agent_action_contract_cases.json](examples/agent_action_contract_cases.json)
+- **FastAPI Service**: [docs/fastapi-service.md](docs/fastapi-service.md)
+- **Evidence Handling**: [docs/evidence-handling.md](docs/evidence-handling.md)
+- **Auditability**: [docs/auditability.md](docs/auditability.md)
+- **Security Threat Model**: [docs/aana-security-threat-model.md](docs/aana-security-threat-model.md)
+- **Authorization State**: [docs/authorization-state.md](docs/authorization-state.md)
+- **AANA Standard Publication Package**: [docs/aana-standard-publication.md](docs/aana-standard-publication.md)
+- **Packaging Release Checklist**: [docs/packaging-release-checklist.md](docs/packaging-release-checklist.md)
+- **Public Claims Policy**: [docs/public-claims-policy.md](docs/public-claims-policy.md)
+- **HF Dataset Strategy**: [docs/hf-dataset-strategy.md](docs/hf-dataset-strategy.md)
+- **HF Dataset Proof Report**: [docs/hf-dataset-proof-report.md](docs/hf-dataset-proof-report.md)
 - **Build Adapter**: [docs/build-adapter/index.md](docs/build-adapter/index.md)
 
 Try AANA without cloning the repo:
@@ -98,6 +111,14 @@ This covers install, health checks, one catalog-backed gallery example, a Workfl
 Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
 
 Benchmark reporting boundary: diagnostic probe results are engineering artifacts only and must not be merged into public AANA performance claims. See [docs/benchmark-reporting-policy.md](docs/benchmark-reporting-policy.md) and validate with `python scripts/validate_benchmark_reporting.py`.
+
+Public claims boundary: keep the main claim to “AANA makes agents more auditable, safer, more grounded, and more controllable.” Do not claim AANA is proven as a raw agent-performance engine. Label results as measured, held-out, diagnostic, or probe-only, and publish limitations beside wins. See [docs/public-claims-policy.md](docs/public-claims-policy.md).
+
+Adapter generalization gate: general adapters must use config-backed domain/tool hints, pass held-out validation, pass benchmark-fit linting, and keep diagnostic/probe results out of public claims. Validate the combined gate with `python scripts/validate_adapter_generalization.py --require-existing-artifacts`.
+
+Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
+
+Packaging gate: keep Python package, TypeScript SDK, FastAPI service, benchmark/eval tooling, docs, and cards separated with `python scripts/validate_packaging_hardening.py --require-existing-artifacts`. The current Python distribution remains `aana-eval-pipeline`; any future rename needs a documented migration window and compatibility plan.
 
 ## Result Shape
 
@@ -189,6 +210,20 @@ aana evidence-pack --require-existing-artifacts
 ```
 
 The agent and tool-check outputs include `architecture_decision`: route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
+
+Wrap tools with AANA when integrating agents:
+
+```python
+guarded = aana.wrap_agent_tool(send_email)
+```
+
+The wrapper infers common reads/writes, gates every call, stores the latest
+decision on `guarded.aana_last_gate`, and executes only when AANA returns
+`accept`. Add metadata for confirmed writes, private reads, or domain-specific
+evidence.
+
+The integration pattern is `agent proposes -> AANA checks -> agent executes only if allowed`. See [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md) and the runnable examples in [examples/integrations](examples/integrations).
+For the smallest copy-paste example, use the [Agent Action Contract Quickstart](docs/agent-action-contract-quickstart.md).
 
 Use event-file checks only from a trusted local AANA install or reviewed repository checkout. For standalone agent skills, prefer an approved in-memory tool/API connector, keep review payloads redacted, and do not ask the agent to infer or execute local script paths.
 
