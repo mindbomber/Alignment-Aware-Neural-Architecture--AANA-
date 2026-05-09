@@ -267,6 +267,8 @@ class GroundedQaAdapterUpgradeTests(unittest.TestCase):
             [
                 sys.executable,
                 "scripts/run_grounded_qa_hf_experiment.py",
+                "--mode",
+                "fixture",
                 "--max-rows-per-source",
                 "2",
                 "--output",

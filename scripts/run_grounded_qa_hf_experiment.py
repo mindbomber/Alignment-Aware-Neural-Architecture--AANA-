@@ -214,7 +214,54 @@ def _case_from_row(dataset: dict[str, Any], row: dict[str, Any], index: int) -> 
     }
 
 
-def load_cases(*, experiment: dict[str, Any], max_rows_per_source: int) -> list[dict[str, Any]]:
+def _fixture_rows(experiment: dict[str, Any]) -> list[dict[str, Any]]:
+    datasets = {dataset["schema"]: dataset for dataset in experiment.get("datasets", [])}
+    fixture_inputs = [
+        (
+            "rag_grounded_qa",
+            {
+                "id": "fixture-rag-grounded-qa-1",
+                "context": "The source says the pilot reduced duplicate tickets.",
+                "question": "What did the source say the pilot reduced?",
+                "answer": "The pilot reduced duplicate tickets.",
+                "type": "supported",
+            },
+            0,
+        ),
+        (
+            "halubench",
+            {
+                "id": "fixture-halubench-1",
+                "passage": "The county had 18,878 households and 13,629 families.",
+                "question": "How many more households were there than families?",
+                "answer": "19,300",
+                "label": "FAIL",
+            },
+            1,
+        ),
+        (
+            "ragtruth_processed",
+            {
+                "id": "fixture-ragtruth-1",
+                "context": "The source says the company opened one clinic in May.",
+                "query": "Summarize the source.",
+                "output": "The company opened one clinic in May and secured a national contract.",
+                "hallucination_labels_processed": {"baseless_info": 1},
+            },
+            2,
+        ),
+    ]
+    cases: list[dict[str, Any]] = []
+    for schema, row, index in fixture_inputs:
+        dataset = datasets.get(schema)
+        if dataset:
+            cases.append(_case_from_row(dataset, row, index))
+    return cases
+
+
+def load_cases(*, experiment: dict[str, Any], mode: str, max_rows_per_source: int) -> list[dict[str, Any]]:
+    if mode == "fixture":
+        return _fixture_rows(experiment)
     cases: list[dict[str, Any]] = []
     for dataset in experiment.get("datasets", []):
         offsets = dataset.get("sample_offsets") or [0]
@@ -370,6 +417,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--experiment", default=str(DEFAULT_EXPERIMENT))
     parser.add_argument("--registry", default=str(DEFAULT_REGISTRY))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
+    parser.add_argument("--mode", choices=["fixture", "live"], default="live")
     parser.add_argument("--max-rows-per-source", type=int, default=25)
     parser.add_argument("--semantic-verifier", choices=["none", "openai"], default="none")
     parser.add_argument("--semantic-model", default=None)
@@ -384,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR {error}", file=sys.stderr)
         return 1
 
-    cases = load_cases(experiment=experiment, max_rows_per_source=args.max_rows_per_source)
+    cases = load_cases(experiment=experiment, mode=args.mode, max_rows_per_source=args.max_rows_per_source)
     semantic_verifier = build_semantic_verifier(args.semantic_verifier, model=args.semantic_model)
     result = evaluate_cases(cases, semantic_verifier=semantic_verifier)
     result.update(
@@ -396,6 +444,7 @@ def main(argv: list[str] | None = None) -> int:
             "semantic_model": args.semantic_model,
             "dataset_sources": experiment["datasets"],
             "raw_text_storage": experiment["outputs"]["raw_text_storage"],
+            "mode": args.mode,
         }
     )
 
