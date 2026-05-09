@@ -147,3 +147,32 @@ def test_public_directory_search_users_is_not_private_read_without_identity_argu
     assert result["recommended_action"] == "accept"
     assert result["gate_decision"] == "pass"
     assert "public_read_identity_bound_misclassified" not in result["hard_blockers"]
+
+
+def test_public_booking_search_is_not_private_read_without_identity_arguments():
+    event = {
+        "tool_name": "Hotel_Booking_Server",
+        "tool_category": "public_read",
+        "authorization_state": "none",
+        "evidence_refs": [
+            {
+                "source_id": "policy.public_booking_search",
+                "kind": "policy",
+                "trust_tier": "verified",
+                "redaction_status": "public",
+                "freshness": {"status": "fresh"},
+                "provenance": "unit",
+                "summary": "Searching public hotel availability is a public read until the agent books, pays, or reads a private reservation.",
+            }
+        ],
+        "risk_domain": "commerce",
+        "proposed_arguments": {"task_sha256": "redacted"},
+        "recommended_route": "accept",
+        "user_intent": "Search for hotels near Shichahai for 2 people.",
+    }
+
+    result = gate_pre_tool_call(event)
+
+    assert result["recommended_action"] == "accept"
+    assert result["gate_decision"] == "pass"
+    assert "public_read_identity_bound_misclassified" not in result["hard_blockers"]

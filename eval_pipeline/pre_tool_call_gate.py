@@ -185,8 +185,11 @@ def is_identity_bound_read(event: dict[str, Any]) -> bool:
     tool_name = str(event.get("tool_name") or "").lower()
     name_words = _words(tool_name)
     args = event.get("proposed_arguments") if isinstance(event.get("proposed_arguments"), dict) else {}
+    summary = _summary_text(event)
     if any(key in args for key in IDENTITY_BOUND_ARGUMENT_KEYS):
         return True
+    if re.search(r"\b(search|find|list|lookup|catalog|availability|opening hours|public)\b", summary):
+        return False
     if name_words & {"search", "list"} and not any(key in args for key in IDENTITY_BOUND_ARGUMENT_KEYS):
         return False
     if any(hint in tool_name for hint in PRIVATE_READ_HINTS):
