@@ -8,6 +8,7 @@ class ContractFreezeTests(unittest.TestCase):
         inventory = {item["id"]: item for item in contract_freeze.contract_inventory()}
 
         for contract_id in [
+            "agent_action_contract_v1",
             "adapter_contract",
             "agent_event",
             "agent_check_result",
@@ -27,6 +28,27 @@ class ContractFreezeTests(unittest.TestCase):
             self.assertEqual(inventory[contract_id]["stability"], "frozen")
             self.assertTrue(inventory[contract_id]["version"])
             self.assertTrue(inventory[contract_id]["breaking_change_requires"])
+
+    def test_agent_action_contract_v1_compatibility_surfaces_pass(self):
+        report = contract_freeze.validate_agent_action_contract_v1_compatibility()
+
+        self.assertTrue(report["valid"], report)
+        self.assertEqual(
+            report["frozen_fields"],
+            [
+                "tool_name",
+                "tool_category",
+                "authorization_state",
+                "evidence_refs",
+                "risk_domain",
+                "proposed_arguments",
+                "recommended_route",
+            ],
+        )
+        self.assertEqual(report["frozen_routes"], ["accept", "ask", "defer", "refuse"])
+        self.assertIn("fastapi", report["surfaces"])
+        self.assertIn("mcp", report["surfaces"])
+        self.assertIn("hf_space", report["surfaces"])
 
     def test_schema_catalog_contains_contract_freeze_schemas(self):
         report = contract_freeze.validate_schema_catalog()

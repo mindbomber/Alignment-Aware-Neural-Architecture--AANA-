@@ -109,6 +109,16 @@ application's production path. Shadow mode is explicit in the response with
 
 Use `/pre-tool-check` for the public [Agent Action Contract v1](agent-action-contract-v1.md). Example payloads are checked in under `examples/api/`.
 
+Agent Action Contract v1 freezes these seven required request fields:
+
+- `tool_name`
+- `tool_category`
+- `authorization_state`
+- `evidence_refs`
+- `risk_domain`
+- `proposed_arguments`
+- `recommended_route`
+
 ```powershell
 $body = Get-Content examples/api/pre_tool_check_write_ask.json -Raw
 

@@ -1,7 +1,9 @@
 """Contract freeze inventory and compatibility checks for AANA public surfaces."""
 
+import inspect
 import json
 import pathlib
+import re
 
 from eval_pipeline import agent_api, agent_contract, audit, aix, evidence, evidence_integrations, workflow_contract
 from scripts import validate_adapter, validate_adapter_gallery
@@ -10,7 +12,18 @@ from scripts import validate_adapter, validate_adapter_gallery
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONTRACT_FREEZE_VERSION = "0.1"
 CONTRACT_STATUS = "frozen"
+AGENT_ACTION_CONTRACT_V1_FIELDS = [
+    "tool_name",
+    "tool_category",
+    "authorization_state",
+    "evidence_refs",
+    "risk_domain",
+    "proposed_arguments",
+    "recommended_route",
+]
+AGENT_ACTION_CONTRACT_V1_ROUTES = ["accept", "ask", "defer", "refuse"]
 PRIMARY_PUBLIC_CONTRACTS = {
+    "agent_action_contract_v1",
     "agent_event",
     "agent_check_result",
     "workflow_request",
@@ -174,8 +187,10 @@ EVIDENCE_REGISTRY_SCHEMA = {
 
 
 def schema_catalog():
+    agent_action_contract_v1 = _load_json(ROOT / "schemas" / "agent_tool_precheck.schema.json")
     catalog = {
         **agent_api.schema_catalog(),
+        "agent_action_contract_v1": agent_action_contract_v1,
         "adapter_contract": ADAPTER_CONTRACT_SCHEMA,
         "evidence_object": EVIDENCE_OBJECT_SCHEMA,
         "evidence_registry": EVIDENCE_REGISTRY_SCHEMA,
@@ -189,6 +204,17 @@ def schema_catalog():
 
 def contract_inventory():
     return [
+        {
+            "id": "agent_action_contract_v1",
+            "version": "v1",
+            "schema": "agent_action_contract_v1",
+            "validator": "eval_pipeline.pre_tool_call_gate.validate_event",
+            "stability": CONTRACT_STATUS,
+            "public_api": True,
+            "boundary": "primary_public_api",
+            "required_fields": list(AGENT_ACTION_CONTRACT_V1_FIELDS),
+            "breaking_change_requires": "new Agent Action Contract schema id and compatibility/migration notes",
+        },
         {
             "id": "adapter_contract",
             "version": "0.1",
@@ -411,6 +437,180 @@ def _load_json(path):
     return data
 
 
+def _read_text(path):
+    return pathlib.Path(path).read_text(encoding="utf-8")
+
+
+def _contract_event_has_frozen_fields(event):
+    return isinstance(event, dict) and all(field in event for field in AGENT_ACTION_CONTRACT_V1_FIELDS)
+
+
+def _check_text_surface(path, issues, *, require_heading=False):
+    rel = str(pathlib.Path(path).relative_to(ROOT))
+    if not pathlib.Path(path).exists():
+        issues.append(_issue("error", rel, "Agent Action Contract compatibility surface is missing."))
+        return
+    text = _read_text(path)
+    if require_heading and "Agent Action Contract v1" not in text:
+        issues.append(_issue("error", rel, "Surface must name Agent Action Contract v1."))
+    for field in AGENT_ACTION_CONTRACT_V1_FIELDS:
+        if field not in text:
+            issues.append(_issue("error", rel, f"Surface is missing frozen field {field!r}."))
+
+
+def _check_json_event_file(path, issues):
+    rel = str(pathlib.Path(path).relative_to(ROOT))
+    if not pathlib.Path(path).exists():
+        issues.append(_issue("error", rel, "Agent Action Contract example file is missing."))
+        return 0
+    try:
+        payload = _load_json(path)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        issues.append(_issue("error", rel, str(exc)))
+        return 0
+    events = []
+    if _contract_event_has_frozen_fields(payload):
+        events.append(payload)
+    if isinstance(payload.get("event"), dict):
+        events.append(payload["event"])
+    for item in payload.get("examples", []) if isinstance(payload.get("examples"), list) else []:
+        if isinstance(item, dict) and isinstance(item.get("event"), dict):
+            events.append(item["event"])
+    for item in payload.get("cases", []) if isinstance(payload.get("cases"), list) else []:
+        if isinstance(item, dict) and isinstance(item.get("event"), dict):
+            events.append(item["event"])
+    if not events:
+        issues.append(_issue("error", rel, "No Agent Action Contract example events found."))
+        return 0
+    for index, event in enumerate(events):
+        for field in AGENT_ACTION_CONTRACT_V1_FIELDS:
+            if field not in event:
+                issues.append(_issue("error", f"{rel}.events[{index}]", f"Example event is missing frozen field {field!r}."))
+    return len(events)
+
+
+def validate_agent_action_contract_v1_compatibility():
+    """Validate that all public pre-tool-call surfaces honor the v1 freeze."""
+
+    issues = []
+    schema = _load_json(ROOT / "schemas" / "agent_tool_precheck.schema.json")
+    freeze = schema.get("x-aana-contract-freeze") if isinstance(schema.get("x-aana-contract-freeze"), dict) else {}
+    if schema.get("title") != "AANA Agent Action Contract v1":
+        issues.append(_issue("error", "schemas/agent_tool_precheck.schema.json.title", "Schema title must remain AANA Agent Action Contract v1."))
+    if schema.get("$id") != "https://aana.dev/schemas/agent_action_contract_v1.schema.json":
+        issues.append(_issue("error", "schemas/agent_tool_precheck.schema.json.$id", "Schema $id must remain the public v1 URL."))
+    if schema.get("required") != AGENT_ACTION_CONTRACT_V1_FIELDS:
+        issues.append(_issue("error", "schemas/agent_tool_precheck.schema.json.required", "Required fields must match the frozen seven-field order."))
+    if freeze.get("required_field_order") != AGENT_ACTION_CONTRACT_V1_FIELDS:
+        issues.append(_issue("error", "schemas/agent_tool_precheck.schema.json.x-aana-contract-freeze", "Freeze metadata must match the frozen field order."))
+    if schema.get("properties", {}).get("recommended_route", {}).get("enum") != AGENT_ACTION_CONTRACT_V1_ROUTES:
+        issues.append(_issue("error", "schemas/agent_tool_precheck.schema.json.recommended_route", "Route enum must stay accept, ask, defer, refuse."))
+
+    from aana import sdk
+
+    signature = inspect.signature(sdk.build_tool_precheck_event)
+    for field in AGENT_ACTION_CONTRACT_V1_FIELDS:
+        if field not in signature.parameters:
+            issues.append(_issue("error", f"aana.sdk.build_tool_precheck_event.{field}", "Python SDK builder is missing a frozen field parameter."))
+    try:
+        event = sdk.build_tool_precheck_event(
+            tool_name="search_docs",
+            tool_category="public_read",
+            authorization_state="none",
+            evidence_refs=["docs:aana-agent-action-contract-v1"],
+            risk_domain="public_information",
+            proposed_arguments={"query": "AANA Agent Action Contract v1"},
+            recommended_route="accept",
+        )
+        if not _contract_event_has_frozen_fields(event):
+            issues.append(_issue("error", "aana.sdk.build_tool_precheck_event", "Python SDK builder output is missing one or more frozen fields."))
+    except Exception as exc:
+        issues.append(_issue("error", "aana.sdk.build_tool_precheck_event", f"Python SDK builder failed the frozen-field smoke test: {exc}"))
+
+    for path in [ROOT / "sdk" / "typescript" / "src" / "index.ts", ROOT / "sdk" / "typescript" / "dist" / "index.d.ts"]:
+        rel = str(path.relative_to(ROOT))
+        text = _read_text(path)
+        if "ToolPrecheckEvent" not in text:
+            issues.append(_issue("error", rel, "TypeScript SDK must expose ToolPrecheckEvent."))
+        event_match = re.search(r"interface\s+ToolPrecheckEvent\s*\{(?P<body>.*?)\n\}", text, flags=re.S)
+        event_text = event_match.group("body") if event_match else text
+        for field in AGENT_ACTION_CONTRACT_V1_FIELDS:
+            if not re.search(rf"\b{re.escape(field)}\s*:", event_text):
+                issues.append(_issue("error", rel, f"TypeScript SDK event type is missing required field {field!r}."))
+            if re.search(rf"\b{re.escape(field)}\s*\?:", event_text):
+                issues.append(_issue("error", rel, f"TypeScript SDK must not make frozen field {field!r} optional."))
+
+    from eval_pipeline import fastapi_app, mcp_server
+
+    for example_name, example in {
+        "PRE_TOOL_CHECK_EXAMPLE": fastapi_app.PRE_TOOL_CHECK_EXAMPLE,
+        "CONFIRMED_PRE_TOOL_CHECK_EXAMPLE": fastapi_app.CONFIRMED_PRE_TOOL_CHECK_EXAMPLE,
+    }.items():
+        if not _contract_event_has_frozen_fields(example):
+            issues.append(_issue("error", f"eval_pipeline.fastapi_app.{example_name}", "FastAPI OpenAPI example is missing one or more frozen fields."))
+    try:
+        app = fastapi_app.create_app(auth_token="contract-freeze-test-token")
+        openapi = app.openapi()
+        request_body = openapi["paths"]["/pre-tool-check"]["post"]["requestBody"]["content"]["application/json"]
+        examples = request_body.get("examples") or {}
+        if len(examples) < 2:
+            issues.append(_issue("error", "eval_pipeline.fastapi_app.openapi./pre-tool-check", "FastAPI OpenAPI must publish pre-tool examples."))
+        for name, item in examples.items():
+            if not _contract_event_has_frozen_fields(item.get("value")):
+                issues.append(_issue("error", f"eval_pipeline.fastapi_app.openapi.examples.{name}", "OpenAPI example is missing frozen fields."))
+    except Exception as exc:
+        issues.append(_issue("error", "eval_pipeline.fastapi_app.openapi", f"FastAPI OpenAPI compatibility check failed: {exc}"))
+
+    mcp_schema = mcp_server.AANA_PRE_TOOL_CHECK_TOOL.get("inputSchema", {})
+    if mcp_schema.get("required") != AGENT_ACTION_CONTRACT_V1_FIELDS:
+        issues.append(_issue("error", "eval_pipeline.mcp_server.AANA_PRE_TOOL_CHECK_TOOL.inputSchema.required", "MCP tool required fields must match the frozen seven-field order."))
+    for field in AGENT_ACTION_CONTRACT_V1_FIELDS:
+        if field not in mcp_schema.get("properties", {}):
+            issues.append(_issue("error", f"eval_pipeline.mcp_server.AANA_PRE_TOOL_CHECK_TOOL.inputSchema.properties.{field}", "MCP tool schema is missing a frozen field."))
+
+    docs = [
+        ROOT / "docs" / "agent-action-contract-v1.md",
+        ROOT / "docs" / "agent-action-contract-quickstart.md",
+        ROOT / "docs" / "agent-tool-precheck-contract.md",
+        ROOT / "docs" / "fastapi-service.md",
+        ROOT / "docs" / "aana-mcp-chatgpt-app.md",
+        ROOT / "docs" / "openai-agents-quickstart.md",
+        ROOT / "docs" / "huggingface-model-card.md",
+    ]
+    for path in docs:
+        _check_text_surface(path, issues, require_heading=path.name in {"agent-action-contract-v1.md", "agent-tool-precheck-contract.md"})
+
+    example_count = 0
+    for path in [
+        ROOT / "examples" / "agent_action_contract_cases.json",
+        ROOT / "examples" / "sdk" / "agent_tool_precheck_examples.json",
+        ROOT / "examples" / "api" / "pre_tool_check_write_ask.json",
+        ROOT / "examples" / "api" / "pre_tool_check_confirmed_write.json",
+    ]:
+        example_count += _check_json_event_file(path, issues)
+
+    hf_space_app = ROOT / "examples" / "huggingface_space" / "app.py"
+    hf_space_readme = ROOT / "examples" / "huggingface_space" / "README.md"
+    _check_text_surface(hf_space_app, issues)
+    _check_text_surface(hf_space_readme, issues, require_heading=True)
+
+    return {
+        "valid": not any(issue["level"] == "error" for issue in issues),
+        "frozen_fields": list(AGENT_ACTION_CONTRACT_V1_FIELDS),
+        "frozen_routes": list(AGENT_ACTION_CONTRACT_V1_ROUTES),
+        "surfaces": {
+            "python_sdk": "aana.sdk.build_tool_precheck_event",
+            "typescript_sdk": ["sdk/typescript/src/index.ts", "sdk/typescript/dist/index.d.ts"],
+            "fastapi": "eval_pipeline.fastapi_app:/pre-tool-check",
+            "mcp": "eval_pipeline.mcp_server:AANA_PRE_TOOL_CHECK_TOOL",
+            "docs": [str(path.relative_to(ROOT)) for path in docs],
+            "examples_checked": example_count,
+            "hf_space": ["examples/huggingface_space/app.py", "examples/huggingface_space/README.md"],
+        },
+        "issues": issues,
+    }
+
+
 def validate_fixtures(gallery_path=None, evidence_registry_path=None):
     gallery_path = pathlib.Path(gallery_path or ROOT / "examples" / "adapter_gallery.json")
     default_gallery_path = ROOT / "examples" / "adapter_gallery.json"
@@ -576,6 +776,7 @@ def contract_freeze_report(gallery_path=None, evidence_registry_path=None):
     catalog = schema_catalog()
     inventory_report = validate_inventory(catalog)
     schema_report = validate_schema_catalog(catalog)
+    agent_action_contract_report = validate_agent_action_contract_v1_compatibility()
     fixture_report = validate_fixtures(gallery_path=gallery_path, evidence_registry_path=evidence_registry_path)
     docs = [
         ROOT / "docs" / "contract-freeze.md",
@@ -596,6 +797,12 @@ def contract_freeze_report(gallery_path=None, evidence_registry_path=None):
     checks = [
         _status("contract_inventory", "pass" if inventory_report["valid"] else "fail", "Frozen contract inventory is complete.", inventory_report),
         _status("schema_catalog", "pass" if schema_report["valid"] else "fail", "Frozen contract schemas are complete.", schema_report),
+        _status(
+            "agent_action_contract_v1_compatibility",
+            "pass" if agent_action_contract_report["valid"] else "fail",
+            "Agent Action Contract v1 is frozen across SDK, API, MCP, docs, examples, and HF Space surfaces.",
+            agent_action_contract_report,
+        ),
         _status("compatibility_fixtures", "pass" if fixture_report["valid"] else "fail", "Frozen contract fixtures validate.", fixture_report),
         _status("contract_docs", "pass" if docs_report["valid"] else "fail", "Contract freeze documentation is present.", docs_report),
     ]

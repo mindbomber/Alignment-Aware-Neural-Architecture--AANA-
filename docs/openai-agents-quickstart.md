@@ -66,6 +66,10 @@ agent = Agent(
 
 Start AANA as a local policy service:
 
+`POST /pre-tool-check` accepts the frozen Agent Action Contract v1 request
+fields: `tool_name`, `tool_category`, `authorization_state`, `evidence_refs`,
+`risk_domain`, `proposed_arguments`, and `recommended_route`.
+
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "local-dev-secret"
 python scripts/aana_fastapi.py --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
