@@ -175,6 +175,21 @@
       "status": "completed"
     }
   ],
+  "tracked_todos": [
+    {
+      "id": "governance_compliance_hf_dataset_search",
+      "task": "Search Hugging Face for governance/compliance policy, auditability, risk-control, and regulatory-decision datasets that can support held-out validation or external reporting.",
+      "status": "planned",
+      "adapter_family": "governance_compliance",
+      "current_coverage": "repo_heldout_fixture",
+      "reason": "Current governance/compliance coverage is based on repo-heldout fixtures, so public claims for this adapter family should stay limited until an external HF dataset or maintainer-reviewed protocol is registered.",
+      "acceptance_criteria": [
+        "Identify at least one HF dataset with usable license, task schema, and policy/risk/audit labels.",
+        "Register calibration, heldout_validation, and external_reporting split use without overlap.",
+        "Add a held-out governance/compliance adapter validation artifact before stronger public claims."
+      ]
+    }
+  ],
   "datasets": [
     {
       "dataset_name": "piimb/pii-masking-benchmark",

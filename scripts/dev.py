@@ -230,6 +230,12 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Validate per-family HF calibration targets, metric tracking, and calibration/reporting split isolation.",
         ),
         ReleaseGate(
+            "hf_dataset_proof",
+            "data",
+            [PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"],
+            "Fail CI if any public HF dataset proof claim references a calibration split or unregistered split.",
+        ),
+        ReleaseGate(
             "privacy_pii_adapter",
             "adapter",
             [PYTHON, "scripts/run_privacy_pii_adapter_eval.py"],
@@ -602,6 +608,10 @@ def hf_calibration():
     run([PYTHON, "scripts/validate_hf_calibration.py"])
 
 
+def hf_dataset_proof():
+    run([PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"])
+
+
 def privacy_pii_adapter():
     run([PYTHON, "scripts/run_privacy_pii_adapter_eval.py"])
 
@@ -649,6 +659,7 @@ COMMANDS = {
     "adapter-generalization": adapter_generalization,
     "hf-dataset-registry": hf_dataset_registry,
     "hf-calibration": hf_calibration,
+    "hf-dataset-proof": hf_dataset_proof,
     "privacy-pii-adapter": privacy_pii_adapter,
     "grounded-qa-adapter": grounded_qa_adapter,
     "agent-tool-use-control": agent_tool_use_control,

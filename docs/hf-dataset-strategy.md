@@ -27,10 +27,23 @@ AANA should use Hugging Face datasets as calibration and validation evidence for
 ## Operating Rules
 
 - Never use the same dataset/config/split for calibration and public claims.
+- Never reuse the same dataset/config/split across calibration,
+  heldout_validation, and external_reporting roles.
 - Treat calibration splits as engineering data, not external proof.
 - Treat held-out validation as adapter-family evidence only after the adapter is frozen for that run.
 - Treat external-reporting splits as public claim evidence only when no tuning was performed on that split.
 - Report false positives, safe allow rate, schema failures, and route accuracy alongside recall.
+- `python scripts/validate_hf_dataset_proof.py --require-existing-artifacts`
+  fails CI when a public proof axis references a split registered for
+  calibration or an unregistered split.
+
+## Governance/Compliance TODO
+
+Governance/compliance coverage is currently repo-heldout fixture based. The
+tracked TODO in `examples/hf_dataset_validation_registry.json` requires a
+Hugging Face dataset search for policy, auditability, risk-control, or
+regulatory-decision datasets before stronger governance/compliance public
+claims are made.
 
 ## Calibration Gate
 

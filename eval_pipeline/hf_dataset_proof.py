@@ -13,6 +13,7 @@ from typing import Any
 
 
 HF_DATASET_PROOF_VERSION = "0.1"
+DEFAULT_REGISTRY_PATH = pathlib.Path(__file__).resolve().parents[1] / "examples" / "hf_dataset_validation_registry.json"
 REQUIRED_PROOF_AXES = {
     "false_positive_control",
     "unsafe_recall",
@@ -66,11 +67,46 @@ def _metric_value(root: pathlib.Path, artifact: str, metric: str) -> tuple[float
     return float(value), []
 
 
+def _registry_split_index(registry: dict[str, Any]) -> dict[tuple[str, str, str], set[str]]:
+    index: dict[tuple[str, str, str], set[str]] = {}
+    datasets = registry.get("datasets", [])
+    if not isinstance(datasets, list):
+        datasets = []
+    for dataset in datasets:
+        if not isinstance(dataset, dict):
+            continue
+        dataset_name = str(dataset.get("dataset_name") or "")
+        split_uses = dataset.get("split_uses", [])
+        if not isinstance(split_uses, list):
+            split_uses = []
+        for split_use in split_uses:
+            if not isinstance(split_use, dict):
+                continue
+            key = (
+                dataset_name,
+                str(split_use.get("config") or ""),
+                str(split_use.get("split") or ""),
+            )
+            index.setdefault(key, set()).add(str(split_use.get("allowed_use") or ""))
+    return index
+
+
+def _load_registry(path: str | pathlib.Path | None) -> dict[str, Any]:
+    if path is None:
+        path = DEFAULT_REGISTRY_PATH
+    with pathlib.Path(path).open(encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError("HF dataset registry must be a JSON object.")
+    return payload
+
+
 def validate_hf_dataset_proof_report(
     manifest: dict[str, Any],
     *,
     root: str | pathlib.Path = ".",
     require_existing_artifacts: bool = False,
+    registry: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     issues: list[dict[str, str]] = []
     root_path = pathlib.Path(root)
@@ -97,6 +133,7 @@ def validate_hf_dataset_proof_report(
         proof_axes = []
     seen_axes = set()
     artifact_metric_checks = 0
+    registry_index = _registry_split_index(registry or _load_registry(DEFAULT_REGISTRY_PATH))
     for axis_index, axis in enumerate(proof_axes):
         base = f"proof_axes[{axis_index}]"
         if not isinstance(axis, dict):
@@ -112,6 +149,32 @@ def validate_hf_dataset_proof_report(
         if not _nonempty_list(axis.get("metrics")):
             issues.append(_issue("error", f"{base}.metrics", "Proof axis must list metrics."))
             continue
+        dataset_refs = axis.get("dataset_refs")
+        if not _nonempty_list(dataset_refs):
+            issues.append(_issue("error", f"{base}.dataset_refs", "Public proof axis must list dataset_refs used for claim evidence."))
+        else:
+            for ref_index, dataset_ref in enumerate(dataset_refs):
+                ref_base = f"{base}.dataset_refs[{ref_index}]"
+                if not isinstance(dataset_ref, dict):
+                    issues.append(_issue("error", ref_base, "Dataset ref must be an object."))
+                    continue
+                key = (
+                    str(dataset_ref.get("dataset_name") or ""),
+                    str(dataset_ref.get("config") or ""),
+                    str(dataset_ref.get("split") or ""),
+                )
+                allowed_uses = registry_index.get(key)
+                if not allowed_uses:
+                    issues.append(_issue("error", ref_base, f"Dataset ref {key} is not registered."))
+                    continue
+                if "calibration" in allowed_uses:
+                    issues.append(
+                        _issue(
+                            "error",
+                            ref_base,
+                            "Public proof claim cannot use a dataset/config/split registered for calibration.",
+                        )
+                    )
         for metric_index, metric_ref in enumerate(axis["metrics"]):
             metric_base = f"{base}.metrics[{metric_index}]"
             if not isinstance(metric_ref, dict):

@@ -17,20 +17,24 @@ from eval_pipeline.hf_dataset_proof import load_manifest, validate_hf_dataset_pr
 
 
 DEFAULT_MANIFEST = ROOT / "examples" / "hf_dataset_proof_report.json"
+DEFAULT_REGISTRY = ROOT / "examples" / "hf_dataset_validation_registry.json"
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
+    parser.add_argument("--registry", default=str(DEFAULT_REGISTRY), help="HF dataset registry used to validate public-claim split refs.")
     parser.add_argument("--require-existing-artifacts", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     manifest = load_manifest(args.manifest)
+    registry = json.loads(pathlib.Path(args.registry).read_text(encoding="utf-8"))
     report = validate_hf_dataset_proof_report(
         manifest,
         root=ROOT,
         require_existing_artifacts=args.require_existing_artifacts,
+        registry=registry,
     )
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
@@ -48,4 +52,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

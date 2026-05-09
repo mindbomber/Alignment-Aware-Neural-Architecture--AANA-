@@ -14,6 +14,18 @@
     {
       "id": "false_positive_control",
       "claim": "AANA can keep false positives and over-refusals low on the current HF-mapped privacy and groundedness validation cases.",
+      "dataset_refs": [
+        {
+          "dataset_name": "piimb/pii-masking-benchmark",
+          "config": "sentences",
+          "split": "test"
+        },
+        {
+          "dataset_name": "PatronusAI/HaluBench",
+          "config": "default",
+          "split": "test"
+        }
+      ],
       "metrics": [
         {
           "artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
@@ -38,6 +50,18 @@
     {
       "id": "unsafe_recall",
       "claim": "AANA can recall unsafe/privacy/tool-use blockers on the current HF-mapped validation cases.",
+      "dataset_refs": [
+        {
+          "dataset_name": "piimb/pii-masking-benchmark",
+          "config": "sentences",
+          "split": "test"
+        },
+        {
+          "dataset_name": "ScaleAI/MCP-Atlas",
+          "config": "default",
+          "split": "train"
+        }
+      ],
       "metrics": [
         {
           "artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
@@ -56,6 +80,18 @@
     {
       "id": "groundedness",
       "claim": "AANA can detect unsupported grounded-QA claims while allowing answerable supported cases on the current HF-mapped validation cases.",
+      "dataset_refs": [
+        {
+          "dataset_name": "PatronusAI/HaluBench",
+          "config": "default",
+          "split": "test"
+        },
+        {
+          "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+          "config": "full",
+          "split": "test"
+        }
+      ],
       "metrics": [
         {
           "artifact": "eval_outputs/grounded_qa_adapter_upgrade_results.json",
@@ -80,6 +116,18 @@
     {
       "id": "private_public_read_routing",
       "claim": "AANA can separate public reads from private reads/writes and route ask/defer/refuse decisions on the current HF-mapped tool-use validation cases.",
+      "dataset_refs": [
+        {
+          "dataset_name": "ScaleAI/MCP-Atlas",
+          "config": "default",
+          "split": "train"
+        },
+        {
+          "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+          "config": "default",
+          "split": "train"
+        }
+      ],
       "metrics": [
         {
           "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",

@@ -79,6 +79,15 @@ def valid_registry():
         "implementation_tasks": [
             {"task": "Create registry.", "status": "completed"},
         ],
+        "tracked_todos": [
+            {
+                "id": "governance_compliance_hf_dataset_search",
+                "task": "Search for governance/compliance HF datasets.",
+                "status": "planned",
+                "reason": "Current coverage is repo-heldout fixture based.",
+                "acceptance_criteria": ["Register one split-safe dataset."],
+            }
+        ],
         "datasets": [
             {
                 "dataset_name": "org/example",
@@ -153,6 +162,24 @@ class HFDatasetRegistryTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any("cannot be used for both tuning and public claims" in issue["message"] for issue in report["issues"]))
+
+    def test_blocks_same_split_for_calibration_and_heldout_validation(self):
+        registry = valid_registry()
+        registry["datasets"][0]["split_uses"][1]["split"] = "train"
+        registry["datasets"][0]["split_uses"][1]["allowed_use"] = "heldout_validation"
+        registry["datasets"][0]["split_uses"][1]["split_purpose"] = "validation"
+        report = validate_hf_dataset_registry(registry)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("calibration and heldout_validation" in issue["message"] for issue in report["issues"]))
+
+    def test_requires_governance_compliance_dataset_search_todo(self):
+        registry = valid_registry()
+        registry["tracked_todos"] = []
+        report = validate_hf_dataset_registry(registry)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("governance_compliance_hf_dataset_search" in issue["message"] for issue in report["issues"]))
 
     def test_blocks_incomplete_task_list(self):
         registry = valid_registry()

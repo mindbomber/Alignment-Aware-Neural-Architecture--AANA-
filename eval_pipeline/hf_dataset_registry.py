@@ -33,6 +33,7 @@ REQUIRED_DATASET_FIELDS = {
     "split_uses",
 }
 REQUIRED_SPLIT_FIELDS = {"config", "split", "allowed_use", "split_purpose", "adapter_family"}
+REQUIRED_TRACKED_TODOS = {"governance_compliance_hf_dataset_search"}
 
 
 def _issue(level: str, path: str, message: str) -> dict[str, str]:
@@ -126,6 +127,33 @@ def validate_hf_dataset_registry(registry: dict[str, Any]) -> dict[str, Any]:
             if task.get("status") != "completed":
                 issues.append(_issue("error", f"implementation_tasks[{index}].status", "Implementation task must be marked completed."))
 
+    tracked_todos = registry.get("tracked_todos")
+    if not isinstance(tracked_todos, list):
+        issues.append(_issue("error", "tracked_todos", "Registry must include tracked_todos for known dataset-coverage gaps."))
+        tracked_todos = []
+    todo_ids = set()
+    for index, todo in enumerate(tracked_todos):
+        base = f"tracked_todos[{index}]"
+        if not isinstance(todo, dict):
+            issues.append(_issue("error", base, "Tracked TODO must be an object."))
+            continue
+        todo_id = todo.get("id")
+        if not _has_text(todo_id):
+            issues.append(_issue("error", f"{base}.id", "Tracked TODO id must be non-empty."))
+        else:
+            todo_ids.add(str(todo_id))
+        if todo.get("status") not in {"planned", "in_progress", "completed"}:
+            issues.append(_issue("error", f"{base}.status", "Tracked TODO status must be planned, in_progress, or completed."))
+        if not _has_text(todo.get("task")):
+            issues.append(_issue("error", f"{base}.task", "Tracked TODO task must be non-empty."))
+        if not _has_text(todo.get("reason")):
+            issues.append(_issue("error", f"{base}.reason", "Tracked TODO reason must be non-empty."))
+        if not _nonempty_list(todo.get("acceptance_criteria")):
+            issues.append(_issue("error", f"{base}.acceptance_criteria", "Tracked TODO must include acceptance criteria."))
+    missing_todos = sorted(REQUIRED_TRACKED_TODOS - todo_ids)
+    if missing_todos:
+        issues.append(_issue("error", "tracked_todos", f"Missing required tracked dataset-governance TODOs: {missing_todos}."))
+
     datasets = registry.get("datasets")
     if not isinstance(datasets, list) or not datasets:
         issues.append(_issue("error", "datasets", "Registry must include a non-empty datasets list."))
@@ -199,6 +227,22 @@ def validate_hf_dataset_registry(registry: dict[str, Any]) -> dict[str, Any]:
                     "error",
                     f"datasets.{dataset_name}.{config}.{split}",
                     "The same dataset/config/split cannot be used for both calibration and external_reporting.",
+                )
+            )
+        if "calibration" in uses and "heldout_validation" in uses:
+            issues.append(
+                _issue(
+                    "error",
+                    f"datasets.{dataset_name}.{config}.{split}",
+                    "The same dataset/config/split cannot be used for both calibration and heldout_validation.",
+                )
+            )
+        if "heldout_validation" in uses and "external_reporting" in uses:
+            issues.append(
+                _issue(
+                    "error",
+                    f"datasets.{dataset_name}.{config}.{split}",
+                    "The same dataset/config/split cannot be used for both heldout_validation and external_reporting.",
                 )
             )
     for (dataset_name, config, split), purposes in sorted(split_purposes_by_key.items()):
