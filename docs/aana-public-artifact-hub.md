@@ -2,12 +2,27 @@
 
 This is the canonical public artifact map for AANA.
 
-Public claim: AANA is an architecture for making agents more auditable, safer,
-more grounded, and more controllable.
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 Claim boundary: AANA is currently positioned as an audit/control/verification
 and correction layer around agents. It is not yet proven as a raw
-agent-performance engine.
+agent-performance engine and must not be claimed to have raw agent-performance
+superiority.
+
+## What AANA Adds
+
+AANA is not just a prompt guardrail, moderation classifier, LLM-as-judge prompt,
+or framework-specific middleware. It defines a typed pre-action contract and a
+uniform enforcement rule:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+The public artifacts let reviewers inspect whether AANA provides structured
+evidence/auth-aware routing, hard blockers, correction/recovery suggestions,
+audit-safe logs, and the same decision shape across CLI, SDK, API, MCP, and
+middleware surfaces.
 
 ## Canonical Hub
 
@@ -52,6 +67,27 @@ The dataset repo includes a machine-readable peer-review manifest at
 - integration latency measurements
 - commands to reproduce the package and validation checks
 
+## Current Diagnostic Updates
+
+- Safety/adversarial prompt routing: deterministic AANA preserves safe allow
+  but misses many harmful prompts; a diversified request-level verifier improves
+  harmful-request recall while conservative calibration protects safe allow.
+  AdvBench transfer remains weak, so this is not a content-moderation claim.
+- Finance/high-risk QA: a controlled FinanceBench diagnostic shows supported
+  filing answers are allowed and unsupported finance overclaims are routed to
+  revise/defer. This is not official FinanceBench leaderboard evidence or
+  investment-advice evaluation.
+- Governance/compliance policy routing: a small diagnostic over Hugging Face
+  policy-doc metadata plus repo-heldout policy cases shows citation,
+  missing-evidence, private-data export, destructive-action, and human-review
+  routing behavior. This is not legal, regulatory, or platform-policy
+  certification.
+- Integration validation v1: held-out tool-call cases show route parity,
+  blocked-tool non-execution, decision-shape parity, audit completeness, and
+  zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and
+  middleware surfaces. This validates platform wiring, not raw agent task
+  success.
+
 ## What This Hub Does Not Claim
 
 - It does not claim AANA is production-certified.
@@ -60,3 +96,4 @@ The dataset repo includes a machine-readable peer-review manifest at
   public benchmark claims.
 - It does not replace benchmark-maintainer or independent human-reviewed
   evaluation for stronger leaderboard claims.
+

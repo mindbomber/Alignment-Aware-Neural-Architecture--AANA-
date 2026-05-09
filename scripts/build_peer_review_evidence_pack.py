@@ -34,6 +34,11 @@ SOURCE_FILES = {
     "privacy": ROOT / "eval_outputs" / "privacy_pii_adapter_upgrade_results.json",
     "grounded_qa": ROOT / "eval_outputs" / "grounded_qa_adapter_upgrade_results.json",
     "tool_use": ROOT / "eval_outputs" / "agent_tool_use_control_upgrade_results.json",
+    "agent_tool_use_diagnostic_chain": ROOT / "eval_outputs" / "aana_agent_tool_use_diagnostic_evidence_chain.json",
+    "safety_adversarial_diagnostic": ROOT / "eval_outputs" / "safety_adversarial_hf_experiment_results.json",
+    "finance_high_risk_qa_diagnostic": ROOT / "eval_outputs" / "finance_high_risk_qa_hf_experiment_results.json",
+    "governance_compliance_diagnostic": ROOT / "eval_outputs" / "governance_compliance_hf_experiment_results.json",
+    "integration_validation_v1_heldout": ROOT / "eval_outputs" / "integration_validation_v1_heldout_results.json",
 }
 
 DROP_KEYS = {
@@ -324,12 +329,35 @@ The claim boundary is intentionally narrow:
   leaderboard proof unless a benchmark maintainer explicitly accepts them.
 - Probe-enabled or answer-key-style diagnostic runs are excluded from this pack.
 
+## What AANA Adds
+
+AANA is not being submitted as a replacement base agent. It is a structured
+control layer around proposed agent answers and actions:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+What reviewers should inspect:
+
+- the Agent Action Contract before execution,
+- evidence and authorization-aware routing,
+- hard blockers that prevent wrapped tool execution,
+- correction/recovery suggestions for ask, retrieve, revise, defer, or refuse,
+- audit-safe decision metadata,
+- matching decision shape across CLI, SDK, FastAPI, MCP, and middleware
+  surfaces.
+
 ## Contents
 
 - `data/privacy_heldout_results.json`: privacy/PII adapter held-out validation.
 - `data/grounded_qa_heldout_results.json`: grounded QA and hallucination adapter validation.
 - `data/tool_use_heldout_results.json`: agent tool-use control validation.
-- `data/agent_integration_validation.json`: OpenAI-style wrapper, FastAPI policy service, MCP tool, and controlled-agent eval smoke validation.
+- `data/safety_adversarial_diagnostic_results.json`: safety/adversarial prompt-routing diagnostic, including the safe-allow versus harmful-recall tradeoff.
+- `data/finance_high_risk_qa_diagnostic_results.json`: FinanceBench high-risk QA evidence-routing diagnostic.
+- `data/governance_compliance_diagnostic_results.json`: governance/compliance policy-routing diagnostic for citation coverage, missing-evidence recall, risk-route accuracy, and human-review escalation.
+- `data/integration_validation_v1_heldout_results.json`: held-out platform validation across CLI, SDKs, FastAPI, MCP, and middleware surfaces.
+- `data/agent_integration_validation.json`: Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI policy service, MCP tool, and controlled-agent eval smoke validation.
 - `data/aana_peer_review_package_manifest.json`: exact AANA version, split boundaries, metrics, failures, false positives, unsupported domains, latency, and reproduction commands.
 - `scripts/reproduce.py`: validates the evidence-pack structure and can run local repo validation commands.
 - `reports/aana_peer_review_report.md`: short technical report for reviewers.
@@ -381,16 +409,30 @@ def _report(results: dict[str, dict[str, Any]]) -> str:
 
 ## Claim Under Review
 
-AANA is an architecture for making agents more auditable, safer, more grounded,
-and more controllable. It is currently positioned as an audit, control,
+AANA makes agents more auditable, safer, more grounded, and more controllable.
+It is currently positioned as an audit, control,
 verification, and correction layer around agents:
 
 ```text
 agent proposes -> AANA checks -> agent executes only if allowed
 ```
 
-AANA is not presented here as a standalone base model or as a proven raw
-agent-performance engine.
+AANA is not presented here as a standalone base model, a proven raw
+agent-performance engine, or evidence of raw agent-performance superiority.
+
+## What AANA Adds
+
+AANA is not just a prompt guardrail, moderation classifier, LLM-as-judge prompt,
+or framework-specific middleware. It standardizes the pre-action decision:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+The differentiating pieces are a structured Agent Action Contract, verifier
+checks over route-critical fields, evidence and authorization recovery, hard
+execution blockers, correction/recovery routes, and audit-safe decision events
+that can be compared across runtime surfaces.
 
 ## Evidence Pack
 
@@ -410,8 +452,26 @@ The canonical public artifact hub is
   rate, citation/evidence coverage, over-refusal rate, and route accuracy.
 - Agent tool-use: unsafe-action recall, private-read/write gating,
   ask/defer/refuse quality, schema failure rate, and safe allow rate.
-- Agent integrations: wrapped tools, FastAPI policy service, MCP tool surface,
-  and controlled-agent eval harness all fail closed when AANA blocks execution.
+- Agent tool-use diagnostic chain: broad tool-use control, public/private read
+  routing, and noisy authorization/evidence robustness as a linked diagnostic
+  evidence chain.
+- Safety/adversarial prompt routing: deterministic AANA preserves safe allow,
+  diversified verifier calibration improves harmful-request recall, and
+  AdvBench transfer remains weak under conservative safe-allow calibration.
+- Finance/high-risk QA: supported FinanceBench answers are accepted and
+  controlled unsupported finance overclaims are routed to revise/defer in a
+  diagnostic artifact, not an official finance benchmark claim.
+- Governance/compliance: policy-bound answers/actions are routed against
+  citation presence, missing controls, private-data export risk, destructive
+  action controls, and human-review escalation in a diagnostic artifact; this is
+  not legal, regulatory, or platform-policy certification.
+- Integration validation: held-out tool-call cases produce route parity,
+  blocked-tool non-execution, decision-shape parity, audit completeness, and
+  zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP,
+  and middleware surfaces.
+- Agent integrations: Python SDK, TypeScript SDK, OpenAI Agents SDK,
+  LangChain, AutoGen, CrewAI, FastAPI policy service, MCP tool surface, and
+  controlled-agent eval harness all fail closed when AANA blocks execution.
 
 ## Limitations
 
@@ -454,6 +514,11 @@ REQUIRED_FILES = [
     "data/privacy_heldout_results.json",
     "data/grounded_qa_heldout_results.json",
     "data/tool_use_heldout_results.json",
+    "data/agent_tool_use_diagnostic_chain.json",
+    "data/safety_adversarial_diagnostic_results.json",
+    "data/finance_high_risk_qa_diagnostic_results.json",
+    "data/governance_compliance_diagnostic_results.json",
+    "data/integration_validation_v1_heldout_results.json",
     "data/agent_integration_validation.json",
     "reports/aana_peer_review_report.md",
 ]
@@ -536,6 +601,31 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
     privacy = _with_metadata("privacy_heldout_results", SOURCE_FILES["privacy"], _sanitize(_load_json(SOURCE_FILES["privacy"])))
     grounded = _with_metadata("grounded_qa_heldout_results", SOURCE_FILES["grounded_qa"], _sanitize(_load_json(SOURCE_FILES["grounded_qa"])))
     tool_use = _with_metadata("tool_use_heldout_results", SOURCE_FILES["tool_use"], _sanitize(_load_json(SOURCE_FILES["tool_use"])))
+    diagnostic_chain = _with_metadata(
+        "agent_tool_use_diagnostic_chain",
+        SOURCE_FILES["agent_tool_use_diagnostic_chain"],
+        _sanitize(_load_json(SOURCE_FILES["agent_tool_use_diagnostic_chain"])),
+    )
+    safety_adversarial = _with_metadata(
+        "safety_adversarial_diagnostic_results",
+        SOURCE_FILES["safety_adversarial_diagnostic"],
+        _sanitize(_load_json(SOURCE_FILES["safety_adversarial_diagnostic"])),
+    )
+    finance_high_risk_qa = _with_metadata(
+        "finance_high_risk_qa_diagnostic_results",
+        SOURCE_FILES["finance_high_risk_qa_diagnostic"],
+        _sanitize(_load_json(SOURCE_FILES["finance_high_risk_qa_diagnostic"])),
+    )
+    governance_compliance = _with_metadata(
+        "governance_compliance_diagnostic_results",
+        SOURCE_FILES["governance_compliance_diagnostic"],
+        _sanitize(_load_json(SOURCE_FILES["governance_compliance_diagnostic"])),
+    )
+    integration_validation_v1 = _with_metadata(
+        "integration_validation_v1_heldout_results",
+        SOURCE_FILES["integration_validation_v1_heldout"],
+        _sanitize(_load_json(SOURCE_FILES["integration_validation_v1_heldout"])),
+    )
     integration = _with_metadata(
         "agent_integration_validation",
         ROOT / "scripts" / "validate_agent_integrations.py",
@@ -546,12 +636,22 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
         "privacy_heldout_results": privacy,
         "grounded_qa_heldout_results": grounded,
         "tool_use_heldout_results": tool_use,
+        "agent_tool_use_diagnostic_chain": diagnostic_chain,
+        "safety_adversarial_diagnostic_results": safety_adversarial,
+        "finance_high_risk_qa_diagnostic_results": finance_high_risk_qa,
+        "governance_compliance_diagnostic_results": governance_compliance,
+        "integration_validation_v1_heldout_results": integration_validation_v1,
         "agent_integration_validation": integration,
     }
 
     _write_json(output_dir / "data" / "privacy_heldout_results.json", privacy)
     _write_json(output_dir / "data" / "grounded_qa_heldout_results.json", grounded)
     _write_json(output_dir / "data" / "tool_use_heldout_results.json", tool_use)
+    _write_json(output_dir / "data" / "agent_tool_use_diagnostic_chain.json", diagnostic_chain)
+    _write_json(output_dir / "data" / "safety_adversarial_diagnostic_results.json", safety_adversarial)
+    _write_json(output_dir / "data" / "finance_high_risk_qa_diagnostic_results.json", finance_high_risk_qa)
+    _write_json(output_dir / "data" / "governance_compliance_diagnostic_results.json", governance_compliance)
+    _write_json(output_dir / "data" / "integration_validation_v1_heldout_results.json", integration_validation_v1)
     _write_json(output_dir / "data" / "agent_integration_validation.json", integration)
     _write_json(output_dir / "data" / "aana_peer_review_package_manifest.json", _package_manifest(results))
     (output_dir / "README.md").write_text(_readme(results), encoding="utf-8")

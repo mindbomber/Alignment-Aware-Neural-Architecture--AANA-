@@ -13,7 +13,7 @@ pipeline_tag: text-classification
 
 # AANA: Agent Action Control Architecture
 
-AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 This card describes AANA as a control-layer architecture and runtime package, not as a standalone frontier model. The intended pattern is:
 
@@ -21,20 +21,31 @@ This card describes AANA as a control-layer architecture and runtime package, no
 agent proposes -> AANA checks -> agent executes only if allowed
 ```
 
-## What AANA Provides
+## What AANA Adds
+
+Most existing approaches are prompt instructions, moderation/classification,
+LLM-as-judge review, framework middleware, or opaque provider-side model
+alignment. AANA is different because it standardizes the pre-action decision
+itself:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+AANA adds:
 
 - A public Agent Action Contract v1 for pre-tool-call checks.
-- Python SDK and CLI helpers for local checks and audit-safe summaries.
-- TypeScript SDK helpers for JavaScript/TypeScript agent runtimes.
-- FastAPI service endpoints for HTTP integration.
-- Adapter families for privacy, grounded QA, agent tool-use, and cross-domain action checks.
-- Audit-safe decision metadata: route, AIx score, hard blockers, missing evidence, authorization state, and recovery suggestion.
+- Evidence/auth-aware routing across `accept`, `revise`, `retrieve`, `ask`, `defer`, and `refuse`.
+- Hard execution rules: wrapped tools do not execute unless AANA returns `accept` with no hard blockers or schema failures.
+- Correction and recovery suggestions for missing evidence, missing authorization, unsupported claims, or human-review escalation.
+- Audit-safe decision metadata: route, AIx score, hard blockers, missing evidence, authorization state, and redacted log event.
+- Python SDK, TypeScript SDK, CLI, FastAPI, MCP, and middleware surfaces with validated decision-shape parity.
 
 ## Public Boundary
 
 AANA is production-candidate as an audit/control/verification/correction layer.
 
-AANA is not yet proven as a raw agent-performance engine. Current evidence should be interpreted as support for action gating, verification, correction, and auditability claims, not as proof that AANA alone improves end-to-end task success across arbitrary agent benchmarks.
+AANA is not yet proven as a raw agent-performance engine. Current evidence should be interpreted as support for action gating, verification, correction, and auditability claims, not as proof that AANA alone improves end-to-end task success across arbitrary agent benchmarks or has raw agent-performance superiority.
 
 ## Minimal Usage
 
@@ -74,9 +85,17 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - Agent-action technical report: `docs/aana-agent-action-technical-report.md`
 - Agent Action Contract v1: `docs/agent-action-contract-v1.md`
 
+## Current Diagnostic Findings
+
+- Safety/adversarial prompt routing: deterministic AANA preserves safe allow but misses many harmful prompts; a diversified request-level verifier improves harmful-request recall while conservative calibration protects safe allow. AdvBench transfer remains weak, so this is not a content-moderation claim.
+- Finance/high-risk QA: a controlled FinanceBench diagnostic shows supported filing answers are allowed and unsupported finance overclaims are routed to revise/defer. This is not official FinanceBench leaderboard evidence or investment-advice evaluation.
+- Governance/compliance policy routing: a small diagnostic over Hugging Face policy-doc metadata plus repo-heldout policy cases shows citation, missing-evidence, private-data export, destructive-action, and human-review routing behavior. This is not legal, regulatory, or platform-policy certification.
+- Integration validation v1: held-out tool-call cases show route parity, blocked-tool non-execution, decision-shape parity, audit completeness, and zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and middleware surfaces. This validates platform wiring, not raw agent task success.
+
 ## Limitations
 
 - Domain adapters require held-out validation before stronger claims.
 - AANA can over-block if evidence or authorization state is incomplete.
 - AANA does not replace a capable planner, retrieval system, domain policy source, or human escalation path.
 - Production deployments still need live connector review, audit retention policy, incident response, security review, and domain-owner signoff.
+

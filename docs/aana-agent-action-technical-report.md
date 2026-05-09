@@ -4,7 +4,9 @@
 
 This report connects the public agent-action benchmark results to the AANA runtime architecture and states the current limitations.
 
-Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+
+Result label: `diagnostic`
 
 Public artifact hub:
 `https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`.
@@ -21,7 +23,34 @@ S = (f_theta, E_phi, R, Pi_psi, G)
 - `Pi_psi`: correction policy that can repair missing or degraded evidence before final routing.
 - `G`: alignment gate returning `accept`, `ask`, `defer`, or `refuse`.
 
-The central result is that AANA outperformed simpler gate designs in the current diagnostic runs because it did not treat the first noisy contract as final. It used structured runtime fields plus recovery before deciding whether the action should execute.
+The central diagnostic result is that AANA produced stronger audit/control routing than simpler gate designs in the current diagnostic runs because it did not treat the first noisy contract as final. It used structured runtime fields plus recovery before deciding whether the action should execute.
+
+## What AANA Adds
+
+AANA should not be evaluated as another prompt wrapper, moderation classifier,
+LLM-as-judge prompt, or generic framework middleware. Those tools can be useful,
+but they usually leave the execution decision either implicit, provider-hidden,
+or specific to one framework.
+
+AANA makes the pre-action decision explicit:
+
+```text
+agent proposes -> AANA checks -> tool executes only if route == accept
+```
+
+The differentiating pieces are:
+
+- a structured Agent Action Contract before execution,
+- verifier checks over tool category, authorization state, evidence, risk domain, arguments, and route,
+- correction/recovery policy for missing or degraded evidence,
+- hard blockers that prevent wrapped tool execution,
+- a route table with `accept`, `revise`, `retrieve`, `ask`, `defer`, and `refuse`,
+- audit-safe decision events with route, AIx score, blockers, missing evidence, authorization state, and latency,
+- validated decision-shape parity across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and middleware surfaces.
+
+This is the core peer-review claim: AANA externalizes the control layer around
+consequential agent actions so it can be inspected, tested, calibrated, and
+challenged independently of the base model.
 
 ## What Was Evaluated
 
@@ -59,6 +88,12 @@ The tests compared AANA with five baselines:
 
 The main metrics were unsafe-action recall, safe allow rate, false positives, false negatives, and route accuracy.
 
+The integration-validation experiment separately checked platform behavior
+across 10 held-out tool-call cases and 11 runtime surfaces. It measured route
+parity, blocked-tool non-execution, decision-shape parity, audit-log
+completeness, schema failure rate, and local latency. That result supports the
+platform-wiring claim, not a raw agent task-success claim.
+
 ## Result Pattern
 
 Across both external trace sources, the result pattern was consistent:
@@ -73,7 +108,7 @@ This supports a narrow architecture claim:
 
 > For consequential agent tool calls, AANA's value comes from combining a structured action contract, verifier-gated routing, and evidence/correction recovery before execution.
 
-In public terms: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+In public terms: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 It does not support a broad claim that AANA is generally aligned, production-certified, or superior to all safety systems.
 It also does not support a claim that AANA is a raw agent-performance engine.
@@ -113,11 +148,13 @@ failure modes and guide adapter design, but they must not be merged into public
 AANA performance numbers, benchmark comparisons, leaderboard claims, or peer
 review claims.
 
-Public-facing claims should reference only measured general runs that exclude
-probe artifacts and state their label source, limitations, and evaluation scope.
+Public-facing claims should reference only `heldout` or `external_reporting`
+results that exclude probe artifacts and state their label source, limitations,
+and evaluation scope.
 
 ## Reviewer-Facing Conclusion
 
 AANA should be evaluated as a runtime architecture for making agents more auditable, safer, more grounded, and more controllable, not as a standalone base model. The early evidence suggests that the architecture is strongest when a system needs to preserve both high unsafe-action recall and high safe-action allow rate under noisy evidence.
 
 The open question for peer review is whether this advantage persists under benchmark-native traces, independently reviewed labels, and task-level success scoring.
+

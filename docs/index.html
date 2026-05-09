@@ -6,7 +6,7 @@
     <title>AANA Evaluation Pipeline</title>
     <meta
       name="description"
-      content="AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable."
+      content="AANA makes agents more auditable, safer, more grounded, and more controllable."
     >
     <link rel="canonical" href="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
     <link rel="icon" href="assets/site/favicon.png" type="image/png">
@@ -14,7 +14,7 @@
     <meta property="og:title" content="AANA Evaluation Pipeline">
     <meta
       property="og:description"
-      content="AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable."
+      content="AANA makes agents more auditable, safer, more grounded, and more controllable."
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/">
@@ -22,7 +22,7 @@
     <meta property="og:image:alt" content="AANA evaluation pipeline hero image showing an AI answer passing through verification checkpoints.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AANA Evaluation Pipeline">
-    <meta name="twitter:description" content="AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.">
+    <meta name="twitter:description" content="AANA makes agents more auditable, safer, more grounded, and more controllable.">
     <meta name="twitter:image" content="https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/assets/site/aana-hero.png">
     <link rel="stylesheet" href="site.css">
   </head>
@@ -278,7 +278,7 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Why this is different</p>
-              <h2>AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.</h2>
+              <h2>AANA makes agents more auditable, safer, more grounded, and more controllable.</h2>
             </div>
             <p>
               Frontier LLMs and multimodal models already use alignment training, safety policies,
@@ -344,6 +344,40 @@
               <h3>More checking is worth it when false accepts are costly.</h3>
               <p>The loop adds latency and infrastructure, so it fits consequential actions better than casual low-stakes chat.</p>
             </article>
+          </div>
+
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">What AANA adds</p>
+              <h2>AANA standardizes the decision before execution.</h2>
+            </div>
+            <p>
+              Prompt guardrails, classifiers, LLM judges, and framework
+              middleware can all help, but they often leave the action decision
+              implicit, provider-hidden, or tied to one runtime. AANA makes that
+              decision a typed contract and a consistent audit surface.
+            </p>
+          </div>
+
+          <div class="architecture-contrast" aria-label="AANA action contract flow">
+            <div class="contrast-lane aana-lane">
+              <div class="lane-head">
+                <strong>Agent Action Contract</strong>
+                <span>Tool name, category, authorization, evidence, risk, arguments, and route</span>
+              </div>
+              <div class="lane-flow aana-flow">
+                <span>Agent proposes</span>
+                <span>AANA checks</span>
+                <span>Accept, revise, retrieve, ask, defer, or refuse</span>
+                <span>Execute only on accept</span>
+                <span>Audit-safe log</span>
+              </div>
+              <ul class="contrast-list">
+                <li>Wrapped tools do not execute unless AANA returns accept with no hard blockers.</li>
+                <li>Missing evidence, missing authorization, and unknown tools become explicit routes instead of hidden assumptions.</li>
+                <li>CLI, SDK, FastAPI, MCP, and middleware surfaces return the same decision shape.</li>
+              </ul>
+            </div>
           </div>
 
           <div class="section-actions">
@@ -1033,3 +1067,4 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
     <script src="site.js"></script>
   </body>
 </html>
+
