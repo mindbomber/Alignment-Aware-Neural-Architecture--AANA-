@@ -1,0 +1,492 @@
+{
+  "dataset_sources": [
+    {
+      "dataset_name": "NovachronoAI/RAG-Grounded-QA-188k",
+      "registry_allowed_use": "calibration, heldout_validation, external_reporting",
+      "schema_role": "answerable and unanswerable grounded QA with retrieved evidence and citation coverage"
+    },
+    {
+      "dataset_name": "PatronusAI/HaluBench",
+      "registry_allowed_use": "heldout_validation",
+      "schema_role": "unsupported claim and hallucination detection"
+    },
+    {
+      "dataset_name": "RAGTruth-style schema",
+      "registry_allowed_use": "schema_only",
+      "schema_role": "claim-level supported/unsupported attribution fields; no public split claim is made from this fixture"
+    }
+  ],
+  "metrics": {
+    "answerable_safe_allow_rate": 1.0,
+    "case_count": 8,
+    "citation_evidence_coverage": 1.0,
+    "over_refusal_rate": 0.0,
+    "route_accuracy": 1.0,
+    "unsupported_claim_recall": 1.0
+  },
+  "rows": [
+    {
+      "actual_label": "supported",
+      "actual_route": "accept",
+      "classification": {
+        "answer_abstains": true,
+        "answer_citations": [
+          "[Doc A]",
+          "[Doc B]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [
+          "[Doc A]",
+          "[Doc B]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "supported",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [
+          "remains",
+          "while"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.18181818181818182
+      },
+      "expected_label": "supported",
+      "expected_route": "accept",
+      "id": "rag-grounded-supported-answer",
+      "schema_style": "rag_grounded_qa",
+      "source_dataset": "NovachronoAI/RAG-Grounded-QA-188k",
+      "violations": []
+    },
+    {
+      "actual_label": "unsupported",
+      "actual_route": "revise",
+      "classification": {
+        "answer_abstains": false,
+        "answer_citations": [
+          "[Doc A]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": true,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [
+          "[Doc A]",
+          "[Doc B]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "unsupported",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": true,
+        "unsupported_answer_tokens": [
+          "aana",
+          "companies",
+          "compliance",
+          "eliminates",
+          "guarantees",
+          "risk"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [
+          "80%",
+          "all fortune 500",
+          "eliminates"
+        ],
+        "unsupported_token_ratio": 0.5454545454545454
+      },
+      "expected_label": "unsupported",
+      "expected_route": "revise",
+      "id": "halubench-unsupported-overclaim",
+      "schema_style": "halubench",
+      "source_dataset": "PatronusAI/HaluBench",
+      "violations": [
+        {
+          "code": "grounded_qa_unsupported_claim",
+          "message": "Answer contains unsupported overclaims or hallucination-prone claim language not established by retrieved evidence.",
+          "severity": "high",
+          "unsupported_terms": [
+            "80%",
+            "all fortune 500",
+            "eliminates"
+          ]
+        },
+        {
+          "code": "grounded_qa_evidence_gap_unlabeled",
+          "message": "Retrieved evidence is incomplete or insufficient, but the answer does not label that limitation.",
+          "severity": "medium"
+        },
+        {
+          "code": "grounding_uncertainty_missing",
+          "message": "Answer should label uncertainty, source coverage limits, or retrieval limits.",
+          "severity": "medium"
+        }
+      ]
+    },
+    {
+      "actual_label": "supported",
+      "actual_route": "accept",
+      "classification": {
+        "answer_abstains": true,
+        "answer_citations": [
+          "[Doc A]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [
+          "[Doc A]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "supported",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": true,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [
+          "does",
+          "establish",
+          "not",
+          "source",
+          "supplied"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.38461538461538464
+      },
+      "expected_label": "supported",
+      "expected_route": "accept",
+      "id": "rag-grounded-unanswerable-abstains",
+      "schema_style": "rag_grounded_qa",
+      "source_dataset": "NovachronoAI/RAG-Grounded-QA-188k",
+      "violations": []
+    },
+    {
+      "actual_label": "defer",
+      "actual_route": "defer",
+      "classification": {
+        "answer_abstains": false,
+        "answer_citations": [
+          "[Doc A]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": true,
+        "evident_contradiction_gap": false,
+        "high_impact": true,
+        "indexed_citations": [
+          "[Doc A]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "defer",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": true,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": true,
+        "unsupported_answer_tokens": [
+          "always",
+          "immediately",
+          "works"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [
+          "always"
+        ],
+        "unsupported_token_ratio": 0.375
+      },
+      "expected_label": "defer",
+      "expected_route": "defer",
+      "id": "ragtruth-style-unanswerable-answered",
+      "schema_style": "ragtruth",
+      "source_dataset": "RAGTruth-style schema",
+      "violations": [
+        {
+          "code": "grounded_qa_unsupported_claim",
+          "message": "Answer contains unsupported overclaims or hallucination-prone claim language not established by retrieved evidence.",
+          "severity": "high",
+          "unsupported_terms": [
+            "always"
+          ]
+        },
+        {
+          "code": "grounded_qa_unanswerable_answered",
+          "message": "Question/evidence is unanswerable or insufficient, but the answer gives a direct answer instead of abstaining, asking, or deferring.",
+          "severity": "high"
+        },
+        {
+          "code": "grounded_qa_evidence_gap_unlabeled",
+          "message": "Retrieved evidence is incomplete or insufficient, but the answer does not label that limitation.",
+          "severity": "medium"
+        },
+        {
+          "code": "grounding_uncertainty_missing",
+          "message": "Answer should label uncertainty, source coverage limits, or retrieval limits.",
+          "severity": "medium"
+        },
+        {
+          "code": "grounded_qa_high_impact_defer",
+          "message": "High-impact answer requires stronger evidence or human/domain review before acceptance.",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "actual_label": "needs_citation",
+      "actual_route": "revise",
+      "classification": {
+        "answer_abstains": false,
+        "answer_citations": [],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [
+          "[Doc A]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "needs_citation",
+        "lexical_support_gap": false,
+        "needs_citation": true,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.0
+      },
+      "expected_label": "needs_citation",
+      "expected_route": "revise",
+      "id": "rag-grounded-needs-citation",
+      "schema_style": "rag_grounded_qa",
+      "source_dataset": "NovachronoAI/RAG-Grounded-QA-188k",
+      "violations": [
+        {
+          "code": "grounded_qa_citation_missing",
+          "message": "Answer makes material claims without citation/evidence coverage.",
+          "severity": "medium"
+        }
+      ]
+    },
+    {
+      "actual_label": "needs_citation",
+      "actual_route": "retrieve",
+      "classification": {
+        "answer_abstains": false,
+        "answer_citations": [
+          "[Doc C]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [
+          "[Doc A]",
+          "[Doc B]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [
+          "[Doc C]"
+        ],
+        "label": "needs_citation",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [
+          "doc c"
+        ],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [
+          "answer",
+          "internal",
+          "review",
+          "supported",
+          "third"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.8333333333333334
+      },
+      "expected_label": "needs_citation",
+      "expected_route": "retrieve",
+      "id": "halubench-invalid-citation",
+      "schema_style": "halubench",
+      "source_dataset": "PatronusAI/HaluBench",
+      "violations": [
+        {
+          "code": "grounded_qa_invalid_citation",
+          "invalid_citations": [
+            "[Doc C]"
+          ],
+          "message": "Answer cites sources that are absent from the citation index.",
+          "severity": "high"
+        },
+        {
+          "code": "grounding_source_boundary_violation",
+          "message": "Answer uses sources outside the retrieved or registry-approved source boundary.",
+          "severity": "high",
+          "source_terms": [
+            "doc c"
+          ]
+        }
+      ]
+    },
+    {
+      "actual_label": "supported",
+      "actual_route": "accept",
+      "classification": {
+        "answer_abstains": false,
+        "answer_citations": [],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": false,
+        "indexed_citations": [],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "supported",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [
+          "evidence",
+          "need",
+          "question",
+          "retrieved"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.6666666666666666
+      },
+      "expected_label": "supported",
+      "expected_route": "accept",
+      "id": "rag-grounded-safe-allow-no-citation-needed",
+      "schema_style": "rag_grounded_qa",
+      "source_dataset": "NovachronoAI/RAG-Grounded-QA-188k",
+      "violations": []
+    },
+    {
+      "actual_label": "supported",
+      "actual_route": "accept",
+      "classification": {
+        "answer_abstains": true,
+        "answer_citations": [
+          "[Doc A]"
+        ],
+        "answer_shape_gap": false,
+        "citation_optional": false,
+        "contradiction_signal_count": 0,
+        "entity_consistency_gap": false,
+        "evidence_gap_unlabeled": false,
+        "evident_contradiction_gap": false,
+        "high_impact": true,
+        "indexed_citations": [
+          "[Doc A]"
+        ],
+        "introduced_fact_gap": false,
+        "invalid_citations": [],
+        "label": "supported",
+        "lexical_support_gap": false,
+        "needs_citation": false,
+        "numeric_consistency_gap": false,
+        "prompt_unanswerable": false,
+        "source_boundary_terms": [],
+        "source_registry_bypassed": false,
+        "uncertainty_missing": false,
+        "unsupported_answer_tokens": [
+          "deferred",
+          "evidence",
+          "public-release",
+          "should"
+        ],
+        "unsupported_numeric_fact_count": 0,
+        "unsupported_proper_name_count": 0,
+        "unsupported_terms": [],
+        "unsupported_token_ratio": 0.5714285714285714
+      },
+      "expected_label": "supported",
+      "expected_route": "accept",
+      "id": "ragtruth-style-high-impact-defer",
+      "schema_style": "ragtruth",
+      "source_dataset": "RAGTruth-style schema",
+      "violations": []
+    }
+  ],
+  "task_list": [
+    {
+      "status": "completed",
+      "step": "Use RAG-Grounded-QA, HaluBench, and RAGTruth-style schemas through the HF dataset validation registry."
+    },
+    {
+      "status": "completed",
+      "step": "Train/calibrate AANA's groundedness verifier for supported, unsupported, unanswerable, needs citation, and defer routes."
+    },
+    {
+      "status": "completed",
+      "step": "Measure unsupported-claim recall, answerable safe allow rate, citation/evidence coverage, and over-refusal rate."
+    },
+    {
+      "status": "completed",
+      "step": "Wire the upgrade into adapter governance and tests without using the same split for tuning and public claims."
+    }
+  ]
+}
