@@ -76,6 +76,7 @@ Public summary:
 
 Public Hugging Face artifacts:
 
+- `mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`
 - `mindbomber/aana-peer-review-evidence-pack`
 - `mindbomber/aana-head-to-head-permissive-vs-aana`
 - `mindbomber/aana-head-to-head-single-classifier-vs-aana`

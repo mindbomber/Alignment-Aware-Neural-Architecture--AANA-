@@ -29,6 +29,7 @@ Start with the path that matches what you are doing:
 - **Tool Call Gate Demo**: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
 - **Head-to-Head Findings**: [docs/aana-head-to-head-findings.md](docs/aana-head-to-head-findings.md)
 - **Technical Report**: [docs/aana-agent-action-technical-report.md](docs/aana-agent-action-technical-report.md)
+- **Public Artifact Hub**: [docs/aana-public-artifact-hub.md](docs/aana-public-artifact-hub.md)
 - **Peer Review Evidence Pack**: [Hugging Face dataset](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
 - **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
 - **Agent Tool Contract SDK**: [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md)
@@ -52,6 +53,7 @@ Start with the path that matches what you are doing:
 Try AANA without cloning the repo:
 
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo): enter a candidate answer/action, evidence, and constraints; get an AANA route, AIx score, hard blockers, suggested revision, and audit summary.
+- [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4): the canonical model, dataset, Space, and report map.
 - [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack): measured privacy, grounded QA, tool-use, and integration validation artifacts with a reproduction script and reviewer-facing report.
 - [AANA hosted synthetic demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/): precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
 - [AANA head-to-head findings](docs/aana-head-to-head-findings.md): a concise public summary of the agent-action comparisons against permissive agents, classifiers, prompt-only guards, LLM judges, and static contract gates.

@@ -6,6 +6,9 @@ This report connects the public agent-action benchmark results to the AANA runti
 
 Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
 
+Public artifact hub:
+`https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`.
+
 The tested AANA configuration is best understood as a pre-tool-call reliability layer:
 
 ```text

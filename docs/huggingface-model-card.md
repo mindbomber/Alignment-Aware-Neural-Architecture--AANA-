@@ -66,6 +66,7 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 
 ## Evidence Links
 
+- Public artifact hub: `https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`
 - AANA Space: `https://huggingface.co/spaces/mindbomber/aana-demo`
 - Peer-review evidence pack: `https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`

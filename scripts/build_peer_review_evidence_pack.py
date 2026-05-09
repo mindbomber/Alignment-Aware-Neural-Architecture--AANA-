@@ -25,6 +25,7 @@ DATASET_URL = f"https://huggingface.co/datasets/{DATASET_REPO}"
 GITHUB_URL = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
 MODEL_URL = "https://huggingface.co/mindbomber/aana"
 SPACE_URL = "https://huggingface.co/spaces/mindbomber/aana-demo"
+ARTIFACT_HUB_URL = "https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4"
 
 
 SOURCE_FILES = {
@@ -72,6 +73,7 @@ def _with_metadata(name: str, source_path: pathlib.Path, payload: dict[str, Any]
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "links": {
             "dataset": DATASET_URL,
+            "artifact_hub": ARTIFACT_HUB_URL,
             "model_card": MODEL_URL,
             "space": SPACE_URL,
             "github": GITHUB_URL,
@@ -150,6 +152,7 @@ The claim boundary is intentionally narrow:
 - AANA demo Space: [{SPACE_URL}]({SPACE_URL})
 - GitHub repository: [{GITHUB_URL}]({GITHUB_URL})
 - Peer-review evidence pack: [{DATASET_URL}]({DATASET_URL})
+- Public artifact hub: [{ARTIFACT_HUB_URL}]({ARTIFACT_HUB_URL})
 
 ## Reproduction
 
@@ -190,6 +193,9 @@ agent-performance engine.
 
 This report summarizes the machine-readable artifacts in
 [{DATASET_REPO}]({DATASET_URL}).
+
+The canonical public artifact hub is
+[{ARTIFACT_HUB_URL}]({ARTIFACT_HUB_URL}).
 
 {_metric_table(results)}
 
