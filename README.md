@@ -154,7 +154,9 @@ Adapter family layout: technical verifier/control families live under `aana/adap
 
 Bundle ID policy: `government_civic` is the canonical product-bundle ID. `civic_government` remains a backward-compatible alias for older starter-pilot-kit paths and commands.
 
-Platform harmony gate: run `python scripts/validate_aana_platform.py` to validate that contracts, adapter/bundle layout, HF dataset governance, adapter evals, agent integrations, public-claim boundaries, security hardening, packaging hardening, versioning, and publication surfaces still agree with the standard AANA architecture.
+Canonical ID policy: adapter families, bundles, routes, tool evidence types, and runtime modes have one canonical ID source in `aana/canonical_ids.py`. Alias maps are only for backward compatibility and must target canonical IDs directly. Validate alias drift with `python scripts/validate_canonical_ids.py`.
+
+Platform harmony gate: run `python scripts/validate_aana_platform.py` to validate that canonical IDs, contracts, adapter/bundle layout, HF dataset governance, adapter evals, agent integrations, public-claim boundaries, security hardening, packaging hardening, versioning, and publication surfaces still agree with the standard AANA architecture.
 
 Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
 

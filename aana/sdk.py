@@ -13,6 +13,16 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlencode
 
+from aana.canonical_ids import (
+    AUTHORIZATION_STATES as CANONICAL_AUTHORIZATION_STATES,
+    REDACTION_STATUSES,
+    RISK_DOMAINS as CANONICAL_RISK_DOMAINS,
+    RUNTIME_MODES,
+    TOOL_CATEGORIES as CANONICAL_TOOL_CATEGORIES,
+    TOOL_EVIDENCE_TYPES,
+    TOOL_PRECHECK_ROUTES as CANONICAL_TOOL_PRECHECK_ROUTES,
+    TRUST_TIERS,
+)
 from eval_pipeline import agent_api, agent_contract, workflow_contract
 from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
@@ -20,26 +30,11 @@ from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_c
 
 PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable."
 TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
-TOOL_CATEGORIES = {"public_read", "private_read", "write", "unknown"}
-AUTHORIZATION_STATES = {"none", "user_claimed", "authenticated", "validated", "confirmed"}
-TOOL_PRECHECK_ROUTES = {"accept", "ask", "defer", "refuse"}
-EXECUTION_MODES = {"enforce", "shadow"}
-RISK_DOMAINS = {
-    "devops",
-    "finance",
-    "education",
-    "hr",
-    "legal",
-    "pharma",
-    "healthcare",
-    "commerce",
-    "customer_support",
-    "security",
-    "research",
-    "personal_productivity",
-    "public_information",
-    "unknown",
-}
+TOOL_CATEGORIES = set(CANONICAL_TOOL_CATEGORIES)
+AUTHORIZATION_STATES = set(CANONICAL_AUTHORIZATION_STATES)
+TOOL_PRECHECK_ROUTES = set(CANONICAL_TOOL_PRECHECK_ROUTES)
+EXECUTION_MODES = set(RUNTIME_MODES)
+RISK_DOMAINS = set(CANONICAL_RISK_DOMAINS)
 
 
 class AANAClientError(RuntimeError):
@@ -209,18 +204,12 @@ def tool_evidence_ref(
 
     if not isinstance(source_id, str) or not source_id.strip():
         raise AANAClientError("Tool evidence ref requires a non-empty source_id.")
-    if kind not in {
-        "user_message",
-        "assistant_message",
-        "tool_result",
-        "policy",
-        "auth_event",
-        "approval",
-        "system_state",
-        "audit_record",
-        "other",
-    }:
+    if kind not in TOOL_EVIDENCE_TYPES:
         raise AANAClientError(f"Unsupported tool evidence kind: {kind!r}.")
+    if trust_tier not in TRUST_TIERS:
+        raise AANAClientError(f"Unsupported evidence trust tier: {trust_tier!r}.")
+    if redaction_status not in REDACTION_STATUSES:
+        raise AANAClientError(f"Unsupported evidence redaction status: {redaction_status!r}.")
     ref = {
         "source_id": source_id,
         "kind": kind,

@@ -7,6 +7,7 @@ from typing import Any
 
 from aana.adapters import FAMILY_IDS, load_adapter_families
 from aana.bundles import BUNDLE_ALIASES, BUNDLE_IDS, aliases_for_bundle, canonicalize_bundle_id, load_bundles
+from aana.canonical_ids import validate_canonical_ids
 
 
 CLAIM_USES = {"external_reporting"}
@@ -172,6 +173,10 @@ def validate_adapter_layout() -> dict[str, Any]:
                     f"Bundle alias {alias} resolves to {canonical}; expected target {target} in {BUNDLE_IDS}",
                 )
             )
+
+    canonical_report = validate_canonical_ids()
+    for issue in canonical_report["issues"]:
+        issues.append(LayoutIssue("canonical_id_drift", f"{issue['code']}: {issue['message']}"))
 
     return {
         "valid": not issues,

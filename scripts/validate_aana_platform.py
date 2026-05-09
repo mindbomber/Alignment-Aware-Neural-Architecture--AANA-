@@ -35,6 +35,12 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
             "Validate adapter-family manifests, product-bundle manifests, aliases, split isolation, and held-out coverage declarations.",
         ),
         PlatformGate(
+            "canonical_ids",
+            "architecture",
+            [PYTHON, "scripts/validate_canonical_ids.py", "--json"],
+            "Validate one canonical ID source for adapter families, bundles, routes, evidence types, runtime modes, and aliases.",
+        ),
+        PlatformGate(
             "contract_freeze",
             "contracts",
             [PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"],
@@ -133,7 +139,7 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
     ]
     if include_agent_integrations:
         gates.insert(
-            2,
+            3,
             PlatformGate(
                 "agent_integrations",
                 "integrations",

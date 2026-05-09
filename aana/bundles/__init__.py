@@ -6,28 +6,15 @@ import json
 import pathlib
 from typing import Any
 
+from aana.canonical_ids import BUNDLE_ALIASES, BUNDLE_IDS, canonicalize_bundle_id
+
 
 ROOT = pathlib.Path(__file__).resolve().parent
-CANONICAL_BUNDLE_IDS = ["enterprise", "personal_productivity", "government_civic"]
-BUNDLE_ALIASES = {
-    "enterprise": "enterprise",
-    "personal_productivity": "personal_productivity",
-    "government_civic": "government_civic",
-    "civic_government": "government_civic",
-}
-BUNDLE_IDS = CANONICAL_BUNDLE_IDS
-
-
-def canonicalize_bundle_id(bundle_id: str) -> str:
-    try:
-        return BUNDLE_ALIASES[bundle_id]
-    except KeyError as exc:
-        raise KeyError(f"Unknown AANA product bundle: {bundle_id}") from exc
 
 
 def aliases_for_bundle(bundle_id: str) -> list[str]:
     canonical_id = canonicalize_bundle_id(bundle_id)
-    return sorted(alias for alias, target in BUNDLE_ALIASES.items() if target == canonical_id and alias != canonical_id)
+    return sorted(alias for alias, target in BUNDLE_ALIASES.items() if target == canonical_id)
 
 
 def load_bundle(bundle_id: str) -> dict[str, Any]:
