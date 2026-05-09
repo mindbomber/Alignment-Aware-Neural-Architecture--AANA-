@@ -1,5 +1,9 @@
 {
   "bundle_id": "government_civic",
+  "canonical_id": "government_civic",
+  "aliases": [
+    "civic_government"
+  ],
   "bundle_type": "product_bundle",
   "purpose": "Government and civic agents for benefits, public records, grant/procurement, citizen-service, policy, and privacy-sensitive workflows.",
   "adapter_families": [

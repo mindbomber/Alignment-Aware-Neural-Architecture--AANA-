@@ -2,7 +2,7 @@ import unittest
 
 from aana.adapter_layout import validate_adapter_layout
 from aana.adapters import FAMILY_IDS, load_adapter_families
-from aana.bundles import BUNDLE_IDS, load_bundles
+from aana.bundles import BUNDLE_IDS, aliases_for_bundle, canonicalize_bundle_id, load_bundle, load_bundles
 
 
 class AdapterLayoutTests(unittest.TestCase):
@@ -32,12 +32,20 @@ class AdapterLayoutTests(unittest.TestCase):
         self.assertEqual(set(BUNDLE_IDS), {"enterprise", "personal_productivity", "government_civic"})
         for bundle in bundles.values():
             self.assertEqual(bundle["bundle_type"], "product_bundle")
+            self.assertEqual(bundle["bundle_id"], bundle["canonical_id"])
             self.assertTrue(set(bundle["adapter_families"]).issubset(families))
             self.assertIn("Never tune and claim on the same", bundle["required_split_rule"])
+
+    def test_civic_government_alias_resolves_to_government_civic(self):
+        self.assertEqual(canonicalize_bundle_id("civic_government"), "government_civic")
+        self.assertEqual(canonicalize_bundle_id("government_civic"), "government_civic")
+        self.assertEqual(load_bundle("civic_government"), load_bundle("government_civic"))
+        self.assertEqual(aliases_for_bundle("government_civic"), ["civic_government"])
 
     def test_split_isolation_is_enforced(self):
         report = validate_adapter_layout()
         self.assertTrue(report["valid"], report)
+        self.assertEqual(report["bundle_aliases"]["civic_government"], "government_civic")
         issue_codes = {issue["code"] for issue in report["issues"]}
         self.assertNotIn("same_split_for_tuning_and_public_claims", issue_codes)
         self.assertNotIn("same_split_for_tuning_and_heldout_validation", issue_codes)

@@ -1,5 +1,7 @@
 {
   "bundle_id": "enterprise",
+  "canonical_id": "enterprise",
+  "aliases": [],
   "bundle_type": "product_bundle",
   "purpose": "Enterprise agents for support, deployment, data access, billing, governance, and internal workflow control.",
   "adapter_families": [

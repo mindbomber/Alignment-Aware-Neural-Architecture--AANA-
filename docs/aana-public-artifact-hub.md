@@ -23,6 +23,12 @@ agent-performance engine.
 | Space | Live "try AANA" demo for candidate answers/actions, evidence, routes, AIx score, and hard blockers. | <https://huggingface.co/spaces/mindbomber/aana-demo> |
 | Technical report | Architecture interpretation, limitations, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
 
+## Bundle ID Policy
+
+`government_civic` is the canonical product-bundle ID. `civic_government` is
+kept as a backward-compatible alias for older starter-pilot-kit paths and
+commands.
+
 ## Reviewer Path
 
 1. Start with the model repo for the architecture boundary and usage pattern.

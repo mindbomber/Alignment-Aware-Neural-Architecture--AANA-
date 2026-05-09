@@ -1,5 +1,7 @@
 {
   "bundle_id": "personal_productivity",
+  "canonical_id": "personal_productivity",
+  "aliases": [],
   "bundle_type": "product_bundle",
   "purpose": "Personal agents for email, calendar, files, browser/cart flows, citations, and local approval-controlled actions.",
   "adapter_families": [

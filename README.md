@@ -151,6 +151,8 @@ Adapter generalization gate: general adapters must use config-backed domain/tool
 
 Adapter family layout: technical verifier/control families live under `aana/adapters/` (`privacy_pii`, `grounded_qa`, `agent_tool_use`, `governance_compliance`, `security_devops`, and `domain_risk`). Product bundles live under `aana/bundles/` (`enterprise`, `personal_productivity`, and `government_civic`) and declare which adapter families they use. Validate split isolation and bundle references with `python scripts/validate_adapter_layout.py`.
 
+Bundle ID policy: `government_civic` is the canonical product-bundle ID. `civic_government` remains a backward-compatible alias for older starter-pilot-kit paths and commands.
+
 Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
 
 Packaging gate: keep Python package, TypeScript SDK, FastAPI service, benchmark/eval tooling, docs, and cards separated with `python scripts/validate_packaging_hardening.py --require-existing-artifacts`. The current Python distribution remains `aana-eval-pipeline`; any future rename needs a documented migration window and compatibility plan.
