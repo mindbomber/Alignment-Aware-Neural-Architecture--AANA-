@@ -22,6 +22,11 @@ The central result is that AANA outperformed simpler gate designs in the current
 
 ## What Was Evaluated
 
+Reviewer-facing evidence pack:
+`https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`.
+It packages measured privacy, grounded QA, tool-use, and agent-integration
+validation artifacts plus a reproduction script and a short peer-review report.
+
 The agent-action experiments used transformed public tool-call traces from two sources:
 
 - `zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory`

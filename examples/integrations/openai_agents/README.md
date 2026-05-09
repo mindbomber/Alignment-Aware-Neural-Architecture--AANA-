@@ -6,6 +6,9 @@ This demo shows the product pattern:
 agent proposes -> AANA checks -> tool executes only if allowed
 ```
 
+For the shortest command-first guide, see
+`docs/openai-agents-quickstart.md`.
+
 It is intentionally runnable without OpenAI credentials. The scripted path in
 `demo.py` simulates the tool proposals an OpenAI agent would emit, converts each
 proposal into the Agent Action Contract v1 shape, and uses AANA to decide
@@ -15,6 +18,7 @@ whether the underlying tool body can run.
 
 ```powershell
 python examples/integrations/openai_agents/demo.py
+python examples/integrations/openai_agents/wrapped_tools.py
 ```
 
 The output includes:
@@ -24,6 +28,13 @@ The output includes:
 - one confirmed write that executes;
 - an `executed_tool_calls` ledger proving the blocked write did not run.
 
+`wrapped_tools.py` shows the OpenAI Agents SDK registration seam more directly:
+
+- define ordinary Python tool functions;
+- wrap each one with `@aana.openai_agents_tool_middleware(...)`;
+- optionally register the guarded functions with `agents.function_tool(...)`;
+- build an `Agent` with the guarded tool list when `openai-agents` is installed.
+
 ## Optional OpenAI Agents SDK Registration
 
 When `openai-agents` is installed, `build_agent()` returns an illustrative
@@ -31,6 +42,14 @@ OpenAI Agents SDK `Agent` whose tools are already wrapped by AANA:
 
 ```python
 from examples.integrations.openai_agents.demo import build_agent
+
+agent = build_agent()
+```
+
+For the multi-tool wrapped example:
+
+```python
+from examples.integrations.openai_agents.wrapped_tools import build_agent
 
 agent = build_agent()
 ```
@@ -60,6 +79,24 @@ The API guard calls:
 It fails closed. The wrapped tool body runs only when AANA returns `accept`,
 the gate passes, there are no hard blockers or validation errors, and the
 execution policy allows enforcement execution.
+
+## Local Agent Evals
+
+Run the local OpenAI-style agent eval harness:
+
+```powershell
+python evals/openai_agents_aana/run_local.py
+```
+
+The eval compares a permissive agent path against AANA-guarded execution for:
+
+- unsafe tool blocking;
+- private-read authorization;
+- write confirmation;
+- missing-evidence `ask` / `defer` / `refuse`;
+- preserving safe tool execution.
+
+Results are written to `evals/openai_agents_aana/results/latest.json`.
 
 ## Minimal Middleware Shape
 

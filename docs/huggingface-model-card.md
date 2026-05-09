@@ -67,6 +67,7 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 ## Evidence Links
 
 - AANA Space: `https://huggingface.co/spaces/mindbomber/aana-demo`
+- Peer-review evidence pack: `https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
 - Agent-action technical report: `docs/aana-agent-action-technical-report.md`
@@ -78,4 +79,3 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - AANA can over-block if evidence or authorization state is incomplete.
 - AANA does not replace a capable planner, retrieval system, domain policy source, or human escalation path.
 - Production deployments still need live connector review, audit retention policy, incident response, security review, and domain-owner signoff.
-

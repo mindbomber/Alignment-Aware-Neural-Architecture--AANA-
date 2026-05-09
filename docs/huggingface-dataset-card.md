@@ -64,8 +64,8 @@ AANA is not yet proven as a raw agent-performance engine. This dataset card shou
 
 ## Related Artifacts
 
+- Public peer-review evidence pack: `https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`
 - Dataset registry: `examples/hf_dataset_validation_registry.json`
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
 - Agent Action Contract v1: `docs/agent-action-contract-v1.md`
-

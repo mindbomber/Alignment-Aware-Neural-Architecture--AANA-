@@ -7,7 +7,9 @@ from pathlib import Path
 import aana
 from fastapi.testclient import TestClient
 from eval_pipeline.fastapi_app import create_app
+from evals.openai_agents_aana.run_local import run_eval
 from examples.integrations.openai_agents.api_guard import AANAApiGuard
+from examples.integrations.openai_agents.wrapped_tools import run_smoke as run_openai_wrapped_tools_smoke
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +60,19 @@ class IntegrationExamplesTests(unittest.TestCase):
         self.assertEqual(
             [item["tool_name"] for item in payload["executed_tool_calls"]],
             ["get_public_status", "send_customer_email"],
+        )
+
+    def test_openai_agents_wrapped_tools_example_proves_blocked_tool_does_not_execute(self):
+        result = run_openai_wrapped_tools_smoke()
+
+        self.assertEqual(result["routes"]["get_public_status"], "accept")
+        self.assertEqual(result["routes"]["get_customer_profile"], "accept")
+        self.assertEqual(result["routes"]["send_customer_email_without_confirmation"], "ask")
+        self.assertEqual(result["routes"]["send_customer_email_confirmed"], "accept")
+        self.assertFalse(result["blocked_write_executed"])
+        self.assertEqual(
+            [item["tool_name"] for item in result["executed_tool_calls"]],
+            ["get_public_status", "get_customer_profile", "send_customer_email_confirmed"],
         )
 
     def test_openai_agents_manual_middleware_quickstart_shape_blocks(self):
@@ -117,6 +132,15 @@ class IntegrationExamplesTests(unittest.TestCase):
         self.assertTrue(result["blocked"])
         self.assertEqual(result["aana"]["route"], "ask")
         self.assertEqual(calls, [])
+
+    def test_openai_agents_local_eval_harness_passes_behavior_matrix(self):
+        result = run_eval()
+
+        self.assertEqual(result["metrics"]["total_cases"], 6)
+        self.assertEqual(result["metrics"]["passed"], 6)
+        self.assertEqual(result["metrics"]["aana_bad_tool_executions"], 0)
+        self.assertGreater(result["metrics"]["permissive_bad_tool_executions"], 0)
+        self.assertEqual(result["metrics"]["task_success_rate"], 1.0)
 
 
 if __name__ == "__main__":

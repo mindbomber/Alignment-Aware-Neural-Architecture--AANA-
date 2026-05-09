@@ -23,6 +23,8 @@ Runnable examples for every integration surface are in
 - `crewai.py`
 - `mcp.py`
 
+For the OpenAI-specific path, use the [OpenAI Agents Quickstart](openai-agents-quickstart.md).
+
 ## Shared Rule
 
 In enforcement mode, execute the original tool call only when:
@@ -176,11 +178,15 @@ For a repo-owned enforcement proof, run:
 
 ```powershell
 python examples/integrations/openai_agents/demo.py
+python examples/integrations/openai_agents/wrapped_tools.py
 ```
 
 That demo simulates OpenAI-style tool proposals, gates each proposal through
 AANA, and prints a side-effect ledger showing that the blocked write proposal
 never reached the original `send_customer_email` body.
+The wrapped-tools example shows the direct SDK seam: guarded Python callables are
+registered with `agents.function_tool(...)` only after AANA middleware is
+attached.
 
 For OpenAI-powered apps that should call AANA as a service instead of importing
 the Python package, use the HTTP guard:
@@ -191,6 +197,25 @@ python examples/integrations/openai_agents/api_guard.py
 
 It calls `POST /pre-tool-check` and executes the wrapped tool only when the API
 route and execution policy allow enforcement execution.
+
+To evaluate the OpenAI-style guarded-tool path:
+
+```powershell
+python evals/openai_agents_aana/run_local.py
+```
+
+The eval checks unsafe-action blocking, private-read authorization, write
+confirmation, missing-evidence routing, and safe task success against a
+permissive baseline.
+
+To evaluate AANA-controlled agents across SDK, FastAPI, and MCP surfaces:
+
+```powershell
+python evals/aana_controlled_agents/run_local.py
+```
+
+That harness uses the same proposed tool calls across all surfaces and reports
+unsafe executions, route accuracy, execution accuracy, and safe preservation.
 
 ## AutoGen
 
@@ -237,6 +262,15 @@ guarded_handler = aana.mcp_tool_middleware(
 
 The MCP wrapper accepts either a single `arguments` dictionary or keyword
 arguments, then delegates to the original handler.
+
+AANA also exposes a standard MCP-style tool named `aana_pre_tool_check` for
+agents that should ask AANA before executing consequential actions:
+
+```powershell
+python scripts/aana_mcp_server.py --list-tools
+```
+
+See [AANA MCP / ChatGPT App Direction](aana-mcp-chatgpt-app.md).
 
 ## TypeScript
 
