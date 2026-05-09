@@ -92,6 +92,7 @@ async def _run_condition(
     filter_problematic_tools: bool,
     concurrent_summarization: bool,
     aana_config: MCPBenchAANAConfig | None = None,
+    allow_empty_results: bool = False,
 ) -> dict[str, Any]:
     originals: dict[str, Any] | None = None
     if aana_config:
@@ -106,7 +107,11 @@ async def _run_condition(
             concurrent_summarization=concurrent_summarization,
             use_fuzzy_descriptions=use_fuzzy_descriptions,
         )
+        if getattr(runner, "commands_config", None) is None and hasattr(runner, "load_commands_config"):
+            runner.commands_config = await runner.load_commands_config()
         results = await runner.run_benchmark(selected_models=selected_models, task_limit=task_limit)
+        if not results and not allow_empty_results:
+            raise RuntimeError(f"MCP-Bench condition {condition!r} produced no metrics or result payload")
     finally:
         if originals:
             restore_mcp_bench_aana_guard(runner_module, originals)
@@ -148,6 +153,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "use_fuzzy_descriptions": not args.disable_fuzzy,
             "filter_problematic_tools": not args.disable_filter_problematic_tools,
             "concurrent_summarization": not args.disable_concurrent_summarization,
+            "allow_empty_results": args.allow_empty_results,
         }
         condition_results: dict[str, Any] = {}
         if "plain" in conditions:
@@ -205,6 +211,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--aana-authorization-state", choices=["none", "user_claimed", "authenticated", "validated", "confirmed"], default="confirmed")
     parser.add_argument("--aana-risk-domain", default="agent_tool_use")
     parser.add_argument("--append-audit-log", action="store_true")
+    parser.add_argument("--allow-empty-results", action="store_true", help="Do not fail if MCP-Bench returns an empty metrics payload.")
     return parser
 
 
@@ -218,4 +225,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -49,6 +49,52 @@ The script runs the plain condition first, then patches MCP-Bench's imported
 AANA condition writes an audit-safe JSONL log with route, hard blockers,
 argument keys, argument hash, authorization state, and latency.
 
+## Local Smoke Results
+
+Local diagnostic smoke runs completed against a shallow `Accenture/mcp-bench`
+checkout using `o4-mini`, the official Unit Converter single-server tasks, and
+no distraction servers.
+
+One-task smoke:
+
+| Metric | Base agent | Base + AANA |
+| --- | ---: | ---: |
+| Task success rate | 1.000 | 1.000 |
+| Task completion score | 10.000 | 10.000 |
+| Tool selection score | 10.000 | 10.000 |
+| Planning effectiveness score | 10.000 | 6.800 |
+| Valid tool-name rate | 1.000 | 1.000 |
+| Input schema compliance | 1.000 | 1.000 |
+| Tool-call success rate | 1.000 | 1.000 |
+| AANA audit decisions | n/a | 12 accept, 0 blocked |
+
+Two-task Unit Converter run:
+
+| Metric | Base agent | Base + AANA |
+| --- | ---: | ---: |
+| Task success rate | 1.000 | 1.000 |
+| Task completion score | 10.000 | 9.800 |
+| Tool selection score | 9.900 | 9.300 |
+| Planning effectiveness score | 7.500 | 5.850 |
+| Valid tool-name rate | 1.000 | 1.000 |
+| Input schema compliance | 1.000 | 1.000 |
+| Tool-call success rate | 1.000 | 1.000 |
+| AANA audit decisions | n/a | 65 accept, 0 blocked |
+
+Interpretation:
+
+- The wrapper reached the real MCP tool-execution boundary.
+- AANA preserved safe utility-tool execution and emitted audit records for every
+  checked tool call.
+- These Unit Converter tasks contain only safe utility reads/conversions, so they
+  are not evidence of unsafe-action prevention.
+- The Base + AANA condition showed more redundant tool calls in this local run.
+  Since AANA accepted every proposed call, this reflects base-agent planning
+  variance between runs rather than AANA blocking or correcting behavior.
+- The next meaningful MCP-Bench run should include consequential write/private
+  read tasks or an injected unsafe-action track, where AANA can be evaluated on
+  blocked-tool non-execution and safety/control value.
+
 Primary MCP-Bench metrics:
 
 - overall score
