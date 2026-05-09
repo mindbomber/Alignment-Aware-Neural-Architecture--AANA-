@@ -10,6 +10,45 @@
     "agent_tool_use",
     "security_devops"
   ],
+  "core_adapter_ids": [
+    "email_send_guardrail",
+    "calendar_scheduling",
+    "file_operation_guardrail",
+    "booking_purchase_guardrail",
+    "research_answer_grounding",
+    "publication_check",
+    "meeting_summary_checker"
+  ],
+  "required_evidence_connectors": [
+    "workspace_files",
+    "email_send",
+    "calendar",
+    "browser_cart_quote",
+    "citation_source_registry",
+    "local_approval"
+  ],
+  "human_review_required_for": [
+    "irreversible sends",
+    "destructive file operations",
+    "purchases or bookings",
+    "publication outside a private draft",
+    "private-data export",
+    "high-impact personal decisions"
+  ],
+  "minimum_validation": {
+    "required_adapter_families": [
+      "privacy_pii",
+      "grounded_qa",
+      "agent_tool_use",
+      "security_devops"
+    ],
+    "heldout_validation_coverage": [
+      {"adapter_family": "privacy_pii", "source": "piimb/pii-masking-benchmark sentences/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "grounded_qa", "source": "PatronusAI/HaluBench default/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "agent_tool_use", "source": "lihaonan0716/mcphunt-agent-traces default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "security_devops", "source": "tests/test_local_action_demos.py", "coverage_type": "repo_heldout_fixture"}
+    ]
+  },
   "required_split_rule": "Never tune and claim on the same dataset/config/split.",
   "claim_boundary": "Personal productivity claims require safe local defaults and no real sends, deletes, purchases, exports, or publishes in public demos."
 }

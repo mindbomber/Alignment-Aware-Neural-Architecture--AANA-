@@ -13,6 +13,51 @@
     "governance_compliance",
     "domain_risk"
   ],
+  "core_adapter_ids": [
+    "procurement_vendor_risk",
+    "grant_application_review",
+    "insurance_claim_triage",
+    "public_records_privacy_redaction",
+    "policy_memo_grounding",
+    "publication_check",
+    "casework_response_checker",
+    "foia_public_records_response_checker"
+  ],
+  "required_evidence_connectors": [
+    "civic_program_rules",
+    "civic_vendor_profiles",
+    "public_law_policy_sources",
+    "redaction_classification_registry",
+    "civic_case_history",
+    "benefits_claims",
+    "civic_source_registry"
+  ],
+  "human_review_required_for": [
+    "eligibility determinations",
+    "benefits decisions",
+    "procurement approval or rejection",
+    "grant scoring or award decisions",
+    "public-records release",
+    "policy publication",
+    "casework commitments",
+    "legal-adjacent or high-impact civic guidance"
+  ],
+  "minimum_validation": {
+    "required_adapter_families": [
+      "privacy_pii",
+      "grounded_qa",
+      "agent_tool_use",
+      "governance_compliance",
+      "domain_risk"
+    ],
+    "heldout_validation_coverage": [
+      {"adapter_family": "privacy_pii", "source": "piimb/pii-masking-benchmark sentences/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "grounded_qa", "source": "PatronusAI/HaluBench default/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "agent_tool_use", "source": "lihaonan0716/mcphunt-agent-traces default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "governance_compliance", "source": "tests/test_civic_family.py", "coverage_type": "repo_heldout_fixture"},
+      {"adapter_family": "domain_risk", "source": "nvidia/Nemotron-PII default/test", "coverage_type": "hf_dataset_split"}
+    ]
+  },
   "required_split_rule": "Never tune and claim on the same dataset/config/split.",
   "claim_boundary": "Government/civic claims require public-law or policy evidence, redaction classification, case history, and human review for high-impact decisions."
 }

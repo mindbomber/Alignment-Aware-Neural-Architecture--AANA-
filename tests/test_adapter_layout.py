@@ -35,6 +35,18 @@ class AdapterLayoutTests(unittest.TestCase):
             self.assertEqual(bundle["bundle_id"], bundle["canonical_id"])
             self.assertTrue(set(bundle["adapter_families"]).issubset(families))
             self.assertIn("Never tune and claim on the same", bundle["required_split_rule"])
+            self.assertTrue(bundle["core_adapter_ids"])
+            self.assertTrue(bundle["required_evidence_connectors"])
+            self.assertTrue(bundle["human_review_required_for"])
+            self.assertEqual(
+                set(bundle["minimum_validation"]["required_adapter_families"]),
+                set(bundle["adapter_families"]),
+            )
+            covered = {
+                item["adapter_family"]
+                for item in bundle["minimum_validation"]["heldout_validation_coverage"]
+            }
+            self.assertEqual(covered, set(bundle["adapter_families"]))
 
     def test_civic_government_alias_resolves_to_government_civic(self):
         self.assertEqual(canonicalize_bundle_id("civic_government"), "government_civic")
@@ -49,6 +61,8 @@ class AdapterLayoutTests(unittest.TestCase):
         issue_codes = {issue["code"] for issue in report["issues"]}
         self.assertNotIn("same_split_for_tuning_and_public_claims", issue_codes)
         self.assertNotIn("same_split_for_tuning_and_heldout_validation", issue_codes)
+        self.assertNotIn("bundle_missing_required_field", issue_codes)
+        self.assertNotIn("bundle_missing_family_heldout_coverage", issue_codes)
 
 
 if __name__ == "__main__":
