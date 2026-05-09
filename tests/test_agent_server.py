@@ -248,6 +248,8 @@ class AgentServerTests(unittest.TestCase):
                     "kind": "policy",
                     "trust_tier": "verified",
                     "redaction_status": "public",
+                    "freshness": {"status": "fresh"},
+                    "provenance": "policy_registry",
                 }
             ],
             "risk_domain": "public_information",

@@ -1,0 +1,55 @@
+{
+  "blockers": [],
+  "can_execute_directly": true,
+  "checklist": [
+    {
+      "details": "3 handoff result(s) available.",
+      "id": "mi-checks-present",
+      "label": "MI boundary checks were run before execution.",
+      "status": "pass"
+    },
+    {
+      "details": "All handoffs include evidence.",
+      "id": "evidence-present",
+      "label": "Every consequential handoff carries evidence metadata.",
+      "status": "pass"
+    },
+    {
+      "details": "No hard blockers found.",
+      "id": "no-hard-blockers",
+      "label": "No hard blockers exist in local or global AIx.",
+      "status": "pass"
+    },
+    {
+      "details": "score=1.0 accept_threshold=0.9",
+      "id": "global-aix-threshold",
+      "label": "Global AIx meets the active accept threshold.",
+      "status": "pass"
+    },
+    {
+      "details": "risk_count=0 propagation_count=0",
+      "id": "propagation-resolved",
+      "label": "Propagated assumptions and unsupported premises are resolved.",
+      "status": "pass"
+    }
+  ],
+  "gate": "production_mi_readiness",
+  "global_aix": {
+    "accept_threshold": 0.9,
+    "decision": "accept",
+    "recommended_action": "accept",
+    "risk_tier": "elevated",
+    "score": 1.0
+  },
+  "hard_blockers": [],
+  "high_risk_action": true,
+  "missing_evidence_handoff_ids": [],
+  "production_mi_readiness_version": "0.1",
+  "propagated_risk": {
+    "has_propagated_risk": false,
+    "propagation_count": 0,
+    "risk_count": 0
+  },
+  "recommended_action": "accept",
+  "release_status": "ready"
+}

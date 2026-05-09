@@ -1,0 +1,28 @@
+{
+  "algorithm": "sha256",
+  "audit_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl",
+  "created_at": "2026-05-09T22:17:26Z",
+  "file_sha256": "44a906742cb0dd5d67eb1580db147f52d529e5059098bee6400bb34b7ae18db5",
+  "file_size_bytes": 4764,
+  "final_chain_sha256": "57ed1844847d4fccfa8f764528182f4ed8a7f9cd3e4074e42f2fec685a7807e2",
+  "line_count": 3,
+  "line_hashes": [
+    {
+      "chain_sha256": "787e36881fee3d14824a34e071d7c3c7381675fbf53978c99bb57d79c5bad1c7",
+      "line_number": 1,
+      "line_sha256": "2f49bfd78ed68c66f028895968c4853662e4bdaaf0cf4fe6aaf0e3b620269820"
+    },
+    {
+      "chain_sha256": "f7aba9cd0c3fde2a4795902f1dcda6cee4ea4173c45340363310a19dea0cf196",
+      "line_number": 2,
+      "line_sha256": "c58a4eb155b982a4b9466605d1976d7ca1f4d83572ebd877040e46186ae2164f"
+    },
+    {
+      "chain_sha256": "57ed1844847d4fccfa8f764528182f4ed8a7f9cd3e4074e42f2fec685a7807e2",
+      "line_number": 3,
+      "line_sha256": "99dd2810104a44683449bdf013c35193c5730445c2d5c1b1089948c7acc7820a"
+    }
+  ],
+  "manifest_fingerprint": "7224e2fb73f6d958e875436ce953cda307586278923f2a24df0e5996ebaa24f8",
+  "mi_audit_integrity_manifest_version": "0.1"
+}

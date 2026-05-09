@@ -112,7 +112,7 @@
   "metrics": {
     "audit_log_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\starter_pilot_kits\\civic_government\\audit.jsonl",
     "audit_metrics_export_version": "0.1",
-    "created_at": "2026-05-09T07:14:27+00:00",
+    "created_at": "2026-05-09T22:16:12+00:00",
     "metrics": {
       "adapter_check_count": 8,
       "adapter_check_count.casework_response_checker": 1,
@@ -150,15 +150,23 @@
       "aix_score_bucket_count.lt_0_50": 0,
       "aix_score_max": 1.0,
       "aix_score_min": 1.0,
+      "allowed_case_count": 0,
       "audit_record_type_count.workflow_check": 8,
       "audit_records_total": 8,
+      "blocked_case_count": 8,
       "connector_failure_count": 0,
       "decision_case_count": 8,
+      "decision_case_count.allowed": 0,
       "decision_case_count.blocked": 8,
+      "decision_case_count.deferred": 0,
+      "decision_case_count.false_positive": 0,
+      "decision_case_count.unresolved": 0,
       "defer_rate": 0.0,
+      "deferred_case_count": 0,
       "drift_by_adapter_version_count": 0,
       "evidence_freshness_failure_count": 0,
       "execution_mode_count.enforce": 8,
+      "false_positive_case_count": 0,
       "family_adapter_check_count.government_civic": 8,
       "family_adapter_check_count.personal_productivity": 1,
       "family_check_count": 9,
@@ -192,6 +200,7 @@
       "shadow_would_pass_count": 0,
       "shadow_would_refuse_count": 0,
       "shadow_would_revise_count": 0,
+      "unresolved_case_count": 0,
       "violation_code_count": 39,
       "violation_code_count.data_export_scope_expansion": 2,
       "violation_code_count.export_authorization_missing": 2,
@@ -284,7 +293,11 @@
       },
       "connector_failures": {},
       "decision_cases": {
-        "blocked": 8
+        "allowed": 0,
+        "blocked": 8,
+        "deferred": 0,
+        "false_positive": 0,
+        "unresolved": 0
       },
       "evidence_freshness_failures": {},
       "execution_modes": {

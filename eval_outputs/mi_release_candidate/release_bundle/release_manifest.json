@@ -1,0 +1,77 @@
+{
+  "artifacts": {
+    "audit_jsonl": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_audit.jsonl",
+      "bytes": 4764,
+      "sha256": "1dbb559a116f72f2ad168b22c3cffc83e215d24ee5e0e349880784fde22e7220",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl"
+    },
+    "audit_manifest": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_audit.jsonl.sha256.json",
+      "bytes": 1258,
+      "sha256": "18bcba4ed0be9264fa957184fddaf7a1777c17236cf4cd6f597eefefa9800e31",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_audit.jsonl.sha256.json"
+    },
+    "benchmark_report": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_benchmark_report.json",
+      "bytes": 16256,
+      "sha256": "586ab7e192d16b8ba890052ec5dae2c009551cfc090d6c086c11eeb8149bf7bd",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_benchmark\\mi_benchmark_report.json"
+    },
+    "dashboard": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\mi_dashboard.json",
+      "bytes": 1990,
+      "sha256": "eb8a417970cebcfe2682fb7617929091148cf9b26fe92e8bf116ae934f51ca4b",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\mi_dashboard.json"
+    },
+    "pilot_handoffs": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\pilot_handoffs.json",
+      "bytes": 29109,
+      "sha256": "07235e11443b73e9d861fc9de5ca3417356b2883100440ec761ad1daf252d827",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\pilot_handoffs.json"
+    },
+    "production_readiness": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\production_mi_readiness.json",
+      "bytes": 1577,
+      "sha256": "8796ff2884e9e89d92f7666a8076be356b0299ec420bc1162d6d6e38a3b92379",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_readiness.json"
+    },
+    "readiness_report": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\production_mi_release_report.json",
+      "bytes": 3828,
+      "sha256": "f9cbace7fcf2027329ad401f3f2c807a420649642da84beb508e4aa73dce17cd",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\production_mi_release_report.json"
+    },
+    "release_candidate_report": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\aana_mi_release_candidate_report.json",
+      "bytes": 6705,
+      "sha256": "220ca933cdb01ab50d5389c44ce00da62f100f799b020392eae75eff349a61d9",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\aana_mi_release_candidate_report.json"
+    },
+    "remediation_report": {
+      "bundle_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\artifacts\\release_blocker_remediation.json",
+      "bytes": 345949,
+      "sha256": "932abdde206d7d25efeffca67c45526fac78a2f8b05dcf30b766c44980e2ea82",
+      "source_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_pilot\\research_citation\\release_blocker_remediation.json"
+    }
+  },
+  "bundle_dir": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle",
+  "created_at": "2026-05-06T17:31:57Z",
+  "global_aix": {
+    "accept_threshold": 0.9,
+    "decision": "accept",
+    "recommended_action": "accept",
+    "risk_tier": "elevated",
+    "score": 1.0
+  },
+  "mi_release_bundle_version": "0.1",
+  "rc_status": "pass",
+  "readiness_status": "ready",
+  "unresolved_blocker_count": 0,
+  "versions": {
+    "mi_release_bundle_version": "0.1",
+    "mi_release_candidate_version": "0.1",
+    "production_mi_readiness_version": "0.1",
+    "release_readiness_report_version": "0.1"
+  }
+}

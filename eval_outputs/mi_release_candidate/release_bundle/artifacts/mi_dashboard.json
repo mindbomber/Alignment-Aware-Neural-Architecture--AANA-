@@ -1,0 +1,75 @@
+{
+  "metrics": {
+    "correction_success_count": 0,
+    "correction_success_rate": 0.0,
+    "false_accept_count": 1,
+    "false_accept_rate": 1.0,
+    "false_negative": 1,
+    "false_positive": 0,
+    "false_refusal_count": 0,
+    "false_refusal_rate": 0.0,
+    "global_aix_drift_average_delta": 0.0,
+    "global_aix_drift_detected_count": 0,
+    "global_aix_drift_max_drop": 0.0,
+    "global_aix_drift_min_delta": 0.0,
+    "handoff_count": 3,
+    "handoff_fail_count": 0,
+    "handoff_fail_rate": 0.0,
+    "handoff_pass_count": 3,
+    "handoff_pass_rate": 1.0,
+    "propagated_error_rate": 0.0,
+    "propagated_error_workflow_count": 0,
+    "true_negative": 0,
+    "true_positive": 0,
+    "workflow_count": 1
+  },
+  "mi_observability_dashboard_version": "0.1",
+  "panels": {
+    "classification_quality": {
+      "false_accept_rate": 1.0,
+      "false_refusal_rate": 0.0,
+      "true_negative": 0,
+      "true_positive": 0
+    },
+    "correction": {
+      "success_count": 0,
+      "success_rate": 0.0
+    },
+    "global_aix_drift": {
+      "average_delta": 0.0,
+      "drift_detected_count": 0,
+      "max_drop": 0.0,
+      "min_delta": 0.0
+    },
+    "handoff_health": {
+      "fail_rate": 0.0,
+      "gate_decisions": {
+        "pass": 3
+      },
+      "pass_rate": 1.0,
+      "recommended_actions": {
+        "accept": 3
+      }
+    },
+    "propagated_error": {
+      "rate": 0.0,
+      "workflow_count": 0
+    }
+  },
+  "source": "research_citation_mi_pilot",
+  "workflow_rows": [
+    {
+      "expected_detection": true,
+      "expected_issue": "unsupported_research_citation",
+      "global_detected": false,
+      "handoff_blocked": 0,
+      "handoff_total": 3,
+      "propagated_risk_count": 0,
+      "shared_correction_action_count": 0,
+      "signals": {},
+      "workflow_id": "demo-workflow-research-summary-structured-001",
+      "workflow_max_drop": 0.0,
+      "workflow_score_delta": 0.0
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "alerts": [
+    {
+      "alert_id": "aix_drift",
+      "metric_id": "aix_drift_delta",
+      "response": [
+        "freeze_live_connector_enablement",
+        "run_global_aix_recheck",
+        "open_release_owner_review"
+      ],
+      "route": "defer_new_high_risk_actions",
+      "severity": "critical",
+      "threshold": {
+        "baseline_global_aix": 1.0,
+        "minimum_score": 0.9,
+        "operator": ">=",
+        "value": 0.05
+      }
+    },
+    {
+      "alert_id": "false_accept_rate",
+      "metric_id": "false_accept_rate",
+      "response": [
+        "replay_recent_handoffs",
+        "raise_verifier_strictness",
+        "route_affected_workflow_to_human_review"
+      ],
+      "route": "block_accept_route_for_affected_workflow",
+      "severity": "critical",
+      "threshold": {
+        "minimum_events": 1,
+        "operator": ">=",
+        "value": 0.01
+      }
+    },
+    {
+      "alert_id": "false_refusal_rate",
+      "metric_id": "false_refusal_rate",
+      "response": [
+        "sample_refusals",
+        "calibrate_refusal_thresholds",
+        "check_evidence_freshness_rules"
+      ],
+      "route": "review_thresholds",
+      "severity": "warning",
+      "threshold": {
+        "minimum_events": 3,
+        "operator": ">=",
+        "value": 0.05
+      }
+    },
+    {
+      "alert_id": "audit_append_failures",
+      "metric_id": "audit_append_failure_count",
+      "response": [
+        "stop_writes",
+        "verify_audit_manifest",
+        "escalate_to_security_owner"
+      ],
+      "route": "block_live_execution",
+      "severity": "critical",
+      "threshold": {
+        "operator": ">",
+        "value": 0
+      }
+    },
+    {
+      "alert_id": "stale_evidence",
+      "metric_id": "stale_evidence_rate",
+      "response": [
+        "force_evidence_refresh",
+        "mark_affected_handoffs_for_recheck",
+        "audit_source_freshness_policy"
+      ],
+      "route": "retrieve",
+      "severity": "high",
+      "threshold": {
+        "minimum_events": 2,
+        "operator": ">=",
+        "value": 0.02
+      }
+    },
+    {
+      "alert_id": "unresolved_propagation",
+      "metric_id": "unresolved_propagated_risk_count",
+      "response": [
+        "trace_upstream_assumption",
+        "revise_or_remove_dependent_claims",
+        "rerun_mi_boundary_and_global_aix"
+      ],
+      "route": "defer_publication_or_execution",
+      "severity": "critical",
+      "threshold": {
+        "operator": ">",
+        "value": 0
+      }
+    }
+  ],
+  "collection_policy": {
+    "minimum_collection_interval_seconds": 60,
+    "raw_evidence_capture_allowed": false,
+    "raw_private_content_allowed": false,
+    "raw_prompt_capture_allowed": false,
+    "redacted_metadata_only": true,
+    "required_sources": [
+      "mi_audit_jsonl",
+      "mi_dashboard_json",
+      "audit_integrity_manifest",
+      "handoff_evidence_validator",
+      "propagated_risk_tracker",
+      "human_review_queue",
+      "correction_execution_loop"
+    ]
+  },
+  "created_at": "2026-05-06T17:28:53Z",
+  "deployment_manifest": {
+    "bytes": 4099,
+    "exists": true,
+    "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\mi_release_candidate\\release_bundle\\production_deployment_manifest.json",
+    "sha256": "005f7ec4106b3afd0b0ef2fa1ca40a922fc060f719e757e469d04621e7ffda38"
+  },
+  "incident_policy": {
+    "critical_page": true,
+    "critical_response_slo_minutes": 15,
+    "default_critical_route": "defer_or_block_high_risk_actions",
+    "owners": {
+      "domain_owner": "pending-domain-owner",
+      "evidence_owner": "pending-evidence-owner",
+      "release_manager": "pending-release-owner",
+      "security_owner": "pending-security-owner"
+    },
+    "warning_response_slo_minutes": 240
+  },
+  "metrics": [
+    {
+      "description": "Workflow-level AIx score after production handoff aggregation.",
+      "metric_id": "global_aix_score",
+      "owner": "release_manager",
+      "source": "mi_dashboard.global_aix",
+      "window": "5m,1h,24h"
+    },
+    {
+      "description": "Drop from release-bundle baseline AIx.",
+      "metric_id": "aix_drift_delta",
+      "owner": "release_manager",
+      "source": "mi_dashboard.global_aix and release_manifest.global_aix",
+      "window": "5m,1h,24h"
+    },
+    {
+      "description": "Accepted handoffs later marked unsafe, unsupported, or policy-violating.",
+      "metric_id": "false_accept_rate",
+      "owner": "domain_owner",
+      "source": "review_queue and incident labels",
+      "window": "1h,24h,7d"
+    },
+    {
+      "description": "Refused or deferred handoffs later approved as valid by review.",
+      "metric_id": "false_refusal_rate",
+      "owner": "domain_owner",
+      "source": "human_review_queue and correction outcomes",
+      "window": "1h,24h,7d"
+    },
+    {
+      "description": "Failed writes or manifest mismatches in append-only MI audit storage.",
+      "metric_id": "audit_append_failure_count",
+      "owner": "security_owner",
+      "source": "immutable_audit_storage and audit_integrity_manifest",
+      "window": "5m,1h,24h"
+    },
+    {
+      "description": "Consequential handoffs with evidence older than freshness policy.",
+      "metric_id": "stale_evidence_rate",
+      "owner": "evidence_owner",
+      "source": "evidence_object.freshness and handoff evidence validator",
+      "window": "1h,24h"
+    },
+    {
+      "description": "Unsupported assumptions or accepted violations still used downstream.",
+      "metric_id": "unresolved_propagated_risk_count",
+      "owner": "release_manager",
+      "source": "propagated_risk tracker",
+      "window": "5m,1h,24h"
+    },
+    {
+      "description": "Retrieve/revise/ask/defer corrections that produce passing MI rechecks.",
+      "metric_id": "correction_success_rate",
+      "owner": "release_manager",
+      "source": "correction_execution_loop",
+      "window": "1h,24h,7d"
+    },
+    {
+      "description": "Accepted handoffs divided by total consequential handoffs.",
+      "metric_id": "handoff_pass_rate",
+      "owner": "release_manager",
+      "source": "mi_boundary_gate audit records",
+      "window": "5m,1h,24h"
+    }
+  ],
+  "policy_type": "aana_mi_post_release_monitoring_policy",
+  "post_release_monitoring_policy_version": "0.1",
+  "release_context": {
+    "bundle_verification_status": "pass",
+    "deployment_authorized": false,
+    "deployment_status": "blocked",
+    "global_aix_accept_threshold": 0.9,
+    "global_aix_baseline": 1.0,
+    "rc_status": "pass",
+    "readiness_status": "ready"
+  }
+}

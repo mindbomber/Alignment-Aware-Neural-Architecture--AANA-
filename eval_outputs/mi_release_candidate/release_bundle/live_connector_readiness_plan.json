@@ -1,0 +1,714 @@
+{
+  "connectors": [
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "mail.read_metadata",
+          "mail.send_draft_or_send"
+        ],
+        "mode": "oauth_user_or_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "email_send",
+      "default_route": "defer",
+      "family": "email_calendar",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 3,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 30,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "message_subject_body_recipients_and_attachments_must_be_redacted_or_fingerprinted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "domain_owner_send_policy",
+        "recipient_allowlist",
+        "attachment_scanner",
+        "send_dry_run"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "draft_then_send; delete_or_follow_up_only_when_provider_supports_it"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "calendar.read",
+          "calendar.events.write"
+        ],
+        "mode": "oauth_user_or_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "calendar_write",
+      "default_route": "defer",
+      "family": "email_calendar",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 5,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "attendee_identity_location_notes_and_descriptions_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "calendar_conflict_policy",
+        "attendee_confirmation_policy",
+        "timezone_validation"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": false,
+        "irreversible_route": "revise",
+        "rollback_owner_required": true,
+        "strategy": "cancel_or_restore_previous_event_snapshot"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "deploy.read",
+          "deploy.execute",
+          "release.rollback"
+        ],
+        "mode": "ci_cd_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "deployment_release",
+      "default_route": "defer",
+      "family": "deployment_release",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 1,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 5,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "commit_messages_logs_env_names_and_incident_context_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "environment_approval",
+        "rollback_runbook",
+        "change_window",
+        "artifact_attestation"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "previous_release_redeploy_or_feature_flag_disable"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "workspace.read",
+          "workspace.write_with_path_scope"
+        ],
+        "mode": "local_workspace_identity",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "workspace_file_write",
+      "default_route": "defer",
+      "family": "file_edit",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 10,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 120,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "file_paths_may_be_logged_but_raw_file_content_requires_fingerprint_only",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "path_allowlist",
+        "diff_preview",
+        "backup_or_vcs_checkpoint",
+        "destructive_operation_block"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": false,
+        "irreversible_route": "revise",
+        "rollback_owner_required": true,
+        "strategy": "copy_before_write_or_patch_reversal"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "contents.read",
+          "pull_requests.write",
+          "checks.read"
+        ],
+        "mode": "repository_app_or_fine_grained_token",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "remote_code_repository",
+      "default_route": "defer",
+      "family": "code_repository",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 5,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "branch_names_pr_titles_and_review_summaries_only_no_raw_secrets",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "branch_protection_review",
+        "required_checks_policy",
+        "secret_scan_gate"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "revert_commit_or_close_pull_request"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "customer.read_minimal",
+          "case.read",
+          "case.comment_draft"
+        ],
+        "mode": "service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "crm_support",
+      "default_route": "defer",
+      "family": "customer_support",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 5,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "customer_identifiers_case_notes_and_private_records_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "customer_data_policy",
+        "case_scope_contract",
+        "pii_redaction_test"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": false,
+        "irreversible_route": "revise",
+        "rollback_owner_required": true,
+        "strategy": "draft_only_until_human_approval"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "ticket.read",
+          "ticket.comment_draft",
+          "ticket.status_write"
+        ],
+        "mode": "service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "ticketing",
+      "default_route": "defer",
+      "family": "customer_support",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 5,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 45,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "ticket_body_comments_reporter_and_internal_notes_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "ticket_status_policy",
+        "queue_owner_signoff",
+        "private_comment_filter"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": false,
+        "irreversible_route": "revise",
+        "rollback_owner_required": true,
+        "strategy": "status_restore_or_comment_correction"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "billing.read",
+          "refund.draft"
+        ],
+        "mode": "payment_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "billing_payment",
+      "default_route": "defer",
+      "family": "financial",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 1,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 10,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "payment_identifiers_amounts_customer_records_and_dispute_notes_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "finance_owner_approval",
+        "amount_thresholds",
+        "fraud_policy",
+        "audit_retention_policy"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "void_or_refund_only_under_payment_provider_rules"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "dataset.read",
+          "export.create_draft"
+        ],
+        "mode": "export_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "data_export",
+      "default_route": "defer",
+      "family": "data_governance",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 1,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 10,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "dataset_rows_private_columns_and_query_text_must_not_enter_mi_logs",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "data_classification",
+        "recipient_approval",
+        "retention_policy",
+        "egress_review"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "delete_export_package_before_delivery"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "iam.read",
+          "iam.change_request"
+        ],
+        "mode": "privileged_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "iam_permissions",
+      "default_route": "defer",
+      "family": "security",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 1,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 5,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "principal_ids_groups_roles_and_policy_documents_must_be_redacted_or_fingerprinted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "security_owner_approval",
+        "break_glass_policy",
+        "least_privilege_diff",
+        "mfa_policy"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "permission_revoke_or_policy_restore"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "channels.read_metadata",
+          "messages.write_draft"
+        ],
+        "mode": "bot_or_workspace_app",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "chat_slack_teams",
+      "default_route": "defer",
+      "family": "collaboration",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 5,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "channel_names_user_mentions_and_message_body_require_redaction",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "workspace_admin_approval",
+        "channel_allowlist",
+        "mention_suppression_policy"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": false,
+        "irreversible_route": "revise",
+        "rollback_owner_required": true,
+        "strategy": "delete_message_or_post_correction_when_allowed"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    },
+    {
+      "auth_requirements": {
+        "approval_required": true,
+        "least_privilege_scopes": [
+          "content.read",
+          "content.publish_draft"
+        ],
+        "mode": "publisher_service_account",
+        "rotation_required": true,
+        "secret_handling": "no_tokens_or_secrets_in_audit_dashboard_review_or_bundle_artifacts"
+      },
+      "connector_id": "web_publish",
+      "default_route": "defer",
+      "family": "publishing",
+      "live_execution_enabled": false,
+      "mi_gate_requirements": [
+        "production_mi_readiness_pass",
+        "release_bundle_verification_pass",
+        "approved_human_signoff",
+        "connector_specific_auth_review",
+        "connector_specific_rate_limit_review",
+        "connector_specific_redaction_review",
+        "connector_specific_rollback_review",
+        "immutable_audit_storage_configured",
+        "pre_execution_hook_allow"
+      ],
+      "rate_limits": {
+        "burst": 2,
+        "idempotency_key_required": true,
+        "rate_limit_violations_route": "defer",
+        "requests_per_minute": 15,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction": {
+        "audit_policy": "redacted_metadata_only",
+        "content_policy": "draft_content_urls_metadata_and_private_assets_must_be_redacted",
+        "evidence_policy": "structured_evidence_metadata_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed": false
+      },
+      "required_before_enablement": [
+        "editorial_approval",
+        "citation_review",
+        "asset_license_review",
+        "cache_purge_plan"
+      ],
+      "rollback": {
+        "dry_run_required": true,
+        "irreversible_action": true,
+        "irreversible_route": "defer",
+        "rollback_owner_required": true,
+        "strategy": "unpublish_or_restore_previous_revision"
+      },
+      "scope_status": "out_of_scope_for_local_rc"
+    }
+  ],
+  "created_at": "2026-05-06T17:31:57Z",
+  "enablement_policy": {
+    "mi_routes_allowed_after_enablement": [
+      "accept",
+      "revise",
+      "retrieve",
+      "ask",
+      "refuse",
+      "defer"
+    ],
+    "mi_routes_allowed_before_enablement": [
+      "defer",
+      "ask",
+      "retrieve",
+      "revise",
+      "refuse"
+    ],
+    "minimum_status": {
+      "bundle_verification": "pass",
+      "human_signoff": "approved",
+      "rc_status": "pass",
+      "readiness_status": "ready",
+      "unresolved_blocker_count": 0
+    },
+    "status_to_enable": "requires_new_release_candidate"
+  },
+  "live_connector_readiness_version": "0.1",
+  "local_rc_scope": {
+    "direct_live_connector_execution": false,
+    "external_production_deployment": false,
+    "reason": "This RC verifies MI contracts, gates, audit, bundle integrity, and signoff artifacts without enabling external live connectors.",
+    "status": "local_only"
+  },
+  "plan_type": "aana_mi_live_connector_readiness_plan",
+  "summary": {
+    "connector_count": 12,
+    "default_route_for_live_requests": "defer",
+    "live_execution_enabled_count": 0,
+    "out_of_scope_count": 12,
+    "required_common_controls": [
+      "production_mi_readiness_pass",
+      "release_bundle_verification_pass",
+      "approved_human_signoff",
+      "connector_specific_auth_review",
+      "connector_specific_rate_limit_review",
+      "connector_specific_redaction_review",
+      "connector_specific_rollback_review",
+      "immutable_audit_storage_configured",
+      "pre_execution_hook_allow"
+    ]
+  }
+}

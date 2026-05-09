@@ -1,0 +1,115 @@
+{
+  "blocking_conditions": [
+    {
+      "condition": "MI checks missing",
+      "line": 23,
+      "required_route": "defer` until the workflow is checked"
+    },
+    {
+      "condition": "evidence missing",
+      "line": 24,
+      "required_route": "retrieve` evidence, then re-run MI"
+    },
+    {
+      "condition": "hard blockers exist",
+      "line": 25,
+      "required_route": "refuse` or route to an approved human-review process"
+    },
+    {
+      "condition": "global AIx below threshold",
+      "line": 26,
+      "required_route": "revise` or `defer`, then re-run MI"
+    },
+    {
+      "condition": "propagated assumptions unresolved",
+      "line": 27,
+      "required_route": "revise` upstream output or `ask` for clarification, then re-run MI"
+    }
+  ],
+  "can_execute_directly": true,
+  "checklist_source": {
+    "blocking_condition_count": 5,
+    "path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\docs\\production-mi-release-checklist.md",
+    "release_signoff_count": 5,
+    "required_check_count": 5
+  },
+  "counts": {
+    "release_signoff_block_count": 0,
+    "required_gate_block_count": 0,
+    "unresolved_count": 0
+  },
+  "recommended_action": "accept",
+  "release_readiness_report_version": "0.1",
+  "release_signoff_items": [
+    {
+      "details": "3 redacted audit record(s) validated.",
+      "id": "audit-jsonl-attached",
+      "label": "Attach the redacted MI audit JSONL for the run.",
+      "status": "pass"
+    },
+    {
+      "details": "Pilot result contains MI batch metadata.",
+      "id": "redacted-result-attached",
+      "label": "Attach the workflow or pilot result with raw private content excluded from release notes.",
+      "status": "pass"
+    },
+    {
+      "details": "No unresolved propagated-risk signal.",
+      "id": "dashboard-propagation-clear",
+      "label": "Confirm the dashboard shows no unresolved propagated-risk signal for this workflow.",
+      "status": "pass"
+    },
+    {
+      "details": "Risk tier: elevated",
+      "id": "risk-tier-confirmed",
+      "label": "Confirm the selected risk tier matches connectivity, irreversibility, privacy, security, and downstream blast radius.",
+      "status": "pass"
+    },
+    {
+      "details": "Release is ready; human review channel is not required for this run.",
+      "id": "human-review-channel-present",
+      "label": "Confirm any human-review queue or incident channel exists before enabling direct execution.",
+      "status": "pass"
+    }
+  ],
+  "release_status": "ready",
+  "required_gate_items": [
+    {
+      "details": "3 handoff result(s) available.",
+      "id": "mi-checks-present",
+      "label": "MI boundary checks were run before execution.",
+      "required_route": "defer",
+      "status": "pass"
+    },
+    {
+      "details": "All handoffs include evidence.",
+      "id": "evidence-present",
+      "label": "Every consequential handoff carries evidence metadata.",
+      "required_route": "retrieve",
+      "status": "pass"
+    },
+    {
+      "details": "No hard blockers found.",
+      "id": "no-hard-blockers",
+      "label": "No hard blockers exist in local or global AIx.",
+      "required_route": "refuse",
+      "status": "pass"
+    },
+    {
+      "details": "score=1.0 accept_threshold=0.9",
+      "id": "global-aix-threshold",
+      "label": "Global AIx meets the active accept threshold.",
+      "required_route": "revise_or_defer",
+      "status": "pass"
+    },
+    {
+      "details": "risk_count=0 propagation_count=0",
+      "id": "propagation-resolved",
+      "label": "Propagated assumptions and unsupported premises are resolved.",
+      "required_route": "revise_or_ask",
+      "status": "pass"
+    }
+  ],
+  "status": "pass",
+  "unresolved_items": []
+}

@@ -101,7 +101,7 @@
   "metrics": {
     "audit_log_path": "C:\\Users\\soria\\OneDrive\\Documents\\New project\\eval_outputs\\starter_pilot_kits\\personal_productivity\\audit.jsonl",
     "audit_metrics_export_version": "0.1",
-    "created_at": "2026-05-09T06:20:50+00:00",
+    "created_at": "2026-05-09T22:16:47+00:00",
     "metrics": {
       "adapter_check_count": 7,
       "adapter_check_count.booking_purchase_guardrail": 1,
@@ -136,15 +136,23 @@
       "aix_score_bucket_count.lt_0_50": 0,
       "aix_score_max": 1.0,
       "aix_score_min": 1.0,
+      "allowed_case_count": 0,
       "audit_record_type_count.workflow_check": 7,
       "audit_records_total": 7,
+      "blocked_case_count": 7,
       "connector_failure_count": 0,
       "decision_case_count": 7,
+      "decision_case_count.allowed": 0,
       "decision_case_count.blocked": 7,
+      "decision_case_count.deferred": 0,
+      "decision_case_count.false_positive": 0,
+      "decision_case_count.unresolved": 0,
       "defer_rate": 0.0,
+      "deferred_case_count": 0,
       "drift_by_adapter_version_count": 0,
       "evidence_freshness_failure_count": 0,
       "execution_mode_count.enforce": 7,
+      "false_positive_case_count": 0,
       "family_adapter_check_count.enterprise": 1,
       "family_adapter_check_count.government_civic": 1,
       "family_adapter_check_count.personal_productivity": 7,
@@ -182,6 +190,7 @@
       "shadow_would_pass_count": 0,
       "shadow_would_refuse_count": 0,
       "shadow_would_revise_count": 0,
+      "unresolved_case_count": 0,
       "violation_code_count": 36,
       "violation_code_count.booking_price_mismatch": 1,
       "violation_code_count.booking_refundability_missing": 1,
@@ -272,7 +281,11 @@
       },
       "connector_failures": {},
       "decision_cases": {
-        "blocked": 7
+        "allowed": 0,
+        "blocked": 7,
+        "deferred": 0,
+        "false_positive": 0,
+        "unresolved": 0
       },
       "evidence_freshness_failures": {},
       "execution_modes": {
