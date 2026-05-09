@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
+from eval_pipeline.authorization_state import AUTHORIZATION_STATES, AUTHORIZATION_STATE_TABLE
 from eval_pipeline.route_semantics import ACTION_ROUTES, ROUTE_TABLE, route_allows_execution
 
 
@@ -45,13 +46,6 @@ TOOL_CATEGORIES = (
     "private_read",
     "write",
     "unknown",
-)
-AUTHORIZATION_STATES = (
-    "none",
-    "user_claimed",
-    "authenticated",
-    "validated",
-    "confirmed",
 )
 RISK_DOMAINS = (
     "devops",
@@ -321,6 +315,7 @@ __all__ = [
     "ADAPTER_FAMILY_ALIASES",
     "AANARegistry",
     "AUTHORIZATION_STATES",
+    "AUTHORIZATION_STATE_TABLE",
     "REDACTION_STATUSES",
     "RISK_DOMAINS",
     "ROUTE_ALIASES",

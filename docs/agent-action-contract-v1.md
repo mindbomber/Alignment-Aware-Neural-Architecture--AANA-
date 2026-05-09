@@ -73,6 +73,28 @@ Only execute when all are true:
 No other route executes. `revise`, `retrieve`, `ask`, `defer`, and `refuse`
 are recovery/control routes that must complete and then recheck, or stop.
 
+## Authorization State Semantics
+
+Authorization states are ordered from weakest to strongest:
+
+```text
+none < user_claimed < authenticated < validated < confirmed
+```
+
+| State | Meaning | Private read | Write schema accept | Write execution |
+| --- | --- | --- | --- | --- |
+| `none` | No usable authorization context is available. | no | no | no |
+| `user_claimed` | The user asked for or claimed authority, but identity is not verified. | no | no | no |
+| `authenticated` | The user's identity/session is authenticated. | yes | no | no |
+| `validated` | The target object, ownership, policy, or eligibility was validated. | yes | yes | no |
+| `confirmed` | The user explicitly confirmed this consequential action. | yes | yes | yes |
+
+The v1 schema allows `validated` writes with `recommended_route: "accept"` for
+backward compatibility, but AANA execution wrappers still fail closed unless the
+final decision is `accept` with no hard blockers. Consequential writes should
+reach `confirmed` before execution. Private identity-bound reads require at
+least `authenticated`.
+
 ## Evidence Ref Schema
 
 Every production evidence ref should include:

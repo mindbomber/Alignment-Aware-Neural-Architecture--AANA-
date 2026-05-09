@@ -14,6 +14,7 @@ from collections import Counter
 from typing import Any
 
 from aana import registry as aana_registry
+from eval_pipeline.authorization_state import canonicalize_authorization_state, private_read_allowed, write_schema_accept_allowed
 from eval_pipeline.evidence_safety import normalize_evidence_ref
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call_v2, validate_event
 
@@ -83,8 +84,9 @@ def infer_risk_domain(source_domain: str, tool_name: str, proposed_arguments: di
 
 def infer_authorization_state(row: dict[str, Any], tool_category: str) -> str:
     explicit = str(row.get("authorization_state") or "")
-    if explicit in AUTHORIZATION_STATES:
-        return explicit
+    canonical = canonicalize_authorization_state(explicit, default="") if explicit.strip() else ""
+    if canonical in AUTHORIZATION_STATES and canonical:
+        return canonical
     features = row.get("trace_features") if isinstance(row.get("trace_features"), dict) else {}
     if features.get("counterfactual_missing_authorization"):
         return "none"
@@ -153,9 +155,9 @@ def convert_tool_call_to_precheck_event(row: dict[str, Any]) -> dict[str, Any]:
     route = _norm_route(row.get("recommended_route") or row.get("expected_route") or "accept")
     if category == "unknown" and route == "accept":
         route = "defer"
-    if category == "private_read" and route == "accept" and auth_state not in {"authenticated", "validated", "confirmed"}:
+    if category == "private_read" and route == "accept" and not private_read_allowed(auth_state):
         route = "ask"
-    if category == "write" and route == "accept" and auth_state not in {"validated", "confirmed"}:
+    if category == "write" and route == "accept" and not write_schema_accept_allowed(auth_state):
         route = "ask"
     return {
         "schema_version": "aana.agent_tool_precheck.v1",

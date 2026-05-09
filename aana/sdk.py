@@ -27,6 +27,7 @@ from aana.canonical_ids import (
 )
 from aana.registry import bundle_adapter_aliases
 from eval_pipeline import agent_api, agent_contract, workflow_contract
+from eval_pipeline.authorization_state import private_read_allowed, write_schema_accept_allowed
 from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage, normalize_evidence_ref, public_audit_or_claim_ready
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
@@ -252,9 +253,9 @@ def _normalize_public_tool_route(tool_category, authorization_state, recommended
 
     if recommended_route != "accept":
         return recommended_route
-    if tool_category == "write" and authorization_state not in {"validated", "confirmed"}:
+    if tool_category == "write" and not write_schema_accept_allowed(authorization_state):
         return "ask"
-    if tool_category == "private_read" and authorization_state not in {"authenticated", "validated", "confirmed"}:
+    if tool_category == "private_read" and not private_read_allowed(authorization_state):
         return "ask"
     if tool_category == "unknown":
         return "defer"

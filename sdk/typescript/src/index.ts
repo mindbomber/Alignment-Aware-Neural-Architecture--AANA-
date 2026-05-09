@@ -428,16 +428,66 @@ export function toolPrecheckEvent(input: {
 }
 
 const routeOrder: Record<ToolPrecheckAction, number> = { accept: 0, ask: 1, defer: 2, refuse: 3 };
-const authOrder: Record<AuthorizationState, number> = {
-  none: 0,
-  user_claimed: 1,
-  authenticated: 2,
-  validated: 3,
-  confirmed: 4
+export const AUTHORIZATION_STATES = ["none", "user_claimed", "authenticated", "validated", "confirmed"] as const;
+export const AUTHORIZATION_STATE_TABLE: Record<AuthorizationState, {
+  rank: number;
+  privateReadAllowed: boolean;
+  writeSchemaAcceptAllowed: boolean;
+  writeExecutionAllowed: boolean;
+}> = {
+  none: { rank: 0, privateReadAllowed: false, writeSchemaAcceptAllowed: false, writeExecutionAllowed: false },
+  user_claimed: { rank: 1, privateReadAllowed: false, writeSchemaAcceptAllowed: false, writeExecutionAllowed: false },
+  authenticated: { rank: 2, privateReadAllowed: true, writeSchemaAcceptAllowed: false, writeExecutionAllowed: false },
+  validated: { rank: 3, privateReadAllowed: true, writeSchemaAcceptAllowed: true, writeExecutionAllowed: false },
+  confirmed: { rank: 4, privateReadAllowed: true, writeSchemaAcceptAllowed: true, writeExecutionAllowed: true }
 };
 
 function stricterRoute(left: ToolPrecheckAction, right: ToolPrecheckAction): ToolPrecheckAction {
   return routeOrder[left] >= routeOrder[right] ? left : right;
+}
+
+export function canonicalizeAuthorizationState(value: string | undefined | null): AuthorizationState {
+  const normalized = (value ?? "").trim().toLowerCase().replace(/[-\s]+/g, "_");
+  if ((AUTHORIZATION_STATES as readonly string[]).includes(normalized)) return normalized as AuthorizationState;
+  const aliases: Record<string, AuthorizationState> = {
+    "": "none",
+    anonymous: "none",
+    unauthenticated: "none",
+    unauthorized: "none",
+    unknown: "none",
+    claimed: "user_claimed",
+    requested: "user_claimed",
+    user_requested: "user_claimed",
+    logged_in: "authenticated",
+    login: "authenticated",
+    session: "authenticated",
+    verified_identity: "authenticated",
+    verified: "validated",
+    eligible: "validated",
+    policy_validated: "validated",
+    ownership_validated: "validated",
+    approved: "confirmed",
+    confirmation: "confirmed",
+    explicit_confirmation: "confirmed",
+    user_confirmed: "confirmed"
+  };
+  return aliases[normalized] ?? "none";
+}
+
+export function authStateAtLeast(state: AuthorizationState, minimum: AuthorizationState): boolean {
+  return AUTHORIZATION_STATE_TABLE[state].rank >= AUTHORIZATION_STATE_TABLE[minimum].rank;
+}
+
+export function privateReadAllowed(state: AuthorizationState): boolean {
+  return AUTHORIZATION_STATE_TABLE[state].privateReadAllowed;
+}
+
+export function writeSchemaAcceptAllowed(state: AuthorizationState): boolean {
+  return AUTHORIZATION_STATE_TABLE[state].writeSchemaAcceptAllowed;
+}
+
+export function writeExecutionAllowed(state: AuthorizationState): boolean {
+  return AUTHORIZATION_STATE_TABLE[state].writeExecutionAllowed;
 }
 
 function aixForRoute(route: ToolPrecheckAction, hardBlockers: string[]): ToolPrecheckResult["aix"] {
@@ -483,13 +533,13 @@ export function validateToolPrecheckEvent(event: ToolPrecheckEvent): { valid: bo
   if (event.schema_version !== TOOL_PRECHECK_SCHEMA_VERSION) errors.push({ path: "schema_version", message: "Unsupported schema_version." });
   if (!event.tool_name?.trim()) errors.push({ path: "tool_name", message: "tool_name must be non-empty." });
   if (!["public_read", "private_read", "write", "unknown"].includes(event.tool_category)) errors.push({ path: "tool_category", message: "Unsupported tool_category." });
-  if (!["none", "user_claimed", "authenticated", "validated", "confirmed"].includes(event.authorization_state)) errors.push({ path: "authorization_state", message: "Unsupported authorization_state." });
+  if (!(AUTHORIZATION_STATES as readonly string[]).includes(event.authorization_state)) errors.push({ path: "authorization_state", message: "Unsupported authorization_state." });
   if (!Array.isArray(event.evidence_refs)) errors.push({ path: "evidence_refs", message: "evidence_refs must be an array." });
   if (!["accept", "ask", "defer", "refuse"].includes(event.recommended_route)) errors.push({ path: "recommended_route", message: "Unsupported recommended_route." });
-  if (event.tool_category === "write" && event.recommended_route === "accept" && !["validated", "confirmed"].includes(event.authorization_state)) {
+  if (event.tool_category === "write" && event.recommended_route === "accept" && !writeSchemaAcceptAllowed(event.authorization_state)) {
     errors.push({ path: "authorization_state", message: "write accept requires validated or confirmed authorization." });
   }
-  if (event.tool_category === "private_read" && event.recommended_route === "accept" && !["authenticated", "validated", "confirmed"].includes(event.authorization_state)) {
+  if (event.tool_category === "private_read" && event.recommended_route === "accept" && !privateReadAllowed(event.authorization_state)) {
     errors.push({ path: "authorization_state", message: "private_read accept requires authenticated, validated, or confirmed authorization." });
   }
   if (event.tool_category === "unknown" && event.recommended_route === "accept") {
@@ -528,7 +578,7 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
     aanaRoute = "accept";
     reasons.push("public_read_allowed_without_identity_auth");
   } else if (effectiveCategory === "private_read") {
-    if (authOrder[event.authorization_state] >= authOrder.authenticated) {
+    if (privateReadAllowed(event.authorization_state)) {
       aanaRoute = "accept";
       reasons.push("private_read_has_authenticated_context");
     } else if (event.authorization_state === "user_claimed") {
@@ -541,12 +591,12 @@ export function checkToolPrecheck(event: ToolPrecheckEvent): ToolPrecheckResult 
       hardBlockers.push("private_read_not_authenticated");
     }
   } else if (event.tool_category === "write") {
-    if (isHighRiskWrite(event) && authOrder[event.authorization_state] < authOrder.confirmed) {
-      aanaRoute = authOrder[event.authorization_state] >= authOrder.user_claimed ? "ask" : "defer";
+    if (isHighRiskWrite(event) && !writeExecutionAllowed(event.authorization_state)) {
+      aanaRoute = authStateAtLeast(event.authorization_state, "user_claimed") ? "ask" : "defer";
       reasons.push("high_risk_write_requires_explicit_confirmation");
       hardBlockers.push("high_risk_write_missing_explicit_confirmation", "write_missing_explicit_confirmation");
       if (event.authorization_state === "user_claimed" || event.authorization_state === "authenticated") hardBlockers.push("write_missing_validation_or_confirmation");
-    } else if (authOrder[event.authorization_state] >= authOrder.confirmed) {
+    } else if (writeExecutionAllowed(event.authorization_state)) {
       aanaRoute = "accept";
       reasons.push("write_has_explicit_confirmation");
     } else if (event.authorization_state === "validated") {

@@ -69,6 +69,18 @@ class CanonicalIDTests(unittest.TestCase):
             self.assertTrue(canonical_ids.ROUTE_TABLE[route]["description"])
             self.assertTrue(canonical_ids.ROUTE_TABLE[route]["next_step"])
 
+    def test_authorization_state_table_freezes_order_and_transitions(self):
+        self.assertEqual(
+            canonical_ids.AUTHORIZATION_STATES,
+            ("none", "user_claimed", "authenticated", "validated", "confirmed"),
+        )
+        self.assertEqual(tuple(canonical_ids.AUTHORIZATION_STATE_TABLE), canonical_ids.AUTHORIZATION_STATES)
+        self.assertFalse(canonical_ids.AUTHORIZATION_STATE_TABLE["user_claimed"]["private_read_allowed"])
+        self.assertTrue(canonical_ids.AUTHORIZATION_STATE_TABLE["authenticated"]["private_read_allowed"])
+        self.assertTrue(canonical_ids.AUTHORIZATION_STATE_TABLE["validated"]["write_schema_accept_allowed"])
+        self.assertFalse(canonical_ids.AUTHORIZATION_STATE_TABLE["validated"]["write_execution_allowed"])
+        self.assertTrue(canonical_ids.AUTHORIZATION_STATE_TABLE["confirmed"]["write_execution_allowed"])
+
 
 if __name__ == "__main__":
     unittest.main()

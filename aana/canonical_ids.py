@@ -52,6 +52,7 @@ ROUTE_ALIASES = dict(_registry.ROUTE_ALIASES)
 TOOL_PRECHECK_ROUTES = _registry.TOOL_PRECHECK_ROUTES
 TOOL_CATEGORIES = _registry.TOOL_CATEGORIES
 AUTHORIZATION_STATES = _registry.AUTHORIZATION_STATES
+AUTHORIZATION_STATE_TABLE = _registry.AUTHORIZATION_STATE_TABLE
 RISK_DOMAINS = _registry.RISK_DOMAINS
 TOOL_EVIDENCE_TYPES = _registry.TOOL_EVIDENCE_TYPES
 TOOL_EVIDENCE_TYPE_ALIASES = dict(_registry.TOOL_EVIDENCE_TYPE_ALIASES)
@@ -185,6 +186,11 @@ def validate_canonical_ids() -> dict[str, Any]:
         _add_issue(issues, "tool_precheck_route_drift", "pre-tool route order must match canonical pre-tool routes.")
     if tuple(AUTH_STATES_BY_ORDER) != AUTHORIZATION_STATES:
         _add_issue(issues, "authorization_state_drift", "pre-tool authorization order must match canonical authorization states.")
+    if tuple(AUTHORIZATION_STATE_TABLE) != AUTHORIZATION_STATES:
+        _add_issue(issues, "authorization_state_table_order_drift", "authorization-state table order must match canonical authorization states.")
+    for expected_rank, state in enumerate(AUTHORIZATION_STATES):
+        if AUTHORIZATION_STATE_TABLE[state].get("rank") != expected_rank:
+            _add_issue(issues, "authorization_state_rank_drift", "authorization-state ranks must match canonical order.")
     if set(sdk.TOOL_CATEGORIES) != set(TOOL_CATEGORIES):
         _add_issue(issues, "sdk_tool_category_drift", "SDK tool categories must match canonical IDs.")
     if set(sdk.AUTHORIZATION_STATES) != set(AUTHORIZATION_STATES):
@@ -242,6 +248,8 @@ def validate_canonical_ids() -> dict[str, Any]:
             "action_routes": list(ACTION_ROUTES),
             "route_table": ROUTE_TABLE,
             "tool_precheck_routes": list(TOOL_PRECHECK_ROUTES),
+            "authorization_states": list(AUTHORIZATION_STATES),
+            "authorization_state_table": AUTHORIZATION_STATE_TABLE,
             "tool_evidence_types": list(TOOL_EVIDENCE_TYPES),
             "runtime_modes": list(RUNTIME_MODES),
         },
