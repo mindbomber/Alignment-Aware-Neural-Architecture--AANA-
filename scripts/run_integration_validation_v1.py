@@ -469,7 +469,7 @@ console.log(JSON.stringify(output));
 class FastAPIRunner:
     def __init__(self) -> None:
         self.port = _free_port()
-        self.token = "integration-validation-v1-token"
+        self.token = "redacted-integration-validation-v1-token"
         AUDIT_DIR.mkdir(parents=True, exist_ok=True)
         self.audit_log = AUDIT_DIR / "integration-validation-v1-fastapi.jsonl"
         self.stdout_path = AUDIT_DIR / "integration-validation-v1-fastapi.stdout.log"

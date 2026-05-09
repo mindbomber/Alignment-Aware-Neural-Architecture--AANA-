@@ -387,7 +387,7 @@ def validate_middleware_decision_shape() -> dict[str, Any]:
 
 def validate_fastapi_policy_service() -> dict[str, Any]:
     port = _free_port()
-    token = "agent-integration-smoke-token"
+    token = "redacted-agent-integration-smoke-token"
     audit_log = ROOT / "eval_outputs" / "audit" / "agent-integrations-fastapi-smoke.jsonl"
     audit_log.parent.mkdir(parents=True, exist_ok=True)
     if audit_log.exists():

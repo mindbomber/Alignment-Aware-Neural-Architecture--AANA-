@@ -549,7 +549,7 @@ def validate_agent_action_contract_v1_compatibility():
         if not _contract_event_has_frozen_fields(example):
             issues.append(_issue("error", f"eval_pipeline.fastapi_app.{example_name}", "FastAPI OpenAPI example is missing one or more frozen fields."))
     try:
-        app = fastapi_app.create_app(auth_token="contract-freeze-test-token")
+        app = fastapi_app.create_app(auth_token="redacted-contract-freeze-test-token")
         openapi = app.openapi()
         request_body = openapi["paths"]["/pre-tool-check"]["post"]["requestBody"]["content"]["application/json"]
         examples = request_body.get("examples") or {}
