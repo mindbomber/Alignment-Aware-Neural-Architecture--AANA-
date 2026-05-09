@@ -22,6 +22,19 @@
     "deployment_readiness",
     "incident_response_update"
   ],
+  "sdk_adapter_aliases": {
+    "access": "access_permission_change",
+    "billing": "invoice_billing_reply",
+    "code_review": "code_change_review",
+    "crm": "crm_support_reply",
+    "crm_support": "crm_support_reply",
+    "data_export": "data_export_guardrail",
+    "deployment": "deployment_readiness",
+    "draft": "support_reply",
+    "email": "email_send_guardrail",
+    "incident": "incident_response_update",
+    "ticket": "ticket_update_checker"
+  },
   "required_evidence_connectors": [
     "crm_support",
     "ticketing",

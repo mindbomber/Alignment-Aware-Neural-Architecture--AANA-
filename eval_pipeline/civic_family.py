@@ -10,29 +10,18 @@ from eval_pipeline import adapter_gallery, agent_api, evidence_integrations
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CIVIC_FAMILY_VERSION = "0.1"
+CIVIC_BUNDLE_MANIFEST = ROOT / "aana" / "bundles" / "government_civic" / "manifest.json"
 
-CIVIC_CORE_ADAPTERS = (
-    "procurement_vendor_risk",
-    "grant_application_review",
-    "insurance_claim_triage",
-    "public_records_privacy_redaction",
-    "policy_memo_grounding",
-    "publication_check",
-    "casework_response_checker",
-    "foia_public_records_response_checker",
-)
+def _bundle_manifest():
+    return json.loads(CIVIC_BUNDLE_MANIFEST.read_text(encoding="utf-8"))
 
-CIVIC_EVIDENCE_CONNECTORS = {
-    "program_rules": "civic_program_rules",
-    "submitted_documents": "civic_program_rules",
-    "rubrics": "civic_program_rules",
-    "vendor_profiles": "civic_vendor_profiles",
-    "public_law_policy_sources": "public_law_policy_sources",
-    "redaction_classification_registry": "redaction_classification_registry",
-    "case_ticket_history": "civic_case_history",
-    "benefits_claims": "benefits_claims",
-    "source_registry": "civic_source_registry",
-}
+
+def _connector_map(bundle):
+    return {connector: connector for connector in bundle.get("required_evidence_connectors", [])}
+
+
+CIVIC_CORE_ADAPTERS = tuple(_bundle_manifest().get("core_adapter_ids", []))
+CIVIC_EVIDENCE_CONNECTORS = _connector_map(_bundle_manifest())
 
 CIVIC_AGENT_SKILLS = {
     "benefits_eligibility_boundary": "examples/openclaw/aana-benefits-eligibility-boundary-skill/SKILL.md",

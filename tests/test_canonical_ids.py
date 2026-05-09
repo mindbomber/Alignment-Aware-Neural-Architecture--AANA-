@@ -2,7 +2,9 @@ import unittest
 
 from aana import canonical_ids
 from aana.adapters import FAMILY_IDS
-from aana.bundles import BUNDLE_ALIASES, BUNDLE_IDS, aliases_for_bundle, canonicalize_bundle_id
+from aana.bundles import BUNDLE_ALIASES, BUNDLE_IDS, aliases_for_bundle, bundle_adapter_aliases, canonicalize_bundle_id, load_bundle
+from aana import sdk
+from eval_pipeline import adapter_gallery, civic_family, enterprise_family
 from eval_pipeline import agent_contract
 
 
@@ -22,6 +24,18 @@ class CanonicalIDTests(unittest.TestCase):
 
         self.assertEqual(canonicalize_bundle_id("civic_government"), "government_civic")
         self.assertEqual(aliases_for_bundle("government_civic"), ["civic_government"])
+
+    def test_sdk_and_gallery_bundle_data_come_from_manifests(self):
+        enterprise = load_bundle("enterprise")
+        civic = load_bundle("government_civic")
+
+        self.assertEqual(bundle_adapter_aliases("enterprise"), enterprise["sdk_adapter_aliases"])
+        self.assertEqual(sdk.FAMILY_ADAPTER_ALIASES["enterprise"], enterprise["sdk_adapter_aliases"])
+        self.assertEqual(sdk.FAMILY_ADAPTER_ALIASES["support"], enterprise["sdk_adapter_aliases"])
+        self.assertEqual(adapter_gallery.BUNDLE_PACKS["enterprise"], set(enterprise["core_adapter_ids"]))
+        self.assertEqual(tuple(enterprise_family.ENTERPRISE_CORE_ADAPTERS), tuple(enterprise["core_adapter_ids"]))
+        self.assertEqual(set(enterprise_family.ENTERPRISE_EVIDENCE_CONNECTORS.values()), set(enterprise["required_evidence_connectors"]))
+        self.assertEqual(tuple(civic_family.CIVIC_CORE_ADAPTERS), tuple(civic["core_adapter_ids"]))
 
     def test_alias_drift_is_reported(self):
         issues = []

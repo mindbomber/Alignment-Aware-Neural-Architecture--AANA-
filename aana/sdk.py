@@ -23,6 +23,7 @@ from aana.canonical_ids import (
     TOOL_PRECHECK_ROUTES as CANONICAL_TOOL_PRECHECK_ROUTES,
     TRUST_TIERS,
 )
+from aana.bundles import bundle_adapter_aliases
 from eval_pipeline import agent_api, agent_contract, workflow_contract
 from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_qa_evidence_coverage
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
@@ -42,42 +43,10 @@ class AANAClientError(RuntimeError):
 
 
 FAMILY_ADAPTER_ALIASES = {
-    "support": {
-        "draft": "support_reply",
-        "crm": "crm_support_reply",
-        "email": "email_send_guardrail",
-        "ticket": "ticket_update_checker",
-        "billing": "invoice_billing_reply",
-    },
-    "enterprise": {
-        "access": "access_permission_change",
-        "code_review": "code_change_review",
-        "crm_support": "crm_support_reply",
-        "data_export": "data_export_guardrail",
-        "deployment": "deployment_readiness",
-        "email": "email_send_guardrail",
-        "incident": "incident_response_update",
-        "ticket": "ticket_update_checker",
-    },
-    "personal_productivity": {
-        "booking": "booking_purchase_guardrail",
-        "calendar": "calendar_scheduling",
-        "email": "email_send_guardrail",
-        "file": "file_operation_guardrail",
-        "meeting": "meeting_summary_checker",
-        "publication": "publication_check",
-        "research": "research_answer_grounding",
-    },
-    "government_civic": {
-        "casework": "casework_response_checker",
-        "foia": "foia_public_records_response_checker",
-        "grant": "grant_application_review",
-        "insurance": "insurance_claim_triage",
-        "policy_memo": "policy_memo_grounding",
-        "procurement": "procurement_vendor_risk",
-        "publication": "publication_check",
-        "records": "public_records_privacy_redaction",
-    },
+    "enterprise": bundle_adapter_aliases("enterprise"),
+    "support": bundle_adapter_aliases("enterprise"),
+    "personal_productivity": bundle_adapter_aliases("personal_productivity"),
+    "government_civic": bundle_adapter_aliases("government_civic"),
 }
 
 

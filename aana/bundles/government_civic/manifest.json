@@ -23,6 +23,16 @@
     "casework_response_checker",
     "foia_public_records_response_checker"
   ],
+  "sdk_adapter_aliases": {
+    "casework": "casework_response_checker",
+    "foia": "foia_public_records_response_checker",
+    "grant": "grant_application_review",
+    "insurance": "insurance_claim_triage",
+    "policy_memo": "policy_memo_grounding",
+    "procurement": "procurement_vendor_risk",
+    "publication": "publication_check",
+    "records": "public_records_privacy_redaction"
+  },
   "required_evidence_connectors": [
     "civic_program_rules",
     "civic_vendor_profiles",

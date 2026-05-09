@@ -27,3 +27,17 @@ def load_bundle(bundle_id: str) -> dict[str, Any]:
 
 def load_bundles() -> dict[str, dict[str, Any]]:
     return {bundle_id: load_bundle(bundle_id) for bundle_id in BUNDLE_IDS}
+
+
+def bundle_adapter_aliases(bundle_id: str) -> dict[str, str]:
+    payload = load_bundle(bundle_id)
+    aliases = payload.get("sdk_adapter_aliases", {})
+    return dict(aliases) if isinstance(aliases, dict) else {}
+
+
+def bundle_ids_for_adapter(adapter_id: str) -> list[str]:
+    bundle_ids = []
+    for bundle_id, payload in load_bundles().items():
+        if adapter_id in payload.get("core_adapter_ids", []):
+            bundle_ids.append(bundle_id)
+    return sorted(bundle_ids)

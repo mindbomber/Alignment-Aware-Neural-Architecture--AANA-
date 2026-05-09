@@ -9,24 +9,40 @@ from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-ADAPTER_FAMILY_IDS = (
-    "privacy_pii",
-    "grounded_qa",
-    "agent_tool_use",
-    "governance_compliance",
-    "security_devops",
-    "domain_risk",
-)
+def _load_json(path: pathlib.Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _manifest_dirs(root: pathlib.Path) -> list[pathlib.Path]:
+    return sorted(path.parent for path in root.glob("*/manifest.json") if path.is_file())
+
+
+def _adapter_family_ids_from_manifests() -> tuple[str, ...]:
+    ids = []
+    for directory in _manifest_dirs(ROOT / "aana" / "adapters"):
+        payload = _load_json(directory / "manifest.json")
+        ids.append(str(payload.get("family_id") or directory.name))
+    return tuple(ids)
+
+
+def _bundle_ids_and_aliases_from_manifests() -> tuple[tuple[str, ...], dict[str, str]]:
+    ids: list[str] = []
+    aliases: dict[str, str] = {}
+    for directory in _manifest_dirs(ROOT / "aana" / "bundles"):
+        payload = _load_json(directory / "manifest.json")
+        bundle_id = str(payload.get("bundle_id") or directory.name)
+        canonical_id = str(payload.get("canonical_id") or bundle_id)
+        ids.append(canonical_id)
+        for alias in payload.get("aliases", []):
+            if isinstance(alias, str) and alias.strip():
+                aliases[alias.strip()] = canonical_id
+    return tuple(ids), aliases
+
+
+ADAPTER_FAMILY_IDS = _adapter_family_ids_from_manifests()
 ADAPTER_FAMILY_ALIASES: dict[str, str] = {}
 
-BUNDLE_IDS = (
-    "enterprise",
-    "personal_productivity",
-    "government_civic",
-)
-BUNDLE_ALIASES = {
-    "civic_government": "government_civic",
-}
+BUNDLE_IDS, BUNDLE_ALIASES = _bundle_ids_and_aliases_from_manifests()
 
 ACTION_ROUTES = (
     "accept",
@@ -205,6 +221,11 @@ def _schema_enum(path: pathlib.Path, *keys: str) -> list[str]:
 
 def validate_canonical_ids() -> dict[str, Any]:
     issues: list[dict[str, str]] = []
+    bundle_manifests = {
+        str(payload.get("bundle_id") or path.parent.name): payload
+        for path in sorted((ROOT / "aana" / "bundles").glob("*/manifest.json"))
+        for payload in [_load_json(path)]
+    }
     for surface, canonical_ids, aliases in (
         ("adapter_family", ADAPTER_FAMILY_IDS, ADAPTER_FAMILY_ALIASES),
         ("bundle", BUNDLE_IDS, BUNDLE_ALIASES),
@@ -218,7 +239,9 @@ def validate_canonical_ids() -> dict[str, Any]:
     from aana.adapters import FAMILY_IDS
     from aana.bundles import BUNDLE_ALIASES as CODE_BUNDLE_ALIASES
     from aana.bundles import BUNDLE_IDS as CODE_BUNDLE_IDS
+    from eval_pipeline import adapter_gallery
     from eval_pipeline import agent_contract, workflow_contract
+    from eval_pipeline import civic_family, enterprise_family
     from eval_pipeline.pre_tool_call_gate import AUTH_STATES_BY_ORDER, ROUTE_ORDER
 
     if tuple(FAMILY_IDS) != ADAPTER_FAMILY_IDS:
@@ -245,6 +268,28 @@ def validate_canonical_ids() -> dict[str, Any]:
         _add_issue(issues, "sdk_runtime_mode_drift", "SDK execution modes must match canonical runtime modes.")
     if set(sdk.RISK_DOMAINS) != set(RISK_DOMAINS):
         _add_issue(issues, "sdk_risk_domain_drift", "SDK risk domains must match canonical IDs.")
+    expected_sdk_aliases = {
+        "enterprise": dict(bundle_manifests["enterprise"].get("sdk_adapter_aliases", {})),
+        "support": dict(bundle_manifests["enterprise"].get("sdk_adapter_aliases", {})),
+        "personal_productivity": dict(bundle_manifests["personal_productivity"].get("sdk_adapter_aliases", {})),
+        "government_civic": dict(bundle_manifests["government_civic"].get("sdk_adapter_aliases", {})),
+    }
+    if sdk.FAMILY_ADAPTER_ALIASES != expected_sdk_aliases:
+        _add_issue(issues, "sdk_alias_manifest_drift", "SDK adapter aliases must be derived from bundle manifest sdk_adapter_aliases.")
+    expected_bundle_packs = {
+        bundle_id: set(payload.get("core_adapter_ids", []))
+        for bundle_id, payload in bundle_manifests.items()
+    }
+    if adapter_gallery.BUNDLE_PACKS != expected_bundle_packs:
+        _add_issue(issues, "gallery_pack_manifest_drift", "Adapter gallery pack membership must be derived from bundle manifest core_adapter_ids.")
+    if tuple(enterprise_family.ENTERPRISE_CORE_ADAPTERS) != tuple(bundle_manifests["enterprise"].get("core_adapter_ids", [])):
+        _add_issue(issues, "enterprise_core_manifest_drift", "Enterprise family core adapters must come from the enterprise bundle manifest.")
+    if set(enterprise_family.ENTERPRISE_EVIDENCE_CONNECTORS.values()) != set(bundle_manifests["enterprise"].get("required_evidence_connectors", [])):
+        _add_issue(issues, "enterprise_connector_manifest_drift", "Enterprise evidence connectors must come from the enterprise bundle manifest.")
+    if tuple(civic_family.CIVIC_CORE_ADAPTERS) != tuple(bundle_manifests["government_civic"].get("core_adapter_ids", [])):
+        _add_issue(issues, "civic_core_manifest_drift", "Civic family core adapters must come from the government_civic bundle manifest.")
+    if set(civic_family.CIVIC_EVIDENCE_CONNECTORS.values()) != set(bundle_manifests["government_civic"].get("required_evidence_connectors", [])):
+        _add_issue(issues, "civic_connector_manifest_drift", "Civic evidence connectors must come from the government_civic bundle manifest.")
 
     schema_path = ROOT / "schemas" / "agent_tool_precheck.schema.json"
     schema_properties = json.loads(schema_path.read_text(encoding="utf-8"))["properties"]
