@@ -124,7 +124,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling-singleturn",
+          "config": "func_calling_singleturn",
           "split": "train",
           "allowed_use": "calibration"
         }
@@ -132,7 +132,7 @@
       "reporting_sources": [
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation"
         },
@@ -179,7 +179,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation"
         }
@@ -282,7 +282,7 @@
       "calibration_sources": [
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling-singleturn",
+          "config": "func_calling_singleturn",
           "split": "train",
           "allowed_use": "calibration"
         }
@@ -290,7 +290,7 @@
       "reporting_sources": [
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation"
         },
@@ -323,7 +323,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling-singleturn",
+          "config": "func_calling_singleturn",
           "split": "train",
           "allowed_use": "calibration"
         }
@@ -337,7 +337,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation"
         }

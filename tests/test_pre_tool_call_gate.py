@@ -120,3 +120,30 @@ def test_agent_action_contract_v1_still_accepts_schema_version_compatibility_mar
 
     assert result["recommended_action"] == "accept"
     assert result["gate_decision"] == "pass"
+
+
+def test_public_directory_search_users_is_not_private_read_without_identity_arguments():
+    event = {
+        "tool_name": "github_search_users",
+        "tool_category": "public_read",
+        "authorization_state": "none",
+        "evidence_refs": [
+            {
+                "source_id": "policy.public_directory_search",
+                "kind": "policy",
+                "trust_tier": "verified",
+                "redaction_status": "public",
+                "freshness": {"status": "fresh"},
+                "provenance": "unit",
+            }
+        ],
+        "risk_domain": "devops",
+        "proposed_arguments": {"q": "public query"},
+        "recommended_route": "accept",
+    }
+
+    result = gate_pre_tool_call(event)
+
+    assert result["recommended_action"] == "accept"
+    assert result["gate_decision"] == "pass"
+    assert "public_read_identity_bound_misclassified" not in result["hard_blockers"]

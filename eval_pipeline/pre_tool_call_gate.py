@@ -25,6 +25,7 @@ from eval_pipeline.authorization_state import (
     write_schema_accept_allowed,
 )
 from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, normalize_evidence_ref
+from eval_pipeline.semantic_verifier import run_tool_semantic_verifier
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -182,9 +183,12 @@ def is_identity_bound_read(event: dict[str, Any]) -> bool:
     if str(event.get("tool_category") or "") != "public_read":
         return False
     tool_name = str(event.get("tool_name") or "").lower()
+    name_words = _words(tool_name)
     args = event.get("proposed_arguments") if isinstance(event.get("proposed_arguments"), dict) else {}
     if any(key in args for key in IDENTITY_BOUND_ARGUMENT_KEYS):
         return True
+    if name_words & {"search", "list"} and not any(key in args for key in IDENTITY_BOUND_ARGUMENT_KEYS):
+        return False
     if any(hint in tool_name for hint in PRIVATE_READ_HINTS):
         return True
     return False
@@ -426,6 +430,30 @@ def route_from_v2(
         blockers = sorted(set(hard_blockers + ["evidence_missing_authorization"]))
         return "defer", reasons + ["evidence_declares_missing_authorization"], blockers
 
+    evidence_integrity_blockers = {
+        "contradictory_evidence",
+        "evidence_marks_missing_information",
+        "evidence_missing_authorization",
+        "evidence_pii_leak",
+        "evidence_secret_leak",
+        "invalid_retrieved_at",
+        "malformed_evidence_ref",
+        "missing_evidence_refs",
+        "missing_source_id",
+        "public_read_identity_bound_misclassified",
+        "stale_evidence",
+        "unsafe_redaction_status",
+    }
+    if set(hard_blockers) & evidence_integrity_blockers:
+        v1_route = str(v1_result.get("recommended_action") or "defer")
+        if v1_route not in ROUTE_ORDER:
+            v1_route = "defer"
+        return (
+            stricter_route(v1_route, "defer"),
+            reasons + ["v2_preserved_v1_evidence_integrity_blockers"],
+            hard_blockers,
+        )
+
     if model_score is not None:
         reasons.append("tau2_action_taxonomy_model_scored")
         non_recoverable = {
@@ -631,6 +659,7 @@ def gate_pre_tool_call_v2(
     event: dict[str, Any],
     schema_path: pathlib.Path | str = DEFAULT_SCHEMA,
     model_path: pathlib.Path | str = DEFAULT_TAU2_MODEL,
+    semantic_verifier: Any | None = None,
 ) -> dict[str, Any]:
     """Run the τ²-calibrated v2 pre-tool-call gate.
 
@@ -668,6 +697,14 @@ def gate_pre_tool_call_v2(
     v1_result = gate_pre_tool_call(normalized, schema_path)
     model_score = score_with_tau2_model(normalized, v1_result, model_path)
     route, reasons, hard_blockers = route_from_v2(normalized, v1_result, tool_intent, model_score)
+    semantic_result = run_tool_semantic_verifier(semantic_verifier, normalized, v1_result)
+    if semantic_result is not None:
+        reasons.append("optional_semantic_verifier_scored_tool_call")
+        semantic_route = semantic_result.get("route")
+        if semantic_route in ROUTE_ORDER and semantic_route != "accept":
+            route = stricter_route(route, semantic_route)
+            if "semantic_tool_use_risk" not in hard_blockers:
+                hard_blockers.append("semantic_tool_use_risk")
     final_route = stricter_route(route, normalized["recommended_route"])
     if final_route != route:
         reasons.append(f"runtime_recommended_stricter_route:{normalized['recommended_route']}")
@@ -694,6 +731,7 @@ def gate_pre_tool_call_v2(
         "evidence_ref_count": len(normalized.get("evidence_refs") or []),
         "evidence_integrity": analyze_tool_evidence_refs(normalized.get("evidence_refs") or [], tool_category=normalized["tool_category"]),
         "authorization_report": authorization_state_from_evidence(normalized),
+        "semantic_verifier": semantic_result,
         "tau2_action_taxonomy": model_score,
         "v1_gate_result": {
             "gate_decision": v1_result.get("gate_decision"),

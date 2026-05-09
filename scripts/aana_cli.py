@@ -38,6 +38,7 @@ from eval_pipeline.production_candidate_evidence_pack import (
     validate_production_candidate_evidence_pack,
 )
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
+from eval_pipeline.semantic_verifier import build_semantic_verifier
 from aana.sdk import architecture_decision, with_architecture_decision
 
 
@@ -190,6 +191,16 @@ def cli_command_matrix():
             "writes": ["--audit-log"],
             "dry_run": False,
             "example": "python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/aana-audit.jsonl --shadow-mode",
+        },
+        {
+            "command": "pre-tool-check",
+            "category": "agent",
+            "json_output": True,
+            "public_api": "agent_action_contract",
+            "reads": ["--event", "--gate-version", "--validate-only", "--strict-validation"],
+            "writes": ["--audit-log"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py pre-tool-check --event examples/agent_tool_precheck_send_email.json --audit-log eval_outputs/audit/aana-audit.jsonl",
         },
         {
             "command": "workflow-check",
@@ -844,7 +855,13 @@ def command_agent_check(args):
         if not report["valid"]:
             print_json({"event_validation": report})
             return 1
-    response = agent_api.check_event(event, gallery_path=args.gallery, adapter_id=args.adapter_id)
+    response = agent_api.check_event(
+        event,
+        gallery_path=args.gallery,
+        adapter_id=args.adapter_id,
+        semantic_verifier_kind=args.semantic_verifier,
+        semantic_model=args.semantic_model,
+    )
     response.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
     if args.shadow_mode:
         response = agent_api.apply_shadow_mode(response)
@@ -871,26 +888,48 @@ def command_pre_tool_check(args):
         print_json(response)
         return 0 if response["valid"] else 1
     if validation_errors and args.strict_validation:
+        result = {
+            "gate_decision": "fail",
+            "recommended_action": "refuse",
+            "hard_blockers": ["schema_validation_failed"],
+            "aix": {"score": 0.0, "decision": "refuse", "hard_blockers": ["schema_validation_failed"]},
+            "audit_metadata": {"latency_ms": round((time.perf_counter() - started_at) * 1000, 3)},
+        }
+        record = agent_api.audit_tool_precheck(
+            event,
+            result,
+            latency_ms=result["audit_metadata"]["latency_ms"],
+            surface="cli",
+            route="pre-tool-check",
+        )
+        if args.audit_log:
+            agent_api.append_audit_record(args.audit_log, record)
         print_json(
             {
                 "valid": False,
                 "errors": validation_errors,
                 "schema_version": "aana.agent_tool_precheck.v1",
-                "architecture_decision": architecture_decision(
-                    {
-                        "gate_decision": "fail",
-                        "recommended_action": "refuse",
-                        "hard_blockers": ["schema_validation_failed"],
-                        "aix": {"score": 0.0, "decision": "refuse", "hard_blockers": ["schema_validation_failed"]},
-                    },
-                    event,
-                ),
+                "architecture_decision": architecture_decision(result, event, audit_record=record),
             }
         )
         return 1
-    result = gate_pre_tool_call_v2(event) if args.gate_version == "v2" else gate_pre_tool_call(event)
+    semantic_verifier = build_semantic_verifier(args.semantic_verifier, model=args.semantic_model)
+    result = (
+        gate_pre_tool_call_v2(event, semantic_verifier=semantic_verifier)
+        if args.gate_version == "v2"
+        else gate_pre_tool_call(event)
+    )
     result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
-    response = with_architecture_decision(result, event)
+    record = agent_api.audit_tool_precheck(
+        event,
+        result,
+        latency_ms=result["audit_metadata"]["latency_ms"],
+        surface="cli",
+        route="pre-tool-check",
+    )
+    if args.audit_log:
+        agent_api.append_audit_record(args.audit_log, record)
+    response = with_architecture_decision(result, event, audit_record=record)
     print_json(response)
     return 0 if response.get("gate_decision") == "pass" else 1
 
@@ -903,7 +942,7 @@ def command_evidence_pack(args):
         require_existing_artifacts=args.require_existing_artifacts,
     )
     response = {
-        "architecture_claim": "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.",
+        "architecture_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
         "claim_boundary": manifest.get("claim_boundary", {}),
         "evidence_status": manifest.get("evidence_status"),
         "report_path": manifest.get("report_path"),
@@ -2346,12 +2385,17 @@ def build_parser():
     agent_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
     agent_parser.add_argument("--evidence-registry", default=None, help="Validate structured event evidence against this registry before checking.")
     agent_parser.add_argument("--require-structured-evidence", action="store_true", help="Reject unstructured event evidence strings before checking.")
+    agent_parser.add_argument("--semantic-verifier", choices=["none", "openai"], default="none", help="Optional semantic verifier/reviser layer. Deterministic AANA remains the route/enforcement source of truth.")
+    agent_parser.add_argument("--semantic-model", default=None, help="Optional model for --semantic-verifier openai.")
     agent_parser.add_argument("--shadow-mode", action="store_true", help="Observe and audit what AANA would recommend without returning a blocking exit code.")
     agent_parser.set_defaults(func=command_agent_check)
 
     pre_tool_parser = subparsers.add_parser("pre-tool-check", help="Check an AANA pre-tool-call contract before executing a tool.")
     pre_tool_parser.add_argument("--event", required=True, help="Path to agent tool precheck JSON.")
     pre_tool_parser.add_argument("--gate-version", choices=["v1", "v2"], default="v1", help="Pre-tool-call gate version.")
+    pre_tool_parser.add_argument("--audit-log", default=None, help="Append a redacted audit record to this JSONL file.")
+    pre_tool_parser.add_argument("--semantic-verifier", choices=["none", "openai"], default="none", help="Optional semantic verifier for ambiguous tool calls. It can tighten but not bypass deterministic blockers.")
+    pre_tool_parser.add_argument("--semantic-model", default=None, help="Optional model for --semantic-verifier openai.")
     pre_tool_parser.add_argument("--validate-only", action="store_true", help="Only validate the pre-tool-call contract.")
     pre_tool_parser.add_argument("--strict-validation", action="store_true", help="Return schema validation failures before running the gate.")
     pre_tool_parser.set_defaults(func=command_pre_tool_check)

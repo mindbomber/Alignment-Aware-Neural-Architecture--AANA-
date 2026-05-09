@@ -19,8 +19,8 @@
     },
     {
       "dataset_name": "NousResearch/hermes-function-calling-v1",
-      "calibration": ["func-calling-singleturn/train"],
-      "heldout_validation": ["func-calling/train"],
+      "calibration": ["func_calling_singleturn/train"],
+      "heldout_validation": ["func_calling/train"],
       "external_reporting": []
     },
     {

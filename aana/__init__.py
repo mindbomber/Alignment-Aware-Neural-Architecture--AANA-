@@ -385,6 +385,7 @@ from aana.middleware import (
     wrap_agent_tool,
 )
 from aana.registry import load_registry as load_platform_registry, registry as platform_registry
+from eval_pipeline.semantic_verifier import OpenAISemanticVerifier, build_semantic_verifier
 
 
 __version__ = "0.1.0"
@@ -660,6 +661,8 @@ __all__ = [
     "check_tool_call",
     "check_tool_precheck",
     "check_tool_precheck_v2",
+    "OpenAISemanticVerifier",
+    "build_semantic_verifier",
     "calculate_aix",
     "calculate_handoff_aix",
     "calculate_global_aix",

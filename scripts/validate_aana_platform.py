@@ -35,6 +35,12 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
             "Validate adapter-family manifests, product-bundle manifests, aliases, split isolation, and held-out coverage declarations.",
         ),
         PlatformGate(
+            "bundle_certification",
+            "bundles",
+            [PYTHON, "scripts/validate_bundle_certification.py", "--json"],
+            "Validate enterprise, personal productivity, and government/civic bundle certification gates.",
+        ),
+        PlatformGate(
             "canonical_ids",
             "architecture",
             [PYTHON, "scripts/validate_canonical_ids.py", "--json"],
@@ -101,10 +107,10 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
             "Reject probe-style or answer-key-style benchmark fitting in general AANA paths.",
         ),
         PlatformGate(
-            "benchmark_reporting",
+            "public_claims_policy",
             "claims",
-            [PYTHON, "scripts/validate_benchmark_reporting.py"],
-            "Ensure probe/diagnostic runs are not merged into public AANA benchmark claims.",
+            [PYTHON, "scripts/validate_public_claims_policy.py"],
+            "Ensure public claims use the standard AANA claim and never merge probe/diagnostic results into public claims.",
         ),
         PlatformGate(
             "cross_domain_adapter_families",
@@ -145,12 +151,12 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
     ]
     if include_agent_integrations:
         gates.insert(
-            3,
+            4,
             PlatformGate(
                 "agent_integrations",
                 "integrations",
                 [PYTHON, "scripts/validate_agent_integrations.py", "--json"],
-                "Validate OpenAI-style wrapped tools, FastAPI policy service, MCP tool surface, and controlled-agent eval harness.",
+                "Validate Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP, and controlled-agent eval harness.",
             ),
         )
     return gates

@@ -8,6 +8,7 @@
     "require_result_label": true,
     "require_limitations_for_public_claims": true,
     "do_not_claim_raw_agent_performance_engine": true,
+    "do_not_claim_raw_agent_performance_superiority": true,
     "publish_limitations_alongside_wins": true,
     "allowed_scope_labels": [
       "public_general_result",
@@ -15,10 +16,11 @@
       "engineering_smoke_only"
     ],
     "allowed_result_labels": [
-      "measured",
+      "calibration",
       "diagnostic",
-      "held-out",
-      "probe-only"
+      "heldout",
+      "probe",
+      "external_reporting"
     ]
   },
   "benchmark_reports": [
@@ -27,7 +29,7 @@
       "benchmark": "External agent-action trace comparison",
       "run_type": "general",
       "scope_label": "public_general_result",
-      "result_label": "measured",
+      "result_label": "external_reporting",
       "summary": "AANA is reported as a runtime action-gating architecture evaluated on externally sourced traces with policy-derived labels.",
       "public_claim": true,
       "public_claim_eligible": true,
@@ -54,7 +56,7 @@
       "benchmark": "tau2-bench diagnostic probe experiments",
       "run_type": "diagnostic_probe",
       "scope_label": "diagnostic_probe_only",
-      "result_label": "probe-only",
+      "result_label": "probe",
       "summary": "Probe-enabled tau2 runs are engineering diagnostics for finding planner failure modes and are not public AANA performance claims.",
       "public_claim": false,
       "public_claim_eligible": false,

@@ -25,7 +25,7 @@ class HFDatasetProofTests(unittest.TestCase):
         report = validate_hf_dataset_proof_report(load_current(), root=ROOT, require_existing_artifacts=True, registry=load_registry())
 
         self.assertTrue(report["valid"], report["issues"])
-        self.assertEqual(report["proof_axis_count"], 4)
+        self.assertEqual(report["proof_axis_count"], 9)
         self.assertGreaterEqual(report["artifact_metric_checks"], 10)
 
     def test_requires_all_four_proof_axes(self):
@@ -85,6 +85,18 @@ class HFDatasetProofTests(unittest.TestCase):
         self.assertFalse(report["valid"])
         self.assertTrue(any("dataset_refs" in issue["path"] for issue in report["issues"]))
 
+    def test_requires_public_result_labels(self):
+        manifest = load_current()
+        broken = copy.deepcopy(manifest)
+        broken["result_label"] = "calibration"
+        broken["proof_axes"][0].pop("result_label")
+
+        report = validate_hf_dataset_proof_report(broken, root=ROOT, registry=load_registry())
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "result_label" for issue in report["issues"]))
+        self.assertTrue(any(issue["path"].endswith("result_label") for issue in report["issues"]))
+
     def test_cli_validates_hf_dataset_proof_report(self):
         manifest = load_current()
         with tempfile.TemporaryDirectory() as directory:
@@ -104,7 +116,7 @@ class HFDatasetProofTests(unittest.TestCase):
             )
 
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
-        self.assertIn("pass -- axes=4", completed.stdout)
+        self.assertIn("pass -- axes=9", completed.stdout)
 
 
 if __name__ == "__main__":

@@ -158,6 +158,12 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
             "Run unit and compatibility tests for API behavior, adapters, audit, catalog, and docs.",
         ),
         ReleaseGate(
+            "platform_ci_gate",
+            "platform",
+            [PYTHON, "scripts/validate_aana_platform.py"],
+            "Run the standard AANA platform CI gate for adapter layout, contracts, integrations, bundles, HF split governance, claims, security, and packaging.",
+        ),
+        ReleaseGate(
             "contract_freeze",
             "api",
             [PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"],

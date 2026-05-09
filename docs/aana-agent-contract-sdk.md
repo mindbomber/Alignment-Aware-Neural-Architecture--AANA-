@@ -4,8 +4,7 @@ The AANA agent contract SDK lets an agent runtime check tool calls before
 execution. The runtime emits a small `aana.agent_tool_precheck.v1` event, AANA
 validates it, and the gate returns `accept`, `ask`, `defer`, or `refuse`.
 
-Public claim: AANA is an architecture for making agents more auditable, safer,
-more grounded, and more controllable. The SDK exposes that architecture through
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable. The SDK exposes that architecture through
 an `architecture_decision` envelope that includes the route, AIx score, hard
 blockers, evidence refs, authorization state, correction/recovery suggestion,
 and audit-safe log event.
@@ -136,3 +135,4 @@ const result = await client.toolPrecheck(event);
 
 The bridge route uses the same deterministic schema-based gate as the local
 Python and TypeScript helpers.
+

@@ -6,6 +6,8 @@ AANA is production-candidate as an audit/control/verification/correction layer.
 
 AANA is not yet proven as a raw agent-performance engine.
 
+Result label: `heldout`
+
 This evidence pack is a claim boundary, not a marketing page. It records what the current AANA implementation supports, where it fails, which claims are blocked, and which evidence must exist before stronger public claims are made.
 
 ## Task List

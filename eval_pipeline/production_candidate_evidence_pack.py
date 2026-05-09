@@ -11,6 +11,8 @@ PRODUCTION_EVIDENCE_PACK_VERSION = "0.1"
 EXACT_PRODUCTION_CANDIDATE_CLAIM = "AANA is production-candidate as an audit/control/verification/correction layer."
 EXACT_NOT_PROVEN_ENGINE_CLAIM = "AANA is not yet proven as a raw agent-performance engine."
 REQUIRED_LIMITATION_KEYS = {"failures", "false_positives", "latency", "unsupported_domains"}
+ALLOWED_RESULT_LABELS = {"calibration", "heldout", "diagnostic", "probe", "external_reporting"}
+PUBLIC_RESULT_LABELS = {"heldout", "external_reporting"}
 
 
 def _issue(level: str, path: str, message: str) -> dict[str, str]:
@@ -47,6 +49,14 @@ def validate_production_candidate_evidence_pack(
 
     if manifest.get("schema_version") != PRODUCTION_EVIDENCE_PACK_VERSION:
         issues.append(_issue("error", "schema_version", f"schema_version must be {PRODUCTION_EVIDENCE_PACK_VERSION}."))
+    if manifest.get("result_label") not in PUBLIC_RESULT_LABELS:
+        issues.append(
+            _issue(
+                "error",
+                "result_label",
+                f"Production-candidate evidence packs must be labeled one of {sorted(PUBLIC_RESULT_LABELS)}.",
+            )
+        )
 
     boundary = manifest.get("claim_boundary")
     if not isinstance(boundary, dict):
@@ -80,6 +90,14 @@ def validate_production_candidate_evidence_pack(
             issues.append(_issue("error", f"policy.{key}", "Policy flag must be true."))
     if policy.get("allow_raw_agent_performance_claim") is not False:
         issues.append(_issue("error", "policy.allow_raw_agent_performance_claim", "Raw agent-performance claims must remain blocked."))
+    if policy.get("allow_raw_agent_performance_superiority_claim") is not False:
+        issues.append(
+            _issue(
+                "error",
+                "policy.allow_raw_agent_performance_superiority_claim",
+                "Raw agent-performance superiority claims must remain blocked.",
+            )
+        )
 
     tasks = manifest.get("implementation_tasks")
     if not _nonempty_list(tasks):

@@ -70,6 +70,35 @@ def test_check_tool_call_fail_closes_malformed_evidence() -> None:
     assert result["execution_policy"]["fail_closed"]
 
 
+def test_optional_semantic_tool_verifier_can_tighten_v2_without_bypassing_aana() -> None:
+    event = aana.build_tool_precheck_event(
+        tool_name="lookup_policy",
+        tool_category="public_read",
+        authorization_state="none",
+        evidence_refs=["policy:returns"],
+        risk_domain="customer_support",
+        proposed_arguments={"policy_id": "returns"},
+        recommended_route="accept",
+    )
+
+    def fake_semantic_verifier(_event, _deterministic_result):
+        return {
+            "label": "needs_more_evidence",
+            "route": "defer",
+            "confidence": 0.88,
+            "reason_codes": ["missing_policy_scope"],
+            "recovery_suggestion": "Retrieve the policy section and recheck.",
+        }
+
+    result = aana.check_tool_precheck_v2(event, semantic_verifier=fake_semantic_verifier)
+
+    assert result["recommended_action"] == "defer"
+    assert result["gate_decision"] == "fail"
+    assert "semantic_tool_use_risk" in result["hard_blockers"]
+    assert result["semantic_verifier"]["label"] == "needs_more_evidence"
+    assert not aana.should_execute_tool(result)
+
+
 def test_wrapper_fail_closes_malformed_evidence_without_calling_tool() -> None:
     calls = []
 

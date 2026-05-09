@@ -49,6 +49,26 @@ class ProductionCandidateEvidencePackTests(unittest.TestCase):
         self.assertFalse(report["valid"])
         self.assertTrue(any("Raw agent-performance claims" in issue["message"] for issue in report["issues"]))
 
+    def test_blocks_raw_agent_superiority_claims(self):
+        manifest = load_current()
+        broken = copy.deepcopy(manifest)
+        broken["policy"]["allow_raw_agent_performance_superiority_claim"] = True
+
+        report = validate_production_candidate_evidence_pack(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("superiority" in issue["message"] for issue in report["issues"]))
+
+    def test_requires_public_result_label(self):
+        manifest = load_current()
+        broken = copy.deepcopy(manifest)
+        broken["result_label"] = "diagnostic"
+
+        report = validate_production_candidate_evidence_pack(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"] == "result_label" for issue in report["issues"]))
+
     def test_requires_limitations(self):
         manifest = load_current()
         broken = copy.deepcopy(manifest)

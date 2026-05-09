@@ -42,7 +42,7 @@ python scripts/validate_agent_integrations.py
 - `../chatgpt_app/`: FastAPI-hosted ChatGPT Apps/MCP prototype with `/mcp` and an optional decision viewer.
 - `../../evals/openai_agents_aana/`: local OpenAI-style agent eval harness for guarded tool execution.
 - `../../evals/aana_controlled_agents/`: multi-surface eval harness comparing permissive, SDK, API, and MCP controlled-agent paths.
-- `../../scripts/validate_agent_integrations.py`: one-command validation for the OpenAI, FastAPI, MCP, and controlled-agent eval stack.
+- `../../scripts/validate_agent_integrations.py`: one-command validation for Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP, and controlled-agent eval stack.
 
 For write actions and private reads, pass metadata with authorization and
 evidence. For public reads, one-line wrapping is enough:

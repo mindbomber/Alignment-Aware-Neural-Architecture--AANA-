@@ -110,7 +110,7 @@
       "datasets": [
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation",
           "validation_status": "pass",
@@ -155,7 +155,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation",
           "validation_status": "pass",
@@ -182,7 +182,7 @@
       "datasets": [
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation",
           "validation_status": "pass",
@@ -236,7 +236,7 @@
         },
         {
           "dataset_name": "NousResearch/hermes-function-calling-v1",
-          "config": "func-calling",
+          "config": "func_calling",
           "split": "train",
           "allowed_use": "heldout_validation",
           "validation_status": "pass",

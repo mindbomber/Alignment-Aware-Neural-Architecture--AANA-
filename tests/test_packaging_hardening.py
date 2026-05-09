@@ -21,7 +21,7 @@ class PackagingHardeningTests(unittest.TestCase):
         report = validate_packaging_hardening(load_manifest(), root=ROOT, require_existing_artifacts=True)
 
         self.assertTrue(report["valid"], report["issues"])
-        self.assertEqual(report["surface_count"], 5)
+        self.assertEqual(report["surface_count"], 6)
         self.assertEqual(report["release_target_count"], 3)
 
     def test_requires_eval_tooling_surface(self):
@@ -33,6 +33,29 @@ class PackagingHardeningTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any("benchmark_eval_tooling" in issue["message"] for issue in report["issues"]))
+
+    def test_requires_examples_surface(self):
+        manifest = load_manifest()
+        broken = copy.deepcopy(manifest)
+        broken["surfaces"] = [surface for surface in broken["surfaces"] if surface["id"] != "examples"]
+
+        report = validate_packaging_hardening(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("examples" in issue["message"] for issue in report["issues"]))
+
+    def test_requires_surface_boundaries_and_prevents_path_overlap(self):
+        manifest = load_manifest()
+        broken = copy.deepcopy(manifest)
+        broken["surfaces"][0].pop("boundary")
+        broken["surfaces"][1]["paths"].append("aana/sdk.py")
+
+        report = validate_packaging_hardening(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        messages = "\n".join(issue["message"] for issue in report["issues"])
+        self.assertIn("Surface must declare", messages)
+        self.assertIn("claimed by multiple packaging surfaces", messages)
 
     def test_blocks_distribution_rename_without_migration_window(self):
         manifest = load_manifest()
@@ -57,6 +80,16 @@ class PackagingHardeningTests(unittest.TestCase):
         self.assertFalse(report["valid"])
         self.assertTrue(any("npm" in issue["message"] for issue in report["issues"]))
 
+    def test_release_checklist_declares_surface_boundaries(self):
+        manifest = load_manifest()
+        broken = copy.deepcopy(manifest)
+        broken["release_checklist"][0].pop("surface_boundaries_checked")
+
+        report = validate_packaging_hardening(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("surface_boundaries_checked" in issue["path"] for issue in report["issues"]))
+
     def test_cli_validates_packaging_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
             manifest_path = Path(directory) / "packaging.json"
@@ -75,7 +108,7 @@ class PackagingHardeningTests(unittest.TestCase):
             )
 
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
-        self.assertIn("pass -- surfaces=5 release_targets=3", completed.stdout)
+        self.assertIn("pass -- surfaces=6 release_targets=3", completed.stdout)
 
 
 if __name__ == "__main__":

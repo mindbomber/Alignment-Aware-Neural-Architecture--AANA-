@@ -5,6 +5,7 @@
     {
       "id": "python_package",
       "purpose": "Python runtime SDK, CLI, local middleware helpers, audit utilities, and optional service/eval entrypoints.",
+      "boundary": "Importable Python runtime package plus CLI entrypoints. Heavy benchmark dependencies stay in optional extras and generated eval outputs stay out of the runtime package.",
       "current_distribution": "aana-eval-pipeline",
       "import_package": "aana",
       "paths": [
@@ -29,6 +30,7 @@
     {
       "id": "typescript_sdk",
       "purpose": "Dependency-light TypeScript helpers and HTTP client for Agent Action Contract and middleware integrations.",
+      "boundary": "Standalone npm package under sdk/typescript. It must not depend on Python benchmark tooling or generated eval artifacts.",
       "package": "@aana/integration-sdk",
       "paths": [
         "sdk/typescript/package.json",
@@ -41,6 +43,7 @@
     {
       "id": "fastapi_service",
       "purpose": "Optional HTTP API service exposing /health, /pre-tool-check, /agent-check, token auth, OpenAPI docs, and redacted audit JSONL logging.",
+      "boundary": "HTTP service code and API examples only. It is installed through the Python api extra and must not become the benchmark runner.",
       "python_extra": "api",
       "entrypoint": "aana-fastapi",
       "paths": [
@@ -55,6 +58,7 @@
     {
       "id": "benchmark_eval_tooling",
       "purpose": "Benchmark, HF dataset, calibration, and evidence-pack tooling used for measurement and validation, not runtime core claims.",
+      "boundary": "Offline validation, calibration, and benchmark scripts. These artifacts support evidence and claims, but they are not required for core runtime use.",
       "python_extra": "eval",
       "public_claim_boundary": "not_runtime_core",
       "paths": [
@@ -72,6 +76,7 @@
     {
       "id": "docs_and_cards",
       "purpose": "Documentation, public claim boundaries, Hugging Face card templates, and publication guidance.",
+      "boundary": "Human-readable docs, cards, reports, and public claim guidance. Docs may link examples and evals but should not own executable demo code.",
       "paths": [
         "docs/aana-standard-publication.md",
         "docs/packaging-release-checklist.md",
@@ -84,6 +89,23 @@
         "github_pages",
         "huggingface_model_card",
         "huggingface_dataset_card"
+      ]
+    },
+    {
+      "id": "examples",
+      "purpose": "Runnable quickstarts, integration demos, API fixtures, and Hugging Face Space demo source for developer adoption.",
+      "boundary": "Synthetic-only developer examples and demo fixtures. Examples must not contain real credentials, real sends/deletes/purchases/deploys/exports, or benchmark answer keys.",
+      "paths": [
+        "examples/api",
+        "examples/integrations",
+        "examples/huggingface_space",
+        "examples/agent_tool_precheck_private_read.json",
+        "examples/agent_event_support_reply.json"
+      ],
+      "public_demo_default": "synthetic_only",
+      "publish_targets": [
+        "github_examples",
+        "huggingface_space"
       ]
     }
   ],
@@ -115,6 +137,13 @@
         "python -m build",
         "twine check dist/*",
         "confirm distribution name and migration notes"
+      ],
+      "surface_boundaries_checked": [
+        "python_package",
+        "fastapi_service",
+        "benchmark_eval_tooling",
+        "docs_and_cards",
+        "examples"
       ]
     },
     {
@@ -122,10 +151,16 @@
       "status": "required_before_publication",
       "human_release_review_required": true,
       "required_checks": [
+        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
         "cd sdk/typescript && npm install",
         "cd sdk/typescript && npm run build",
         "cd sdk/typescript && npm pack --dry-run",
         "confirm package owner and npm access"
+      ],
+      "surface_boundaries_checked": [
+        "typescript_sdk",
+        "docs_and_cards",
+        "examples"
       ]
     },
     {
@@ -133,12 +168,18 @@
       "status": "required_before_publication",
       "human_release_review_required": true,
       "required_checks": [
+        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
         "python scripts/validate_hf_dataset_registry.py",
         "python scripts/validate_hf_calibration.py",
         "python scripts/validate_hf_dataset_proof.py --require-existing-artifacts",
         "review docs/huggingface-model-card.md",
         "review docs/huggingface-dataset-card.md",
         "confirm no benchmark probe results are used as public claims"
+      ],
+      "surface_boundaries_checked": [
+        "docs_and_cards",
+        "benchmark_eval_tooling",
+        "examples"
       ]
     }
   ]

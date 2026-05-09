@@ -1,6 +1,6 @@
 # Agent Action Contract Quickstart
 
-Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 Stable public spec: [AANA Agent Action Contract v1](agent-action-contract-v1.md).
 
@@ -98,3 +98,4 @@ For production integrations, prefer structured evidence refs from
 `trust_tier`, `redaction_status`, `freshness`, and `provenance`. Keep raw
 private data out of the event; public audit logs and claims require safe
 redaction plus fresh, provenance-backed evidence.
+

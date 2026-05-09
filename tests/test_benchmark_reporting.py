@@ -22,8 +22,9 @@ def valid_manifest():
             "require_result_label": True,
             "require_limitations_for_public_claims": True,
             "do_not_claim_raw_agent_performance_engine": True,
+            "do_not_claim_raw_agent_performance_superiority": True,
             "publish_limitations_alongside_wins": True,
-            "allowed_result_labels": ["measured", "diagnostic", "held-out", "probe-only"],
+            "allowed_result_labels": ["calibration", "diagnostic", "heldout", "probe", "external_reporting"],
         },
         "benchmark_reports": [
             {
@@ -31,8 +32,8 @@ def valid_manifest():
                 "benchmark": "example benchmark",
                 "run_type": "general",
                 "scope_label": "public_general_result",
-                "result_label": "measured",
-                "summary": "Measured general run without probes.",
+                "result_label": "external_reporting",
+                "summary": "External reporting run without probes.",
                 "public_claim": True,
                 "public_claim_eligible": True,
                 "includes_probe_results": False,
@@ -92,6 +93,22 @@ class BenchmarkReportingTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any(issue["path"].endswith("result_label") for issue in report["issues"]))
+
+    def test_blocks_public_claim_labeled_calibration(self):
+        manifest = valid_manifest()
+        manifest["benchmark_reports"][0]["result_label"] = "calibration"
+        report = validate_benchmark_reporting_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any(issue["path"].endswith("result_label") for issue in report["issues"]))
+
+    def test_blocks_raw_agent_superiority_claims(self):
+        manifest = valid_manifest()
+        manifest["benchmark_reports"][0]["summary"] = "This proves raw agent-performance superiority."
+        report = validate_benchmark_reporting_manifest(manifest)
+
+        self.assertFalse(report["valid"])
+        self.assertTrue(any("raw agent-performance superiority" in issue["message"] for issue in report["issues"]))
 
     def test_blocks_wins_without_limitations(self):
         manifest = valid_manifest()

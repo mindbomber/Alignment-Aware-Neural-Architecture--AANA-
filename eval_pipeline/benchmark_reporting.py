@@ -12,8 +12,15 @@ ALLOWED_RUN_TYPES = {"general", "diagnostic_probe", "mixed"}
 PUBLIC_CLAIM_FORBIDDEN_RUN_TYPES = {"diagnostic_probe", "mixed"}
 APPROVED_MAIN_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
 APPROVED_NOT_RAW_ENGINE_CLAIM = "AANA is not yet proven as a raw agent-performance engine."
-ALLOWED_RESULT_LABELS = {"measured", "diagnostic", "held-out", "probe-only"}
-PUBLIC_RESULT_LABELS = {"measured", "held-out"}
+ALLOWED_RESULT_LABELS = {"calibration", "heldout", "diagnostic", "probe", "external_reporting"}
+PUBLIC_RESULT_LABELS = {"heldout", "external_reporting"}
+RAW_AGENT_SUPERIORITY_PHRASES = (
+    "raw agent-performance superiority",
+    "raw agent performance superiority",
+    "raw task success superiority",
+    "superior raw agent",
+    "proven raw agent-performance engine",
+)
 
 
 def _issue(level: str, path: str, message: str) -> dict[str, str]:
@@ -26,6 +33,11 @@ def _has_text(value: Any) -> bool:
 
 def _is_nonempty_list(value: Any) -> bool:
     return isinstance(value, list) and bool(value)
+
+
+def _raw_agent_superiority_text(value: Any) -> bool:
+    text = json.dumps(value, sort_keys=True).lower() if not isinstance(value, str) else value.lower()
+    return any(phrase in text for phrase in RAW_AGENT_SUPERIORITY_PHRASES)
 
 
 def _validate_report(report: dict[str, Any], index: int) -> list[dict[str, str]]:
@@ -50,7 +62,7 @@ def _validate_report(report: dict[str, Any], index: int) -> list[dict[str, str]]
     if public_claim and run_type in PUBLIC_CLAIM_FORBIDDEN_RUN_TYPES:
         issues.append(_issue("error", f"{base}.public_claim", "Public AANA claims cannot use diagnostic_probe or mixed benchmark reports."))
     if public_claim and result_label not in PUBLIC_RESULT_LABELS:
-        issues.append(_issue("error", f"{base}.result_label", "Public claims must be labeled measured or held-out."))
+        issues.append(_issue("error", f"{base}.result_label", "Public claims must be labeled heldout or external_reporting."))
     if public_claim and includes_probe_results:
         issues.append(_issue("error", f"{base}.includes_probe_results", "Public AANA claims must exclude probe results from all reported metrics."))
     if public_claim and not public_claim_eligible:
@@ -68,6 +80,14 @@ def _validate_report(report: dict[str, Any], index: int) -> list[dict[str, str]]
         wins = report.get("wins")
         if not _is_nonempty_list(wins):
             issues.append(_issue("error", f"{base}.wins", "Public benchmark claims should state measured wins explicitly."))
+        if _raw_agent_superiority_text({key: report.get(key) for key in ("summary", "wins", "limitations")}):
+            issues.append(
+                _issue(
+                    "error",
+                    base,
+                    "Public benchmark claims must not claim raw agent-performance superiority.",
+                )
+            )
         if "diagnostic" in str(report.get("summary", "")).lower() and "public" in str(report.get("scope_label", "")).lower():
             issues.append(_issue("warning", f"{base}.summary", "Summary uses diagnostic language while marked as a public claim; verify scope is clear."))
 
@@ -113,9 +133,11 @@ def validate_benchmark_reporting_manifest(manifest: dict[str, Any]) -> dict[str,
         if policy.get("require_scope_label") is not True:
             issues.append(_issue("error", "policy.require_scope_label", "Policy must require a scope label."))
         if policy.get("require_result_label") is not True:
-            issues.append(_issue("error", "policy.require_result_label", "Policy must require measured, diagnostic, held-out, or probe-only result labels."))
+            issues.append(_issue("error", "policy.require_result_label", "Policy must require calibration, heldout, diagnostic, probe, or external_reporting result labels."))
         if policy.get("do_not_claim_raw_agent_performance_engine") is not True:
             issues.append(_issue("error", "policy.do_not_claim_raw_agent_performance_engine", "Policy must forbid raw agent-performance engine claims."))
+        if policy.get("do_not_claim_raw_agent_performance_superiority") is not True:
+            issues.append(_issue("error", "policy.do_not_claim_raw_agent_performance_superiority", "Policy must forbid raw agent-performance superiority claims."))
         if policy.get("publish_limitations_alongside_wins") is not True:
             issues.append(_issue("error", "policy.publish_limitations_alongside_wins", "Policy must require limitations alongside wins."))
         if set(policy.get("allowed_result_labels") or []) != ALLOWED_RESULT_LABELS:

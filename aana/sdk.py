@@ -8,6 +8,7 @@ local in-process Python runtime or a running AANA HTTP bridge.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hashlib
 import json
 import urllib.error
 import urllib.request
@@ -32,7 +33,7 @@ from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_q
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
-PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable."
+PUBLIC_ARCHITECTURE_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
 TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
 TOOL_CATEGORIES = set(CANONICAL_TOOL_CATEGORIES)
 AUTHORIZATION_STATES = set(CANONICAL_AUTHORIZATION_STATES)
@@ -62,6 +63,41 @@ def _list(value):
     if isinstance(value, tuple):
         return list(value)
     return [value]
+
+
+def _safe_argument_keys(arguments):
+    if not isinstance(arguments, dict):
+        return []
+    sensitive_markers = (
+        "api_key",
+        "apikey",
+        "auth_token",
+        "bearer_token",
+        "client_secret",
+        "password",
+        "private_account_id",
+        "raw_token",
+        "secret",
+        "session_token",
+        "token",
+    )
+    keys = []
+    for key in arguments:
+        normalized = str(key).strip().lower().replace("-", "_")
+        keys.append("[redacted_sensitive_key]" if any(marker in normalized for marker in sensitive_markers) else str(key))
+    return sorted(set(keys))
+
+
+def _audit_safe_identifier(value, fallback):
+    text = str(value or "").strip()
+    if not text:
+        return fallback
+    lowered = text.lower()
+    sensitive_markers = ("bearer ", "api_key", "token", "secret", "password", "sk_", "sk-or_", "sk-proj_", "hf_", "ghp_", "github_pat")
+    if any(marker in lowered for marker in sensitive_markers):
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+        return f"{fallback}:sha256:{digest}"
+    return text
 
 
 def normalize_evidence(
@@ -361,11 +397,11 @@ def check_tool_precheck(event=None, **kwargs):
     return gate_pre_tool_call(payload)
 
 
-def check_tool_precheck_v2(event=None, **kwargs):
+def check_tool_precheck_v2(event=None, semantic_verifier=None, **kwargs):
     """Run the local τ²-calibrated AANA v2 pre-tool-call gate."""
 
     payload = event or build_tool_precheck_event(**kwargs)
-    return gate_pre_tool_call_v2(payload)
+    return gate_pre_tool_call_v2(payload, semantic_verifier=semantic_verifier)
 
 
 def _hard_blockers(result):
@@ -383,7 +419,7 @@ def _evidence_ref_ids(event):
     refs = event.get("evidence_refs")
     if isinstance(refs, list):
         return [
-            str(ref.get("source_id") or ref.get("id") or ref.get("kind") or f"evidence_ref:{index}")
+            _audit_safe_identifier(ref.get("source_id") or ref.get("id") or ref.get("kind"), f"evidence_ref:{index}")
             for index, ref in enumerate(refs, start=1)
             if isinstance(ref, dict)
         ]
@@ -395,7 +431,7 @@ def _evidence_ref_ids(event):
     output = []
     for index, item in enumerate(evidence, start=1):
         if isinstance(item, dict):
-            output.append(str(item.get("source_id") or item.get("raw_record_id") or f"evidence:{index}"))
+            output.append(_audit_safe_identifier(item.get("source_id") or item.get("raw_record_id"), f"evidence:{index}"))
         elif isinstance(item, str) and item.strip():
             output.append(f"evidence:{index}")
     return output
@@ -467,7 +503,7 @@ def audit_safe_decision_event(result, event=None, *, latency_ms=None):
         "tool_name": event.get("tool_name") or result.get("tool_name"),
         "tool_category": event.get("tool_category") or result.get("tool_category"),
         "risk_domain": event.get("risk_domain") or result.get("risk_domain"),
-        "proposed_argument_keys": sorted(str(key) for key in proposed_args.keys()),
+        "proposed_argument_keys": _safe_argument_keys(proposed_args),
         "latency_ms": round(float(observed_latency), 3) if isinstance(observed_latency, (int, float)) and observed_latency >= 0 else None,
         "raw_payload_logged": False,
     }
@@ -508,6 +544,8 @@ def architecture_decision(result, event=None, *, audit_record=None):
         audit_safe_log_event["audit_record_created_at"] = audit_record.get("created_at")
     elif isinstance(result.get("audit_summary"), dict):
         audit_safe_log_event["audit_summary"] = result["audit_summary"]
+    missing_evidence = _missing_evidence_markers(result)
+    recovery_suggestion = _correction_recovery_suggestion(route, result)
     return {
         "architecture_claim": PUBLIC_ARCHITECTURE_CLAIM,
         "route": route,
@@ -516,9 +554,10 @@ def architecture_decision(result, event=None, *, audit_record=None):
         "aix_score": aix.get("score"),
         "aix_decision": aix.get("decision"),
         "hard_blockers": _hard_blockers(result),
+        "missing_evidence": missing_evidence,
         "evidence_refs": {
             "used": _evidence_ref_ids(event),
-            "missing": _missing_evidence_markers(result),
+            "missing": missing_evidence,
             "contradictory": _contradictory_evidence_markers(result),
         },
         "evidence_integrity": result.get("evidence_integrity"),
@@ -530,7 +569,9 @@ def architecture_decision(result, event=None, *, audit_record=None):
         "tool_name": event.get("tool_name") or result.get("tool_name"),
         "tool_category": event.get("tool_category") or result.get("tool_category"),
         "risk_domain": event.get("risk_domain") or result.get("risk_domain"),
-        "correction_recovery_suggestion": _correction_recovery_suggestion(route, result),
+        "recovery_suggestion": recovery_suggestion,
+        "correction_recovery_suggestion": recovery_suggestion,
+        "audit_event": audit_safe_log_event,
         "audit_safe_log_event": audit_safe_log_event,
     }
 
@@ -785,11 +826,17 @@ class AANAClient:
         result = agent_api.check_workflow_request(request, gallery_path=self.gallery_path or agent_api.DEFAULT_GALLERY)
         return agent_api.apply_shadow_mode(result) if self.shadow_mode else result
 
-    def agent_check(self, event=None, **kwargs):
+    def agent_check(self, event=None, semantic_verifier=None, semantic_verifier_kind=None, semantic_model=None, **kwargs):
         payload = event or self.agent_event(**kwargs)
         if self.uses_bridge:
             return with_architecture_decision(self._post("/agent-check", payload, shadow_mode=self.shadow_mode), payload)
-        result = agent_api.check_event(payload, gallery_path=self.gallery_path or agent_api.DEFAULT_GALLERY)
+        result = agent_api.check_event(
+            payload,
+            gallery_path=self.gallery_path or agent_api.DEFAULT_GALLERY,
+            semantic_verifier=semantic_verifier,
+            semantic_verifier_kind=semantic_verifier_kind,
+            semantic_model=semantic_model,
+        )
         result = agent_api.apply_shadow_mode(result) if self.shadow_mode else result
         return with_architecture_decision(result, payload)
 
@@ -804,11 +851,11 @@ class AANAClient:
         result = agent_api.apply_shadow_mode(result) if self.shadow_mode else result
         return with_architecture_decision(result, payload)
 
-    def tool_precheck_v2(self, event=None, **kwargs):
+    def tool_precheck_v2(self, event=None, semantic_verifier=None, **kwargs):
         payload = event or self.tool_precheck_event(**kwargs)
         if self.uses_bridge:
             raise AANAClientError("tool_precheck_v2 is currently available only in local in-process mode.")
-        return with_architecture_decision(check_tool_precheck_v2(payload), payload)
+        return with_architecture_decision(check_tool_precheck_v2(payload, semantic_verifier=semantic_verifier), payload)
 
     def check_tool_call(self, event=None, **kwargs):
         return self.tool_precheck(event, **kwargs)

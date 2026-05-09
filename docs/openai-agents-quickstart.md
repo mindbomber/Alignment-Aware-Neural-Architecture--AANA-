@@ -121,7 +121,47 @@ python examples/integrations/openai_agents/api_guard.py
 
 Expected output: a blocked envelope for the unconfirmed email write.
 
-## 3. Use MCP / ChatGPT App Prototype
+## 3. Optional OpenAI Semantic Verifier
+
+Deterministic AANA remains the default. For subtle grounded-QA or ambiguous
+tool-use cases, enable an optional OpenAI-backed semantic verifier that can
+tighten the route but cannot bypass deterministic schema, authorization, or hard
+blockers.
+
+Grounded-QA held-out smoke:
+
+```powershell
+$env:OPENAI_API_KEY = "<your key>"
+python scripts/run_grounded_qa_hf_experiment.py --max-rows-per-source 2 --semantic-verifier openai --output eval_outputs/grounded_qa_hf_experiment_results.semantic_openai_smoke.json
+```
+
+Calibrate before enabling. The calibration path uses claim-level entailment:
+the semantic verifier must return per-claim labels and unsupported claim types,
+and AANA only accepts the semantic judgment when the calibrated policy preserves
+safe allow.
+
+```powershell
+python scripts/run_grounded_qa_semantic_calibration.py --calibration-rows-per-source 12 --heldout-rows-per-source 20
+```
+
+Expected output includes `deployment_recommendation.status`. Keep the semantic
+policy disabled unless held-out safe allow meets the configured target and
+unsupported-claim recall improves over deterministic AANA.
+
+Pre-tool-call v2 with semantic verifier:
+
+```powershell
+python scripts/aana_cli.py pre-tool-check --event examples/api/pre_tool_check_write_ask.json --gate-version v2 --semantic-verifier openai
+```
+
+Expected behavior:
+
+- OpenAI can identify semantic grounding or tool-use ambiguity.
+- AANA records the semantic result as audit-safe metadata.
+- Only AANA route `accept` can execute.
+- Semantic verifier output can block, ask, defer, or revise, but it cannot turn a deterministic blocker into execution.
+
+## 4. Use MCP / ChatGPT App Prototype
 
 List the MCP-style AANA tool:
 
@@ -157,7 +197,7 @@ https://<your-tunnel>/mcp
 This prototype is not submission-ready. It is a local integration scaffold for
 the standard `aana_pre_tool_check` control point.
 
-## 4. Run Eval Harnesses
+## 5. Run Eval Harnesses
 
 OpenAI-style guarded-tool eval:
 
@@ -185,7 +225,7 @@ Expected output:
 - `controlled_unsafe_executions.mcp`: `0`
 - `permissive_unsafe_executions`: greater than `0`
 
-## 5. Validate The Whole Integration Stack
+## 6. Validate The Whole Integration Stack
 
 Run the single integration validator:
 
@@ -195,18 +235,34 @@ python scripts/validate_agent_integrations.py
 
 It checks:
 
-- OpenAI wrapped-tools smoke;
+- CLI decision-shape smoke;
+- Python SDK smoke;
+- TypeScript SDK smoke;
+- OpenAI Agents SDK wrapped-tools smoke;
+- LangChain middleware smoke;
+- AutoGen middleware smoke;
+- CrewAI middleware smoke;
+- middleware decision-shape smoke;
 - FastAPI policy-service smoke;
 - MCP tool smoke;
+- MCP decision-shape smoke;
 - controlled-agent eval harness.
 
 Expected output:
 
 ```text
-pass -- passed=4/4
+pass -- passed=12/12
+- pass: cli_decision_shape_smoke
+- pass: python_sdk_smoke
+- pass: typescript_sdk_smoke
 - pass: openai_wrapped_tools_smoke
+- pass: langchain_middleware_smoke
+- pass: autogen_middleware_smoke
+- pass: crewai_middleware_smoke
+- pass: middleware_decision_shape_smoke
 - pass: fastapi_policy_service_smoke
 - pass: mcp_tool_smoke
+- pass: mcp_decision_shape_smoke
 - pass: controlled_agent_eval_harness
 ```
 

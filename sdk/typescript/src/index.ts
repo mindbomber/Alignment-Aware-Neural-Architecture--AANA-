@@ -19,7 +19,7 @@ export type RiskDomain =
   | "unknown";
 
 export const TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1" as const;
-export const PUBLIC_ARCHITECTURE_CLAIM = "AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable." as const;
+export const PUBLIC_ARCHITECTURE_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable." as const;
 export const ROUTE_TABLE: Record<AanaAction, { description: string; execution_allowed: boolean; next_step: string }> = {
   accept: {
     description: "Proceed only within the checked scope.",
@@ -144,6 +144,7 @@ export interface ToolPrecheckEvent {
 
 export interface ToolPrecheckResult {
   contract_version: typeof TOOL_PRECHECK_SCHEMA_VERSION;
+  route?: ToolPrecheckAction;
   tool_name?: string;
   tool_category?: ToolCategory;
   authorization_state?: AuthorizationState;
@@ -176,6 +177,7 @@ export interface ArchitectureDecision {
   aix_score?: number;
   aix_decision?: ToolPrecheckAction;
   hard_blockers: string[];
+  missing_evidence: string[];
   evidence_refs: {
     used: string[];
     missing: string[];
@@ -184,7 +186,9 @@ export interface ArchitectureDecision {
   tool_name?: string;
   tool_category?: ToolCategory;
   risk_domain?: RiskDomain;
+  recovery_suggestion: string;
   correction_recovery_suggestion: string;
+  audit_event: Record<string, unknown>;
   audit_safe_log_event: Record<string, unknown>;
 }
 
@@ -661,6 +665,23 @@ function correctionRecoverySuggestion(route: ToolPrecheckAction): string {
 
 export function architectureDecision(result: ToolPrecheckResult, event: ToolPrecheckEvent): ArchitectureDecision {
   const blockers = result.hard_blockers.length ? result.hard_blockers : result.aix.hard_blockers;
+  const missingEvidence = blockers.filter((item) => /missing|evidence|authorization|citation|source/.test(item));
+  const recoverySuggestion = correctionRecoverySuggestion(result.recommended_action);
+  const auditEvent = {
+    route: result.recommended_action,
+    gate_decision: result.gate_decision,
+    candidate_gate: result.candidate_gate,
+    aix_score: result.aix.score,
+    aix_decision: result.aix.decision,
+    recommended_action: result.recommended_action,
+    aix: {
+      score: result.aix.score,
+      decision: result.aix.decision,
+      hard_blockers: result.aix.hard_blockers
+    },
+    hard_blockers: blockers,
+    raw_payload_logged: false
+  };
   return {
     architecture_claim: PUBLIC_ARCHITECTURE_CLAIM,
     route: result.recommended_action,
@@ -669,31 +690,25 @@ export function architectureDecision(result: ToolPrecheckResult, event: ToolPrec
     aix_score: result.aix.score,
     aix_decision: result.aix.decision,
     hard_blockers: blockers,
+    missing_evidence: missingEvidence,
     evidence_refs: {
       used: event.evidence_refs.map((ref) => ref.source_id),
-      missing: blockers.filter((item) => /missing|evidence|authorization|citation|source/.test(item))
+      missing: missingEvidence
     },
     authorization_state: event.authorization_state ?? "not_declared",
     tool_name: event.tool_name,
     tool_category: event.tool_category,
     risk_domain: event.risk_domain,
-    correction_recovery_suggestion: correctionRecoverySuggestion(result.recommended_action),
-    audit_safe_log_event: {
-      gate_decision: result.gate_decision,
-      recommended_action: result.recommended_action,
-      aix: {
-        score: result.aix.score,
-        decision: result.aix.decision,
-        hard_blockers: result.aix.hard_blockers
-      },
-      hard_blockers: blockers
-    }
+    recovery_suggestion: recoverySuggestion,
+    correction_recovery_suggestion: recoverySuggestion,
+    audit_event: auditEvent,
+    audit_safe_log_event: auditEvent
   };
 }
 
 export function withArchitectureDecision(result: ToolPrecheckResult, event: ToolPrecheckEvent): ToolPrecheckResult {
   const enriched = { ...result, architecture_decision: architectureDecision(result, event) };
-  return { ...enriched, execution_policy: executionPolicy(enriched) };
+  return { ...enriched, route: enriched.architecture_decision.route, execution_policy: executionPolicy(enriched) };
 }
 
 export function checkToolCall(event: ToolPrecheckEvent): ToolPrecheckResult {

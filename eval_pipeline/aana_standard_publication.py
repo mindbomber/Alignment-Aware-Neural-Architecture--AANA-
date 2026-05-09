@@ -11,12 +11,12 @@ from typing import Any
 
 
 PUBLIC_ARCHITECTURE_CLAIM = (
-    "AANA is an architecture for making agents more auditable, safer, "
-    "more grounded, and more controllable."
+    "AANA makes agents more auditable, safer, more grounded, and more controllable."
 )
 PUBLIC_EVIDENCE_BOUNDARY = (
     "AANA is production-candidate as an audit/control/verification/correction layer. "
-    "AANA is not yet proven as a raw agent-performance engine."
+    "AANA is not yet proven as a raw agent-performance engine and must not be "
+    "claimed to have raw agent-performance superiority."
 )
 MANIFEST_VERSION = "aana.standard_publication.v1"
 REQUIRED_COMPONENT_IDS = {
@@ -36,6 +36,21 @@ AGENT_ACTION_REQUIRED_FIELDS = [
     "proposed_arguments",
     "recommended_route",
 ]
+PUBLIC_CLAIM_SURFACES = [
+    "README.md",
+    "docs/index.html",
+    "docs/aana-standard-publication.md",
+    "docs/aana-public-artifact-hub.md",
+    "docs/aana-agent-action-technical-report.md",
+    "docs/aana-agent-contract-sdk.md",
+    "docs/agent-action-contract-quickstart.md",
+    "docs/huggingface-model-card.md",
+    "docs/huggingface-dataset-card.md",
+]
+OLD_PUBLIC_ARCHITECTURE_CLAIM = (
+    "AANA is an architecture for making agents more auditable, safer, "
+    "more grounded, and more controllable."
+)
 
 
 @dataclass(frozen=True)
@@ -112,6 +127,7 @@ def validate_standard_publication(
         _validate_agent_action_contract(component_by_id["agent_action_contract_spec"], root_path, errors)
     if "benchmark_eval_tooling" in component_by_id:
         _validate_benchmark_eval_tooling(component_by_id["benchmark_eval_tooling"], root_path, errors)
+    _validate_public_claim_surfaces(root_path, errors)
 
     return PublicationValidationResult(
         manifest_path=str(manifest_file),
@@ -229,8 +245,23 @@ def _validate_model_dataset_cards(component: dict[str, Any], root: pathlib.Path,
             errors.append(f"{card_path} missing public architecture claim")
         if "not yet proven as a raw agent-performance engine" not in text:
             errors.append(f"{card_path} missing raw agent-performance boundary")
+        if "raw agent-performance superiority" not in text:
+            errors.append(f"{card_path} missing raw agent-performance superiority boundary")
     if {"model", "dataset"} - seen_types:
         errors.append("model_dataset_cards must include both model and dataset card templates")
+
+
+def _validate_public_claim_surfaces(root: pathlib.Path, errors: list[str]) -> None:
+    for surface in PUBLIC_CLAIM_SURFACES:
+        path = root / surface
+        if not path.exists():
+            errors.append(f"public claim surface missing: {surface}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if PUBLIC_ARCHITECTURE_CLAIM not in text:
+            errors.append(f"{surface} missing exact public architecture claim")
+        if OLD_PUBLIC_ARCHITECTURE_CLAIM in text:
+            errors.append(f"{surface} still uses the old public architecture claim")
 
 
 def _validate_agent_action_contract(component: dict[str, Any], root: pathlib.Path, errors: list[str]) -> None:

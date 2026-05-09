@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "public_private_read_routing_v1_hf_validation",
+  "title": "AANA Public vs Private Read Routing HF Validation",
+  "public_claim_boundary": "This experiment evaluates whether AANA can route public reads differently from identity-bound/private reads as an audit/control layer. Labels are contract-derived or span-derived diagnostics, not yet human-reviewed public claims.",
+  "objective": "Measure whether AANA preserves harmless public-read execution while asking, deferring, or refusing identity-bound private reads when authorization evidence is inadequate.",
+  "adapter_family": "agent_tool_use",
+  "datasets": [
+    {
+      "dataset_name": "NousResearch/hermes-function-calling-v1",
+      "config": "func_calling_singleturn",
+      "split": "train",
+      "allowed_use": "calibration",
+      "schema": "hermes_function_calling",
+      "loader": "hf_rows",
+      "sample_offsets": [0, 100],
+      "purpose": "Calibration-only read-tool shape source."
+    },
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "config": "default",
+      "split": "train",
+      "allowed_use": "calibration",
+      "schema": "nemotron_pii_private_read",
+      "loader": "hf_rows",
+      "sample_offsets": [10, 200],
+      "purpose": "Calibration-only identity/private-data span source for private-read cues."
+    },
+    {
+      "dataset_name": "NousResearch/hermes-function-calling-v1",
+      "config": "func_calling",
+      "split": "train",
+      "allowed_use": "heldout_validation",
+      "schema": "hermes_function_calling",
+      "loader": "hf_rows",
+      "sample_offsets": [300, 700],
+      "purpose": "Held-out disjoint Hermes read-tool routing validation."
+    },
+    {
+      "dataset_name": "ScaleAI/MCP-Atlas",
+      "config": "default",
+      "split": "train",
+      "allowed_use": "heldout_validation",
+      "schema": "mcp_atlas",
+      "loader": "hf_rows",
+      "sample_offsets": [0, 250],
+      "purpose": "Held-out MCP public-read and identity-bound retrieval routing validation."
+    },
+    {
+      "dataset_name": "lihaonan0716/mcphunt-agent-traces",
+      "config": "default",
+      "split": "train",
+      "allowed_use": "heldout_validation",
+      "schema": "mcphunt_agent_traces",
+      "loader": "hf_file_csv",
+      "file_path": "meta/regression_data.csv",
+      "sample_offsets": [0, 100],
+      "purpose": "Held-out MCPHunt metadata for cross-boundary/private-read stress cases."
+    },
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "config": "default",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "schema": "nemotron_pii_private_read",
+      "loader": "hf_rows",
+      "sample_offsets": [10, 500],
+      "purpose": "Held-out identity/private-data span source for private-read routing validation."
+    }
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "calibration_splits": [
+      "NousResearch/hermes-function-calling-v1 func_calling_singleturn/train",
+      "nvidia/Nemotron-PII default/train"
+    ],
+    "heldout_validation_splits": [
+      "NousResearch/hermes-function-calling-v1 func_calling/train",
+      "ScaleAI/MCP-Atlas default/train",
+      "lihaonan0716/mcphunt-agent-traces default/train",
+      "nvidia/Nemotron-PII default/test"
+    ],
+    "external_reporting_splits": []
+  },
+  "comparisons": [
+    "plain_permissive_agent",
+    "deterministic_aana_v1",
+    "deterministic_aana_v2"
+  ],
+  "metrics": [
+    "public_read_allow_rate",
+    "private_read_escalation_rate",
+    "authorized_private_read_allow_rate",
+    "authorization_state_accuracy",
+    "false_public_allow_rate",
+    "false_private_block_rate",
+    "schema_failure_rate",
+    "route_accuracy"
+  ],
+  "outputs": {
+    "default_result": "eval_outputs/public_private_read_routing_hf_experiment_results.json",
+    "raw_text_storage": "Raw prompts, conversations, document text, spans, tool outputs, and full argument values are not written to result artifacts; rows contain ids, hashes, label categories, route labels, argument keys, evidence counts, and safe decision metadata."
+  }
+}

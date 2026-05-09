@@ -1,8 +1,11 @@
 import pathlib
 import tempfile
 import unittest
+import copy
+import json
 
 from eval_pipeline import agent_api
+from aana.sdk import check_tool_call
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -115,6 +118,8 @@ class AgentApiTests(unittest.TestCase):
         self.assertIn("invented_order_id", summary["violation_codes"])
         self.assertEqual(summary["aix"]["decisions"]["accept"], 1)
         self.assertEqual(summary["aix"]["hard_blockers"], {})
+        self.assertEqual(summary["decision_cases"]["blocked"], 1)
+        self.assertIn("unresolved", summary["decision_cases"])
 
     def test_export_audit_metrics_flattens_summary_for_dashboards(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
@@ -149,6 +154,96 @@ class AgentApiTests(unittest.TestCase):
             self.assertEqual(metrics["aix_decision_count.accept"], 1)
             self.assertEqual(metrics["aix_hard_blocker_count"], 0)
             self.assertIn("latency", payload["unavailable_metrics"])
+            self.assertEqual(metrics["blocked_case_count"], 1)
+            self.assertEqual(metrics["allowed_case_count"], 0)
+            self.assertEqual(metrics["deferred_case_count"], 0)
+            self.assertEqual(metrics["false_positive_case_count"], 0)
+            self.assertEqual(metrics["unresolved_case_count"], 0)
+
+    def test_tool_precheck_audit_record_excludes_raw_arguments_and_secrets(self):
+        event = {
+            "tool_name": "send_email",
+            "tool_category": "write",
+            "authorization_state": "confirmed",
+            "evidence_refs": [
+                {
+                    "source_id": "draft_id:123",
+                    "kind": "user_confirmation",
+                    "trust_tier": "runtime",
+                    "redaction_status": "redacted",
+                }
+            ],
+            "risk_domain": "customer_support",
+            "proposed_arguments": {
+                "to": "customer@example.com",
+                "api_key": "sk_live_12345678901234567890",
+                "private_account_id": "acct_123456789abc",
+            },
+            "recommended_route": "accept",
+        }
+        result = check_tool_call(event)
+        record = agent_api.audit_tool_precheck(event, result, created_at="2026-05-05T00:00:00+00:00", latency_ms=12.5)
+        serialized = json.dumps(record, sort_keys=True)
+
+        self.assertEqual(record["record_type"], "tool_precheck")
+        self.assertEqual(record["tool_name"], "send_email")
+        self.assertEqual(record["proposed_argument_keys"], ["[redacted_sensitive_key]", "to"])
+        self.assertEqual(record["audit_safe_log_event"]["raw_payload_logged"], False)
+        self.assertIn("sha256", record["input_fingerprints"]["proposed_arguments"])
+        self.assertNotIn("customer@example.com", serialized)
+        self.assertNotIn("sk_live", serialized)
+        self.assertNotIn("acct_123456789abc", serialized)
+        self.assertTrue(agent_api.validate_audit_records([record])["valid"])
+        self.assertTrue(
+            agent_api.audit_redaction_report(
+                [record],
+                forbidden_terms=["customer@example.com", "sk_live_12345678901234567890", "acct_123456789abc"],
+            )["valid"]
+        )
+
+    def test_audit_summary_counts_case_buckets(self):
+        event = {
+            "tool_name": "lookup_policy",
+            "tool_category": "public_read",
+            "authorization_state": "none",
+            "evidence_refs": [],
+            "risk_domain": "customer_support",
+            "proposed_arguments": {"topic": "returns"},
+            "recommended_route": "accept",
+        }
+        base = agent_api.audit_tool_precheck(
+            event,
+            {
+                "gate_decision": "pass",
+                "recommended_action": "accept",
+                "candidate_gate": "pass",
+                "aix": {"score": 1.0, "decision": "accept", "hard_blockers": []},
+            },
+            created_at="2026-05-05T00:00:00+00:00",
+        )
+        blocked = copy.deepcopy(base)
+        blocked["gate_decision"] = "fail"
+        blocked["recommended_action"] = "ask"
+        blocked["audit_safe_log_event"]["gate_decision"] = "fail"
+        blocked["audit_safe_log_event"]["route"] = "ask"
+        deferred = copy.deepcopy(base)
+        deferred["recommended_action"] = "defer"
+        deferred["audit_safe_log_event"]["route"] = "defer"
+        false_positive = copy.deepcopy(blocked)
+        false_positive["review_outcome"] = "false_positive"
+        unresolved = copy.deepcopy(base)
+        unresolved["gate_decision"] = None
+        unresolved["recommended_action"] = None
+        unresolved["audit_safe_log_event"]["gate_decision"] = None
+        unresolved["audit_safe_log_event"]["route"] = None
+
+        summary = agent_api.summarize_audit_records([base, blocked, deferred, false_positive, unresolved])
+
+        self.assertEqual(summary["decision_cases"]["allowed"], 1)
+        self.assertEqual(summary["decision_cases"]["blocked"], 1)
+        self.assertEqual(summary["decision_cases"]["deferred"], 1)
+        self.assertEqual(summary["decision_cases"]["false_positive"], 1)
+        self.assertEqual(summary["decision_cases"]["unresolved"], 1)
 
     def test_shadow_mode_audit_metrics_show_would_actions(self):
         event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")

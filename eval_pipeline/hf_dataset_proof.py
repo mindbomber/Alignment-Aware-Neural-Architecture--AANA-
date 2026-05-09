@@ -27,6 +27,8 @@ REQUIRED_POLICY_FLAGS = {
     "requires_limitations",
     "requires_measured_artifacts",
 }
+ALLOWED_RESULT_LABELS = {"calibration", "heldout", "diagnostic", "probe", "external_reporting"}
+PUBLIC_RESULT_LABELS = {"heldout", "external_reporting"}
 
 
 def _issue(level: str, path: str, message: str) -> dict[str, str]:
@@ -113,6 +115,14 @@ def validate_hf_dataset_proof_report(
 
     if manifest.get("schema_version") != HF_DATASET_PROOF_VERSION:
         issues.append(_issue("error", "schema_version", f"schema_version must be {HF_DATASET_PROOF_VERSION}."))
+    if manifest.get("result_label") not in PUBLIC_RESULT_LABELS:
+        issues.append(
+            _issue(
+                "error",
+                "result_label",
+                f"Public HF dataset proof reports must be labeled one of {sorted(PUBLIC_RESULT_LABELS)}.",
+            )
+        )
 
     policy = manifest.get("policy")
     if not isinstance(policy, dict):
@@ -146,6 +156,14 @@ def validate_hf_dataset_proof_report(
             seen_axes.add(str(axis_id))
         if not _has_text(axis.get("claim")):
             issues.append(_issue("error", f"{base}.claim", "Proof axis claim is required."))
+        if axis.get("result_label") not in ALLOWED_RESULT_LABELS:
+            issues.append(
+                _issue(
+                    "error",
+                    f"{base}.result_label",
+                    f"Proof axis result_label must be one of {sorted(ALLOWED_RESULT_LABELS)}.",
+                )
+            )
         if not _nonempty_list(axis.get("metrics")):
             issues.append(_issue("error", f"{base}.metrics", "Proof axis must list metrics."))
             continue

@@ -34,6 +34,7 @@ class DevScriptTests(unittest.TestCase):
             [
                 "compile",
                 "unit_tests",
+                "platform_ci_gate",
                 "contract_freeze",
                 "versioning_migration",
                 "verifier_boundaries",
@@ -73,7 +74,7 @@ class DevScriptTests(unittest.TestCase):
                 "docs_link_validation",
             ],
         )
-        self.assertTrue({"api", "adapter", "catalog", "audit", "data", "docs", "production-profile", "publication"}.issubset(categories))
+        self.assertTrue({"api", "adapter", "catalog", "audit", "data", "docs", "platform", "production-profile", "publication"}.issubset(categories))
         production_command = next(gate.command for gate in gates if gate.name == "production_profiles")
         self.assertIn("--audit-log", production_command)
         self.assertIn("eval_outputs/audit/test/aana-audit.jsonl", production_command)
@@ -114,6 +115,7 @@ class DevScriptTests(unittest.TestCase):
             [
                 "compile",
                 "unit_tests",
+                "platform_ci_gate",
                 "contract_freeze",
                 "versioning_migration",
                 "verifier_boundaries",

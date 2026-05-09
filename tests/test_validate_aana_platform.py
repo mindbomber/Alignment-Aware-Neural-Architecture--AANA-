@@ -14,6 +14,7 @@ class ValidateAANAPlatformTests(unittest.TestCase):
             names,
             [
                 "adapter_layout",
+                "bundle_certification",
                 "canonical_ids",
                 "registry",
                 "agent_integrations",
@@ -26,7 +27,7 @@ class ValidateAANAPlatformTests(unittest.TestCase):
                 "agent_tool_use_control_eval",
                 "adapter_generalization",
                 "benchmark_fit_lint",
-                "benchmark_reporting",
+                "public_claims_policy",
                 "cross_domain_adapter_families",
                 "production_candidate_evidence_pack",
                 "standard_publication",
@@ -39,6 +40,7 @@ class ValidateAANAPlatformTests(unittest.TestCase):
         self.assertTrue(
             {
                 "architecture",
+                "bundles",
                 "contracts",
                 "integrations",
                 "data",
@@ -61,6 +63,8 @@ class ValidateAANAPlatformTests(unittest.TestCase):
         self.assertTrue(any("validate_adapter_generalization.py --require-existing-artifacts" in command for command in commands))
         self.assertTrue(any("validate_hf_dataset_proof.py --require-existing-artifacts" in command for command in commands))
         self.assertTrue(any("validate_packaging_hardening.py --require-existing-artifacts" in command for command in commands))
+        self.assertTrue(any("validate_bundle_certification.py --json" in command for command in commands))
+        self.assertTrue(any("validate_public_claims_policy.py" in command for command in commands))
 
     def test_validate_platform_reports_failure_and_fail_fast(self):
         def fake_run(gate, *, timeout):
@@ -80,8 +84,8 @@ class ValidateAANAPlatformTests(unittest.TestCase):
             report = validate_aana_platform.validate_platform(fail_fast=True)
 
         self.assertFalse(report["valid"])
-        self.assertEqual(report["total"], 5)
-        self.assertEqual(report["passed"], 4)
+        self.assertEqual(report["total"], 6)
+        self.assertEqual(report["passed"], 5)
         self.assertEqual(report["checks"][-1]["name"], "contract_freeze")
 
     def test_main_returns_nonzero_on_failed_gate(self):

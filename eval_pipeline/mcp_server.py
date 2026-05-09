@@ -173,9 +173,12 @@ def _decision_summary(result: dict[str, Any]) -> dict[str, Any]:
         "recommended_action": result.get("recommended_action"),
         "aix_score": architecture.get("aix_score"),
         "hard_blockers": architecture.get("hard_blockers", result.get("hard_blockers", [])),
+        "missing_evidence": architecture.get("missing_evidence", (architecture.get("evidence_refs") or {}).get("missing", [])),
         "evidence_refs": architecture.get("evidence_refs", {}),
         "authorization_state": architecture.get("authorization_state"),
+        "recovery_suggestion": architecture.get("recovery_suggestion") or architecture.get("correction_recovery_suggestion"),
         "correction_recovery_suggestion": architecture.get("correction_recovery_suggestion"),
+        "audit_event": architecture.get("audit_event") or architecture.get("audit_safe_log_event"),
         "audit_safe_log_event": architecture.get("audit_safe_log_event"),
     }
 

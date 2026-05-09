@@ -4,7 +4,7 @@ The main public claim is:
 
 > AANA makes agents more auditable, safer, more grounded, and more controllable.
 
-AANA must not be described as proven to be a raw agent-performance engine. The approved boundary language is:
+AANA must not be described as proven to be a raw agent-performance engine or as having raw agent-performance superiority. The approved boundary language is:
 
 > AANA is not yet proven as a raw agent-performance engine.
 
@@ -12,12 +12,13 @@ AANA must not be described as proven to be a raw agent-performance engine. The a
 
 Every reported benchmark or evaluation result must use one of these labels:
 
-- `measured`: a completed non-probe run with tracked artifacts.
-- `held-out`: a run on a split or task set not used for tuning.
+- `calibration`: tuning, threshold selection, route calibration, or adapter development evidence.
+- `heldout`: a run on a split or task set not used for tuning.
 - `diagnostic`: engineering evidence, smoke checks, ablations, or failure analysis.
-- `probe-only`: runs that use probes, discovered flows, answer-key-like helpers, or task-specific recovery logic.
+- `probe`: runs that use probes, discovered flows, answer-key-like helpers, or task-specific recovery logic.
+- `external_reporting`: a public-facing result artifact prepared from an external, held-out, or maintainer-accepted protocol.
 
-Only `measured` and `held-out` results can support public claims, and only when limitations are published beside the reported wins.
+Only `heldout` and `external_reporting` results can support public claims, and only when limitations are published beside the reported wins.
 
 ## Limitations Beside Wins
 
@@ -32,5 +33,6 @@ Any public win must include limitations in the same report or linked artifact. C
 Validate public benchmark language with:
 
 ```powershell
-python scripts/validate_benchmark_reporting.py
+python scripts/validate_public_claims_policy.py
+python scripts/validate_aana_platform.py
 ```

@@ -1,0 +1,86 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "privacy_pii_hf_validation_v1",
+  "title": "AANA Privacy / PII HF Validation",
+  "public_claim_boundary": "This experiment validates AANA as an audit/control/verification/correction layer for privacy and PII handling. It does not claim AANA is a raw agent-performance engine.",
+  "objective": "Measure whether AANA catches sensitive data before unsafe output, logging, export, or tool use while preserving safe allow behavior for non-sensitive content.",
+  "adapter_family": "privacy_pii",
+  "datasets": [
+    {
+      "dataset_name": "piimb/pii-masking-benchmark",
+      "config": "sentences",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "text_field": "text",
+      "label_field": "entities",
+      "language_field": "language",
+      "purpose": "Held-out PII masking validation over multilingual sentence-level records."
+    },
+    {
+      "dataset_name": "ai4privacy/pii-masking-openpii-1m",
+      "config": "default",
+      "split": "validation",
+      "allowed_use": "heldout_validation",
+      "text_field": "source_text",
+      "label_field": "privacy_mask",
+      "language_field": "language",
+      "purpose": "Held-out multilingual PII validation after OpenPII train remains reserved for calibration."
+    },
+    {
+      "dataset_name": "nvidia/Nemotron-PII",
+      "config": "default",
+      "split": "test",
+      "allowed_use": "heldout_validation",
+      "text_field": "text",
+      "label_field": "spans",
+      "language_field": "locale",
+      "purpose": "Held-out synthetic document PII validation across domains and high-risk identity/financial labels."
+    }
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "calibration_splits": [
+      "ai4privacy/pii-masking-openpii-1m default/train",
+      "nvidia/Nemotron-PII default/train"
+    ],
+    "heldout_validation_splits": [
+      "piimb/pii-masking-benchmark sentences/test",
+      "ai4privacy/pii-masking-openpii-1m default/validation",
+      "nvidia/Nemotron-PII default/test"
+    ],
+    "external_reporting_splits": [
+      "piimb/pii-masking-benchmark full_text/test"
+    ]
+  },
+  "metrics": [
+    "pii_recall",
+    "category_recall",
+    "high_risk_recall",
+    "false_positive_rate",
+    "safe_allow_rate",
+    "redaction_correctness",
+    "multilingual_recall",
+    "route_accuracy"
+  ],
+  "baselines": [
+    "plain_allow_all",
+    "regex_detector_only",
+    "aana_privacy_pii_adapter"
+  ],
+  "acceptance_targets": {
+    "pii_recall": 0.90,
+    "high_risk_recall": 0.95,
+    "safe_allow_rate": 0.95,
+    "redaction_correctness": 0.98,
+    "route_accuracy": 0.90
+  },
+  "commands": {
+    "fixture_smoke": "python scripts/run_privacy_pii_hf_experiment.py --mode fixture",
+    "live_hf_smoke": "python scripts/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 25",
+    "live_hf_larger": "python scripts/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 250 --offset 0"
+  },
+  "outputs": {
+    "default_result": "eval_outputs/privacy_pii_hf_experiment_results.json",
+    "raw_pii_storage": "Raw source text is not written to the result artifact; rows contain source ids, label categories, hashes, routes, and redacted previews only."
+  }
+}

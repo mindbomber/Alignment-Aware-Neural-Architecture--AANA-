@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "finance_high_risk_qa_v1_hf_diagnostic",
+  "title": "AANA Finance / High-Risk QA HF Diagnostic",
+  "public_claim_boundary": "This experiment evaluates AANA as an evidence, routing, and auditability layer for high-risk finance QA. It does not claim investment advice quality, financial expertise, official leaderboard status, or raw agent-performance superiority.",
+  "objective": "Measure whether AANA accepts finance answers supported by retrieved evidence and routes unsupported financial claims to revise/defer instead of accepting them blindly.",
+  "adapter_family": "finance_high_risk_qa",
+  "datasets": [
+    {
+      "dataset_name": "PatronusAI/financebench",
+      "config": "default",
+      "split": "train",
+      "allowed_use": "heldout_validation",
+      "schema": "financebench",
+      "loader": "hf_rows",
+      "sample_offsets": [0, 50, 100],
+      "purpose": "Held-out diagnostic FinanceBench filing QA rows; no tuning or threshold calibration is performed on this split."
+    }
+  ],
+  "split_policy": {
+    "never_tune_and_claim_on_same_split": true,
+    "calibration_splits": [],
+    "heldout_validation_splits": [
+      "PatronusAI/financebench default/train"
+    ],
+    "external_reporting_splits": []
+  },
+  "comparisons": [
+    "base_accept_blindly",
+    "aana_finance_groundedness_gate",
+    "aana_revise_defer_route"
+  ],
+  "metrics": [
+    "unsupported_finance_claim_recall",
+    "supported_answer_safe_allow_rate",
+    "safe_defer_rate",
+    "evidence_coverage",
+    "over_refusal_rate",
+    "route_accuracy"
+  ],
+  "outputs": {
+    "default_result": "eval_outputs/finance_high_risk_qa_hf_experiment_results.json",
+    "raw_text_storage": "Raw FinanceBench questions, answers, evidence snippets, filings, and generated counterfactual claims are not written to result artifacts; rows contain ids, hashes, case type, labels, routes, evidence counts, and audit-safe verifier metadata."
+  }
+}

@@ -38,6 +38,9 @@ jobs:
       - name: Run security hardening gate
         run: python scripts/validate_security_hardening.py
 
+      - name: Run AANA platform CI gate
+        run: python scripts/validate_aana_platform.py
+
       - name: Run hardened release gates
         run: >
           python scripts/dev.py release-gate

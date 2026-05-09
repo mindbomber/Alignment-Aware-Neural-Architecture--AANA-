@@ -18,7 +18,6 @@ import os
 import pathlib
 import threading
 import time
-from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request, Security, status
@@ -131,49 +130,15 @@ def _rate_limited(
     return False, None
 
 
-def _safe_tool_event_summary(event: dict[str, Any]) -> dict[str, Any]:
-    refs = event.get("evidence_refs") or []
-    return {
-        "tool_name": event.get("tool_name"),
-        "tool_category": event.get("tool_category"),
-        "authorization_state": event.get("authorization_state"),
-        "risk_domain": event.get("risk_domain"),
-        "recommended_route": event.get("recommended_route"),
-        "evidence_ref_count": len(refs) if isinstance(refs, list) else 0,
-        "proposed_argument_keys": sorted((event.get("proposed_arguments") or {}).keys()),
-    }
-
-
 def _tool_audit_record(event: dict[str, Any], result: dict[str, Any], started_at: float) -> dict[str, Any]:
-    architecture = result.get("architecture_decision") or {}
     latency_ms = round((time.perf_counter() - started_at) * 1000, 3)
-    audit_safe = aana.audit_safe_decision_event(result, event, latency_ms=latency_ms)
-    return {
-        "audit_record_version": "aana.fastapi.tool_precheck.v1",
-        "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "record_type": "tool_precheck",
-        "surface": "fastapi",
-        "route": "/pre-tool-check",
-        "contract": "aana.agent_action_contract.v1",
-        "request": _safe_tool_event_summary(event),
-        "decision": {
-            "gate_decision": result.get("gate_decision"),
-            "recommended_action": result.get("recommended_action"),
-            "candidate_gate": result.get("candidate_gate"),
-            "aix_score": architecture.get("aix_score"),
-            "aix_decision": architecture.get("aix_decision"),
-            "hard_blockers": architecture.get("hard_blockers", result.get("hard_blockers", [])),
-            "missing_evidence": architecture.get("evidence_refs", {}).get("missing", []),
-            "evidence_refs": architecture.get("evidence_refs", {}),
-            "authorization_state": audit_safe.get("authorization_state"),
-            "correction_recovery_suggestion": architecture.get("correction_recovery_suggestion"),
-        },
-        "audit_safe_log_event": audit_safe,
-        "audit_metadata": {
-            "latency_ms": latency_ms,
-            "raw_payload_logged": False,
-        },
-    }
+    return agent_api.audit_tool_precheck(
+        event,
+        result,
+        latency_ms=latency_ms,
+        surface="fastapi",
+        route="/pre-tool-check",
+    )
 
 
 def _authorized(

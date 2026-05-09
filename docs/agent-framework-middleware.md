@@ -46,8 +46,9 @@ non-`accept` routes fail closed. If the gate fails, the Python wrappers raise
 Set `raise_on_block=False` when the agent runtime should receive the blocked
 gate result instead of an exception. Each wrapper stores the latest decision in
 `aana_last_gate`, and every gate result includes `architecture_decision` with
-route, AIx score, hard blockers, evidence refs, authorization state, recovery
-suggestion, and audit-safe log metadata.
+the parity shape used by CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and
+middleware: `route`, `aix_score`, `hard_blockers`, `missing_evidence`,
+`authorization_state`, `recovery_suggestion`, and `audit_event`.
 
 Blocked wrapper results are standardized across plain Python, OpenAI Agents SDK,
 LangChain, AutoGen, CrewAI, MCP, and TypeScript wrappers:

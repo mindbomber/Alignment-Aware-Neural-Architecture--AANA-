@@ -23,6 +23,7 @@ A public benchmark claim must:
 - Run without `--allow-benchmark-probes`.
 - Treat the default tau2 workflow scope, `general_non_probe`, as the only valid
   scaffold path for generalization evidence.
+- Use result label `heldout` or `external_reporting`.
 - Exclude probe artifacts and probe metrics from all primary numbers.
 - State the benchmark, data split, label source, model/base-agent, AANA mode, and scaffold version.
 - Include limitations, especially whether labels are maintainer-provided, human-reviewed, benchmark-rubric-derived, or policy-derived by our scripts.
@@ -34,13 +35,18 @@ Use:
 
 - "Diagnostic probe run" for probe-enabled experiments.
 - "Engineering smoke test" for small non-probe regression runs.
-- "Measured general run" only when the default scaffold ran without probes.
+- `calibration` for tuning, threshold selection, route calibration, or adapter development evidence.
+- `heldout` for a split or task set not used for tuning.
+- `diagnostic` for smoke checks, ablations, or failure analysis.
+- `probe` for experiments that use probes, exact literals, answer-key-like helpers, or task-specific recovery logic.
+- `external_reporting` for public-facing result artifacts prepared from external, held-out, or maintainer-accepted protocols.
 - "Official submission" only when the benchmark maintainer or leaderboard accepted the result.
 
 Avoid:
 
 - "AANA scored X" when X includes probe-enabled runs.
 - "AANA beats baseline" unless the compared runs used the same non-probe protocol.
+- Any claim of raw agent-performance superiority.
 - "official", "peer-reviewed", "leaderboard", or "production-ready" unless that exact external review or deployment condition happened.
 
 ## Validation

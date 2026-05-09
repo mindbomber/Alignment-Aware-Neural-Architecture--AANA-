@@ -1,5 +1,6 @@
 {
   "schema_version": "0.1",
+  "result_label": "heldout",
   "report_path": "docs/aana-production-candidate-evidence-pack.md",
   "claim_boundary": {
     "production_candidate_layer": "AANA is production-candidate as an audit/control/verification/correction layer.",
@@ -7,6 +8,7 @@
   },
   "policy": {
     "allow_raw_agent_performance_claim": false,
+    "allow_raw_agent_performance_superiority_claim": false,
     "require_failures_section": true,
     "require_false_positives_section": true,
     "require_latency_section": true,

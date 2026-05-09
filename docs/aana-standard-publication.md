@@ -6,7 +6,7 @@ AANA should be published as a standard developers can wrap around agents:
 agent proposes -> AANA checks -> agent executes only if allowed
 ```
 
-Public claim: AANA is an architecture for making agents more auditable, safer, more grounded, and more controllable.
+Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 ## Package Surfaces
 
@@ -49,3 +49,4 @@ This repository can be made publish-ready locally without immediately publishing
 - release notes,
 - public evidence language,
 - no benchmark probe results merged into public claims.
+

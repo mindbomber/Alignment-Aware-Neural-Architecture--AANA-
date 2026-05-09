@@ -13,8 +13,9 @@ REQUIRED_SURFACES = {
     "python_package",
     "typescript_sdk",
     "fastapi_service",
-    "benchmark_eval_tooling",
     "docs_and_cards",
+    "benchmark_eval_tooling",
+    "examples",
 }
 REQUIRED_RELEASE_TARGETS = {"pypi", "npm", "huggingface"}
 REQUIRED_RENAME_RULES = {
@@ -105,6 +106,18 @@ def validate_packaging_hardening(
             for path in paths:
                 if not isinstance(path, str) or not _path_exists(root_path, path):
                     issues.append(_issue("error", f"{base}.paths", f"Missing surface artifact: {path}"))
+        if not _has_text(surface.get("boundary")):
+            issues.append(_issue("error", f"{base}.boundary", "Surface must declare what belongs inside this package boundary."))
+
+    path_owners: dict[str, str] = {}
+    for surface_id, surface in surface_by_id.items():
+        for path in surface.get("paths", []) if isinstance(surface.get("paths"), list) else []:
+            if not isinstance(path, str):
+                continue
+            owner = path_owners.get(path)
+            if owner and owner != surface_id:
+                issues.append(_issue("error", f"surfaces.{surface_id}.paths", f"Path is claimed by multiple packaging surfaces: {path}"))
+            path_owners[path] = surface_id
 
     python_surface = surface_by_id.get("python_package", {})
     if python_surface:
@@ -152,6 +165,14 @@ def validate_packaging_hardening(
             if required not in docs_surface.get("paths", []):
                 issues.append(_issue("error", "surfaces.docs_and_cards.paths", f"Docs/cards surface must include {required}."))
 
+    examples_surface = surface_by_id.get("examples", {})
+    if examples_surface:
+        for required in ("examples/api", "examples/integrations", "examples/huggingface_space"):
+            if required not in examples_surface.get("paths", []):
+                issues.append(_issue("error", "surfaces.examples.paths", f"Examples surface must include {required}."))
+        if examples_surface.get("public_demo_default") != "synthetic_only":
+            issues.append(_issue("error", "surfaces.examples.public_demo_default", "Examples and demos must default to synthetic-only actions."))
+
     rename_plan = manifest.get("distribution_rename_plan")
     if not isinstance(rename_plan, dict):
         issues.append(_issue("error", "distribution_rename_plan", "Manifest must include distribution_rename_plan."))
@@ -185,6 +206,8 @@ def validate_packaging_hardening(
             issues.append(_issue("error", f"{base}.required_checks", "Checklist item must include required checks."))
         if item.get("human_release_review_required") is not True:
             issues.append(_issue("error", f"{base}.human_release_review_required", "Human release review must be required."))
+        if not _nonempty_list(item.get("surface_boundaries_checked")):
+            issues.append(_issue("error", f"{base}.surface_boundaries_checked", "Checklist item must declare checked package surfaces."))
     for missing in sorted(REQUIRED_RELEASE_TARGETS - targets):
         issues.append(_issue("error", "release_checklist", f"Missing release checklist target: {missing}"))
 

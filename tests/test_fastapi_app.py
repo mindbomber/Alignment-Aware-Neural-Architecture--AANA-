@@ -105,11 +105,13 @@ class FastApiAppTests(unittest.TestCase):
             self.assertTrue(audit_log.exists())
             records = [json.loads(line) for line in audit_log.read_text(encoding="utf-8").splitlines()]
             self.assertEqual(records[0]["record_type"], "tool_precheck")
-            self.assertEqual(records[0]["request"]["proposed_argument_keys"], ["to"])
+            self.assertEqual(records[0]["audit_record_version"], "0.1")
+            self.assertEqual(records[0]["proposed_argument_keys"], ["to"])
             self.assertEqual(records[0]["audit_safe_log_event"]["route"], "ask")
             self.assertEqual(records[0]["audit_safe_log_event"]["authorization_state"], "user_claimed")
             self.assertIn("latency_ms", records[0]["audit_safe_log_event"])
             self.assertNotIn("customer@example.com", audit_log.read_text(encoding="utf-8"))
+            self.assertTrue(agent_api.validate_audit_records(records)["valid"])
 
     def test_checked_in_fastapi_examples_are_runnable(self):
         client = TestClient(create_app(auth_token="secret-token"))
