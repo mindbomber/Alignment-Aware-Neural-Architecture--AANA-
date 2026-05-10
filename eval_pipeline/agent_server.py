@@ -660,24 +660,15 @@ def dashboard_metrics(audit_log_path=None):
 def mi_dashboard_metrics(path=DEFAULT_MI_DASHBOARD):
     dashboard_path = pathlib.Path(path)
     if not dashboard_path.exists():
-        return {
-            "mi_observability_dashboard_version": "0.1",
-            "status": "mi_dashboard_not_found",
-            "message": f"MI dashboard JSON does not exist yet: {dashboard_path}",
-            "source": "missing",
-            "metrics": {
-                "handoff_pass_rate": 0.0,
-                "handoff_fail_rate": 0.0,
-                "propagated_error_rate": 0.0,
-                "correction_success_rate": 0.0,
-                "false_accept_rate": 0.0,
-                "false_refusal_rate": 0.0,
-                "global_aix_drift_max_drop": 0.0,
-            },
-            "panels": {},
-            "workflow_rows": [],
-            "mi_dashboard_path": str(dashboard_path),
-        }
+        from eval_pipeline.mi_benchmark import run_mi_benchmark
+        from eval_pipeline.mi_observability import mi_dashboard_from_benchmark
+
+        payload = mi_dashboard_from_benchmark(run_mi_benchmark())
+        payload["status"] = "ok"
+        payload["source"] = "generated_default"
+        payload["message"] = f"MI dashboard JSON was not present; returned deterministic default metrics for {dashboard_path}."
+        payload["mi_dashboard_path"] = str(dashboard_path)
+        return payload
     with dashboard_path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):

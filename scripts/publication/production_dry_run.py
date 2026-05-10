@@ -7,6 +7,10 @@ import json
 import pathlib
 import sys
 
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from eval_pipeline.human_signoff import DEFAULT_HUMAN_SIGNOFF_PATH
 from eval_pipeline.live_connector_readiness import DEFAULT_LIVE_CONNECTOR_READINESS_PLAN_PATH
 from eval_pipeline.mi_release import DEFAULT_MI_RELEASE_REPORT

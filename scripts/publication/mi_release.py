@@ -7,6 +7,10 @@ import json
 import pathlib
 import sys
 
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from eval_pipeline.mi_release import DEFAULT_MI_RELEASE_REPORT, run_mi_release
 from eval_pipeline.mi_release_bundle import DEFAULT_MI_RELEASE_BUNDLE_DIR
 from eval_pipeline.mi_release_candidate import DEFAULT_MI_BENCHMARK_DIR, DEFAULT_MI_RELEASE_CANDIDATE_REPORT
