@@ -177,6 +177,15 @@ def platform_gates(*, require_existing_artifacts: bool = True, include_agent_int
                 "Validate Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP, and controlled-agent eval harness.",
             ),
         )
+    gates.insert(
+        5 if include_agent_integrations else 4,
+        PlatformGate(
+            "agent_contract_chaos",
+            "integrations",
+            [PYTHON, "scripts/validation/validate_agent_contract_chaos.py", "--json"],
+            "Validate fail-closed behavior for malformed evidence, unknown tools, stale auth, contradictory evidence, oversized FastAPI payloads, mislabeled private reads, and bad runtime accept routes.",
+        ),
+    )
     return gates
 
 

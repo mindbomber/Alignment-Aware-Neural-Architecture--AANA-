@@ -4,7 +4,7 @@ Use this checklist before publishing any AANA artifact to PyPI, npm, or Hugging 
 
 ## Required Preflight
 
-- [ ] Run `python scripts/validate_aana_platform.py --timeout 240`.
+- [ ] Run the standard pre-release platform gate: `python scripts/validate_aana_platform.py --timeout 240`.
 - [ ] Run `python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts`.
 - [ ] Run `python scripts/validation/validate_aana_standard_publication.py --require-existing-artifacts`.
 - [ ] Run `python scripts/validation/validate_security_hardening.py`.
@@ -52,4 +52,3 @@ Use this checklist before publishing any AANA artifact to PyPI, npm, or Hugging 
 - [ ] Claim boundary reviewer approved public wording.
 - [ ] Reproduction commands are present for any published benchmark/evidence artifact.
 - [ ] Publication target, version, date, and commit SHA are recorded in release notes.
-
