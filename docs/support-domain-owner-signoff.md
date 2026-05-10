@@ -18,7 +18,7 @@ Required approval areas:
 The checked-in template is intentionally `pending_external_approval`. That is valid for demo and shadow-mode validation. Before enforced support drafts, email-send enforcement, or expanded support workflows, run the validator with `--require-approved` against an environment-specific signoff artifact:
 
 ```powershell
-python scripts/validate_support_domain_signoff.py --signoff path/to/support-domain-signoff.json --require-approved
+python scripts/validation/validate_support_domain_signoff.py --signoff path/to/support-domain-signoff.json --require-approved
 ```
 
 This repository does not certify that support leadership has approved the policy. It only defines the required signoff shape and gates the presence of every required approval area.

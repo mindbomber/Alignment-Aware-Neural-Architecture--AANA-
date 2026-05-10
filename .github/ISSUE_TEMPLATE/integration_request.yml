@@ -1,0 +1,60 @@
+name: Integration request
+description: Request support for an agent framework, SDK, MCP server, API surface, or middleware path.
+title: "[Integration]: "
+labels: ["integration"]
+body:
+  - type: input
+    id: platform
+    attributes:
+      label: Platform or framework
+      description: What should AANA integrate with?
+      placeholder: "Example: OpenAI Agents SDK, LangChain, AutoGen, CrewAI, MCP, TypeScript SDK"
+    validations:
+      required: true
+  - type: dropdown
+    id: integration-mode
+    attributes:
+      label: Integration mode
+      options:
+        - Python wrapper
+        - TypeScript wrapper
+        - FastAPI policy service
+        - MCP tool/server
+        - middleware
+        - CI/GitHub Action
+        - documentation/example only
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: tool-call-shape
+    attributes:
+      label: Tool-call or action shape
+      description: Show the proposed tool/action payload and how it maps to Agent Action Contract v1.
+      render: json
+    validations:
+      required: false
+  - type: textarea
+    id: execution-rule
+    attributes:
+      label: Expected execution rule
+      description: Explain which calls should execute only on `accept`, and what should happen for ask/defer/refuse/revise.
+    validations:
+      required: true
+  - type: textarea
+    id: audit-needs
+    attributes:
+      label: Audit and deployment needs
+      description: Note auth, redacted audit logging, latency, local-only mode, scopes, or deployment constraints.
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: The requested integration should fail closed when AANA returns anything other than `accept`.
+          required: true
+        - label: I did not include real credentials, private tokens, or unredacted private data.
+          required: true
+

@@ -738,7 +738,7 @@ def _retail_order_planner_step(state: AANAContractAgentState, domain_policy: str
 
 def _benchmark_probe_step(state: AANAContractAgentState) -> AssistantMessage | None:
     try:
-        from examples.tau2.aana_tau2_probe_planners import banking_bypass_step
+        from diagnostics.probes.tau2.aana_tau2_probe_planners import banking_bypass_step
     except Exception:
         return None
     return banking_bypass_step(state)

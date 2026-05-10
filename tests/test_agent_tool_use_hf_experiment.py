@@ -11,7 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 class AgentToolUseHFExperimentTests(unittest.TestCase):
     def test_experiment_manifest_uses_registered_splits(self):
         from eval_pipeline.hf_dataset_registry import load_registry
-        from scripts.run_agent_tool_use_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
+        from scripts.hf.run_agent_tool_use_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
 
         experiment = _load_json(DEFAULT_EXPERIMENT)
         registry = load_registry(DEFAULT_REGISTRY)
@@ -26,7 +26,7 @@ class AgentToolUseHFExperimentTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_agent_tool_use_hf_experiment.py",
+                "scripts/hf/run_agent_tool_use_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--output",
@@ -57,7 +57,7 @@ class AgentToolUseHFExperimentTests(unittest.TestCase):
         self.assertFalse(first_row["raw_payload_logged"])
 
     def test_event_conversion_preserves_agent_action_contract_shape(self):
-        from scripts.run_agent_tool_use_hf_experiment import _fixture_rows, _load_json, event_from_row
+        from scripts.hf.run_agent_tool_use_hf_experiment import _fixture_rows, _load_json, event_from_row
 
         experiment = _load_json(ROOT / "examples" / "agent_tool_use_hf_experiment.json")
         rows = _fixture_rows(experiment)

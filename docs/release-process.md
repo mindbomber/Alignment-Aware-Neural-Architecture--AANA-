@@ -33,7 +33,7 @@ Failure annotations include the gate category so it is clear whether the issue i
 ```powershell
 python scripts/dev.py test
 python -m unittest tests.test_adapter_runner_golden_outputs
-python scripts/compare_adapter_runner_baseline.py --ref HEAD
+python scripts/adapters/compare_adapter_runner_baseline.py --ref HEAD
 ```
 
 Use `--ref <pre-refactor-ref>` when the pre-refactor runner is not the current `HEAD`. The comparison checks representative adapter-runner decision surfaces before and after decomposition: gate decision, recommended action, AIx decision, candidate AIx decision, violations, and failed constraints. Do not update release docs or create the platform-core tag until the full suite and golden comparison pass.

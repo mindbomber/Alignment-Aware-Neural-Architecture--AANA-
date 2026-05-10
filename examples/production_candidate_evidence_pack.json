@@ -54,9 +54,9 @@
     "examples/benchmark_fit_lint_manifest.json",
     "examples/cross_domain_adapter_family_validation.json",
     "examples/hf_dataset_proof_report.json",
-    "eval_outputs/privacy_pii_adapter_upgrade_results.json",
-    "eval_outputs/grounded_qa_adapter_upgrade_results.json",
-    "eval_outputs/agent_tool_use_control_upgrade_results.json"
+    "docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json",
+    "docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json",
+    "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json"
   ],
   "limitations": {
     "failures": [

@@ -214,7 +214,7 @@ Breaking schema changes require a new contract version, migration notes, updated
 
 ## CI Enforcement
 
-`scripts/validate_mi_contracts.py` checks that the JSON schema, pilot handoffs, audit JSONL, dashboard payload, and production-readiness payload remain compatible with the active interoperability contract version.
+`scripts/validation/validate_mi_contracts.py` checks that the JSON schema, pilot handoffs, audit JSONL, dashboard payload, and production-readiness payload remain compatible with the active interoperability contract version.
 """
 
 

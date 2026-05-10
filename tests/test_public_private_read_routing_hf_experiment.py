@@ -11,7 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 class PublicPrivateReadRoutingHFExperimentTests(unittest.TestCase):
     def test_manifest_uses_registered_splits(self):
         from eval_pipeline.hf_dataset_registry import load_registry
-        from scripts.run_public_private_read_routing_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
+        from scripts.hf.run_public_private_read_routing_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
 
         experiment = _load_json(DEFAULT_EXPERIMENT)
         registry = load_registry(DEFAULT_REGISTRY)
@@ -27,7 +27,7 @@ class PublicPrivateReadRoutingHFExperimentTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_public_private_read_routing_hf_experiment.py",
+                "scripts/hf/run_public_private_read_routing_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--output",
@@ -55,7 +55,7 @@ class PublicPrivateReadRoutingHFExperimentTests(unittest.TestCase):
         self.assertNotIn("bank_routing_number", serialized)
 
     def test_fixture_cases_include_public_and_private_reads(self):
-        from scripts.run_public_private_read_routing_hf_experiment import _fixture_rows, _load_json
+        from scripts.hf.run_public_private_read_routing_hf_experiment import _fixture_rows, _load_json
 
         experiment = _load_json(ROOT / "examples" / "public_private_read_routing_hf_experiment.json")
         rows = _fixture_rows(experiment)

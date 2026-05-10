@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 import aana
-from scripts import run_adapter
+from eval_pipeline.adapter_runner import legacy_runner as run_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]

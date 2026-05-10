@@ -17,7 +17,7 @@ then runs the original tool body.
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-local-secret"
-python scripts/aana_fastapi.py --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 FastAPI serves OpenAPI JSON at `/openapi.json` and Swagger UI at `/docs`.
@@ -79,7 +79,7 @@ The service applies dependency-light local limits:
 ```powershell
 $env:AANA_RATE_LIMIT_PER_MINUTE = "60"
 $env:AANA_MAX_REQUEST_BYTES = "65536"
-python scripts/aana_fastapi.py --rate-limit-per-minute 60 --max-request-bytes 65536
+aana-fastapi --rate-limit-per-minute 60 --max-request-bytes 65536
 ```
 
 `AANA_RATE_LIMIT_PER_MINUTE` is an in-memory per-client limit intended to protect
@@ -166,7 +166,7 @@ The repo includes an HTTP-only OpenAI-style guard:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "local-dev-secret"
-python scripts/aana_fastapi.py --host 127.0.0.1 --port 8766
+aana-fastapi --host 127.0.0.1 --port 8766
 
 $env:AANA_API_URL = "http://127.0.0.1:8766"
 python examples/integrations/openai_agents/api_guard.py
@@ -224,7 +224,7 @@ Local development:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "local-dev-secret"
-python scripts/aana_fastapi.py --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 Docker:
@@ -236,7 +236,7 @@ COPY . /app
 RUN pip install -e .[api]
 ENV AANA_RATE_LIMIT_PER_MINUTE=60
 ENV AANA_MAX_REQUEST_BYTES=65536
-CMD ["python", "scripts/aana_fastapi.py", "--host", "127.0.0.1", "--port", "8766", "--audit-log", "eval_outputs/audit/aana-fastapi.jsonl"]
+CMD ["aana-fastapi", "--host", "127.0.0.1", "--port", "8766", "--audit-log", "eval_outputs/audit/aana-fastapi.jsonl"]
 ```
 
 Internal service:
@@ -244,7 +244,7 @@ Internal service:
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "<secret-manager-injected-token>"
 $env:AANA_BRIDGE_TOKEN_SCOPES = "pre_tool_check,agent_check"
-python scripts/aana_fastapi.py `
+aana-fastapi `
   --host 127.0.0.1 `
   --port 8766 `
   --rate-limit-per-minute 120 `

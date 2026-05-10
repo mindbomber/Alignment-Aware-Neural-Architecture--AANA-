@@ -33,13 +33,13 @@ It returns:
 List tools:
 
 ```powershell
-python scripts/aana_mcp_server.py --list-tools
+python scripts/integrations/aana_mcp_server.py --list-tools
 ```
 
 Call through the minimal newline-delimited JSON-RPC loop:
 
 ```powershell
-'{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | python scripts/aana_mcp_server.py
+'{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | python scripts/integrations/aana_mcp_server.py
 ```
 
 For a real MCP SDK or ChatGPT Apps server, register the descriptor from

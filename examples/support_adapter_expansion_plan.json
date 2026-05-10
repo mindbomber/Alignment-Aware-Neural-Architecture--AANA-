@@ -263,7 +263,7 @@
     }
   ],
   "release_gate": {
-    "script": "scripts/validate_support_adapter_expansion.py",
+    "script": "scripts/validation/validate_support_adapter_expansion.py",
     "category": "catalog",
     "blocks_release": true
   }

@@ -29,7 +29,7 @@ Examples of breaking changes include removing required result fields, changing r
 Run:
 
 ```powershell
-python scripts/validate_versioning_migration.py
+python scripts/validation/validate_versioning_migration.py
 ```
 
 The release gate runs this validator before production-profile checks. It fails when a versioned surface is missing, when code constants drift from the policy manifest, or when a breaking migration note lacks compatibility tests.

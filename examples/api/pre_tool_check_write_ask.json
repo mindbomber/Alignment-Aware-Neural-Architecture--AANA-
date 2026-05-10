@@ -3,7 +3,17 @@
   "tool_category": "write",
   "authorization_state": "user_claimed",
   "evidence_refs": [
-    "draft_id:123"
+    {
+      "source_id": "draft_id:123",
+      "kind": "assistant_message",
+      "trust_tier": "runtime",
+      "redaction_status": "redacted",
+      "summary": "Draft email exists, but no authenticated confirmation is present.",
+      "provenance": "fixture",
+      "freshness": {
+        "status": "fresh"
+      }
+    }
   ],
   "risk_domain": "customer_support",
   "proposed_arguments": {

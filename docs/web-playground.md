@@ -9,7 +9,7 @@ workflow APIs, so the browser can call AANA checks without CORS or extra setup.
 With Python:
 
 ```powershell
-python scripts/run_playground.py
+python scripts/demos/run_playground.py
 ```
 
 With Docker:

@@ -128,7 +128,7 @@ class ProductionGoNoGoTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/production_go_no_go.py",
+                    "scripts/publication/production_go_no_go.py",
                     "--output",
                     str(output_path),
                     "--release-manifest",

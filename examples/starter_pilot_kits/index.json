@@ -10,8 +10,8 @@
       "path": "examples/starter_pilot_kits/personal_productivity"
     },
     {
-      "id": "civic_government",
-      "path": "examples/starter_pilot_kits/civic_government"
+      "id": "government_civic",
+      "path": "examples/starter_pilot_kits/government_civic"
     }
   ]
 }

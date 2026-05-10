@@ -39,7 +39,7 @@
     "route_accuracy"
   ],
   "outputs": {
-    "default_result": "eval_outputs/finance_high_risk_qa_hf_experiment_results.json",
+    "default_result": "docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json",
     "raw_text_storage": "Raw FinanceBench questions, answers, evidence snippets, filings, and generated counterfactual claims are not written to result artifacts; rows contain ids, hashes, case type, labels, routes, evidence counts, and audit-safe verifier metadata."
   }
 }

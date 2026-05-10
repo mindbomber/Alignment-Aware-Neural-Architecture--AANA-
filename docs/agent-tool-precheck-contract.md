@@ -50,7 +50,7 @@ result = gate_pre_tool_call(event)
 CLI:
 
 ```bash
-python scripts/aana_tool_precheck.py path/to/event.json
+python scripts/integrations/aana_tool_precheck.py path/to/event.json
 ```
 
 Response fields:

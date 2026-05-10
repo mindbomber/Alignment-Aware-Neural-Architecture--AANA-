@@ -172,13 +172,13 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
         ReleaseGate(
             "versioning_migration",
             "api",
-            [PYTHON, "scripts/validate_versioning_migration.py"],
+            [PYTHON, "scripts/validation/validate_versioning_migration.py"],
             "Validate versioned runtime surfaces and migration-note requirements for breaking changes.",
         ),
         ReleaseGate(
             "verifier_boundaries",
             "adapter",
-            [PYTHON, "scripts/validate_verifier_boundaries.py"],
+            [PYTHON, "scripts/validation/validate_verifier_boundaries.py"],
             "Ensure verifier report functions are owned by verifier_modules.",
         ),
         ReleaseGate(
@@ -196,79 +196,79 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
         ReleaseGate(
             "adapter_baseline_comparison",
             "adapter",
-            [PYTHON, "scripts/compare_adapter_runner_baseline.py", "--ref", "HEAD"],
+            [PYTHON, "scripts/adapters/compare_adapter_runner_baseline.py", "--ref", "HEAD"],
             "Compare current adapter runner support and core decision surfaces against the selected baseline ref.",
         ),
         ReleaseGate(
             "adapter_heldout_validation",
             "adapter",
-            [PYTHON, "scripts/validate_adapter_heldout.py"],
+            [PYTHON, "scripts/validation/validate_adapter_heldout.py"],
             "Require held-out, blind, external, or maintainer-eval evidence after every adapter improvement.",
         ),
         ReleaseGate(
             "benchmark_fit_lint",
             "adapter",
-            [PYTHON, "scripts/validate_benchmark_fit_lint.py"],
+            [PYTHON, "scripts/validation/validate_benchmark_fit_lint.py"],
             "Reject known benchmark-answer literals from general AANA adapter paths.",
         ),
         ReleaseGate(
             "benchmark_reporting",
             "docs",
-            [PYTHON, "scripts/validate_benchmark_reporting.py"],
+            [PYTHON, "scripts/validation/validate_benchmark_reporting.py"],
             "Ensure diagnostic probe results are never merged into public AANA benchmark claims.",
         ),
         ReleaseGate(
             "adapter_generalization",
             "adapter",
-            [PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"],
+            [PYTHON, "scripts/validation/validate_adapter_generalization.py", "--require-existing-artifacts"],
             "Validate config-backed adapter hints, held-out validation, benchmark-fit linting, and public-claim separation as one generalization gate.",
         ),
         ReleaseGate(
             "hf_dataset_registry",
             "data",
-            [PYTHON, "scripts/validate_hf_dataset_registry.py"],
+            [PYTHON, "scripts/hf/validate_hf_dataset_registry.py"],
             "Validate HF dataset split-use isolation for calibration, held-out validation, and external reporting.",
         ),
         ReleaseGate(
             "hf_calibration",
             "data",
-            [PYTHON, "scripts/validate_hf_calibration.py"],
+            [PYTHON, "scripts/hf/validate_hf_calibration.py"],
             "Validate per-family HF calibration targets, metric tracking, and calibration/reporting split isolation.",
         ),
         ReleaseGate(
             "hf_dataset_proof",
             "data",
-            [PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"],
+            [PYTHON, "scripts/hf/validate_hf_dataset_proof.py", "--require-existing-artifacts"],
             "Fail CI if any public HF dataset proof claim references a calibration split or unregistered split.",
         ),
         ReleaseGate(
             "privacy_pii_adapter",
             "adapter",
-            [PYTHON, "scripts/run_privacy_pii_adapter_eval.py"],
+            [PYTHON, "scripts/evals/run_privacy_pii_adapter_eval.py"],
             "Validate PII recall, false positives, safe allow rate, redaction correctness, and route accuracy.",
         ),
         ReleaseGate(
             "grounded_qa_adapter",
             "adapter",
-            [PYTHON, "scripts/run_grounded_qa_adapter_eval.py"],
+            [PYTHON, "scripts/evals/run_grounded_qa_adapter_eval.py"],
             "Validate unsupported-claim recall, answerable safe allow, citation/evidence coverage, and over-refusal.",
         ),
         ReleaseGate(
             "agent_tool_use_control",
             "adapter",
-            [PYTHON, "scripts/run_agent_tool_use_control_eval.py"],
+            [PYTHON, "scripts/evals/run_agent_tool_use_control_eval.py"],
             "Validate agent tool-call schema conversion, unsafe recall, private-read/write gating, route quality, schema failures, and safe allow.",
         ),
         ReleaseGate(
             "cross_domain_adapter_families",
             "adapter",
-            [PYTHON, "scripts/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"],
+            [PYTHON, "scripts/validation/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"],
             "Require privacy/security, research/grounded QA, support, finance, ecommerce/retail, and agent tool-use/MCP families to have external HF held-out validation before stronger claims.",
         ),
         ReleaseGate(
             "production_candidate_evidence_pack",
             "docs",
-            [PYTHON, "scripts/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"],
+            [PYTHON, "scripts/validation/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"],
             "Validate the public claim boundary: production-candidate control layer, not proven raw agent-performance engine.",
         ),
         ReleaseGate(
@@ -280,7 +280,7 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
         ReleaseGate(
             "support_adapter_expansion",
             "catalog",
-            [PYTHON, "scripts/validate_support_adapter_expansion.py"],
+            [PYTHON, "scripts/validation/validate_support_adapter_expansion.py"],
             "Validate gated productization for refunds, account closure, chargeback, cancellation, escalation, and retention/deletion support candidates.",
         ),
         ReleaseGate(
@@ -316,79 +316,79 @@ def release_gates(audit_log_path=None, metrics_output=None, drift_output=None, r
         ReleaseGate(
             "security_privacy_review",
             "production-profile",
-            [PYTHON, "scripts/validate_security_privacy_review.py"],
+            [PYTHON, "scripts/validation/validate_security_privacy_review.py"],
             "Validate support security/privacy deployment review controls and external production blockers.",
         ),
         ReleaseGate(
             "secrets_scan",
             "production-profile",
-            [PYTHON, "scripts/validate_secrets_scan.py"],
+            [PYTHON, "scripts/validation/validate_secrets_scan.py"],
             "Run allowlist-backed secrets scanning for deployment, runtime, docs, examples, scripts, and tests.",
         ),
         ReleaseGate(
             "security_hardening",
             "production-profile",
-            [PYTHON, "scripts/validate_security_hardening.py"],
+            [PYTHON, "scripts/validation/validate_security_hardening.py"],
             "Validate CI secret scanning, dependency audit wiring, demo-safe defaults, and malicious-agent threat-model coverage.",
         ),
         ReleaseGate(
             "packaging_hardening",
             "publication",
-            [PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"],
+            [PYTHON, "scripts/validation/validate_packaging_hardening.py", "--require-existing-artifacts"],
             "Validate Python, TypeScript, FastAPI, eval tooling, docs/card boundaries, distribution rename rules, and publication checklists.",
         ),
         ReleaseGate(
             "audit_retention_policy",
             "production-profile",
-            [PYTHON, "scripts/validate_audit_retention_policy.py"],
+            [PYTHON, "scripts/validation/validate_audit_retention_policy.py"],
             "Validate append-only audit retention, legal hold, access control, integrity checks, and support redaction proof.",
         ),
         ReleaseGate(
             "incident_response_plan",
             "production-profile",
-            [PYTHON, "scripts/validate_incident_response_plan.py"],
+            [PYTHON, "scripts/validation/validate_incident_response_plan.py"],
             "Validate severity levels, rollback triggers, owner notification paths, audit review, and customer-impact review.",
         ),
         ReleaseGate(
             "support_domain_signoff",
             "production-profile",
-            [PYTHON, "scripts/validate_support_domain_signoff.py"],
+            [PYTHON, "scripts/validation/validate_support_domain_signoff.py"],
             "Validate support domain-owner signoff coverage before advisory or enforced support phases.",
         ),
         ReleaseGate(
             "production_readiness_boundary",
             "production-profile",
-            [PYTHON, "scripts/validate_production_readiness_boundary.py"],
+            [PYTHON, "scripts/validation/validate_production_readiness_boundary.py"],
             "Validate conservative production readiness positioning and external deployment gates.",
         ),
         ReleaseGate(
             "support_sla_failure_policy",
             "production-profile",
-            [PYTHON, "scripts/validate_support_sla_failure_policy.py"],
+            [PYTHON, "scripts/validation/validate_support_sla_failure_policy.py"],
             "Validate support-specific SLA targets and undecidable fallback routing.",
         ),
         ReleaseGate(
             "first_deployable_baseline",
             "production-profile",
-            [PYTHON, "scripts/validate_first_deployable_baseline.py"],
+            [PYTHON, "scripts/validation/validate_first_deployable_baseline.py"],
             "Validate the first deployable support runtime baseline boundary and remaining external evidence.",
         ),
         ReleaseGate(
             "production_readiness_review",
             "production-profile",
-            [PYTHON, "scripts/validate_production_readiness_review.py"],
+            [PYTHON, "scripts/validation/validate_production_readiness_review.py"],
             "Validate the environment-specific readiness review before calling an environment deployable.",
         ),
         ReleaseGate(
             "internal_pilot_plan",
             "production-profile",
-            [PYTHON, "scripts/validate_internal_pilot_plan.py"],
+            [PYTHON, "scripts/validation/validate_internal_pilot_plan.py"],
             "Validate staged internal pilot rollout starts in shadow mode before narrow enforcement.",
         ),
         ReleaseGate(
             "docs_link_validation",
             "docs",
-            [PYTHON, "scripts/validate_adapter_gallery.py"],
+            [PYTHON, "scripts/validation/validate_adapter_gallery.py"],
             "Validate catalog documentation links and docs-backed adapter catalog references.",
         ),
     ]
@@ -440,31 +440,31 @@ def production_profiles(audit_log=None, metrics_output=None, drift_output=None, 
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         audit_log_path.write_text("", encoding="utf-8")
         run([PYTHON, "scripts/aana_cli.py", "validate-gallery", "--run-examples"])
-        run([PYTHON, "scripts/validate_support_adapter_expansion.py"])
+        run([PYTHON, "scripts/validation/validate_support_adapter_expansion.py"])
         run([PYTHON, "scripts/aana_cli.py", "pilot-certify"])
         run([PYTHON, "scripts/aana_cli.py", "contract-freeze", "--evidence-registry", "examples/evidence_registry.json"])
-        run([PYTHON, "scripts/validate_versioning_migration.py"])
+        run([PYTHON, "scripts/validation/validate_versioning_migration.py"])
         run([PYTHON, "scripts/aana_cli.py", "aix-tuning"])
         run([PYTHON, "scripts/aana_cli.py", "validate-deployment", "--deployment-manifest", "examples/production_deployment_internal_pilot.json"])
-        run([PYTHON, "scripts/validate_internal_pilot_plan.py"])
-        run([PYTHON, "scripts/validate_audit_retention_policy.py"])
-        run([PYTHON, "scripts/validate_support_domain_signoff.py"])
-        run([PYTHON, "scripts/validate_production_readiness_boundary.py"])
-        run([PYTHON, "scripts/validate_support_sla_failure_policy.py"])
-        run([PYTHON, "scripts/validate_first_deployable_baseline.py"])
+        run([PYTHON, "scripts/validation/validate_internal_pilot_plan.py"])
+        run([PYTHON, "scripts/validation/validate_audit_retention_policy.py"])
+        run([PYTHON, "scripts/validation/validate_support_domain_signoff.py"])
+        run([PYTHON, "scripts/validation/validate_production_readiness_boundary.py"])
+        run([PYTHON, "scripts/validation/validate_support_sla_failure_policy.py"])
+        run([PYTHON, "scripts/validation/validate_first_deployable_baseline.py"])
         run(
             [
                 PYTHON,
-                "scripts/validate_first_deployable_baseline.py",
+                "scripts/validation/validate_first_deployable_baseline.py",
                 "--baseline",
                 "examples/first_deployable_support_baseline.internal_pilot.json",
                 "--require-reached",
             ]
         )
-        run([PYTHON, "scripts/validate_production_readiness_review.py"])
-        run([PYTHON, "scripts/validate_security_privacy_review.py"])
-        run([PYTHON, "scripts/validate_secrets_scan.py"])
-        run([PYTHON, "scripts/validate_incident_response_plan.py"])
+        run([PYTHON, "scripts/validation/validate_production_readiness_review.py"])
+        run([PYTHON, "scripts/validation/validate_security_privacy_review.py"])
+        run([PYTHON, "scripts/validation/validate_secrets_scan.py"])
+        run([PYTHON, "scripts/validation/validate_incident_response_plan.py"])
         run([PYTHON, "scripts/aana_cli.py", "validate-governance", "--governance-policy", "examples/human_governance_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-observability", "--observability-policy", "examples/observability_policy_internal_pilot.json"])
         run([PYTHON, "scripts/aana_cli.py", "validate-evidence-registry", "--evidence-registry", "examples/evidence_registry.json"])
@@ -571,79 +571,79 @@ def production_profiles(audit_log=None, metrics_output=None, drift_output=None, 
 
 
 def pilot_bundle():
-    run([PYTHON, "scripts/run_e2e_pilot_bundle.py"])
+    run([PYTHON, "scripts/pilots/run_e2e_pilot_bundle.py"])
 
 
 def pilot_eval():
-    run([PYTHON, "scripts/run_pilot_evaluation_kit.py"])
+    run([PYTHON, "scripts/pilots/run_pilot_evaluation_kit.py"])
 
 
 def starter_kits():
-    run([PYTHON, "scripts/run_starter_pilot_kit.py", "--kit", "all"])
+    run([PYTHON, "scripts/pilots/run_starter_pilot_kit.py", "--kit", "all"])
 
 
 def design_partner_pilots():
-    run([PYTHON, "scripts/run_design_partner_pilots.py", "--pilot", "all"])
+    run([PYTHON, "scripts/pilots/run_design_partner_pilots.py", "--pilot", "all"])
 
 
 def github_guardrails():
-    run([PYTHON, "scripts/run_github_action_guardrails.py", "--force", "--fail-on", "never"])
+    run([PYTHON, "scripts/integrations/run_github_action_guardrails.py", "--force", "--fail-on", "never"])
 
 
 def adapter_heldout():
-    run([PYTHON, "scripts/validate_adapter_heldout.py"])
+    run([PYTHON, "scripts/validation/validate_adapter_heldout.py"])
 
 
 def benchmark_reporting():
-    run([PYTHON, "scripts/validate_benchmark_reporting.py"])
+    run([PYTHON, "scripts/validation/validate_benchmark_reporting.py"])
 
 
 def benchmark_fit_lint():
-    run([PYTHON, "scripts/validate_benchmark_fit_lint.py"])
+    run([PYTHON, "scripts/validation/validate_benchmark_fit_lint.py"])
 
 
 def adapter_generalization():
-    run([PYTHON, "scripts/validate_adapter_generalization.py", "--require-existing-artifacts"])
+    run([PYTHON, "scripts/validation/validate_adapter_generalization.py", "--require-existing-artifacts"])
 
 
 def hf_dataset_registry():
-    run([PYTHON, "scripts/validate_hf_dataset_registry.py"])
+    run([PYTHON, "scripts/hf/validate_hf_dataset_registry.py"])
 
 
 def hf_calibration():
-    run([PYTHON, "scripts/validate_hf_calibration.py"])
+    run([PYTHON, "scripts/hf/validate_hf_calibration.py"])
 
 
 def hf_dataset_proof():
-    run([PYTHON, "scripts/validate_hf_dataset_proof.py", "--require-existing-artifacts"])
+    run([PYTHON, "scripts/hf/validate_hf_dataset_proof.py", "--require-existing-artifacts"])
 
 
 def privacy_pii_adapter():
-    run([PYTHON, "scripts/run_privacy_pii_adapter_eval.py"])
+    run([PYTHON, "scripts/evals/run_privacy_pii_adapter_eval.py"])
 
 
 def grounded_qa_adapter():
-    run([PYTHON, "scripts/run_grounded_qa_adapter_eval.py"])
+    run([PYTHON, "scripts/evals/run_grounded_qa_adapter_eval.py"])
 
 
 def agent_tool_use_control():
-    run([PYTHON, "scripts/run_agent_tool_use_control_eval.py"])
+    run([PYTHON, "scripts/evals/run_agent_tool_use_control_eval.py"])
 
 
 def cross_domain_families():
-    run([PYTHON, "scripts/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"])
+    run([PYTHON, "scripts/validation/validate_cross_domain_adapter_families.py", "--require-existing-artifacts"])
 
 
 def production_evidence_pack():
-    run([PYTHON, "scripts/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"])
+    run([PYTHON, "scripts/validation/validate_production_candidate_evidence_pack.py", "--require-existing-artifacts"])
 
 
 def security_hardening():
-    run([PYTHON, "scripts/validate_security_hardening.py"])
+    run([PYTHON, "scripts/validation/validate_security_hardening.py"])
 
 
 def packaging_hardening():
-    run([PYTHON, "scripts/validate_packaging_hardening.py", "--require-existing-artifacts"])
+    run([PYTHON, "scripts/validation/validate_packaging_hardening.py", "--require-existing-artifacts"])
 
 
 COMMANDS = {

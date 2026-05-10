@@ -21,8 +21,8 @@ AANA sits before tool execution and checks the Agent Action Contract v1 fields: 
 Script:
 
 ```bash
-python scripts/run_msb_mcp_security_bench.py \
-  --output eval_outputs/msb_mcp_security_bench_aana_results.json
+python scripts/benchmarks/run_msb_mcp_security_bench.py \
+  --output docs/evidence/peer_review/msb_mcp_security_bench_aana_results.json
 ```
 
 Dataset source:
@@ -62,7 +62,7 @@ Full leaderboard-grade evidence should replay the MSB GitHub harness with AANA i
 
 For official MSB review, submit this artifact as a maintainer-review protocol first:
 
-- result JSON: `eval_outputs/msb_mcp_security_bench_aana_results.json`
-- runner: `scripts/run_msb_mcp_security_bench.py`
+- result JSON: `docs/evidence/peer_review/msb_mcp_security_bench_aana_results.json`
+- runner: `scripts/benchmarks/run_msb_mcp_security_bench.py`
 - claim: AANA is an MCP pre-tool-call control layer
 - request: confirm whether maintainers want a harness PR, standalone result artifact, or issue/discussion first

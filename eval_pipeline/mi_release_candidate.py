@@ -130,7 +130,7 @@ def run_mi_release_candidate(
 ) -> dict[str, Any]:
     """Run all MI release-candidate checks and write one report."""
 
-    from scripts.validate_mi_contracts import (
+    from scripts.validation.validate_mi_contracts import (
         validate_audit_integrity_manifest,
         validate_audit_jsonl,
         validate_dashboard,

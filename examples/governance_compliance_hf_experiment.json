@@ -50,7 +50,7 @@
     "over_refusal_rate"
   ],
   "outputs": {
-    "default_result": "eval_outputs/governance_compliance_hf_experiment_results.json",
+    "default_result": "docs/evidence/peer_review/governance_compliance_hf_experiment_results.json",
     "raw_text_storage": "Raw policy text, requests, and candidates are not written to result artifacts; rows contain ids, hashes, expected/actual routes, evidence counts, risk domain, missing-evidence flags, and human-review flags."
   }
 }

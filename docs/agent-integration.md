@@ -209,7 +209,7 @@ python scripts/aana_cli.py release-check --deployment-manifest path/to/your-prod
 If the package is installed locally, the same bridge is available as:
 
 ```powershell
-aana-server --host 127.0.0.1 --port 8765
+python scripts/aana_server.py --host 127.0.0.1 --port 8765
 ```
 
 Available routes:

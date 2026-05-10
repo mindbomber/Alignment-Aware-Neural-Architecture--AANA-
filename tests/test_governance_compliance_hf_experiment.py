@@ -11,7 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 class GovernanceComplianceHFExperimentTests(unittest.TestCase):
     def test_experiment_manifest_uses_registered_heldout_splits(self):
         from eval_pipeline.hf_dataset_registry import load_registry
-        from scripts.run_governance_compliance_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
+        from scripts.hf.run_governance_compliance_hf_experiment import DEFAULT_EXPERIMENT, DEFAULT_REGISTRY, _load_json, validate_experiment
 
         experiment = _load_json(DEFAULT_EXPERIMENT)
         registry = load_registry(DEFAULT_REGISTRY)
@@ -26,7 +26,7 @@ class GovernanceComplianceHFExperimentTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_governance_compliance_hf_experiment.py",
+                "scripts/hf/run_governance_compliance_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--output",

@@ -178,8 +178,8 @@
       }
     },
     {
-      "id": "civic_government_services",
-      "category": "civic_government",
+      "id": "government_civic_services",
+      "category": "government_civic",
       "title": "Civic And Government-Style Workflow Pilot",
       "partner_profile": {
         "organization_alias": "civic-partner-a",

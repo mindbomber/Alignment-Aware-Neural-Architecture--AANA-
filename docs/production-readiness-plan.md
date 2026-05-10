@@ -250,7 +250,7 @@ docker compose up --build
 python scripts/dev.py contract-freeze
 python scripts/dev.py pilot-certify
 python scripts/dev.py production-profiles
-python scripts/validate_incident_response_plan.py
+python scripts/validation/validate_incident_response_plan.py
 python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json --drift-output eval_outputs/audit/ci/aana-ci-aix-drift.json --reviewer-report-output eval_outputs/audit/ci/aana-ci-reviewer-report.md --manifest-output eval_outputs/audit/ci/manifests/aana-ci-audit-integrity.json
 python scripts/aana_cli.py release-check
 python scripts/aana_cli.py release-check --deployment-manifest path/to/your-production-deployment.json --governance-policy path/to/your-governance-policy.json --audit-log path/to/redacted-audit.jsonl
@@ -272,7 +272,7 @@ Copyable integration recipes are published in `docs/integration-recipes.md`. The
 Web playground:
 
 ```powershell
-python scripts/run_playground.py
+python scripts/demos/run_playground.py
 ```
 
 Open `http://localhost:8765/playground` to pick an adapter, edit the proposed answer or action, and inspect violations, AIx, safe response, and redacted audit preview.
@@ -280,7 +280,7 @@ Open `http://localhost:8765/playground` to pick an adapter, edit the proposed an
 Local desktop/browser demos:
 
 ```powershell
-python scripts/run_local_demos.py
+python scripts/demos/run_local_demos.py
 ```
 
 Open `http://localhost:8765/demos` to test AANA around email send, file operation, calendar scheduling, purchase/booking, and research-grounding checks using synthetic evidence.
@@ -385,16 +385,16 @@ $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
 python scripts/dev.py pilot-bundle
 python scripts/dev.py pilot-eval
 python scripts/dev.py starter-kits
-python scripts/run_e2e_pilot_bundle.py
-python scripts/run_pilot_evaluation_kit.py
-python scripts/run_starter_pilot_kit.py --kit all
-python scripts/run_github_action_guardrails.py --force --fail-on never
-python scripts/run_pilot_evaluation_kit.py --pack enterprise --report-output eval_outputs/pilot_eval/enterprise-report.md
-python scripts/run_e2e_pilot_bundle.py --event support_reply --event research_summary --skip-production-profiles
-python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
-python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
-python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
-python scripts/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/run_e2e_pilot_bundle.py
+python scripts/pilots/run_pilot_evaluation_kit.py
+python scripts/pilots/run_starter_pilot_kit.py --kit all
+python scripts/integrations/run_github_action_guardrails.py --force --fail-on never
+python scripts/pilots/run_pilot_evaluation_kit.py --pack enterprise --report-output eval_outputs/pilot_eval/enterprise-report.md
+python scripts/pilots/run_e2e_pilot_bundle.py --event support_reply --event research_summary --skip-production-profiles
+python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
+python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
+python scripts/pilots/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 ```
 
 The e2e pilot bundle is the broadest one-command local pilot path. It checks multiple agent events across adapters, writes redacted audit JSONL, exports audit metrics, writes an audit integrity manifest, runs `release-check` with internal pilot deployment/governance/evidence/observability profiles, and then runs `python scripts/dev.py production-profiles`. Use `--event` to narrow the bundle while debugging and `--skip-production-profiles` only when avoiding recursive validation inside focused tests.
@@ -403,7 +403,7 @@ The Pilot Evaluation Kit is the broader pre-real-data evaluation path. It runs n
 
 The Starter Pilot Kits are the fastest realistic no-private-data handoff path. They provide self-contained enterprise, personal productivity, and civic/government kit folders with synthetic records, adapter configuration, workflow examples, expected outcomes, and a one-command runner. The runner materializes Workflow Contract batch requests, appends redacted audit logs, exports metrics JSON, and writes pilot reports under `eval_outputs/starter_pilot_kits/`. Use these kits when a reviewer needs to understand AANA behavior from concrete workflow artifacts before a real evidence connector or shadow-mode deployment exists.
 
-The Design Partner Pilots are the first field-evaluation package. They define four controlled pilots across enterprise support operations, developer tooling/release, personal productivity irreversible actions, and civic/government-style workflows. The runner writes redacted audit logs, metrics, dashboard payloads, AIx drift reports, audit manifests, reviewer reports, field-note templates, and structured feedback templates under `eval_outputs/design_partner_pilots/`. Use `python scripts/run_design_partner_pilots.py --pilot all` before scheduling partner sessions, then attach redacted `<pilot_id>.json` feedback files with `--feedback-dir` to collect real failure modes, friction points, and adoption blockers.
+The Design Partner Pilots are the first field-evaluation package. They define four controlled pilots across enterprise support operations, developer tooling/release, personal productivity irreversible actions, and civic/government-style workflows. The runner writes redacted audit logs, metrics, dashboard payloads, AIx drift reports, audit manifests, reviewer reports, field-note templates, and structured feedback templates under `eval_outputs/design_partner_pilots/`. Use `python scripts/pilots/run_design_partner_pilots.py --pilot all` before scheduling partner sessions, then attach redacted `<pilot_id>.json` feedback files with `--feedback-dir` to collect real failure modes, friction points, and adoption blockers.
 
 The Hosted Demo is the public no-clone option at `/demo/` on the project site. It is a static GitHub Pages surface backed by `docs/demo/scenarios.json`, uses only precomputed synthetic examples, accepts no secrets, and cannot send email, delete files, deploy releases, run migrations, submit payments, book purchases, or export private data. Use it for first-contact evaluation before asking someone to clone the repo, run Docker, or connect a local bridge.
 

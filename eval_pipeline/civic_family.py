@@ -9,6 +9,7 @@ from eval_pipeline import adapter_gallery, agent_api, evidence_integrations
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PEER_REVIEW_EVIDENCE = ROOT / "docs" / "evidence" / "peer_review"
 CIVIC_FAMILY_VERSION = "0.1"
 CIVIC_BUNDLE_MANIFEST = ROOT / "aana" / "bundles" / "government_civic" / "manifest.json"
 
@@ -37,20 +38,20 @@ CIVIC_AGENT_SKILLS = {
 CIVIC_PILOT_SURFACES = {
     "family_landing_page": ("docs/government-civic/index.html", "docs/civic-family.md"),
     "starter_kit": (
-        "examples/starter_pilot_kits/civic_government/manifest.json",
-        "examples/starter_pilot_kits/civic_government/adapter_config.json",
-        "examples/starter_pilot_kits/civic_government/synthetic_data.json",
-        "examples/starter_pilot_kits/civic_government/workflows.json",
-        "examples/starter_pilot_kits/civic_government/expected_outcomes.json",
+        "examples/starter_pilot_kits/government_civic/manifest.json",
+        "examples/starter_pilot_kits/government_civic/adapter_config.json",
+        "examples/starter_pilot_kits/government_civic/synthetic_data.json",
+        "examples/starter_pilot_kits/government_civic/workflows.json",
+        "examples/starter_pilot_kits/government_civic/expected_outcomes.json",
     ),
     "redacted_audit_export": (
-        "eval_outputs/starter_pilot_kits/civic_government/audit.jsonl",
-        "eval_outputs/starter_pilot_kits/civic_government/metrics.json",
-        "eval_outputs/starter_pilot_kits/civic_government/report.md",
+        "docs/evidence/peer_review/starter_pilot_kits/government_civic/audit.jsonl",
+        "docs/evidence/peer_review/starter_pilot_kits/government_civic/metrics.json",
+        "docs/evidence/peer_review/starter_pilot_kits/government_civic/report.md",
     ),
 }
 
-DEFAULT_STARTER_KIT = ROOT / "examples" / "starter_pilot_kits" / "civic_government"
+DEFAULT_STARTER_KIT = ROOT / "examples" / "starter_pilot_kits" / "government_civic"
 DEFAULT_CERTIFICATION_POLICY = ROOT / "examples" / "civic_certification_policy.json"
 DEFAULT_EVIDENCE_REGISTRY = ROOT / "examples" / "evidence_registry.json"
 DEFAULT_MOCK_FIXTURES = ROOT / "examples" / "evidence_mock_connector_fixtures.json"
@@ -339,7 +340,7 @@ def civic_pilot_surface_report():
 
 
 def _audit_report():
-    audit_path = ROOT / "eval_outputs" / "starter_pilot_kits" / "civic_government" / "audit.jsonl"
+    audit_path = PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "government_civic" / "audit.jsonl"
     if not audit_path.exists():
         return {"valid": False, "redacted": False, "record_count": 0, "audit_log": str(audit_path)}
     records = agent_api.load_audit_records(audit_path)
@@ -391,8 +392,8 @@ def civic_certification_report(
     policy_report = _civic_policy_report(policy)
     audit_report = _audit_report()
     report_paths = [
-        ROOT / "eval_outputs" / "starter_pilot_kits" / "civic_government" / "metrics.json",
-        ROOT / "eval_outputs" / "starter_pilot_kits" / "civic_government" / "report.md",
+        PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "government_civic" / "metrics.json",
+        PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "government_civic" / "report.md",
     ]
     missing_reports = [str(path) for path in report_paths if not path.exists()]
     surfaces = [

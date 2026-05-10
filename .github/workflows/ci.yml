@@ -37,13 +37,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run repo-local secret scan
-        run: python scripts/validate_secrets_scan.py
+        run: python scripts/validation/validate_secrets_scan.py
 
       - name: Run dependency audit
         run: pip-audit --desc --progress-spinner off
 
       - name: Run security hardening gate
-        run: python scripts/validate_security_hardening.py
+        run: python scripts/validation/validate_security_hardening.py
 
       - name: Build TypeScript SDK
         run: |

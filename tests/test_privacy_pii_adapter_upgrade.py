@@ -165,7 +165,7 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_privacy_pii_adapter_eval.py",
+                "scripts/evals/run_privacy_pii_adapter_eval.py",
                 "--output",
                 str(output),
             ],
@@ -188,7 +188,7 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_privacy_pii_hf_experiment.py",
+                "scripts/hf/run_privacy_pii_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--output",
@@ -228,7 +228,7 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_privacy_pii_hf_experiment.py",
+                "scripts/hf/run_privacy_pii_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--detector-version",
@@ -253,9 +253,9 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/analyze_privacy_pii_high_risk_categories.py",
+                "scripts/evals/analyze_privacy_pii_high_risk_categories.py",
                 "--input",
-                "eval_outputs/privacy_pii_hf_experiment_results_v2.json",
+                "docs/evidence/peer_review/privacy_pii_hf_experiment_results_v2.json",
                 "--output",
                 str(output),
             ],
@@ -271,7 +271,7 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
         self.assertIn("next_target", payload)
 
     def test_safe_miss_inspector_masks_spans_and_keeps_only_cue_words(self):
-        from scripts.inspect_privacy_pii_misses import inspect_misses
+        from scripts.evals.inspect_privacy_pii_misses import inspect_misses
 
         result_payload = {
             "experiment_id": "unit",
@@ -302,7 +302,7 @@ class PrivacyPiiAdapterUpgradeTests(unittest.TestCase):
                 }
             }
 
-        import scripts.inspect_privacy_pii_misses as inspector
+        import scripts.evals.inspect_privacy_pii_misses as inspector
 
         original_loader = inspector._load_raw_rows
         inspector._load_raw_rows = fake_raw_rows

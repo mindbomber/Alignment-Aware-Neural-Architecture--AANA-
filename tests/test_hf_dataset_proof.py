@@ -105,7 +105,7 @@ class HFDatasetProofTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_hf_dataset_proof.py",
+                    "scripts/hf/validate_hf_dataset_proof.py",
                     "--manifest",
                     str(manifest_path),
                     "--require-existing-artifacts",

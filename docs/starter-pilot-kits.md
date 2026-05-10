@@ -16,7 +16,7 @@ playground and the matching one-command pilot kit.
 
 - `enterprise` - CRM support reply, email send, ticket update, data export, access permission, code review, deployment readiness, and incident response.
 - `personal_productivity` - Email guardrail, calendar scheduling, file operation guardrail, booking/purchase, and research grounding.
-- `civic_government` - Procurement/vendor risk, grant/application review, public-records privacy redaction, policy memo grounding, benefits triage, legal safety routing, and publication check.
+- `government_civic` - Procurement/vendor risk, grant/application review, public-records privacy redaction, policy memo grounding, benefits triage, legal safety routing, and publication check.
 
 Each kit includes:
 
@@ -31,15 +31,15 @@ Each kit includes:
 Run every starter kit:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit all
+python scripts/pilots/run_starter_pilot_kit.py --kit all
 ```
 
 Run one pack:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit enterprise
-python scripts/run_starter_pilot_kit.py --kit personal_productivity
-python scripts/run_starter_pilot_kit.py --kit civic_government
+python scripts/pilots/run_starter_pilot_kit.py --kit enterprise
+python scripts/pilots/run_starter_pilot_kit.py --kit personal_productivity
+python scripts/pilots/run_starter_pilot_kit.py --kit government_civic
 ```
 
 The development shortcut is:

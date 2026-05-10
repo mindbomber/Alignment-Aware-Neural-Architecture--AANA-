@@ -17,7 +17,7 @@ def load_script(name, path):
     return module
 
 
-pilot_eval = load_script("run_pilot_evaluation_kit", ROOT / "scripts" / "run_pilot_evaluation_kit.py")
+pilot_eval = load_script("run_pilot_evaluation_kit", ROOT / "scripts" / "pilots" / "run_pilot_evaluation_kit.py")
 
 
 class PilotEvaluationKitTests(unittest.TestCase):
@@ -27,8 +27,8 @@ class PilotEvaluationKitTests(unittest.TestCase):
 
         self.assertIn("enterprise", packs)
         self.assertIn("personal", packs)
-        self.assertIn("civic_government", packs)
-        for pack_id in ["enterprise", "personal", "civic_government"]:
+        self.assertIn("government_civic", packs)
+        for pack_id in ["enterprise", "personal", "government_civic"]:
             self.assertIn("pilot_surface", packs[pack_id])
             self.assertTrue(packs[pack_id]["pilot_surface"]["entrypoint"])
 
@@ -57,7 +57,7 @@ class PilotEvaluationKitTests(unittest.TestCase):
             }.issubset(personal_surfaces)
         )
 
-        civic_surfaces = {scenario["surface"] for scenario in packs["civic_government"]["scenarios"]}
+        civic_surfaces = {scenario["surface"] for scenario in packs["government_civic"]["scenarios"]}
         self.assertTrue(
             {
                 "procurement_vendor_risk",

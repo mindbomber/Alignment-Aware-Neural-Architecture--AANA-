@@ -43,7 +43,7 @@ class HostedDemoTests(unittest.TestCase):
         self.assertEqual(families, {"enterprise", "personal_productivity", "government_civic"})
         self.assertGreaterEqual(
             categories,
-            {"enterprise", "developer_tooling", "personal_productivity", "civic_government", "research"},
+            {"enterprise", "developer_tooling", "personal_productivity", "government_civic", "research"},
         )
         for scenario in payload["scenarios"]:
             self.assertIn("result", scenario)

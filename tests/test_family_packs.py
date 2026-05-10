@@ -25,7 +25,7 @@ class FamilyPackTests(unittest.TestCase):
         for pack in families.values():
             self.assertGreater(len(pack["required_evidence"]), 0)
             self.assertIn("command", pack["starter_kit"])
-            self.assertTrue(pack["starter_kit"]["command"].startswith("python scripts/run_starter_pilot_kit.py --kit "))
+            self.assertTrue(pack["starter_kit"]["command"].startswith("python scripts/pilots/run_starter_pilot_kit.py --kit "))
             for adapter in pack["adapters"]:
                 self.assertIn(adapter["risk_tier"], {"standard", "elevated", "high", "strict"})
                 self.assertTrue(adapter["required_evidence"], adapter["id"])
@@ -46,7 +46,7 @@ class FamilyPackTests(unittest.TestCase):
             self.assertIn("/playground?adapter=", page)
             self.assertIn("Expected outcome", page)
             self.assertIn("Required evidence", page)
-            self.assertIn("python scripts/run_starter_pilot_kit.py --kit", page)
+            self.assertIn("python scripts/pilots/run_starter_pilot_kit.py --kit", page)
 
         data = json.loads((ROOT / "docs" / "families" / "data.json").read_text(encoding="utf-8"))
         self.assertEqual(len(data["families"]), 3)

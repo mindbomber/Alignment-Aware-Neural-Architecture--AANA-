@@ -106,5 +106,5 @@ They are not supported product adapters yet and must not be added to `adapter_ga
 Validate the expansion gate with:
 
 ```powershell
-python scripts/validate_support_adapter_expansion.py
+python scripts/validation/validate_support_adapter_expansion.py
 ```

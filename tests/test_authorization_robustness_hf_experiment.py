@@ -14,7 +14,7 @@ class AuthorizationRobustnessHFExperimentTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_authorization_robustness_hf_experiment.py",
+                "scripts/hf/run_authorization_robustness_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--output",
@@ -43,8 +43,8 @@ class AuthorizationRobustnessHFExperimentTests(unittest.TestCase):
         self.assertNotIn("bank_routing_number", serialized)
 
     def test_perturbations_cover_required_noise_modes(self):
-        from scripts.run_authorization_robustness_hf_experiment import perturb_rows
-        from scripts.run_public_private_read_routing_hf_experiment import _fixture_rows, _load_json
+        from scripts.hf.run_authorization_robustness_hf_experiment import perturb_rows
+        from scripts.hf.run_public_private_read_routing_hf_experiment import _fixture_rows, _load_json
 
         experiment = _load_json(ROOT / "examples" / "public_private_read_routing_hf_experiment.json")
         rows = _fixture_rows(experiment)

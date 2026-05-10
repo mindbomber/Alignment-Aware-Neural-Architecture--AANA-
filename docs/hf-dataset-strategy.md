@@ -33,7 +33,7 @@ AANA should use Hugging Face datasets as calibration and validation evidence for
 - Treat held-out validation as adapter-family evidence only after the adapter is frozen for that run.
 - Treat external-reporting splits as public claim evidence only when no tuning was performed on that split.
 - Report false positives, safe allow rate, schema failures, and route accuracy alongside recall.
-- `python scripts/validate_hf_dataset_proof.py --require-existing-artifacts`
+- `python scripts/hf/validate_hf_dataset_proof.py --require-existing-artifacts`
   fails CI when a public proof axis references a split registered for
   calibration or an unregistered split.
 
@@ -63,7 +63,7 @@ The validator blocks two failure modes:
 Run it with:
 
 ```bash
-python scripts/validate_hf_calibration.py
+python scripts/hf/validate_hf_calibration.py
 ```
 
 This gate is intentionally conservative. A calibration split can reduce false positives and tune thresholds, but it cannot become public evidence for a stronger claim. Reporting splits stay held out until the adapter is frozen for that run.

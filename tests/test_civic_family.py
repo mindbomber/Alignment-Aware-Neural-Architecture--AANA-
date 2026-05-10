@@ -10,7 +10,7 @@ class CivicFamilyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         with redirect_stdout(StringIO()):
-            code = run_starter_pilot_kit.main(["--kit", "civic_government"])
+            code = run_starter_pilot_kit.main(["--kit", "government_civic"])
         if code != 0:
             raise AssertionError("government/civic starter pilot kit failed")
 

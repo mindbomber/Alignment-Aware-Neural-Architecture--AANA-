@@ -33,13 +33,13 @@ Avoid issues where the desired result is mostly taste, vague speculation, privat
 Generate a public GitHub candidate list:
 
 ```powershell
-python scripts/community_issue_scout.py --output examples/community_issue_candidates.json
+python scripts/benchmarks/community_issue_scout.py --output examples/community_issue_candidates.json
 ```
 
 Use targeted queries when a community or domain is already known:
 
 ```powershell
-python scripts/community_issue_scout.py --query '"mechanistic interpretability" state:open' --query '"RAG" hallucination label:"help wanted" state:open'
+python scripts/benchmarks/community_issue_scout.py --query '"mechanistic interpretability" state:open' --query '"RAG" hallucination label:"help wanted" state:open'
 ```
 
 The scout output is an intake heuristic. It is not an AANA gate result, does not prove the issue is worth pursuing, and should not be published directly. Convert one candidate at a time into a Workflow Contract, attach public evidence, and run `workflow-check` before drafting a community response or pull request plan.
@@ -47,7 +47,7 @@ The scout output is an intake heuristic. It is not an AANA gate result, does not
 Create an AANA-gated workpack for a selected issue:
 
 ```powershell
-python scripts/community_issue_solver.py --repository adhit-r/fairmind --limit 1
+python scripts/benchmarks/community_issue_solver.py --repository adhit-r/fairmind --limit 1
 ```
 
 The solver writes a workpack under `eval_outputs/community_issue_solver/` with a Workflow Contract, issue-response draft, AANA gate result, and any follow-on code guardrail artifacts. It intentionally stops before posting comments, opening pull requests, or pushing branches.

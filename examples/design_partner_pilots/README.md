@@ -5,13 +5,13 @@ This folder defines controlled pilot bundles for running AANA with design partne
 Run all pilot bundles:
 
 ```powershell
-python scripts/run_design_partner_pilots.py --pilot all
+python scripts/pilots/run_design_partner_pilots.py --pilot all
 ```
 
 Run one pilot bundle:
 
 ```powershell
-python scripts/run_design_partner_pilots.py --pilot enterprise_support_ops
+python scripts/pilots/run_design_partner_pilots.py --pilot enterprise_support_ops
 ```
 
 Each pilot writes:

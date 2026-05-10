@@ -40,7 +40,7 @@ Support adapters are productized as a named catalog line. See [`support-adapter-
 Rebuild the published gallery data after adapter changes:
 
 ```powershell
-python scripts/build_adapter_gallery.py
+python scripts/adapters/build_adapter_gallery.py
 ```
 
 Validate the gallery:

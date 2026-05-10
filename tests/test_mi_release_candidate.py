@@ -53,7 +53,7 @@ class MIReleaseCandidateTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_release_candidate.py",
+                    "scripts/publication/mi_release_candidate.py",
                     "--output",
                     str(output_path),
                     "--benchmark-dir",
@@ -74,7 +74,7 @@ class MIReleaseCandidateTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_release_candidate.py",
+                    "scripts/publication/mi_release_candidate.py",
                     "--output",
                     str(Path(directory) / "rc.json"),
                     "--benchmark-dir",

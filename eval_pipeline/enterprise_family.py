@@ -9,6 +9,7 @@ from eval_pipeline import adapter_gallery, agent_api, evidence_integrations, pro
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PEER_REVIEW_EVIDENCE = ROOT / "docs" / "evidence" / "peer_review"
 ENTERPRISE_FAMILY_VERSION = "0.1"
 ENTERPRISE_BUNDLE_MANIFEST = ROOT / "aana" / "bundles" / "enterprise" / "manifest.json"
 
@@ -40,9 +41,9 @@ ENTERPRISE_PILOT_SURFACES = {
     "shadow_mode": ("docs/shadow-mode.md",),
     "metrics_dashboard": ("web/dashboard/index.html", "docs/metrics-dashboard.md"),
     "redacted_audit_export": (
-        "eval_outputs/starter_pilot_kits/enterprise/audit.jsonl",
-        "eval_outputs/starter_pilot_kits/enterprise/metrics.json",
-        "eval_outputs/starter_pilot_kits/enterprise/report.json",
+        "docs/evidence/peer_review/starter_pilot_kits/enterprise/audit.jsonl",
+        "docs/evidence/peer_review/starter_pilot_kits/enterprise/metrics.json",
+        "docs/evidence/peer_review/starter_pilot_kits/enterprise/report.json",
     ),
 }
 
@@ -293,7 +294,7 @@ def enterprise_pilot_surface_report():
                 absent.append(relative_path)
         if absent:
             missing[surface_id] = absent
-    audit_path = ROOT / "eval_outputs" / "starter_pilot_kits" / "enterprise" / "audit.jsonl"
+    audit_path = PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "enterprise" / "audit.jsonl"
     audit_report = {"valid": False, "redacted": False, "record_count": 0}
     if audit_path.exists():
         records = agent_api.load_audit_records(audit_path)

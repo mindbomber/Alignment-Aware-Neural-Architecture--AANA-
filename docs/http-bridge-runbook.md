@@ -130,13 +130,13 @@ Run the bridge smoke test:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-long-random-token"
-python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 ```
 
 Against an already-running bridge:
 
 ```powershell
-python scripts/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --token $env:AANA_BRIDGE_TOKEN --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --token $env:AANA_BRIDGE_TOKEN --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 ```
 
 ## Deployment Checklist

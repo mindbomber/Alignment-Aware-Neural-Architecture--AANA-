@@ -3,8 +3,28 @@
   "tool_category": "write",
   "authorization_state": "confirmed",
   "evidence_refs": [
-    "draft_id:123",
-    "approval:user-confirmed-send"
+    {
+      "source_id": "draft_id:123",
+      "kind": "assistant_message",
+      "trust_tier": "runtime",
+      "redaction_status": "redacted",
+      "summary": "Draft email is ready for a scoped send.",
+      "provenance": "fixture",
+      "freshness": {
+        "status": "fresh"
+      }
+    },
+    {
+      "source_id": "approval:user-confirmed-send",
+      "kind": "approval",
+      "trust_tier": "verified",
+      "redaction_status": "redacted",
+      "summary": "User explicitly confirmed the send.",
+      "provenance": "fixture",
+      "freshness": {
+        "status": "fresh"
+      }
+    }
   ],
   "risk_domain": "customer_support",
   "proposed_arguments": {

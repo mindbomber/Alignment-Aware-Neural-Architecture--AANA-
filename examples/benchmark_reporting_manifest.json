@@ -71,7 +71,7 @@
       "artifacts": {
         "primary_results": [],
         "probe_results": [
-          "examples/tau2/aana_tau2_probe_planners.py"
+          "diagnostics/probes/tau2/aana_tau2_probe_planners.py"
         ]
       }
     },

@@ -57,7 +57,7 @@ class AgentToolUseControlUpgradeTests(unittest.TestCase):
     def test_cli_writes_results(self):
         output = ROOT / "eval_outputs" / "agent_tool_use_control_upgrade_results.test.json"
         completed = subprocess.run(
-            [sys.executable, "scripts/run_agent_tool_use_control_eval.py", "--output", str(output)],
+            [sys.executable, "scripts/evals/run_agent_tool_use_control_eval.py", "--output", str(output)],
             cwd=ROOT,
             text=True,
             capture_output=True,

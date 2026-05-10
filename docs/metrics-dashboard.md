@@ -41,7 +41,7 @@ The MI observability feed is:
 GET /dashboard/mi-metrics
 ```
 
-It reads `eval_outputs/mi_pilot/research_citation/mi_dashboard.json` and returns pass/fail rate, propagated error rate, correction success rate, false accept/refusal rates, global AIx drift, and workflow rows for the Mechanistic Interoperability panel.
+It reads `docs/evidence/peer_review/mi_pilot/research_citation/mi_dashboard.json` and returns pass/fail rate, propagated error rate, correction success rate, false accept/refusal rates, global AIx drift, and workflow rows for the Mechanistic Interoperability panel.
 
 If the bridge was not started with `--audit-log`, the dashboard returns a waiting state with zero counts. Once checks append redacted audit records, refresh the page to review pilot behavior.
 

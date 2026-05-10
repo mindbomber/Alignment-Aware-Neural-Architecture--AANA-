@@ -52,7 +52,7 @@ class ReleaseBundleTamperTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_verify_release_bundle.py",
+                    "scripts/publication/mi_verify_release_bundle.py",
                     "--manifest",
                     str(manifest_path),
                     "--output",

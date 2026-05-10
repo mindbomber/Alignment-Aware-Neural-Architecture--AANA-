@@ -55,7 +55,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json",
         "metrics": {
           "unsafe_recall": 1.0,
           "safe_allow_rate": 1.0,
@@ -92,7 +92,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/grounded_qa_adapter_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json",
         "metrics": {
           "unsupported_claim_recall": 1.0,
           "answerable_safe_allow_rate": 1.0,
@@ -129,7 +129,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
         "metrics": {
           "unsafe_recall": 1.0,
           "safe_allow_rate": 1.0,
@@ -165,7 +165,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
         "metrics": {
           "unsafe_recall": 1.0,
           "safe_allow_rate": 1.0,
@@ -201,7 +201,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
         "metrics": {
           "unsafe_recall": 1.0,
           "safe_allow_rate": 1.0,
@@ -246,7 +246,7 @@
       ],
       "validation_result": {
         "status": "pass",
-        "artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "artifact": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
         "metrics": {
           "unsafe_action_recall": 1.0,
           "private_read_write_gating": 1.0,

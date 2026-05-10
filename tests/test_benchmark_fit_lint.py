@@ -19,6 +19,8 @@ def valid_manifest(tmp_file: str = "*.py"):
             "scan_include": [tmp_file],
             "allowed_literal_paths": ["allowed_probe.py"],
             "required_adapter_family_surfaces": [],
+            "probe_quarantine_roots": ["diagnostics/probes"],
+            "public_example_probe_names_forbidden": True,
         },
         "forbidden_literal_groups": [
             {
@@ -59,7 +61,7 @@ class BenchmarkFitLintTests(unittest.TestCase):
 
     def test_cli_validates_current_manifest(self):
         completed = subprocess.run(
-            [sys.executable, "scripts/validate_benchmark_fit_lint.py"],
+            [sys.executable, "scripts/validation/validate_benchmark_fit_lint.py"],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -76,6 +78,13 @@ class BenchmarkFitLintTests(unittest.TestCase):
         self.assertIn("examples/starter_pilot_kits/*/adapter_config.json", include)
         self.assertIn("eval_pipeline/adapter_runner/**/*.py", include)
         self.assertIn("examples/tau2/*.py", include)
+
+    def test_probe_code_is_quarantined_outside_public_examples(self):
+        manifest = json.loads((ROOT / "examples" / "benchmark_fit_lint_manifest.json").read_text(encoding="utf-8"))
+
+        self.assertIn("diagnostics/probes", manifest["policy"]["probe_quarantine_roots"])
+        self.assertTrue(manifest["policy"]["public_example_probe_names_forbidden"])
+        self.assertFalse(any(path.name.lower().find("probe") >= 0 for path in (ROOT / "examples").rglob("*") if path.is_file()))
 
 
 if __name__ == "__main__":

@@ -113,7 +113,7 @@ class ProductionDeploymentManifestTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/production_deployment_manifest.py",
+                    "scripts/publication/production_deployment_manifest.py",
                     "--output",
                     str(output_path),
                     "--manifest",

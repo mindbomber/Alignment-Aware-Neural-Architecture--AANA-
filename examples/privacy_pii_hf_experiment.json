@@ -75,9 +75,9 @@
     "route_accuracy": 0.90
   },
   "commands": {
-    "fixture_smoke": "python scripts/run_privacy_pii_hf_experiment.py --mode fixture",
-    "live_hf_smoke": "python scripts/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 25",
-    "live_hf_larger": "python scripts/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 250 --offset 0"
+    "fixture_smoke": "python scripts/hf/run_privacy_pii_hf_experiment.py --mode fixture",
+    "live_hf_smoke": "python scripts/hf/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 25",
+    "live_hf_larger": "python scripts/hf/run_privacy_pii_hf_experiment.py --mode live-hf --max-rows-per-source 250 --offset 0"
   },
   "outputs": {
     "default_result": "eval_outputs/privacy_pii_hf_experiment_results.json",

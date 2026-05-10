@@ -74,15 +74,15 @@ Enterprise pilots are packaged through:
 Run the starter kit:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit enterprise
+python scripts/pilots/run_starter_pilot_kit.py --kit enterprise
 ```
 
 Review the outputs:
 
 ```text
-eval_outputs/starter_pilot_kits/enterprise/audit.jsonl
-eval_outputs/starter_pilot_kits/enterprise/metrics.json
-eval_outputs/starter_pilot_kits/enterprise/report.md
+docs/evidence/peer_review/starter_pilot_kits/enterprise/audit.jsonl
+docs/evidence/peer_review/starter_pilot_kits/enterprise/metrics.json
+docs/evidence/peer_review/starter_pilot_kits/enterprise/report.md
 ```
 
 ## Enterprise Certification

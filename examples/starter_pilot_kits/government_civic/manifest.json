@@ -1,0 +1,19 @@
+{
+  "kit_version": "0.1",
+  "id": "government_civic",
+  "title": "Government and Civic Starter Pilot Kit",
+  "goal": "Run a no-private-data shadow pilot for procurement, grants, benefits triage, public-records redaction, policy memo grounding, public communications, casework responses, and FOIA response checks.",
+  "entrypoints": [
+    "python scripts/pilots/run_starter_pilot_kit.py --kit government_civic",
+    "python scripts/aana_cli.py workflow-batch --batch <materialized batch>"
+  ],
+  "operating_mode": "shadow_only_until_policy_review",
+  "primary_users": ["program reviewers", "procurement officers", "records staff", "policy analysts", "benefits triage staff"],
+  "files": {
+    "synthetic_data": "synthetic_data.json",
+    "adapter_config": "adapter_config.json",
+    "workflows": "workflows.json",
+    "expected_outcomes": "expected_outcomes.json"
+  },
+  "default_output_dir": "eval_outputs/starter_pilot_kits/government_civic"
+}

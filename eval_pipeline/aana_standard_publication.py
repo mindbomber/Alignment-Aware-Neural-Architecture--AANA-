@@ -166,6 +166,10 @@ def _validate_python_package(component: dict[str, Any], root: pathlib.Path, erro
     project = pyproject.get("project", {})
     if project.get("name") != component.get("distribution"):
         errors.append("python_package distribution does not match pyproject project.name")
+    if component.get("distribution_status") != "transitional_legacy_name":
+        errors.append("python_package distribution must be labeled as a transitional legacy name")
+    if component.get("future_distribution_target") != "aana":
+        errors.append("python_package future distribution target must be aana")
     if "auditable" not in project.get("description", ""):
         errors.append("python_package description should express AANA's audit/control direction")
     scripts = project.get("scripts", {})

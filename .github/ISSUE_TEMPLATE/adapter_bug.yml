@@ -1,0 +1,87 @@
+name: Adapter bug
+description: Report incorrect AANA adapter behavior, routing, evidence handling, or AIx output.
+title: "[Adapter Bug]: "
+labels: ["bug", "adapter"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for adapter-specific behavior: wrong route, missed blocker, false positive, bad recovery suggestion, evidence mismatch, or AIx scoring drift.
+  - type: input
+    id: adapter-id
+    attributes:
+      label: Adapter ID
+      description: Name the adapter or bundle involved.
+      placeholder: "Example: privacy_pii_redaction, research_answer_grounding, government_civic"
+    validations:
+      required: true
+  - type: dropdown
+    id: route
+    attributes:
+      label: Observed route
+      description: What did AANA return?
+      options:
+        - accept
+        - revise
+        - retrieve
+        - ask
+        - defer
+        - refuse
+        - schema/error
+        - not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: expected-route
+    attributes:
+      label: Expected route
+      description: What should AANA have returned?
+      options:
+        - accept
+        - revise
+        - retrieve
+        - ask
+        - defer
+        - refuse
+        - schema/error
+        - not sure
+    validations:
+      required: true
+  - type: textarea
+    id: event
+    attributes:
+      label: Redacted event or workflow
+      description: Paste the smallest redacted Agent Action Contract, Agent Event, or Workflow Contract payload that reproduces the issue.
+      render: json
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or authorization context
+      description: Describe evidence refs, authorization state, freshness, provenance, and anything missing or contradictory.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Why this is a bug
+      description: Explain the false allow, false block, missed blocker, bad correction, or auditability problem.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command, SDK call, or API route
+      description: Include the exact command or surface used, if applicable.
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed raw secrets, tokens, private account IDs, and unnecessary personal data.
+          required: true
+

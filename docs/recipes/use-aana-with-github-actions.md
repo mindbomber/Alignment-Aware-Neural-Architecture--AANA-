@@ -57,7 +57,7 @@ The same snippet is checked in at `examples/github-actions/aana-guardrails.yml`.
 Run the packaged guardrail engine without GitHub:
 
 ```powershell
-python scripts/run_github_action_guardrails.py --fail-on never --changed-files "src/app.py,migrations/001.sql" --migration-diff eval_outputs/migration-diff.sql
+python scripts/integrations/run_github_action_guardrails.py --fail-on never --changed-files "src/app.py,migrations/001.sql" --migration-diff eval_outputs/migration-diff.sql
 ```
 
 ## Expected Result

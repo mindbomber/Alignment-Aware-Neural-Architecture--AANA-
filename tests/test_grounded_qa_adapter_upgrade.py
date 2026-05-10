@@ -243,7 +243,7 @@ class GroundedQaAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_grounded_qa_adapter_eval.py",
+                "scripts/evals/run_grounded_qa_adapter_eval.py",
                 "--output",
                 str(output),
             ],
@@ -266,7 +266,7 @@ class GroundedQaAdapterUpgradeTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_grounded_qa_hf_experiment.py",
+                "scripts/hf/run_grounded_qa_hf_experiment.py",
                 "--mode",
                 "fixture",
                 "--max-rows-per-source",
@@ -294,7 +294,7 @@ class GroundedQaAdapterUpgradeTests(unittest.TestCase):
         self.assertNotIn("answer", first_row)
 
     def test_safe_miss_inspector_reports_clusters_without_raw_text(self):
-        from scripts.inspect_grounded_qa_misses import inspect_misses
+        from scripts.evals.inspect_grounded_qa_misses import inspect_misses
 
         result = {
             "experiment_id": "unit",
@@ -315,7 +315,7 @@ class GroundedQaAdapterUpgradeTests(unittest.TestCase):
             ],
         }
 
-        import scripts.inspect_grounded_qa_misses as inspector
+        import scripts.evals.inspect_grounded_qa_misses as inspector
 
         original_loader = inspector.load_cases
         inspector.load_cases = lambda *, experiment, max_rows_per_source: [

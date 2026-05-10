@@ -12,15 +12,15 @@ Each kit contains:
 Run all kits:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit all
+python scripts/pilots/run_starter_pilot_kit.py --kit all
 ```
 
 Run one kit:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit enterprise
-python scripts/run_starter_pilot_kit.py --kit personal_productivity
-python scripts/run_starter_pilot_kit.py --kit civic_government
+python scripts/pilots/run_starter_pilot_kit.py --kit enterprise
+python scripts/pilots/run_starter_pilot_kit.py --kit personal_productivity
+python scripts/pilots/run_starter_pilot_kit.py --kit government_civic
 ```
 
 Outputs are written under `eval_outputs/starter_pilot_kits/<kit-id>/`:

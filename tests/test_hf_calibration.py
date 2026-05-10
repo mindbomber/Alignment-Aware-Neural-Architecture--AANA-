@@ -112,7 +112,7 @@ class HFCalibrationTests(unittest.TestCase):
             plan_path = Path(directory) / "hf-calibration.json"
             plan_path.write_text(json.dumps(load_plan()), encoding="utf-8")
             completed = subprocess.run(
-                [sys.executable, "scripts/validate_hf_calibration.py", "--plan", str(plan_path)],
+                [sys.executable, "scripts/hf/validate_hf_calibration.py", "--plan", str(plan_path)],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,

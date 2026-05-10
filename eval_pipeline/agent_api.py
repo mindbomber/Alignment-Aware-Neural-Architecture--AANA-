@@ -6,11 +6,11 @@ import sys
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
+VALIDATION_SCRIPTS = ROOT / "scripts" / "validation"
+if str(VALIDATION_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(VALIDATION_SCRIPTS))
 
-import run_adapter
+from eval_pipeline.adapter_runner import legacy_runner as run_adapter
 import validate_adapter_gallery
 from eval_pipeline import agent_contract, audit, aix, evidence as evidence_registry, evidence_integrations, workflow_contract
 from eval_pipeline.adapter_runner import results as result_assembly

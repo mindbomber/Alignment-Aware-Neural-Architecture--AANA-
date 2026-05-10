@@ -33,6 +33,6 @@ Any public win must include limitations in the same report or linked artifact. C
 Validate public benchmark language with:
 
 ```powershell
-python scripts/validate_public_claims_policy.py
+python scripts/validation/validate_public_claims_policy.py
 python scripts/validate_aana_platform.py
 ```

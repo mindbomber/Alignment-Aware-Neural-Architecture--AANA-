@@ -58,7 +58,7 @@ class IntegrationRecipeTests(unittest.TestCase):
     def test_recipes_include_copyable_commands(self):
         command_expectations = {
             "docs/recipes/use-aana-with-github-actions.md": [
-                "python scripts/run_github_action_guardrails.py",
+                "python scripts/integrations/run_github_action_guardrails.py",
                 "uses: mindbomber/Alignment-Aware-Neural-Architecture--AANA-/.github/actions/aana-guardrails@main",
             ],
             "docs/recipes/use-aana-with-a-local-agent.md": [

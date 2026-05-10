@@ -79,7 +79,7 @@ class MIReleaseBundleVerificationTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_verify_release_bundle.py",
+                    "scripts/publication/mi_verify_release_bundle.py",
                     "--manifest",
                     bundle["paths"]["release_manifest"],
                     "--output",

@@ -15,14 +15,14 @@ def load_script(name, path):
     return module
 
 
-starter_kits = load_script("run_starter_pilot_kit", ROOT / "scripts" / "run_starter_pilot_kit.py")
+starter_kits = load_script("run_starter_pilot_kit", ROOT / "scripts" / "pilots" / "run_starter_pilot_kit.py")
 
 
 class StarterPilotKitTests(unittest.TestCase):
     def test_index_lists_required_starter_packs(self):
         index = starter_kits.load_index(ROOT / "examples" / "starter_pilot_kits" / "index.json")
         kit_ids = {kit["id"] for kit in index["kits"]}
-        self.assertEqual(kit_ids, {"enterprise", "personal_productivity", "civic_government"})
+        self.assertEqual(kit_ids, {"enterprise", "personal_productivity", "government_civic"})
 
     def test_each_kit_has_required_files_and_workflows(self):
         index = starter_kits.load_index(ROOT / "examples" / "starter_pilot_kits" / "index.json")
@@ -79,7 +79,7 @@ class StarterPilotKitTests(unittest.TestCase):
             by_id = {kit["kit_id"]: kit for kit in report["kits"]}
             self.assertEqual(by_id["enterprise"]["summary"]["workflows"], 8)
             self.assertEqual(by_id["personal_productivity"]["summary"]["workflows"], 7)
-            self.assertEqual(by_id["civic_government"]["summary"]["workflows"], 8)
+            self.assertEqual(by_id["government_civic"]["summary"]["workflows"], 8)
 
 
 if __name__ == "__main__":

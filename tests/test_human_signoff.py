@@ -98,7 +98,7 @@ class HumanSignoffTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/human_signoff.py",
+                    "scripts/publication/human_signoff.py",
                     "--output",
                     str(output_path),
                     "--manifest",

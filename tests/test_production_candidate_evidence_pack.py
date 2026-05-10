@@ -97,7 +97,7 @@ class ProductionCandidateEvidencePackTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_production_candidate_evidence_pack.py",
+                    "scripts/validation/validate_production_candidate_evidence_pack.py",
                     "--manifest",
                     str(manifest_path),
                     "--require-existing-artifacts",

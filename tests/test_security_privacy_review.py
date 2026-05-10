@@ -10,7 +10,7 @@ from eval_pipeline.mi_pilot import run_research_citation_mi_pilot
 from eval_pipeline.pilot_hardening import run_guarded_research_citation_pilot
 from eval_pipeline.privacy_review import validate_redacted_artifact, validate_redacted_artifacts
 from eval_pipeline.production_readiness import production_mi_readiness_gate
-from scripts.validate_mi_contracts import validate_dashboard, validate_production_readiness
+from scripts.validation.validate_mi_contracts import validate_dashboard, validate_production_readiness
 from tests.test_handoff_gate import clean_handoff
 from tests.test_human_review_queue import deferred_result
 

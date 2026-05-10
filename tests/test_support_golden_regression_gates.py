@@ -8,7 +8,7 @@ from eval_pipeline import agent_api
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
+RUNNER_PATH = ROOT / "scripts" / "adapters" / "run_adapter.py"
 SUPPORT_FIXTURE_PATH = ROOT / "examples" / "support_workflow_contract_examples.json"
 
 spec = importlib.util.spec_from_file_location("run_adapter", RUNNER_PATH)

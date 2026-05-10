@@ -3,7 +3,7 @@
 The executable incident-response source of truth is `examples/incident_response_plan_internal_pilot.json`. Validate it with:
 
 ```powershell
-python scripts/validate_incident_response_plan.py
+python scripts/validation/validate_incident_response_plan.py
 ```
 
 The plan is for the internal-pilot support runtime. It keeps the production boundary conservative: this repo can be pilot-ready or production-candidate, but production readiness still depends on the real deployment environment, live connectors, owner approval, audit retention, observability, human review staffing, and measured pilot evidence.

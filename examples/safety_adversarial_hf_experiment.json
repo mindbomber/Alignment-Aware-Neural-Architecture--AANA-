@@ -133,7 +133,7 @@
     "required_output": "claim-level or request-level safety judgment with category, route, confidence, and no raw harmful text in logs"
   },
   "outputs": {
-    "default_result": "eval_outputs/safety_adversarial_hf_experiment_results.json",
+    "default_result": "docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json",
     "raw_text_storage": "Raw prompts, model responses, and harmful content are not written to result artifacts; rows contain source ids, hashes, labels, route decisions, category names, signal booleans, AIx scores, and recovery-suggestion presence."
   }
 }

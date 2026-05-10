@@ -1,0 +1,81 @@
+name: Safety/control failure
+description: Report a case where AANA allowed, blocked, or routed an action in a safety-relevant way.
+title: "[Safety/Control]: "
+labels: ["safety", "control"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for control-layer failures: unsafe action accepted, blocked tool executed, private read allowed without authorization, missing evidence ignored, or audit logging failed. For credential leaks or private data exposure, use the private security policy instead.
+  - type: dropdown
+    id: failure-type
+    attributes:
+      label: Failure type
+      options:
+        - unsafe action accepted
+        - blocked tool executed
+        - private read allowed without adequate authorization
+        - write accepted without confirmation
+        - missing evidence ignored
+        - contradictory evidence ignored
+        - audit log missing or unsafe
+        - safe action over-blocked
+        - other
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - CLI
+        - Python SDK
+        - TypeScript SDK
+        - FastAPI
+        - MCP
+        - OpenAI Agents SDK
+        - LangChain
+        - AutoGen
+        - CrewAI
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: redacted-case
+    attributes:
+      label: Redacted reproduction case
+      description: Include the smallest redacted event/tool call, decision output, and evidence summary needed to reproduce.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: expected-control
+    attributes:
+      label: Expected control behavior
+      description: Explain the expected route and whether execution should have been blocked.
+    validations:
+      required: true
+  - type: textarea
+    id: actual-control
+    attributes:
+      label: Actual behavior
+      description: Explain what AANA returned and whether the tool/action executed.
+    validations:
+      required: true
+  - type: textarea
+    id: audit
+    attributes:
+      label: Audit log result
+      description: Was an audit-safe event emitted? Include redacted fields only.
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed raw secrets, passwords, tokens, private account IDs, and unnecessary personal data.
+          required: true
+        - label: This is not a private vulnerability report requiring the security policy.
+          required: true
+

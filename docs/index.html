@@ -743,7 +743,7 @@ aana doctor
 aana list
 aana run-agent-examples
 aana agent-check --event examples/agent_event_support_reply.json
-aana-server --host 127.0.0.1 --port 8765</code></pre>
+python scripts/aana_server.py --host 127.0.0.1 --port 8765</code></pre>
           </div>
         </div>
       </section>
@@ -873,7 +873,7 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>Workflow Batch Example</h3>
               <p>A multi-item contract for gating several productive-work outputs in one call.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/run_adapter.py" target="_blank" rel="noopener">
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/adapters/run_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Runner</h3>
               <p>The executable plug-in path: load adapter JSON, verify a prompt, repair failures, and emit a gate result.</p>
             </a>
@@ -881,11 +881,11 @@ aana-server --host 127.0.0.1 --port 8765</code></pre>
               <h3>AANA CLI</h3>
               <p>The short command hub for listing, running, validating, and scaffolding adapters.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/new_adapter.py" target="_blank" rel="noopener">
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/adapters/new_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Scaffold</h3>
               <p>Generate a starter adapter, prompt, bad candidate, and README for a new domain.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/validate_adapter.py" target="_blank" rel="noopener">
+            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/validation/validate_adapter.py" target="_blank" rel="noopener">
               <h3>Adapter Validator</h3>
               <p>Check constraint layers, verifier types, correction actions, gate rules, metrics, and placeholders before sharing.</p>
             </a>

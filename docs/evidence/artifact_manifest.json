@@ -1,0 +1,161 @@
+{
+  "schema_version": "aana.evidence_artifact_manifest.v1",
+  "policy": {
+    "allowed_result_labels": [
+      "calibration",
+      "diagnostic",
+      "heldout",
+      "probe",
+      "external_reporting"
+    ],
+    "public_claim_result_labels": [
+      "heldout",
+      "external_reporting"
+    ],
+    "public_claim_requires_non_calibration_split": true,
+    "covered_root": "docs/evidence",
+    "coverage_note": "Every tracked reviewed evidence artifact under docs/evidence must be covered by this manifest. Local generated outputs stay in ignored eval_outputs/."
+  },
+  "artifacts": [
+    {
+      "artifact_path": "docs/evidence/constraint_reasoning_aana_*.csv",
+      "result_label": "external_reporting",
+      "source_split": "matched_constraint_reasoning_sample",
+      "public_claim_allowed": true,
+      "reproduction_command": "python eval_pipeline/compare_constraint_reasoning.py && python eval_pipeline/plot_results.py --summary eval_outputs/constraint_reasoning_aana_evidence/plot_summary_by_condition.csv --output-dir eval_outputs/constraint_reasoning_aana_evidence/plots"
+    },
+    {
+      "artifact_path": "docs/evidence/manifest.json",
+      "result_label": "external_reporting",
+      "source_split": "matched_constraint_reasoning_sample",
+      "public_claim_allowed": true,
+      "reproduction_command": "python eval_pipeline/compare_constraint_reasoning.py"
+    },
+    {
+      "artifact_path": "docs/evidence/plots/*.svg",
+      "result_label": "external_reporting",
+      "source_split": "matched_constraint_reasoning_sample",
+      "public_claim_allowed": true,
+      "reproduction_command": "python eval_pipeline/plot_results.py --summary eval_outputs/constraint_reasoning_aana_evidence/plot_summary_by_condition.csv --output-dir eval_outputs/constraint_reasoning_aana_evidence/plots"
+    },
+    {
+      "artifact_path": "docs/evidence/application_demo/*",
+      "result_label": "diagnostic",
+      "source_split": "synthetic_application_demo_scenarios",
+      "public_claim_allowed": false,
+      "reproduction_command": "python eval_pipeline/run_evals.py --tasks examples/application_scenarios.jsonl --output eval_outputs/application_demo/raw_outputs.jsonl --models gpt-5.4-nano --pressures low high --corrections baseline strong --no-resume --max-output-tokens 650 && python eval_pipeline/judge_score_outputs.py --input eval_outputs/application_demo/raw_outputs.jsonl --judge-jsonl eval_outputs/application_demo/judge_scores.jsonl --judged eval_outputs/application_demo/judged_outputs.csv --summary eval_outputs/application_demo/summary_by_condition.csv --judge-model gpt-5.4-mini --no-resume --max-output-tokens 450"
+    },
+    {
+      "artifact_path": "docs/evidence/travel_tool_demo/*",
+      "result_label": "diagnostic",
+      "source_split": "single_scenario_travel_tool_followup",
+      "public_claim_allowed": false,
+      "reproduction_command": "python eval_pipeline/run_aana_evals.py --tasks examples/application_scenarios.jsonl --limit 1 --output eval_outputs/travel_tool_demo/raw_outputs.jsonl --pressures high --ablation-mode hybrid_gate_direct --condition-name travel_tool_aana --no-resume --max-output-tokens 650 && python eval_pipeline/judge_score_outputs.py --input eval_outputs/travel_tool_demo/raw_outputs.jsonl --judge-jsonl eval_outputs/travel_tool_demo/judge_scores.jsonl --judged eval_outputs/travel_tool_demo/judged_outputs.csv --summary eval_outputs/travel_tool_demo/summary_by_condition.csv --judge-model gpt-5.4-mini --no-resume --max-output-tokens 450"
+    },
+    {
+      "artifact_path": "docs/evidence/pilot_table2/*",
+      "result_label": "diagnostic",
+      "source_split": "small_real_output_pilot",
+      "public_claim_allowed": false,
+      "reproduction_command": "python eval_pipeline/generate_pilot_tasks.py && python eval_pipeline/run_pilot_conditions.py && python eval_pipeline/judge_pilot_outputs.py && python eval_pipeline/summarize_pilot_results.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/privacy_pii_hf_experiment_results_v2.json",
+      "result_label": "heldout",
+      "source_split": "piimb_openpii_nemotron_pii_heldout_validation",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/hf/run_privacy_pii_hf_experiment.py --output eval_outputs/privacy_pii_hf_experiment_results_v2.json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json",
+      "result_label": "heldout",
+      "source_split": "privacy_pii_adapter_heldout_validation",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/evals/run_privacy_pii_adapter_eval.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json",
+      "result_label": "heldout",
+      "source_split": "rag_grounded_qa_halubench_ragtruth_heldout_validation",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/evals/run_grounded_qa_adapter_eval.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
+      "result_label": "heldout",
+      "source_split": "mcp_atlas_mcphunt_heldout_validation_after_qwen_hermes_tuning",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/evals/run_agent_tool_use_control_eval.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/integration_validation_v1_heldout_results.json",
+      "result_label": "heldout",
+      "source_split": "integration_validation_v1_heldout_cases",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/validation/validate_agent_integrations.py --json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/msb_mcp_security_bench_aana_results.json",
+      "result_label": "external_reporting",
+      "source_split": "msb_mcp_security_bench_protocol_templates",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/benchmarks/run_msb_mcp_security_bench.py --output eval_outputs/msb_mcp_security_bench_aana_results.json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json",
+      "result_label": "diagnostic",
+      "source_split": "tool_use_read_routing_authorization_robustness_diagnostic_chain",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/hf/run_agent_tool_use_hf_experiment.py && python scripts/hf/run_authorization_robustness_hf_experiment.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json",
+      "result_label": "diagnostic",
+      "source_split": "beavertails_calibration_toxicchat_advbench_heldout_diagnostic",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/hf/run_safety_adversarial_hf_experiment.py --output eval_outputs/safety_adversarial_hf_experiment_results.json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json",
+      "result_label": "diagnostic",
+      "source_split": "financebench_controlled_diagnostic",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/hf/run_finance_high_risk_qa_hf_experiment.py --output eval_outputs/finance_high_risk_qa_hf_experiment_results.json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/governance_compliance_hf_experiment_results.json",
+      "result_label": "diagnostic",
+      "source_split": "policy_docs_plus_repo_heldout_policy_diagnostic",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/hf/run_governance_compliance_hf_experiment.py --output eval_outputs/governance_compliance_hf_experiment_results.json"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/mi_benchmark/*",
+      "result_label": "diagnostic",
+      "source_split": "mechanistic_interoperability_repo_local_benchmark",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/publication/mi_release_candidate.py --no-fail-on-block"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/mi_pilot/**",
+      "result_label": "diagnostic",
+      "source_split": "mechanistic_interoperability_research_citation_pilot",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/publication/mi_release_candidate.py --no-fail-on-block"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/mi_release_candidate/**",
+      "result_label": "external_reporting",
+      "source_split": "mechanistic_interoperability_release_candidate_bundle",
+      "public_claim_allowed": true,
+      "reproduction_command": "python scripts/publication/mi_release_candidate.py --no-fail-on-block && python scripts/publication/mi_release.py"
+    },
+    {
+      "artifact_path": "docs/evidence/peer_review/starter_pilot_kits/**",
+      "result_label": "diagnostic",
+      "source_split": "synthetic_starter_pilot_kits",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/pilots/run_starter_pilot_kit.py --kit all"
+    }
+  ]
+}

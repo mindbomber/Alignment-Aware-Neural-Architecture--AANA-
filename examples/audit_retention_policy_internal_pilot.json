@@ -97,11 +97,11 @@
   "redaction_proof": {
     "method": "Generate support Workflow Contract and Agent Event audit records from canonical fixtures, validate schema, and scan for raw support request, candidate, evidence, CRM, payment, internal note, and attachment text.",
     "fixture_ref": "examples/support_workflow_contract_examples.json",
-    "validator": "scripts/validate_audit_retention_policy.py",
+    "validator": "scripts/validation/validate_audit_retention_policy.py",
     "required_result": "no_raw_support_data_stored"
   },
   "release_gate": {
-    "script": "scripts/validate_audit_retention_policy.py",
+    "script": "scripts/validation/validate_audit_retention_policy.py",
     "category": "production-profile",
     "blocks_release": true
   }

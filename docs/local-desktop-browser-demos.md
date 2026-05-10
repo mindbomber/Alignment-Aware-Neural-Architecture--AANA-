@@ -10,7 +10,7 @@ the AANA runtime.
 With Python:
 
 ```powershell
-python scripts/run_local_demos.py
+python scripts/demos/run_local_demos.py
 ```
 
 With Docker:
@@ -67,7 +67,7 @@ in the browser.
 - `web/demos/` contains the local browser UI.
 - `examples/local_action_demos.json` contains synthetic scenario data and
   evidence templates.
-- `scripts/run_local_demos.py` starts the bridge with demo audit logging.
+- `scripts/demos/run_local_demos.py` starts the bridge with demo audit logging.
 
 For real pilots, replace synthetic evidence with reviewed evidence connectors
 and keep direct action blocked unless AANA returns `gate_decision: pass`,

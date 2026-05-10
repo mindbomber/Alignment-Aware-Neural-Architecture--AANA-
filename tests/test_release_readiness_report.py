@@ -106,7 +106,7 @@ class ReleaseReadinessReportTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/release_readiness_report.py",
+                    "scripts/publication/release_readiness_report.py",
                     "--readiness",
                     str(readiness_path),
                     "--output",

@@ -5,25 +5,34 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![Status: Alpha Research](https://img.shields.io/badge/status-alpha%20research-orange.svg)](ROADMAP.md)
 
-🌐 Public project site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
+Public site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
 
-🚦 Try AANA in the browser: https://huggingface.co/spaces/mindbomber/aana-demo
+Try AANA in the browser: https://huggingface.co/spaces/mindbomber/aana-demo
 
 ![AANA repository social preview](assets/github-social-preview.png)
 
-This repository contains AANA as a runtime control architecture for AI agents. In plain language: an agent proposes an answer or tool call, AANA checks the evidence, authorization, constraints, and risk, and the action executes only when the route is `accept`.
+AANA is a runtime control architecture for AI agents. An agent proposes an answer or tool call, AANA checks evidence, authorization, constraints, and risk, and the action executes only when the route is `accept`.
 
 Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
-The project includes the AANA CLI, Python SDK, TypeScript SDK, FastAPI service, MCP surface, middleware examples, adapter families, evaluation tools, and peer-review evidence artifacts.
-
-Platform boundary: AANA is a runtime guardrail layer that sits between an agent and consequential outputs or actions. It receives a Workflow Contract or Agent Event, checks the candidate output/action against adapter-specific constraints, applies verifier-grounded correction policy, returns `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, and emits audit-safe metadata. See [docs/product-boundary.md](docs/product-boundary.md).
-
 Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
+
+## Recommended Local Path
+
+Use AANA first as a runtime guardrail layer: install the package, run `aana` checks locally, wrap one consequential tool, and only then add API or middleware surfaces. The Workflow Contract, Agent Event Contract, and Agent Action Contract are the product path; eval workflows, benchmark runners, and research scripts under `scripts/` are validation tooling, not the public runtime interface.
+
+```powershell
+python -m pip install -e .
+aana doctor
+aana run travel_planning
+aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
+python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+```
 
 ## What AANA Adds
 
-Most agent safety tools fit into one bucket: prompt instructions, moderation/classification, LLM-as-judge review, framework middleware, or opaque provider-side model alignment. AANA is different because it standardizes the pre-action decision itself:
+Most agent safety tools fit into one bucket: prompt instructions, moderation/classification, LLM-as-judge review, framework middleware, or opaque provider-side model alignment. AANA standardizes the pre-action decision itself:
 
 ```text
 agent proposes -> AANA checks -> tool executes only if route == accept
@@ -31,653 +40,238 @@ agent proposes -> AANA checks -> tool executes only if route == accept
 
 AANA adds:
 
-- **A structured action contract**: `tool_name`, `tool_category`, `authorization_state`, `evidence_refs`, `risk_domain`, `proposed_arguments`, and `recommended_route`.
-- **Evidence/auth-aware routing**: the decision can be `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, based on what evidence and authorization are actually present.
-- **Hard execution rules**: wrapped tools do not execute unless AANA returns `accept` with no hard blockers or schema failures.
-- **Correction and recovery guidance**: AANA tells the agent whether to ask for confirmation, retrieve evidence, revise, defer to review, or refuse.
-- **Audit-safe logs**: decisions include route, AIx score, hard blockers, missing evidence, authorization state, and redacted audit metadata.
-- **Cross-surface parity**: the same decision shape is validated across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, OpenAI Agents SDK, LangChain, AutoGen, and CrewAI-style wrappers.
+- a structured Agent Action Contract,
+- evidence/auth-aware routing with `accept`, `revise`, `retrieve`, `ask`, `defer`, and `refuse`,
+- hard execution rules so wrapped tools do not execute unless AANA allows them,
+- correction and recovery guidance,
+- audit-safe decision logs,
+- cross-surface parity across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and agent middleware.
 
 The value is not that AANA is a smarter base agent. The value is that AANA makes consequential agent actions inspectable, enforceable, and reviewable before execution.
 
-First deployable support boundary: draft support replies, CRM support replies, refund/account-fact checks, support email-send checks, and customer-visible ticket updates. Invoice/billing replies are an adjacent later adapter family.
+## Quick Start
 
-Start with the path that matches what you are doing:
-
-- **Try Demo**: [docs/try-demo/index.md](docs/try-demo/index.md)
-- **Tool Call Gate Demo**: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
-- **Head-to-Head Findings**: [docs/aana-head-to-head-findings.md](docs/aana-head-to-head-findings.md)
-- **Technical Report**: [docs/aana-agent-action-technical-report.md](docs/aana-agent-action-technical-report.md)
-- **Public Artifact Hub**: [docs/aana-public-artifact-hub.md](docs/aana-public-artifact-hub.md)
-- **Peer Review Evidence Pack**: [Hugging Face dataset](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
-- **Integrate Runtime**: [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md)
-- **Agent Tool Contract SDK**: [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md)
-- **Agent Framework Middleware**: [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md)
-- **OpenAI Agents Quickstart**: [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md)
-- **Agent Action Contract v1**: [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md)
-- **Agent Action Contract Quickstart**: [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md)
-- **Agent Action Contract Cases**: [examples/agent_action_contract_cases.json](examples/agent_action_contract_cases.json)
-- **FastAPI Service**: [docs/fastapi-service.md](docs/fastapi-service.md)
-- **Evidence Handling**: [docs/evidence-handling.md](docs/evidence-handling.md)
-- **Auditability**: [docs/auditability.md](docs/auditability.md)
-- **Security Threat Model**: [docs/aana-security-threat-model.md](docs/aana-security-threat-model.md)
-- **Authorization State**: [docs/authorization-state.md](docs/authorization-state.md)
-- **AANA Standard Publication Package**: [docs/aana-standard-publication.md](docs/aana-standard-publication.md)
-- **Packaging Release Checklist**: [docs/packaging-release-checklist.md](docs/packaging-release-checklist.md)
-- **Public Claims Policy**: [docs/public-claims-policy.md](docs/public-claims-policy.md)
-- **HF Dataset Strategy**: [docs/hf-dataset-strategy.md](docs/hf-dataset-strategy.md)
-- **HF Dataset Proof Report**: [docs/hf-dataset-proof-report.md](docs/hf-dataset-proof-report.md)
-- **Build Adapter**: [docs/build-adapter/index.md](docs/build-adapter/index.md)
-
-Try AANA without cloning the repo:
-
-- [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo): enter a candidate answer/action, evidence, and constraints; get an AANA route, AIx score, hard blockers, suggested revision, and audit summary.
-- [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4): the canonical model, dataset, Space, and report map.
-- [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack): measured privacy, grounded QA, tool-use, and integration validation artifacts with a reproduction script and reviewer-facing report.
-- [AANA hosted synthetic demo](https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/): precomputed examples only, requires no secrets, and cannot perform real sends, deletes, deploys, purchases, or exports.
-- [AANA head-to-head findings](docs/aana-head-to-head-findings.md): a concise public summary of the agent-action comparisons against permissive agents, classifiers, prompt-only guards, LLM judges, and static contract gates.
-- [AANA agent-action technical report](docs/aana-agent-action-technical-report.md): a short architecture report tying the results to `S = (f_theta, E_phi, R, Pi_psi, G)` and the current validity limits.
-
-Current diagnostic updates in the evidence pack:
-
-- Safety/adversarial prompt routing: deterministic AANA preserves safe allow but misses many harmful prompts; a diversified request-level verifier improves harmful-request recall while conservative calibration protects safe allow. AdvBench transfer remains weak, so this is not a content-moderation claim.
-- Finance/high-risk QA: a controlled FinanceBench diagnostic shows supported filing answers are allowed and unsupported finance overclaims are routed to revise/defer. This is not official FinanceBench leaderboard evidence or investment-advice evaluation.
-- Governance/compliance policy routing: a small diagnostic over Hugging Face policy-doc metadata plus repo-heldout policy cases shows citation, missing-evidence, private-data export, destructive-action, and human-review routing behavior. This is not legal, regulatory, or platform-policy certification.
-- Integration validation v1: held-out tool-call cases show route parity, blocked-tool non-execution, decision-shape parity, audit completeness, and zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and middleware surfaces. This validates platform wiring, not raw agent task success.
-- MSB / MCP Security Bench protocol submission: converted MSB task and attack templates show AANA v2 blocking converted MCP attack templates while preserving safe public-read allows. This is a protocol-level submission artifact, not a full MSB harness replay or leaderboard claim. See [docs/aana-msb-mcp-security-bench.md](docs/aana-msb-mcp-security-bench.md).
-- MCP-Bench next submission target: AANA should be evaluated as a paired control layer around the same base agent, not as a standalone model row. The repo now includes a paired runner that executes MCP-Bench once plain and once with AANA inserted before actual MCP tool execution. See [docs/aana-mcp-bench-submission-plan.md](docs/aana-mcp-bench-submission-plan.md).
-
-Production positioning: this repository can be demo-ready, pilot-ready, or production-candidate for controlled evaluation, but it is not production-certified by local tests alone. Production readiness requires live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
-
-## Why this matters
-
-Language models can produce answers that look capable while quietly violating important constraints: inventing unsupported facts, exceeding budgets, ignoring safety limits, guessing private information, or becoming manipulative under pressure. AANA experiments measure that failure mode directly by comparing capability and alignment scores across baseline, correction, verifier-loop, tool-assisted, and originality conditions.
-
-## Where AANA is useful
-
-AANA is strongest where failures are mechanically checkable. The point is not to make the model "more careful" by asking nicely. The point is to give the system a correction path that cannot hand-wave constraints away.
-
-The intended direction is base agent plus AANA, not AANA as a replacement for the base agent. Strong models and planners handle raw task execution; AANA checks evidence, authorization, constraints, correction paths, and action routing around them.
-
-Good fit examples:
-
-- Planning assistants with hard budgets, time windows, route constraints, dietary exclusions, forbidden ingredients, or required formats.
-- Research and analysis copilots that must distinguish supported facts from impossible claims, missing citations, private information, and unsupported certainty.
-- Workflow agents that should only draft, route, summarize, or prepare actions after required fields, permissions, evidence, and escalation rules are checked.
-- Safety, compliance, and policy-sensitive assistants where a helpful-looking answer can still fail if it violates an explicit boundary.
-- Evaluation pipelines that need to measure when capability, persuasion, or completeness improves while constraint preservation gets worse.
-
-Weaker fit examples:
-
-- Mostly subjective taste, style, or preference tasks with no stable verifier.
-- Open-ended brainstorming where there is no clear boundary, evidence source, or correction action.
-- Domains where the important harm is delayed, hidden, or impossible to observe without stronger external instrumentation.
-
-In practical terms, AANA is most useful when you can name the constraint, check whether it was violated, and define what the system should do next: revise, retrieve, ask, refuse, defer, or accept.
-
-The docs are organized around three entry points: [Try Demo](docs/try-demo/index.md), [Integrate Runtime](docs/integrate-runtime/index.md), and [Build Adapter](docs/build-adapter/index.md). Deeper background remains available for [architecture](docs/architecture.md), [AANA vs frontier models](docs/aana-vs-sota-llms.md), [pilot evaluation](docs/pilot-evaluation-kit.md), and [production certification boundaries](docs/production-certification.md).
-
-## Who this is for
-
-- AI safety and alignment researchers studying correction loops and evaluation design.
-- LLM evaluation builders who need reproducible prompt, scoring, and plotting workflows.
-- Product engineers testing whether assistants preserve user constraints under pressure.
-- Students and independent researchers learning how model-evaluation pipelines are structured.
-
-## Main Agent-Integration Proof
-
-Run the integration validator to prove the Python SDK, TypeScript SDK, OpenAI
-Agents SDK wrapper, LangChain, AutoGen, CrewAI, FastAPI policy service, MCP
-tool surface, and controlled-agent eval harness all work:
+Clone and install locally:
 
 ```powershell
-python scripts/validate_agent_integrations.py
+git clone https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-.git
+cd Alignment-Aware-Neural-Architecture--AANA-
+python -m pip install -e .
+```
+
+Run a pre-tool-call check:
+
+```powershell
+aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
+```
+
+Run an agent-output check:
+
+```powershell
+aana agent-check --event examples/agent_event_support_reply.json
+```
+
+Start the local FastAPI policy service:
+
+```powershell
+aana-fastapi --host 127.0.0.1 --port 8766
+```
+
+Then use:
+
+- `GET /health`
+- `POST /pre-tool-check`
+- `POST /agent-check`
+- OpenAPI docs at `http://127.0.0.1:8766/docs`
+
+No LLM API key is required for deterministic local checks. Provider keys are only needed for live model-loop experiments or optional semantic verifier paths.
+
+## Agent Action Contract
+
+The public contract v1 fields are:
+
+```json
+{
+  "tool_name": "send_email",
+  "tool_category": "write",
+  "authorization_state": "user_claimed",
+  "evidence_refs": [{
+    "source_id": "draft:123",
+    "kind": "draft",
+    "trust_tier": "user_provided",
+    "redaction_status": "redacted",
+    "summary": "User-provided draft exists.",
+    "provenance": "agent_runtime",
+    "freshness": "current"
+  }],
+  "risk_domain": "customer_support",
+  "proposed_arguments": {"to": "customer@example.com"},
+  "recommended_route": "accept"
+}
+```
+
+AANA returns a decision shape with:
+
+- `route`
+- AIx score
+- hard blockers
+- missing evidence
+- authorization state
+- recovery suggestion
+- audit-safe log event
+
+See [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md) and [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md).
+
+## Python SDK
+
+```python
+import aana
+
+decision = aana.check_tool_call({
+    "tool_name": "get_recent_transactions",
+    "tool_category": "private_read",
+    "authorization_state": "authenticated",
+    "evidence_refs": [{
+        "source_id": "auth.session",
+        "kind": "auth_context",
+        "trust_tier": "system",
+        "redaction_status": "redacted",
+        "summary": "User authenticated for account view.",
+        "provenance": "session",
+        "freshness": "current"
+    }],
+    "risk_domain": "finance",
+    "proposed_arguments": {"account_id": "acct_demo", "limit": 5},
+    "recommended_route": "accept"
+})
+
+if decision["route"] == "accept":
+    ...
+```
+
+Wrap a tool:
+
+```python
+guarded = aana.wrap_agent_tool(send_email)
+```
+
+Wrapped tools execute only when AANA returns `accept`. See [docs/aana-agent-contract-sdk.md](docs/aana-agent-contract-sdk.md), [docs/python-runtime-api.md](docs/python-runtime-api.md), and [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md).
+
+## TypeScript SDK
+
+The TypeScript SDK lives in [sdk/typescript](sdk/typescript). It provides Agent Action Contract helpers and an HTTP client for the AANA service.
+
+See [sdk/typescript/README.md](sdk/typescript/README.md).
+
+## API Service
+
+The FastAPI service exposes AANA as an internal policy service for agents that cannot import the Python SDK directly.
+
+Core routes:
+
+- `GET /health`
+- `POST /pre-tool-check`
+- `POST /agent-check`
+
+The service supports bearer-token auth, request-size limits, OpenAPI docs, and optional redacted audit JSONL logging. See [docs/fastapi-service.md](docs/fastapi-service.md).
+
+## Integrations
+
+Use the same AANA decision shape across:
+
+- OpenAI Agents SDK
+- LangChain
+- AutoGen
+- CrewAI
+- MCP tool calls
+- plain Python/TypeScript functions
+
+Main integration proof:
+
+```powershell
+python scripts/validation/validate_agent_integrations.py
 ```
 
 Expected result:
 
 ```text
 pass -- passed=12/12
-- pass: cli_decision_shape_smoke
-- pass: python_sdk_smoke
-- pass: typescript_sdk_smoke
-- pass: openai_wrapped_tools_smoke
-- pass: langchain_middleware_smoke
-- pass: autogen_middleware_smoke
-- pass: crewai_middleware_smoke
-- pass: middleware_decision_shape_smoke
-- pass: fastapi_policy_service_smoke
-- pass: mcp_tool_smoke
-- pass: mcp_decision_shape_smoke
-- pass: controlled_agent_eval_harness
 ```
 
-For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md).
+For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md), [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md), and [examples/integrations](examples/integrations).
 
-## Recommended Local Path
+## Evidence And Peer Review
 
-Use this path for platform onboarding:
+Start here:
+
+- [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4)
+- [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
+- [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo)
+- [AANA head-to-head findings](docs/aana-head-to-head-findings.md)
+- [AANA agent-action technical report](docs/aana-agent-action-technical-report.md)
+- [Production-candidate evidence pack](docs/aana-production-candidate-evidence-pack.md)
+- [Reviewed evidence artifact manifest](docs/evidence/artifact_manifest.json)
+- [Research and evaluation workflows](docs/research-evaluation-workflows.md)
+- [Repository organization](docs/repo-organization.md)
+
+Benchmark and dataset results are labeled as calibration, held-out, diagnostic, probe, or external-reporting artifacts. They should not be presented as proof that AANA is a raw agent-performance engine. See [docs/public-claims-policy.md](docs/public-claims-policy.md) and [docs/benchmark-reporting-policy.md](docs/benchmark-reporting-policy.md).
+
+## Platform Validation
+
+Run the full platform harmony gate:
 
 ```powershell
-python -m pip install -e .
-aana doctor
-aana run travel_planning
-aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
-aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
-python scripts/aana_mcp_server.py --list-tools
-python examples/chatgpt_app/aana_mcp_app.py
-python evals/aana_controlled_agents/run_local.py
-python scripts/validate_agent_integrations.py
-python scripts/validate_aana_platform.py
-aana evidence-pack --require-existing-artifacts
-aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
-aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-validate-platform
 ```
 
-This covers install, health checks, one catalog-backed gallery example, a Workflow Contract check, a pre-tool-call gate, the MCP-style `aana_pre_tool_check` surface, the Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP integration validator, the platform harmony gate, the evidence pack, the HTTP bridge, and redacted audit inspection. The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, `/tool-precheck`, and `/openapi.json`.
+This checks adapter layout, contract freeze, integration parity, bundle certification, HF dataset split governance, public claims policy, security hardening, packaging hardening, versioning, and publication surfaces.
 
-Advanced research/eval workflows such as `python scripts/dev.py sample`, model-provider experiments, paper tables, and benchmark comparisons are separate from platform onboarding. Start with [docs/try-demo/index.md](docs/try-demo/index.md), then use [docs/evaluation-design.md](docs/evaluation-design.md) or [docs/pilot-evaluation-kit.md](docs/pilot-evaluation-kit.md) when you need research artifacts.
-
-Benchmark reporting boundary: diagnostic probe results are engineering artifacts only and must not be merged into public AANA performance claims. See [docs/benchmark-reporting-policy.md](docs/benchmark-reporting-policy.md) and validate with `python scripts/validate_public_claims_policy.py`.
-
-Public claims boundary: keep the main claim to “AANA makes agents more auditable, safer, more grounded, and more controllable.” Do not claim AANA is proven as a raw agent-performance engine or has raw agent-performance superiority. Label results as `calibration`, `heldout`, `diagnostic`, `probe`, or `external_reporting`, and publish limitations beside wins. See [docs/public-claims-policy.md](docs/public-claims-policy.md).
-
-For Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI,
-FastAPI policy-service, MCP, and ChatGPT App prototype
-integration, start with [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md).
-
-Adapter generalization gate: general adapters must use config-backed domain/tool hints, pass held-out validation, pass benchmark-fit linting, and keep diagnostic/probe results out of public claims. Validate the combined gate with `python scripts/validate_adapter_generalization.py --require-existing-artifacts`.
-
-Adapter family layout: technical verifier/control families live under `aana/adapters/` (`privacy_pii`, `grounded_qa`, `agent_tool_use`, `governance_compliance`, `security_devops`, and `domain_risk`). Product bundles live under `aana/bundles/` (`enterprise`, `personal_productivity`, and `government_civic`) and declare which adapter families they use. Validate split isolation and bundle references with `python scripts/validate_adapter_layout.py`.
-
-Bundle ID policy: `government_civic` is the canonical product-bundle ID. `civic_government` remains a backward-compatible alias for older starter-pilot-kit paths and commands.
-
-Manifest and canonical ID policy: `aana/adapters/*/manifest.json` and `aana/bundles/*/manifest.json` are the source of truth for adapter-family IDs, bundle IDs, bundle aliases, core adapter membership, required connectors, and SDK adapter aliases. `aana/canonical_ids.py`, SDK helpers, gallery metadata, and family certification modules read from those manifests instead of maintaining separate product-bundle constants. Alias maps are only for backward compatibility and must target canonical IDs directly. Validate alias or manifest drift with `python scripts/validate_canonical_ids.py`.
-
-CI platform gate: run `python scripts/validate_aana_platform.py`. This is the standard one-command gate for adapter layout, contract freeze, agent integrations, bundle certification, HF dataset split governance, public claims policy, security hardening, packaging hardening, versioning, and publication surfaces.
-
-Publication gate: before publishing AANA as a Python package, TypeScript SDK, FastAPI service, Hugging Face model/dataset card, or Agent Action Contract standard, run `python scripts/validate_aana_standard_publication.py --require-existing-artifacts`. The manifest is [examples/aana_standard_publication_manifest.json](examples/aana_standard_publication_manifest.json).
-
-Packaging gate: keep Python package, TypeScript SDK, FastAPI service, benchmark/eval tooling, docs, and cards separated with `python scripts/validate_packaging_hardening.py --require-existing-artifacts`. The current Python distribution remains `aana-eval-pipeline`; any future rename needs a documented migration window and compatibility plan.
-
-## Result Shape
-
-Expected summary shape:
-
-| model | pressure | correction | block | n | capability_score | alignment_score | gap_score |
-|---|---|---|---|---:|---:|---:|---:|
-| example-model | low | baseline | constraint_reasoning | 1 | 1.0 | 0.8 | 0.2 |
-| example-model | low | baseline | truthfulness | 1 | 1.0 | 1.0 | 0.0 |
-
-The key signal is `gap_score = capability_score - alignment_score`. Positive gaps can reveal answers that look useful while losing important constraints.
-
-Run a gallery adapter without memorizing the long prompt:
+Additional publication gates:
 
 ```powershell
-python scripts/aana_cli.py doctor
-python scripts/aana_cli.py run travel_planning
+python scripts/validation/validate_aana_standard_publication.py --require-existing-artifacts
+python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts
 ```
 
-Try the other gallery adapters:
+The default Python install exposes three top-level commands: `aana`, `aana-fastapi`, and `aana-validate-platform`. Benchmark runners, HF experiments, publication tools, and research validators remain grouped under `scripts/`.
+
+The current Python distribution name is the transitional legacy name `aana-eval-pipeline`; the import package and CLI are already `aana`. The intended future distribution target is `aana`, but that rename requires migration notes, a compatibility window, and preserved CLI/import behavior.
+
+## Repository Map
+
+- `aana/` - runtime SDK, CLI entrypoints, middleware, registry, adapters, and bundles.
+- `eval_pipeline/` - shared runtime internals plus research/eval support modules.
+- `sdk/typescript/` - TypeScript SDK.
+- `examples/` - synthetic fixtures, integration demos, API examples, and demo sources.
+- `docs/` - product docs, architecture docs, evidence reports, and publication guidance.
+- `scripts/` - repo-local validation, benchmark, HF, and development tooling.
+- `tests/` - unit and platform validation tests.
+- `papers/` - research manuscripts connected to AANA.
+- `eval_outputs/` - generated local outputs, intentionally ignored by git.
+
+## More Docs
+
+- [Try Demo](docs/try-demo/index.md)
+- [Build Adapter](docs/build-adapter/index.md)
+- [Evidence Handling](docs/evidence-handling.md)
+- [Architecture Map](docs/architecture-map.md)
+- [Repository Organization](docs/repo-organization.md)
+- [Auditability](docs/auditability.md)
+- [Authorization State](docs/authorization-state.md)
+- [Security Threat Model](docs/aana-security-threat-model.md)
+- [AANA Standard Publication Package](docs/aana-standard-publication.md)
+- [Packaging Release Checklist](docs/packaging-release-checklist.md)
+- [Publication Release Checklist](docs/publication-release-checklist.md)
+- [HF Dataset Strategy](docs/hf-dataset-strategy.md)
+- [HF Dataset Proof Report](docs/hf-dataset-proof-report.md)
+
+## Safety Notes
 
-```powershell
-python scripts/aana_cli.py run meal_planning
-python scripts/aana_cli.py run support_reply
-python scripts/aana_cli.py run research_summary
-```
-
-Those commands emit JSON gate results with per-constraint pass/fail status, the deterministic verifier report, the recommended action, and the final constraint-preserving answer.
-
-Call the Workflow Contract directly from Python:
-
-```python
-import aana
-
-result = aana.check(
-    adapter="research_summary",
-    request="Write a concise research brief. Use only Source A and Source B. Label uncertainty.",
-    candidate="AANA improves productivity by 40% for all teams [Source C].",
-    evidence=["Source A: AANA makes constraints explicit.", "Source B: Source coverage can be incomplete."],
-    constraints=["Do not invent citations.", "Do not add unsupported numbers."],
-)
-```
-
-For JSON request files:
-
-```python
-result = aana.check_file("examples/workflow_research_summary.json")
-batch = aana.check_batch_file("examples/workflow_batch_productive_work.json")
-```
-
-Certify the local pilot surface before handing the repo to a new evaluator:
-
-```powershell
-python scripts/aana_cli.py pilot-certify
-python scripts/aana_cli.py pilot-certify --json
-```
-
-The command prints a public readiness score across the CLI, Python API, HTTP bridge, adapters, evidence, audit/metrics, docs, contracts, and skills/plugins. Details are in [docs/pilot-surface-certification.md](docs/pilot-surface-certification.md).
-
-Passing `pilot-certify`, `release-check`, or local tests does not certify production safety. Those checks prove repo-local behavior and release hygiene; live deployment still needs live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results.
-
-Define the line between demo, pilot, and production certification:
-
-```powershell
-python scripts/aana_cli.py production-certify --json --certification-policy examples/production_certification_template.json
-```
-
-That command reports `repo_local_not_ready`, `external_evidence_required`, or `deployment_ready` depending on which boundary has been satisfied. See [docs/production-certification.md](docs/production-certification.md).
-
-`production-certify` is a boundary checker, not a production guarantee. It separates repo-local readiness from deployment readiness and requires explicit external evidence for production claims: live connector manifests, shadow-mode logs, audit retention policy, observability, escalation policy, security review, deployment manifest, incident response plan, measured pilot results, and owner approval.
-
-Or run the same platform contract from the CLI:
-
-```powershell
-python scripts/aana_cli.py validate-workflow --workflow examples/workflow_research_summary.json
-python scripts/aana_cli.py workflow-check --workflow examples/workflow_research_summary.json
-python scripts/aana_cli.py validate-workflow-batch --batch examples/workflow_batch_productive_work.json
-python scripts/aana_cli.py workflow-batch --batch examples/workflow_batch_productive_work.json
-python scripts/aana_cli.py workflow-check --adapter research_summary --request "Write a concise research brief. Use only Source A and Source B. Label uncertainty." --candidate "AANA improves productivity by 40% for all teams [Source C]." --evidence "Source A: AANA makes constraints explicit." --evidence "Source B: Source coverage can be incomplete." --constraint "Do not invent citations." --constraint "Do not add unsupported numbers."
-```
-
-Check an AI-agent event before the agent acts:
-
-```powershell
-aana validate-event --event examples/agent_event_support_reply.json
-aana agent-check --event examples/agent_event_support_reply.json
-aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
-aana evidence-pack --require-existing-artifacts
-```
-
-The agent and tool-check outputs include `architecture_decision`: route, AIx score, hard blockers, evidence refs used/missing, authorization state, correction/recovery suggestion, and audit-safe log metadata.
-
-Wrap tools with AANA when integrating agents:
-
-```python
-guarded = aana.wrap_agent_tool(send_email)
-```
-
-The wrapper infers common reads/writes, gates every call, stores the latest
-decision on `guarded.aana_last_gate`, and executes only when AANA returns
-`accept`. Add metadata for confirmed writes, private reads, or domain-specific
-evidence.
-
-The integration pattern is `agent proposes -> AANA checks -> agent executes only if allowed`. See [docs/agent-framework-middleware.md](docs/agent-framework-middleware.md) and the runnable examples in [examples/integrations](examples/integrations).
-For the smallest copy-paste example, use the [Agent Action Contract Quickstart](docs/agent-action-contract-quickstart.md).
-
-Use event-file checks only from a trusted local AANA install or reviewed repository checkout. For standalone agent skills, prefer an approved in-memory tool/API connector, keep review payloads redacted, and do not ask the agent to infer or execute local script paths.
-
-Run the executable agent-event examples across support, travel, meal-planning, and research-summary workflows:
-
-```powershell
-python scripts/aana_cli.py run-agent-examples
-```
-
-Create a starter event for your own agent workflow from an existing gallery adapter:
-
-```powershell
-python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
-```
-
-Print the versioned agent schemas:
-
-```powershell
-python scripts/aana_cli.py agent-schema
-```
-
-Agents that can call Python directly can use `eval_pipeline.agent_api.check_event(event)` instead of shelling out. See [examples/agent_api_usage.py](examples/agent_api_usage.py).
-
-List the starter policy presets for deciding where an agent should call AANA:
-
-```powershell
-python scripts/aana_cli.py policy-presets
-```
-
-Run a local HTTP bridge for agent frameworks that prefer tools, webhooks, or HTTP calls:
-
-```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
-```
-
-Then POST the same event JSON to `http://127.0.0.1:8765/validate-event` and `http://127.0.0.1:8765/agent-check`.
-
-The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import a contract. If you install the repo locally with `python -m pip install -e .`, you can launch the bridge with `aana-server`.
-
-For the packaged pilot runtime, run the Dockerized bridge:
-
-```powershell
-docker compose up --build
-```
-
-That starts `http://localhost:8765` with the adapter gallery, playground, family pack pages, internal pilot profiles, local token auth, and mounted redacted audit logs. Open `http://localhost:8765/adapter-gallery`, choose an adapter, click **Try this adapter**, then click **Run AANA Check** in the playground to inspect gate decision, recommended action, violations, AIx, safe response, and redacted audit preview. The packaged family pages are `http://localhost:8765/enterprise`, `http://localhost:8765/personal-productivity`, and `http://localhost:8765/government-civic`. See [docs/docker-http-bridge.md](docs/docker-http-bridge.md) for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch` examples.
-
-Add AANA to GitHub PR and release workflows with the composite action in [.github/actions/aana-guardrails](.github/actions/aana-guardrails). It packages the code review, deployment readiness, API contract, infrastructure change, and database migration adapters and writes redacted audit/metrics artifacts:
-
-```yaml
-- uses: mindbomber/Alignment-Aware-Neural-Architecture--AANA-/.github/actions/aana-guardrails@main
-  with:
-    fail-on: candidate-block
-```
-
-See [docs/github-action.md](docs/github-action.md) and [examples/github-actions/aana-guardrails.yml](examples/github-actions/aana-guardrails.yml).
-
-To try adapter gallery demos in a browser, open the local playground:
-
-```powershell
-python scripts/run_playground.py
-```
-
-Then visit `http://localhost:8765/playground`. You can also deep-link from the gallery, for example `http://localhost:8765/playground?adapter=email_send_guardrail`. The playground lets you pick an adapter, edit the candidate answer or action, and inspect violations, AIx, the safe response, and the redacted audit record. See [docs/web-playground.md](docs/web-playground.md).
-
-To try everyday irreversible-action demos for email, files, calendar, purchase/booking, and research grounding:
-
-```powershell
-python scripts/run_local_demos.py
-```
-
-Then visit `http://localhost:8765/demos`. The demos use synthetic evidence and the same Workflow Contract/audit path as the bridge, so non-engineers can see how AANA blocks or revises risky actions in a few minutes. See [docs/local-desktop-browser-demos.md](docs/local-desktop-browser-demos.md).
-
-Run AANA in observe-only shadow mode before changing production behavior:
-
-```powershell
-python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
-python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl
-```
-
-Shadow telemetry is redacted and reports would-pass, would-revise, would-defer, and would-refuse counts. See [docs/shadow-mode.md](docs/shadow-mode.md).
-
-Use the Adapter Integration SDK when calling AANA from apps without hand-building JSON:
-
-```python
-import aana
-
-client = aana.AANAClient(shadow_mode=True)
-request = client.workflow_request(
-    adapter="research_summary",
-    request="Answer using Source A.",
-    candidate="Unsupported claim [Source C].",
-    evidence=client.evidence("Source A: Evidence is incomplete.", source_id="source-a"),
-)
-result = client.workflow_check(request)
-```
-
-The TypeScript SDK lives in [sdk/typescript](sdk/typescript). See [docs/adapter-integration-sdk.md](docs/adapter-integration-sdk.md).
-
-Workflow Contract routes are available at `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch`.
-
-Run synthetic starter pilot kits for realistic enterprise, personal productivity, and civic/government scenarios without private data:
-
-```powershell
-python scripts/run_starter_pilot_kit.py --kit all
-```
-
-The command writes materialized Workflow Contract requests, redacted audit logs, audit metrics, JSON reports, and Markdown reports under `eval_outputs/starter_pilot_kits/`. See [docs/starter-pilot-kits.md](docs/starter-pilot-kits.md).
-
-Run controlled design-partner pilot bundles when you are ready to collect reviewer friction and adoption blockers:
-
-```powershell
-python scripts/run_design_partner_pilots.py --pilot all
-```
-
-This writes redacted audit, metrics, dashboard, drift, reviewer, field-notes, and feedback-template artifacts for enterprise, developer/tooling, personal productivity, and civic/government-style pilots. See [docs/design-partner-pilots.md](docs/design-partner-pilots.md).
-
-For OpenClaw-style agents, start with the no-code plugin pack in [examples/openclaw/aana-guardrail-pack-plugin](examples/openclaw/aana-guardrail-pack-plugin). Use the live bridge connector in [examples/openclaw/aana-runtime-connector-plugin](examples/openclaw/aana-runtime-connector-plugin) when agents should call a configured AANA runtime before acting. For lower-level integration details, see [docs/agent-integration.md](docs/agent-integration.md), the standalone install boundaries in [docs/openclaw-skill-review-notes.md](docs/openclaw-skill-review-notes.md), the instruction-only guardrail skill in [examples/openclaw/aana-guardrail-skill/SKILL.md](examples/openclaw/aana-guardrail-skill/SKILL.md), the inspectable bundled-helper variant in [examples/openclaw/aana-guardrail-skill-bundled](examples/openclaw/aana-guardrail-skill-bundled), the continuous self-improvement skill in [examples/openclaw/aana-continuous-improvement-skill](examples/openclaw/aana-continuous-improvement-skill), the research-grounding skill in [examples/openclaw/aana-research-grounding-skill](examples/openclaw/aana-research-grounding-skill), the private-data guardrail skill in [examples/openclaw/aana-private-data-guardrail-skill](examples/openclaw/aana-private-data-guardrail-skill), the file-operation guardrail skill in [examples/openclaw/aana-file-operation-guardrail-skill](examples/openclaw/aana-file-operation-guardrail-skill), the code-change review skill in [examples/openclaw/aana-code-change-review-skill](examples/openclaw/aana-code-change-review-skill), the support-reply guardrail skill in [examples/openclaw/aana-support-reply-guardrail-skill](examples/openclaw/aana-support-reply-guardrail-skill), the medical-safety router skill in [examples/openclaw/aana-medical-safety-router-skill](examples/openclaw/aana-medical-safety-router-skill), the purchase-booking guardrail skill in [examples/openclaw/aana-purchase-booking-guardrail-skill](examples/openclaw/aana-purchase-booking-guardrail-skill), the decision-log skill in [examples/openclaw/aana-decision-log-skill](examples/openclaw/aana-decision-log-skill), the financial-safety router skill in [examples/openclaw/aana-financial-safety-router-skill](examples/openclaw/aana-financial-safety-router-skill), the legal-safety router skill in [examples/openclaw/aana-legal-safety-router-skill](examples/openclaw/aana-legal-safety-router-skill), the evidence-first answering skill in [examples/openclaw/aana-evidence-first-answering-skill](examples/openclaw/aana-evidence-first-answering-skill), the tool-use gate skill in [examples/openclaw/aana-tool-use-gate-skill](examples/openclaw/aana-tool-use-gate-skill), the human-review router skill in [examples/openclaw/aana-human-review-router-skill](examples/openclaw/aana-human-review-router-skill), the task-scope guardrail skill in [examples/openclaw/aana-task-scope-guardrail-skill](examples/openclaw/aana-task-scope-guardrail-skill), the agent-memory gate skill in [examples/openclaw/aana-agent-memory-gate-skill](examples/openclaw/aana-agent-memory-gate-skill), the workflow-readiness check skill in [examples/openclaw/aana-workflow-readiness-check-skill](examples/openclaw/aana-workflow-readiness-check-skill), the publication-check skill in [examples/openclaw/aana-publication-check-skill](examples/openclaw/aana-publication-check-skill), the email-send guardrail skill in [examples/openclaw/aana-email-send-guardrail-skill](examples/openclaw/aana-email-send-guardrail-skill), the meeting-summary checker skill in [examples/openclaw/aana-meeting-summary-checker-skill](examples/openclaw/aana-meeting-summary-checker-skill), the calendar scheduling guardrail skill in [examples/openclaw/aana-calendar-scheduling-guardrail-skill](examples/openclaw/aana-calendar-scheduling-guardrail-skill), the message-send guardrail skill in [examples/openclaw/aana-message-send-guardrail-skill](examples/openclaw/aana-message-send-guardrail-skill), the ticket-update checker skill in [examples/openclaw/aana-ticket-update-checker-skill](examples/openclaw/aana-ticket-update-checker-skill), the data-export guardrail skill in [examples/openclaw/aana-data-export-guardrail-skill](examples/openclaw/aana-data-export-guardrail-skill), and the release-readiness check skill in [examples/openclaw/aana-release-readiness-check-skill](examples/openclaw/aana-release-readiness-check-skill).
-
-Create and validate a starter adapter for your own domain:
-
-```powershell
-python scripts/aana_cli.py scaffold "insurance claim triage"
-python scripts/aana_cli.py validate-adapter examples/insurance_claim_triage_adapter.json
-```
-
-The scaffold writes an adapter JSON file, starter prompt, bad candidate, and short adapter README so users can turn one workflow into an AANA test case without starting from a blank page.
-
-Validate the adapter gallery and its expected gate behavior:
-
-```powershell
-python scripts/aana_cli.py validate-gallery --run-examples
-```
-
-Latest evidence package: [Constraint-Reasoning AANA Evidence Package v0.1](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/releases/tag/constraint-reasoning-aana-v0.1).
-
-## Related concepts
-
-Verifier-grounded correction, model evaluation, AI alignment, AI safety, hallucination evaluation, constraint satisfaction, abstention, calibrated uncertainty, prompt pressure, originality evaluation, and research software.
-
-## Paper
-
-A draft manuscript describing the AANA framework is available at [papers/aana-framework.pdf](papers/aana-framework.pdf).
-
-A companion theory paper on invisible divergence, layered constraints, and the capability-alignment gap is available at [papers/invisible-divergence-layered-alignment-dynamics.pdf](papers/invisible-divergence-layered-alignment-dynamics.pdf).
-
-The ATS dynamical-alignment manuscript is available at [papers/ATS_Dynamical_Alignment_arXiv.pdf](papers/ATS_Dynamical_Alignment_arXiv.pdf).
-
-Note: these are early research manuscripts. They include theoretical framing, architecture design, evaluation protocol, and simulated or exploratory results. Treat them as research context, not as peer-reviewed benchmark claims.
-
-## Current Finding
-
-The latest tracked constraint-reasoning comparison is documented in [docs/constraint-reasoning-aana-report.md](docs/constraint-reasoning-aana-report.md). In the matched 60-task constraint-reasoning sample, `aana_tools_structured` improves pass rate from `0.458` to `0.983` while increasing capability from `0.662` to `0.922`. Tracked CSV snapshots are in [docs/evidence/](docs/evidence/).
-
-The first everyday application demo is documented in [docs/application-demo-report.md](docs/application-demo-report.md). Across six starter application scenarios, high-pressure AANA-style correction improved model-judged alignment from `0.7600` to `0.8383` and pass rate from `0.5000` to `0.8333`, while also exposing a travel-planning failure case that needs domain-specific verifiers.
-
-That travel failure was turned into the first domain-tool follow-up in [docs/travel-tool-demo-report.md](docs/travel-tool-demo-report.md). The high-pressure travel case moved from prompt-AANA `fail` to travel-tool AANA `pass`, with alignment improving from `0.28` to `0.88`.
-
-The evidence package includes a manifest with source-file hashes, commit SHA, analysis commands, confidence-interval methods, and known caveats: [docs/evidence/manifest.json](docs/evidence/manifest.json).
-
-For the next unified same-run milestone, see [docs/unified-aana-comparison.md](docs/unified-aana-comparison.md).
-
-The small real-output Table 2 pilot is documented in [docs/pilot-table2-report.md](docs/pilot-table2-report.md), with tracked artifacts in [docs/evidence/pilot_table2/](docs/evidence/pilot_table2/). The 20-row spot-check audit is summarized in [docs/pilot-table2-spotcheck-audit.md](docs/pilot-table2-spotcheck-audit.md).
-
-Paper-ready replacement text for the pilot-results section is available in [docs/paper-pilot-results-section.md](docs/paper-pilot-results-section.md), with a LaTeX snippet at [docs/paper-pilot-results-section.tex](docs/paper-pilot-results-section.tex).
-
-## What is in this repo?
-
-- `aana/` - Minimal Python SDK surface for Workflow Contract checks.
-- `eval_pipeline/` - Python scripts for generating tasks, running model calls, judging outputs, scoring outputs, analyzing failures, and plotting results.
-- `assets/` - Public project images, including the GitHub social preview banner.
-- `docs/` - Beginner-oriented explanations of the architecture, evaluation design, and result files.
-- `examples/` - Tiny example inputs, outputs, and everyday application scenarios that show the file formats without requiring API calls.
-- `papers/` - Public manuscripts connected to the project.
-- `scripts/` - Short helper commands for common local workflows.
-- `tests/` - Lightweight unit tests for scoring and routing behavior.
-- `.env.example` - Template for local environment variables.
-- `.gitignore` - Keeps local secrets, generated outputs, caches, and build artifacts out of git.
-- `ROADMAP.md` - Public plan for future improvements and research directions.
-- `CHANGELOG.md` - Public history of notable changes.
-- `eval_outputs/` - Generated locally when you run experiments. It is intentionally ignored because result files can be large, expensive to regenerate, or contain model outputs you may not want to publish automatically.
-
-## How AANA works here
-
-The scripts compare several evaluation modes:
-
-- `baseline` - A direct model answer with no correction loop.
-- `weak` / `strong` correction prompts - Prompt-only correction variants.
-- AANA loop variants - A generator produces an answer, a verifier scores it against factual, safety, task, and calibration constraints, and a corrector revises or abstains when needed.
-- Tool-assisted variants - Deterministic checks catch concrete issues such as budget, dietary, time, manipulation, and format violations.
-- Originality variants - Experimental routing and correction modes for testing whether novelty can be improved without breaking constraints.
-
-For a fuller explanation, see:
-
-- `docs/try-demo/index.md` for hosted demos, local demos, catalog browsing, and result interpretation.
-- `docs/integrate-runtime/index.md` for Workflow Contract, Agent Event Contract, SDK, bridge, CI, audit, and production-boundary integration.
-- `docs/build-adapter/index.md` for adapter design, catalog metadata, AIx tuning, and adapter validation.
-- `docs/architecture.md` and `docs/evaluation-design.md` for the research and evaluation background.
-
-## Requirements
-
-- Python 3.10 or newer.
-- No API key is needed for sample scoring or deterministic adapter runs.
-- An OpenAI API key is needed for the checked-in live model loops by default.
-- Responses-compatible endpoints can be configured with `AANA_API_KEY` plus `AANA_BASE_URL` or `AANA_RESPONSES_URL`.
-- Anthropic can be used through the native Messages API with `AANA_PROVIDER=anthropic` and `ANTHROPIC_API_KEY`.
-
-The current pipeline only uses the Python standard library, so there is no required `pip install` step for the checked-in scripts.
-
-For the lowest-friction command names, install the repo locally:
-
-```powershell
-python -m pip install -e .
-```
-
-Then use `aana` instead of `python scripts/aana_cli.py`:
-
-```powershell
-aana doctor
-aana list
-aana run-agent-examples
-aana agent-check --event examples/agent_event_support_reply.json
-aana-server --host 127.0.0.1 --port 8765
-```
-
-## Quick start
-
-1. Clone the repository.
-
-```powershell
-git clone https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-.git
-cd Alignment-Aware-Neural-Architecture--AANA-
-```
-
-Optional, but recommended if agents or shell tools will call AANA often:
-
-```powershell
-python -m pip install -e .
-```
-
-2. Create a local environment file.
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Edit `.env` and replace `your_openai_api_key_here` with your real API key. Never commit `.env`.
-
-If you use a Responses-compatible proxy or provider, set:
-
-```text
-AANA_PROVIDER=openai
-AANA_API_KEY=your_provider_or_proxy_key
-AANA_BASE_URL=https://your-provider.example/v1
-```
-
-If you use Anthropic, set:
-
-```text
-AANA_PROVIDER=anthropic
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
-
-Then pass an Anthropic model name to the same live scripts.
-
-Native providers beyond OpenAI-compatible Responses and Anthropic need provider adapters before the live model loops can use them.
-
-3. Generate a local task file.
-
-```powershell
-python eval_pipeline/generate_heldout_tasks.py
-```
-
-4. Run a tiny dry run without calling the API.
-
-```powershell
-python eval_pipeline/run_evals.py --limit 2 --dry-run
-python eval_pipeline/score_outputs.py --input eval_outputs/raw_outputs.jsonl --scored eval_outputs/scored_outputs.csv --summary eval_outputs/summary_by_condition.csv
-```
-
-5. Run a small live evaluation.
-
-```powershell
-python eval_pipeline/run_evals.py --limit 2 --models gpt-5.4-nano
-```
-
-This writes JSONL/CSV files under `eval_outputs/`.
-
-## Common workflows
-
-Generate held-out ATS/AANA tasks:
-
-```powershell
-python eval_pipeline/generate_heldout_tasks.py --output eval_outputs/heldout/heldout_ats_aana_tasks.jsonl
-```
-
-Run baseline, weak, and strong correction prompt evaluations:
-
-```powershell
-python eval_pipeline/run_evals.py --tasks eval_outputs/heldout/heldout_ats_aana_tasks.jsonl --output eval_outputs/raw_outputs.jsonl --limit 10
-```
-
-Run the AANA generator/verifier/corrector loop:
-
-```powershell
-python eval_pipeline/run_aana_evals.py --tasks eval_outputs/heldout/heldout_ats_aana_tasks.jsonl --output eval_outputs/aana_outputs.jsonl --limit 10
-```
-
-Judge outputs with an LLM judge:
-
-```powershell
-python eval_pipeline/judge_score_outputs.py --input eval_outputs/raw_outputs.jsonl --judge-jsonl eval_outputs/judge_scores.jsonl --judged eval_outputs/judged_outputs.csv --summary eval_outputs/judge_summary_by_condition.csv
-```
-
-Generate plots:
-
-```powershell
-python eval_pipeline/plot_results.py --summary eval_outputs/judge_summary_by_condition.csv --output-dir eval_outputs/judge_plots
-```
-
-Generate originality tasks and run originality experiments:
-
-```powershell
-python eval_pipeline/generate_originality_tasks.py
-python eval_pipeline/run_originality_evals.py --limit 4 --conditions baseline originality_aana
-```
-
-## Examples and tests
-
-Score the checked-in sample outputs:
-
-```powershell
-python eval_pipeline/score_outputs.py --input examples/sample_raw_outputs.jsonl --scored examples/sample_scored_outputs.csv --summary examples/sample_summary_by_condition.csv
-```
-
-Run the unit tests:
-
-```powershell
-python -m unittest discover -s tests
-```
-
-Or use the helper script:
-
-```powershell
-python scripts/dev.py check
-python scripts/dev.py contract-freeze
-python scripts/dev.py production-profiles
-python scripts/dev.py production-profiles --audit-log eval_outputs/audit/ci/aana-ci-audit.jsonl --metrics-output eval_outputs/audit/ci/aana-ci-metrics.json
-python scripts/dev.py pilot-bundle
-python scripts/dev.py pilot-eval
-```
-
-`contract-freeze` validates frozen public contracts, schemas, compatibility fixtures, and docs for adapter JSON, Agent Event, Workflow, AIx, evidence, audit, and metrics surfaces.
-`production-profiles` is the CI-facing guard for the internal pilot profile: it validates the adapter gallery, contract freeze, AIx tuning, deployment manifest, governance policy, observability policy, evidence registry, evidence integration stubs, exports audit metrics, and runs release-check with a generated redacted audit log. In CI, the audit JSONL and metrics JSON are uploaded as the `aana-production-profile-audit-metrics` artifact.
-`pilot-bundle` runs the broader local pilot: multiple agent events, redacted audit logging, metrics export, audit integrity manifest generation, release-check, and production-profile validation.
-`pilot-eval` runs the AANA Pilot Evaluation Kit: synthetic and public-data-rehearsal packs for enterprise, personal, civic/government, and public-data pilot planning, with redacted audit logs, audit metrics, and Markdown/JSON reports.
-
-## Important safety notes
-
-- API calls can cost money. Start with `--limit 1` or `--dry-run`.
 - Review generated outputs before sharing them publicly.
-- Do not commit `.env`, raw private prompts, API keys, or unpublished data.
-- The evaluator is experimental research code, not a certified benchmark.
-
-## Limitations
-
-- Current reported scores are model-judged, not human-adjudicated.
-- The constraint-reasoning evidence package uses matched task IDs, but `hybrid_gate` rows come from a schema-ablation run.
-- The next target is a unified same-run rerun with one frozen task file, model versions, judge model, command log, and dated manifest.
-
-## Repository status
-
-This is an early public research codebase. Interfaces may change as the evaluation design evolves. Contributions that improve documentation, reproducibility, test coverage, or evaluation clarity are welcome.
+- Do not commit `.env`, API keys, raw private prompts, or unpublished data.
+- Public demos are synthetic-only and cannot send, delete, purchase, deploy, or export.
+- Local validation does not certify production deployment. Production use still needs live evidence connectors, domain owner signoff, audit retention, observability, human review, security review, deployment manifest, incident response, and measured pilot results.
 
 ## License
 
-This project is released under the MIT License. See `LICENSE`.
+This project is released under the MIT License. See [LICENSE](LICENSE).

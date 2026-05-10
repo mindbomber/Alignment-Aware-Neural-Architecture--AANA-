@@ -19,5 +19,5 @@ Local tests can prove contract compatibility, fixture behavior, golden output st
 The executable boundary artifact is `examples/production_readiness_boundary.json`.
 
 ```powershell
-python scripts/validate_production_readiness_boundary.py
+python scripts/validation/validate_production_readiness_boundary.py
 ```

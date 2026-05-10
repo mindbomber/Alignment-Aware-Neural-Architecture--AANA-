@@ -16,8 +16,15 @@ Describe what changed and why.
 List the commands you ran.
 
 ```text
-python scripts/dev.py check
+python scripts/validate_aana_platform.py --timeout 240
 ```
+
+## AANA platform checklist
+
+- [ ] Platform validator passes: `python scripts/validate_aana_platform.py --timeout 240`
+- [ ] No raw secrets, API keys, private prompts, tokens, or sensitive private data are included.
+- [ ] No generated `eval_outputs/` artifacts are tracked unless intentionally moved into a reviewed evidence/artifact path.
+- [ ] Public claim boundary is still accurate: AANA is an audit/control/verification/correction layer, not proven as a raw agent-performance engine.
 
 ## Data and safety review
 

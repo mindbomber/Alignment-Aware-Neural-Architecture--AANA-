@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_mi_contracts import ROOT, validate_mi_contracts
+from scripts.validation.validate_mi_contracts import ROOT, validate_mi_contracts
 
 
 class ValidateMIContractsTests(unittest.TestCase):
@@ -18,7 +18,7 @@ class ValidateMIContractsTests(unittest.TestCase):
 
     def test_cli_passes_for_default_artifacts(self):
         completed = subprocess.run(
-            [sys.executable, "scripts/validate_mi_contracts.py"],
+            [sys.executable, "scripts/validation/validate_mi_contracts.py"],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -38,7 +38,7 @@ class ValidateMIContractsTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_mi_contracts.py",
+                    "scripts/validation/validate_mi_contracts.py",
                     "--pilot-handoffs",
                     str(drifted),
                 ],
@@ -52,7 +52,7 @@ class ValidateMIContractsTests(unittest.TestCase):
 
     def test_json_output_reports_machine_readable_status(self):
         completed = subprocess.run(
-            [sys.executable, "scripts/validate_mi_contracts.py", "--json"],
+            [sys.executable, "scripts/validation/validate_mi_contracts.py", "--json"],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -80,7 +80,7 @@ class ValidateMIContractsTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_mi_contracts.py",
+                    "scripts/validation/validate_mi_contracts.py",
                     "--audit-jsonl",
                     str(audit_path),
                     "--audit-manifest",
@@ -105,7 +105,7 @@ class ValidateMIContractsTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_mi_contracts.py",
+                    "scripts/validation/validate_mi_contracts.py",
                     "--pilot-handoffs",
                     str(drifted),
                 ],

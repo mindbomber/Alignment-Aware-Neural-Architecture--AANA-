@@ -4,21 +4,24 @@
   "surfaces": [
     {
       "id": "python_package",
-      "purpose": "Python runtime SDK, CLI, local middleware helpers, audit utilities, and optional service/eval entrypoints.",
-      "boundary": "Importable Python runtime package plus CLI entrypoints. Heavy benchmark dependencies stay in optional extras and generated eval outputs stay out of the runtime package.",
+      "purpose": "Python runtime SDK, CLI, local middleware helpers, audit utilities, and optional API service entrypoints.",
+      "boundary": "Importable Python runtime package plus runtime CLI/API entrypoints. Repo-local research scripts, benchmark runners, HF experiments, and generated eval outputs stay out of the default runtime package.",
       "current_distribution": "aana-eval-pipeline",
+      "distribution_status": "transitional_legacy_name",
+      "future_distribution_target": "aana",
       "import_package": "aana",
       "paths": [
         "pyproject.toml",
         "aana/__init__.py",
         "aana/sdk.py",
         "aana/middleware.py",
-        "scripts/aana_cli.py"
+        "aana/cli.py",
+        "aana/validate_platform.py"
       ],
       "runtime_entrypoints": [
         "aana",
-        "aana-server",
-        "aana-fastapi"
+        "aana-fastapi",
+        "aana-validate-platform"
       ],
       "optional_extras": [
         "api",
@@ -48,7 +51,7 @@
       "entrypoint": "aana-fastapi",
       "paths": [
         "eval_pipeline/fastapi_app.py",
-        "scripts/aana_fastapi.py",
+        "aana/fastapi_app.py",
         "docs/fastapi-service.md",
         "examples/api/pre_tool_check_write_ask.json",
         "examples/api/agent_check_support_reply.json"
@@ -60,14 +63,16 @@
       "purpose": "Benchmark, HF dataset, calibration, and evidence-pack tooling used for measurement and validation, not runtime core claims.",
       "boundary": "Offline validation, calibration, and benchmark scripts. These artifacts support evidence and claims, but they are not required for core runtime use.",
       "python_extra": "eval",
+      "installed_by_default": false,
       "public_claim_boundary": "not_runtime_core",
       "paths": [
+        "scripts/",
         "eval_pipeline/hf_dataset_registry.py",
         "eval_pipeline/hf_calibration.py",
         "eval_pipeline/hf_dataset_proof.py",
-        "scripts/validate_hf_dataset_registry.py",
-        "scripts/validate_hf_calibration.py",
-        "scripts/validate_hf_dataset_proof.py"
+        "scripts/hf/validate_hf_dataset_registry.py",
+        "scripts/hf/validate_hf_calibration.py",
+        "scripts/hf/validate_hf_dataset_proof.py"
       ],
       "generated_outputs": [
         "eval_outputs/"
@@ -82,6 +87,7 @@
         "docs/packaging-release-checklist.md",
         "docs/huggingface-model-card.md",
         "docs/huggingface-dataset-card.md",
+        "docs/publication-release-checklist.md",
         "docs/hf-dataset-proof-report.md",
         "README.md"
       ],
@@ -111,18 +117,22 @@
   ],
   "distribution_rename_plan": {
     "current_distribution": "aana-eval-pipeline",
+    "current_distribution_status": "transitional_legacy_name",
+    "target_distribution": "aana",
     "rename_now": false,
     "future_candidates": [
       "aana",
       "aana-platform",
       "aana-agent-control"
     ],
-    "reason_to_consider_later": "The public package now includes runtime SDK/API surfaces, so a future distribution name may need to be cleaner than aana-eval-pipeline.",
+    "reason_to_consider_later": "The current distribution name reflects the project's eval-pipeline origin. The public product direction is now the AANA platform: runtime SDK, CLI, API service, middleware, auditability, and Agent Action Contract tooling.",
     "required_migration_rules": [
       "keep_import_package_aana_stable",
       "publish_deprecation_notice_before_distribution_rename",
       "keep_old_distribution_available_for_migration_window",
-      "do_not_break_cli_entrypoints_without_aliases"
+      "do_not_break_cli_entrypoints_without_aliases",
+      "reserve_aana_as_future_distribution_target",
+      "do_not_publish_new_platform_docs_as_if_aana_eval_pipeline_is_permanent"
     ]
   },
   "release_checklist": [
@@ -131,9 +141,9 @@
       "status": "required_before_publication",
       "human_release_review_required": true,
       "required_checks": [
-        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
-        "python scripts/validate_aana_standard_publication.py --require-existing-artifacts",
-        "python scripts/validate_security_hardening.py",
+        "python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts",
+        "python scripts/validation/validate_aana_standard_publication.py --require-existing-artifacts",
+        "python scripts/validation/validate_security_hardening.py",
         "python -m build",
         "twine check dist/*",
         "confirm distribution name and migration notes"
@@ -151,7 +161,7 @@
       "status": "required_before_publication",
       "human_release_review_required": true,
       "required_checks": [
-        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
+        "python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts",
         "cd sdk/typescript && npm install",
         "cd sdk/typescript && npm run build",
         "cd sdk/typescript && npm pack --dry-run",
@@ -168,10 +178,10 @@
       "status": "required_before_publication",
       "human_release_review_required": true,
       "required_checks": [
-        "python scripts/validate_packaging_hardening.py --require-existing-artifacts",
-        "python scripts/validate_hf_dataset_registry.py",
-        "python scripts/validate_hf_calibration.py",
-        "python scripts/validate_hf_dataset_proof.py --require-existing-artifacts",
+        "python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts",
+        "python scripts/hf/validate_hf_dataset_registry.py",
+        "python scripts/hf/validate_hf_calibration.py",
+        "python scripts/hf/validate_hf_dataset_proof.py --require-existing-artifacts",
         "review docs/huggingface-model-card.md",
         "review docs/huggingface-dataset-card.md",
         "confirm no benchmark probe results are used as public claims"

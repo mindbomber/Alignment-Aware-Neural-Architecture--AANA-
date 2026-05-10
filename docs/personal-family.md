@@ -44,7 +44,7 @@ that the irreversible action was completed.
 The local desktop/browser demo is synthetic first and local-only by default:
 
 ```powershell
-python scripts/run_local_demos.py
+python scripts/demos/run_local_demos.py
 ```
 
 It exposes seven scenarios and shows gate decision, recommended action,
@@ -56,7 +56,7 @@ preview.
 Run:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit personal_productivity
+python scripts/pilots/run_starter_pilot_kit.py --kit personal_productivity
 python scripts/aana_cli.py personal-certify --json
 ```
 

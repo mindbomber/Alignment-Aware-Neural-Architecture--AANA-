@@ -9,6 +9,7 @@ from eval_pipeline import adapter_gallery, agent_api, evidence_integrations
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PEER_REVIEW_EVIDENCE = ROOT / "docs" / "evidence" / "peer_review"
 PERSONAL_FAMILY_VERSION = "0.1"
 
 PERSONAL_CORE_ADAPTERS = (
@@ -339,7 +340,7 @@ def personal_demo_surface_report():
 
 
 def _audit_report():
-    audit_path = ROOT / "eval_outputs" / "starter_pilot_kits" / "personal_productivity" / "audit.jsonl"
+    audit_path = PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "personal_productivity" / "audit.jsonl"
     if not audit_path.exists():
         return {"valid": False, "redacted": False, "record_count": 0, "audit_log": str(audit_path)}
     records = agent_api.load_audit_records(audit_path)
@@ -386,8 +387,8 @@ def personal_certification_report(
     policy_report = _personal_policy_report(policy)
     audit_report = _audit_report()
     report_paths = [
-        ROOT / "eval_outputs" / "starter_pilot_kits" / "personal_productivity" / "metrics.json",
-        ROOT / "eval_outputs" / "starter_pilot_kits" / "personal_productivity" / "report.md",
+        PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "personal_productivity" / "metrics.json",
+        PEER_REVIEW_EVIDENCE / "starter_pilot_kits" / "personal_productivity" / "report.md",
     ]
     missing_reports = [str(path) for path in report_paths if not path.exists()]
     surfaces = [

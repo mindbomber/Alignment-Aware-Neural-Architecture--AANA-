@@ -24,7 +24,7 @@ class IntegrationValidationV1Tests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "scripts/run_integration_validation_v1.py",
+                "scripts/evals/run_integration_validation_v1.py",
                 "--case-limit",
                 "2",
                 "--output",

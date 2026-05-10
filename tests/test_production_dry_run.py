@@ -68,7 +68,7 @@ class ProductionDryRunTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/production_dry_run.py",
+                    "scripts/publication/production_dry_run.py",
                     "--output",
                     str(output_path),
                     "--release-report",

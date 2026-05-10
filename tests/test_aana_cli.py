@@ -225,7 +225,7 @@ class AanaCliTests(unittest.TestCase):
                             "aix_decision": "accept",
                             "candidate_aix_decision": "refuse",
                         },
-                        "copy_command": "python scripts/run_adapter.py --adapter medical_safety_router_adapter.json",
+                        "copy_command": "python scripts/adapters/run_adapter.py --adapter medical_safety_router_adapter.json",
                         "caveats": ["Temporary test gallery."],
                     }
                 ],

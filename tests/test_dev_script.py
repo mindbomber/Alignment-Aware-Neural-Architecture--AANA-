@@ -176,29 +176,29 @@ class DevScriptTests(unittest.TestCase):
 
         joined = [" ".join(str(part) for part in command) for command in commands]
         self.assertTrue(any("validate-gallery --run-examples" in command for command in joined))
-        self.assertTrue(any("scripts/validate_support_adapter_expansion.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_support_adapter_expansion.py" in command for command in joined))
         self.assertTrue(any("pilot-certify" in command for command in joined))
         self.assertTrue(any("contract-freeze --evidence-registry examples/evidence_registry.json" in command for command in joined))
-        self.assertTrue(any("scripts/validate_versioning_migration.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_versioning_migration.py" in command for command in joined))
         self.assertTrue(any("aix-tuning" in command for command in joined))
         self.assertTrue(any("validate-deployment --deployment-manifest examples/production_deployment_internal_pilot.json" in command for command in joined))
-        self.assertTrue(any("scripts/validate_internal_pilot_plan.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_audit_retention_policy.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_support_domain_signoff.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_production_readiness_boundary.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_support_sla_failure_policy.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_first_deployable_baseline.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_internal_pilot_plan.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_audit_retention_policy.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_support_domain_signoff.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_production_readiness_boundary.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_support_sla_failure_policy.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_first_deployable_baseline.py" in command for command in joined))
         self.assertTrue(
             any(
-                "scripts/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached"
+                "scripts/validation/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached"
                 in command
                 for command in joined
             )
         )
-        self.assertTrue(any("scripts/validate_production_readiness_review.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_security_privacy_review.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_secrets_scan.py" in command for command in joined))
-        self.assertTrue(any("scripts/validate_incident_response_plan.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_production_readiness_review.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_security_privacy_review.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_secrets_scan.py" in command for command in joined))
+        self.assertTrue(any("scripts/validation/validate_incident_response_plan.py" in command for command in joined))
         self.assertTrue(any("validate-governance --governance-policy examples/human_governance_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-observability --observability-policy examples/observability_policy_internal_pilot.json" in command for command in joined))
         self.assertTrue(any("validate-evidence-registry --evidence-registry examples/evidence_registry.json" in command for command in joined))
@@ -252,7 +252,7 @@ class DevScriptTests(unittest.TestCase):
             dev.pilot_bundle()
 
         joined = [" ".join(str(part) for part in command) for command in commands]
-        self.assertTrue(any("scripts/run_e2e_pilot_bundle.py" in command for command in joined))
+        self.assertTrue(any("scripts/pilots/run_e2e_pilot_bundle.py" in command for command in joined))
 
     def test_contract_freeze_runs_contract_freeze_command(self):
         commands = []
@@ -288,7 +288,7 @@ class DevScriptTests(unittest.TestCase):
             dev.pilot_eval()
 
         joined = [" ".join(str(part) for part in command) for command in commands]
-        self.assertTrue(any("scripts/run_pilot_evaluation_kit.py" in command for command in joined))
+        self.assertTrue(any("scripts/pilots/run_pilot_evaluation_kit.py" in command for command in joined))
 
     def test_starter_kits_runs_starter_pilot_kit_script(self):
         commands = []
@@ -300,7 +300,7 @@ class DevScriptTests(unittest.TestCase):
             dev.starter_kits()
 
         joined = [" ".join(str(part) for part in command) for command in commands]
-        self.assertTrue(any("scripts/run_starter_pilot_kit.py --kit all" in command for command in joined))
+        self.assertTrue(any("scripts/pilots/run_starter_pilot_kit.py --kit all" in command for command in joined))
 
     def test_github_guardrails_runs_github_action_guardrail_script(self):
         commands = []
@@ -312,7 +312,7 @@ class DevScriptTests(unittest.TestCase):
             dev.github_guardrails()
 
         joined = [" ".join(str(part) for part in command) for command in commands]
-        self.assertTrue(any("scripts/run_github_action_guardrails.py --force --fail-on never" in command for command in joined))
+        self.assertTrue(any("scripts/integrations/run_github_action_guardrails.py --force --fail-on never" in command for command in joined))
 
 
 if __name__ == "__main__":

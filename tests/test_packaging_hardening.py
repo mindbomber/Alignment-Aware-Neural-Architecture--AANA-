@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -23,6 +24,24 @@ class PackagingHardeningTests(unittest.TestCase):
         self.assertTrue(report["valid"], report["issues"])
         self.assertEqual(report["surface_count"], 6)
         self.assertEqual(report["release_target_count"], 3)
+
+    def test_public_package_excludes_repo_local_tooling(self):
+        pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        scripts = pyproject["project"]["scripts"]
+        finder = pyproject["tool"]["setuptools"]["packages"]["find"]
+        manifest = load_manifest()
+        python_surface = next(surface for surface in manifest["surfaces"] if surface["id"] == "python_package")
+
+        self.assertEqual(scripts, {
+            "aana": "aana.cli:main",
+            "aana-fastapi": "aana.fastapi_app:main",
+            "aana-validate-platform": "aana.validate_platform:main",
+        })
+        self.assertEqual(finder["include"], ["aana*", "eval_pipeline*"])
+        self.assertEqual(finder["exclude"], ["scripts*", "tests*", "evals*"])
+        self.assertEqual(python_surface["current_distribution"], "aana-eval-pipeline")
+        self.assertEqual(python_surface["distribution_status"], "transitional_legacy_name")
+        self.assertEqual(python_surface["future_distribution_target"], "aana")
 
     def test_requires_eval_tooling_surface(self):
         manifest = load_manifest()
@@ -70,6 +89,21 @@ class PackagingHardeningTests(unittest.TestCase):
         self.assertIn("must not happen", messages)
         self.assertIn("Missing rename migration rule", messages)
 
+    def test_requires_transitional_package_name_policy(self):
+        manifest = load_manifest()
+        broken = copy.deepcopy(manifest)
+        broken["surfaces"][0]["distribution_status"] = "permanent"
+        broken["surfaces"][0]["future_distribution_target"] = "aana-platform"
+        broken["distribution_rename_plan"]["current_distribution_status"] = "permanent"
+        broken["distribution_rename_plan"]["target_distribution"] = "aana-platform"
+
+        report = validate_packaging_hardening(broken, root=ROOT)
+
+        self.assertFalse(report["valid"])
+        messages = "\n".join(issue["message"] for issue in report["issues"])
+        self.assertIn("transitional_legacy_name", messages)
+        self.assertIn("target distribution", messages)
+
     def test_requires_publication_checklist_for_all_targets(self):
         manifest = load_manifest()
         broken = copy.deepcopy(manifest)
@@ -97,7 +131,7 @@ class PackagingHardeningTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_packaging_hardening.py",
+                    "scripts/validation/validate_packaging_hardening.py",
                     "--manifest",
                     str(manifest_path),
                     "--require-existing-artifacts",

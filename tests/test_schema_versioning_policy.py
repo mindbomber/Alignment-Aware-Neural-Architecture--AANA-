@@ -11,7 +11,7 @@ from eval_pipeline.schema_versioning_policy import (
     schema_versioning_policy,
     schema_versioning_policy_markdown,
 )
-from scripts.validate_mi_contracts import ROOT
+from scripts.validation.validate_mi_contracts import ROOT
 
 
 class SchemaVersioningPolicyTests(unittest.TestCase):
@@ -30,7 +30,7 @@ class SchemaVersioningPolicyTests(unittest.TestCase):
         self.assertIn("Breaking Changes", markdown)
         self.assertIn("Compatibility Matrix", markdown)
         self.assertIn("Migration Notes", markdown)
-        self.assertIn("scripts/validate_mi_contracts.py", markdown)
+        self.assertIn("scripts/validation/validate_mi_contracts.py", markdown)
 
     def test_default_artifacts_are_policy_compatible(self):
         schema = json.loads((ROOT / "schemas" / "interoperability_contract.schema.json").read_text(encoding="utf-8"))

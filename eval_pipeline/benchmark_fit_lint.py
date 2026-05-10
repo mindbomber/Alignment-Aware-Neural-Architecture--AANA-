@@ -69,12 +69,20 @@ def validate_benchmark_fit_manifest(manifest: dict[str, Any], *, root: str | pat
 
     include_patterns = policy.get("scan_include", [])
     allow_patterns = policy.get("allowed_literal_paths", [])
+    probe_quarantine_roots = policy.get("probe_quarantine_roots", [])
     if not isinstance(include_patterns, list) or not include_patterns:
         issues.append(_issue("error", "policy.scan_include", "scan_include must be a non-empty list."))
         include_patterns = []
     if not isinstance(allow_patterns, list):
         issues.append(_issue("error", "policy.allowed_literal_paths", "allowed_literal_paths must be a list."))
         allow_patterns = []
+    if not isinstance(probe_quarantine_roots, list) or not probe_quarantine_roots:
+        issues.append(_issue("error", "policy.probe_quarantine_roots", "probe_quarantine_roots must identify where diagnostic probes live."))
+        probe_quarantine_roots = []
+    elif "diagnostics/probes" not in [str(root).replace("\\", "/").rstrip("/") for root in probe_quarantine_roots]:
+        issues.append(_issue("error", "policy.probe_quarantine_roots", "Diagnostic probes must be quarantined under diagnostics/probes."))
+    if policy.get("public_example_probe_names_forbidden") is not True:
+        issues.append(_issue("error", "policy.public_example_probe_names_forbidden", "Public examples must forbid probe-named files."))
 
     groups = _literal_groups(manifest)
     if not groups:
@@ -96,6 +104,17 @@ def validate_benchmark_fit_manifest(manifest: dict[str, Any], *, root: str | pat
         issues.append(_issue("error", "policy.required_adapter_family_surfaces", "required_adapter_family_surfaces must be a list when provided."))
 
     scanned_files = _repo_files(root_path, [str(pattern) for pattern in include_patterns], [str(pattern) for pattern in allow_patterns])
+    if policy.get("public_example_probe_names_forbidden") is True:
+        for path in sorted((root_path / "examples").rglob("*")) if (root_path / "examples").exists() else []:
+            if path.is_file() and "probe" in path.name.lower():
+                rel_path = path.relative_to(root_path).as_posix()
+                issues.append(
+                    _issue(
+                        "error",
+                        rel_path,
+                        "Probe-named files belong under diagnostics/probes, not public examples.",
+                    )
+                )
     findings: list[dict[str, str]] = []
     for path in scanned_files:
         rel_path = path.relative_to(root_path).as_posix()

@@ -23,9 +23,9 @@ python examples/integrations/crewai.py
 python examples/integrations/mcp.py
 python evals/openai_agents_aana/run_local.py
 python evals/aana_controlled_agents/run_local.py
-python scripts/aana_mcp_server.py --list-tools
+python scripts/integrations/aana_mcp_server.py --list-tools
 python examples/chatgpt_app/aana_mcp_app.py
-python scripts/validate_agent_integrations.py
+python scripts/validation/validate_agent_integrations.py
 ```
 
 ## Examples
@@ -38,11 +38,11 @@ python scripts/validate_agent_integrations.py
 - `autogen.py`: decorate an AutoGen-style registered function.
 - `crewai.py`: wrap a CrewAI-style `_run(...)` tool object.
 - `mcp.py`: wrap an MCP handler that receives tool-call arguments.
-- `../../scripts/aana_mcp_server.py`: tool-only MCP-style surface exposing `aana_pre_tool_check`.
+- `../../scripts/integrations/aana_mcp_server.py`: tool-only MCP-style surface exposing `aana_pre_tool_check`.
 - `../chatgpt_app/`: FastAPI-hosted ChatGPT Apps/MCP prototype with `/mcp` and an optional decision viewer.
 - `../../evals/openai_agents_aana/`: local OpenAI-style agent eval harness for guarded tool execution.
 - `../../evals/aana_controlled_agents/`: multi-surface eval harness comparing permissive, SDK, API, and MCP controlled-agent paths.
-- `../../scripts/validate_agent_integrations.py`: one-command validation for Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP, and controlled-agent eval stack.
+- `../../scripts/validation/validate_agent_integrations.py`: one-command validation for Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI, MCP, and controlled-agent eval stack.
 
 For write actions and private reads, pass metadata with authorization and
 evidence. For public reads, one-line wrapping is enough:

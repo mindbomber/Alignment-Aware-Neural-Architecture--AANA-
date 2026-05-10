@@ -8,16 +8,20 @@
       "id": "python_package",
       "status": "publish_ready_local",
       "distribution": "aana-eval-pipeline",
+      "distribution_status": "transitional_legacy_name",
+      "future_distribution_target": "aana",
       "import_package": "aana",
       "required_paths": [
         "pyproject.toml",
         "aana/__init__.py",
-        "scripts/aana_cli.py"
+        "aana/cli.py",
+        "aana/fastapi_app.py",
+        "aana/validate_platform.py"
       ],
       "required_scripts": [
         "aana",
         "aana-fastapi",
-        "aana-validate-standard-publication"
+        "aana-validate-platform"
       ]
     },
     {
@@ -38,7 +42,7 @@
       "status": "publish_ready_local",
       "required_paths": [
         "eval_pipeline/fastapi_app.py",
-        "scripts/aana_fastapi.py",
+        "aana/fastapi_app.py",
         "docs/fastapi-service.md",
         "examples/api/pre_tool_check_write_ask.json",
         "examples/api/agent_check_support_reply.json"
@@ -55,8 +59,8 @@
       "required_paths": [
         "eval_pipeline/hf_dataset_registry.py",
         "eval_pipeline/hf_calibration.py",
-        "scripts/validate_hf_dataset_registry.py",
-        "scripts/validate_hf_calibration.py",
+        "scripts/hf/validate_hf_dataset_registry.py",
+        "scripts/hf/validate_hf_calibration.py",
         "examples/hf_dataset_validation_registry.json",
         "examples/hf_calibration_plan.json"
       ],
@@ -101,8 +105,8 @@
     }
   ],
   "release_gates": [
-    "Run python scripts/validate_aana_standard_publication.py --require-existing-artifacts.",
-    "Run python scripts/validate_packaging_hardening.py --require-existing-artifacts.",
+    "Run python scripts/validation/validate_aana_standard_publication.py --require-existing-artifacts.",
+    "Run python scripts/validation/validate_packaging_hardening.py --require-existing-artifacts.",
     "Run focused Python tests for contract, API, middleware, and publication validation.",
     "Run npm run build in sdk/typescript before npm publication.",
     "Do not publish stronger raw agent-performance claims without held-out validation."

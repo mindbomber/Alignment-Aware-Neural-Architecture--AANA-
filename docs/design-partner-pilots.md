@@ -12,19 +12,19 @@ The checked-in controlled pilots are:
 Run all pilots:
 
 ```powershell
-python scripts/run_design_partner_pilots.py --pilot all
+python scripts/pilots/run_design_partner_pilots.py --pilot all
 ```
 
 Run one pilot:
 
 ```powershell
-python scripts/run_design_partner_pilots.py --pilot developer_tooling_release
+python scripts/pilots/run_design_partner_pilots.py --pilot developer_tooling_release
 ```
 
 Attach field feedback after a partner session:
 
 ```powershell
-python scripts/run_design_partner_pilots.py --pilot enterprise_support_ops --feedback-dir path/to/redacted-feedback
+python scripts/pilots/run_design_partner_pilots.py --pilot enterprise_support_ops --feedback-dir path/to/redacted-feedback
 ```
 
 The feedback directory should contain files named `<pilot_id>.json`, using the generated `feedback_template.json` shape from each pilot output folder.

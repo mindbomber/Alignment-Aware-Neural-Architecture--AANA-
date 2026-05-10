@@ -314,7 +314,7 @@
   },
   "secrets_scan": {
     "status": "repo_local_completed",
-    "script": "scripts/validate_secrets_scan.py",
+    "script": "scripts/validation/validate_secrets_scan.py",
     "allowlist": "examples/secrets_scan_allowlist.json",
     "scan_scope": [
       "deploy",
@@ -326,7 +326,7 @@
     ],
     "unapproved_findings": 0,
     "tests_or_gates": [
-      "scripts/validate_secrets_scan.py",
+      "scripts/validation/validate_secrets_scan.py",
       "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_secrets_scan_passes_with_deployment_allowlist"
     ]
   },
@@ -444,7 +444,7 @@
         "docs/security-privacy-review.md#audit-retention"
       ],
       "tests_or_gates": [
-        "scripts/validate_audit_retention_policy.py",
+        "scripts/validation/validate_audit_retention_policy.py",
         "tests.test_audit_retention_policy.AuditRetentionPolicyTests.test_policy_validates_append_only_immutable_storage"
       ],
       "residual_risk": "Internal-pilot policy approves an immutable metadata-only sink; external production still requires environment-specific storage owner approval and evidence that lifecycle/legal-hold controls are active."
@@ -459,7 +459,7 @@
         "docs/support-domain-owner-signoff.md"
       ],
       "tests_or_gates": [
-        "scripts/validate_support_domain_signoff.py"
+        "scripts/validation/validate_support_domain_signoff.py"
       ],
       "residual_risk": "The repo defines the signoff shape only; named support, policy, privacy, and audit owners must approve an environment-specific artifact before enforced support use."
     },
@@ -473,7 +473,7 @@
         "docs/security-privacy-review.md#secrets-scanning"
       ],
       "tests_or_gates": [
-        "scripts/validate_secrets_scan.py",
+        "scripts/validation/validate_secrets_scan.py",
         "tests.test_security_privacy_review.SecurityPrivacyReviewTests.test_secrets_scan_passes_with_deployment_allowlist"
       ],
       "residual_risk": "Repo-local allowlist-backed scanning is complete for deployment artifacts; production scanning must run in CI with the same allowlist plus environment-specific secret-manager evidence."
@@ -496,7 +496,7 @@
     }
   ],
   "release_gate": {
-    "script": "scripts/validate_security_privacy_review.py",
+    "script": "scripts/validation/validate_security_privacy_review.py",
     "category": "production-profile",
     "blocks_release": true
   }

@@ -63,7 +63,7 @@ class CrossDomainAdapterFamilyValidationTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/validate_cross_domain_adapter_families.py",
+                    "scripts/validation/validate_cross_domain_adapter_families.py",
                     "--manifest",
                     str(manifest_path),
                     "--require-existing-artifacts",

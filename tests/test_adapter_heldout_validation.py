@@ -78,7 +78,7 @@ class AdapterHeldoutValidationTests(unittest.TestCase):
             manifest_path = Path(directory) / "heldout.json"
             manifest_path.write_text(json.dumps(valid_manifest()), encoding="utf-8")
             completed = subprocess.run(
-                [sys.executable, "scripts/validate_adapter_heldout.py", "--manifest", str(manifest_path), "--require-existing-artifacts"],
+                [sys.executable, "scripts/validation/validate_adapter_heldout.py", "--manifest", str(manifest_path), "--require-existing-artifacts"],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,

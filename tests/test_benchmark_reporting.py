@@ -59,7 +59,7 @@ class BenchmarkReportingTests(unittest.TestCase):
         manifest = valid_manifest()
         row = manifest["benchmark_reports"][0]
         row["includes_probe_results"] = True
-        row["artifacts"]["probe_results"] = ["examples/tau2/aana_tau2_probe_planners.py"]
+        row["artifacts"]["probe_results"] = ["diagnostics/probes/tau2/aana_tau2_probe_planners.py"]
         report = validate_benchmark_reporting_manifest(manifest)
 
         self.assertFalse(report["valid"])
@@ -131,7 +131,7 @@ class BenchmarkReportingTests(unittest.TestCase):
             manifest_path = Path(directory) / "benchmark_reporting.json"
             manifest_path.write_text(json.dumps(valid_manifest()), encoding="utf-8")
             completed = subprocess.run(
-                [sys.executable, "scripts/validate_benchmark_reporting.py", "--manifest", str(manifest_path)],
+                [sys.executable, "scripts/validation/validate_benchmark_reporting.py", "--manifest", str(manifest_path)],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,

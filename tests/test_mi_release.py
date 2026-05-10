@@ -61,7 +61,7 @@ class MIReleaseCommandTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_release.py",
+                    "scripts/publication/mi_release.py",
                     "--output",
                     str(output_path),
                     "--rc-report",

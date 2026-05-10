@@ -52,7 +52,7 @@ def _contains_any(text: str, needles: set[str]) -> set[str]:
 def validate_ci_security(ci_text: str) -> list[dict[str, str]]:
     issues = []
     lowered = ci_text.lower()
-    if "scripts/validate_secrets_scan.py" not in ci_text:
+    if "scripts/validation/validate_secrets_scan.py" not in ci_text:
         issues.append(_issue("error", ".github/workflows/ci.yml", "CI must run the repo-local secret scanner."))
     if "gitleaks" not in lowered:
         issues.append(_issue("error", ".github/workflows/ci.yml", "CI must include a gitleaks-style history/content secret scan."))

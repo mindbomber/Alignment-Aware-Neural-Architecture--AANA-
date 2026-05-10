@@ -112,7 +112,7 @@ generic identity-risk correction.
 Issues:
 
 - The exact bypass code, exact user identity strings, and target email now live
-  only in `examples/tau2/aana_tau2_probe_planners.py`.
+  only in `diagnostics/probes/tau2/aana_tau2_probe_planners.py`.
 - That probe is useful for diagnosing authorization-state handling, but it is not
   a general identity-verification architecture.
 - Default banking identity corrections now use generic email-conflict and
@@ -131,7 +131,7 @@ Required replacement:
 1. Move benchmark probes out of the default scaffold path.
    - Done for tau2 retail generalization.
    - Done for the exact banking bypass probe by moving it to
-     `examples/tau2/aana_tau2_probe_planners.py`, reachable only through
+     `diagnostics/probes/tau2/aana_tau2_probe_planners.py`, reachable only through
      `--allow-benchmark-probes`.
    - Done for default workflow hardening: diagnostic probes now require
      `AANA_ENABLE_DIAGNOSTIC_PROBES=1` in addition to the CLI flag, and run
@@ -157,7 +157,7 @@ Required replacement:
      and known benchmark names inside general adapter paths.
    - Allow those literals only in fixtures, expected outputs, or explicitly named
      probe files.
-   - Current enforcement: `python scripts/validate_benchmark_fit_lint.py`
+   - Current enforcement: `python scripts/validation/validate_benchmark_fit_lint.py`
      validates `examples/benchmark_fit_lint_manifest.json`.
    - Coverage now includes checked-in adapter JSON files, starter pilot adapter
      configs, tau2 scaffolds, adapter-runner family modules, and benchmark/eval
@@ -167,7 +167,7 @@ Required replacement:
 
 5. Add held-out validation gates.
    - Every adapter improvement must be tested on at least one held-out slice.
-   - Current enforcement: `python scripts/validate_adapter_heldout.py` validates
+   - Current enforcement: `python scripts/validation/validate_adapter_heldout.py` validates
      `examples/adapter_heldout_validation.json`.
    - The gate rejects training, tuning, dev, calibration, or probe-enabled runs as
      evidence for a completed adapter improvement.
@@ -181,7 +181,7 @@ Required replacement:
    - Label probe runs as diagnostic.
    - Label default runs as architecture/generalization runs.
    - Never merge probe results into public AANA claims.
-   - Current enforcement: `python scripts/validate_benchmark_reporting.py`
+   - Current enforcement: `python scripts/validation/validate_benchmark_reporting.py`
      validates `examples/benchmark_reporting_manifest.json`.
    - Public claims are blocked if they include probe results, use
      `--allow-benchmark-probes`, lack limitations, or mark mixed/probe runs as
@@ -190,7 +190,7 @@ Required replacement:
 7. Refactor tau2 scaffolding.
    - Keep `aana_contract_agent.py` as the general scaffold.
    - Move probe planners into a separate file such as
-     `examples/tau2/aana_tau2_probe_planners.py`.
+     `diagnostics/probes/tau2/aana_tau2_probe_planners.py`.
    - Make imports explicit and opt-in for diagnostic experiments only.
    - Current status: complete for the known exact banking bypass probe.
 
@@ -203,15 +203,15 @@ eligible for the general AANA path.
 
 Operational gate:
 
-- `python scripts/validate_adapter_generalization.py --require-existing-artifacts`
+- `python scripts/validation/validate_adapter_generalization.py --require-existing-artifacts`
   runs the combined adapter-generalization gate: config-backed hints, held-out
   validation, benchmark-fit linting, and public-claim separation.
-- `python scripts/validate_benchmark_fit_lint.py` blocks known answer literals in
+- `python scripts/validation/validate_benchmark_fit_lint.py` blocks known answer literals in
   general scaffold paths.
-- `python scripts/validate_adapter_heldout.py` blocks adapter improvements that
+- `python scripts/validation/validate_adapter_heldout.py` blocks adapter improvements that
   lack held-out evidence.
-- `python scripts/validate_benchmark_reporting.py` blocks public claims that mix
+- `python scripts/validation/validate_benchmark_reporting.py` blocks public claims that mix
   diagnostic probe results into measured AANA claims.
-- `python scripts/validate_hf_dataset_registry.py` blocks accidental reuse of
+- `python scripts/hf/validate_hf_dataset_registry.py` blocks accidental reuse of
   the same Hugging Face dataset/config/split for both calibration/tuning and
   external-reporting/public claims.

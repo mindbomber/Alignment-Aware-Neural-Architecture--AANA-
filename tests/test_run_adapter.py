@@ -4,7 +4,7 @@ import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
+RUNNER_PATH = ROOT / "scripts" / "adapters" / "run_adapter.py"
 TRAVEL_ADAPTER = ROOT / "examples" / "travel_adapter.json"
 MEAL_ADAPTER = ROOT / "examples" / "meal_planning_adapter.json"
 SUPPORT_ADAPTER = ROOT / "examples" / "support_reply_adapter.json"

@@ -74,7 +74,7 @@ class LiveConnectorReadinessTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/live_connector_readiness.py",
+                    "scripts/publication/live_connector_readiness.py",
                     "--output",
                     str(output_path),
                 ],

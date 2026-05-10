@@ -30,7 +30,7 @@ class GitHubActionGuardrailTests(unittest.TestCase):
         self.assertIn("api_contract_change", text)
         self.assertIn("infrastructure_change_guardrail", text)
         self.assertIn("database_migration_guardrail", text)
-        self.assertIn("scripts/run_github_action_guardrails.py", text)
+        self.assertIn("scripts/integrations/run_github_action_guardrails.py", text)
 
     def test_advisory_run_writes_reports_and_metrics(self):
         with tempfile.TemporaryDirectory() as temp_dir:

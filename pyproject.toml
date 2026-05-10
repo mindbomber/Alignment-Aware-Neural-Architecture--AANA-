@@ -1,7 +1,7 @@
 [project]
 name = "aana-eval-pipeline"
 version = "0.1.0"
-description = "AANA runtime, SDK, API, and evaluation pipeline for auditable, grounded, controllable agent actions."
+description = "AANA runtime, SDK, API, and middleware for auditable, grounded, controllable agent actions."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -11,10 +11,8 @@ authors = [
 keywords = [
   "alignment",
   "ai-safety",
-  "llm-evaluation",
   "openai",
   "aana",
-  "evaluation-pipeline",
   "agent-action-contract",
   "agent-control",
   "auditability",
@@ -59,55 +57,19 @@ Repository = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture-
 Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/issues"
 
 [project.scripts]
-aana = "scripts.aana_cli:main"
-aana-server = "eval_pipeline.agent_server:main"
-aana-fastapi = "eval_pipeline.fastapi_app:main"
-aana-validate-mi-contracts = "scripts.validate_mi_contracts:main"
-aana-release-readiness-report = "scripts.release_readiness_report:main"
-aana-mi-release-candidate = "scripts.mi_release_candidate:main"
-aana-mi-release-bundle = "scripts.mi_release_bundle:main"
-aana-mi-verify-release-bundle = "scripts.mi_verify_release_bundle:main"
-aana-mi-release = "scripts.mi_release:main"
-aana-mi-human-signoff = "scripts.human_signoff:main"
-aana-mi-live-connector-plan = "scripts.live_connector_readiness:main"
-aana-mi-production-deployment-manifest = "scripts.production_deployment_manifest:main"
-aana-mi-post-release-monitoring = "scripts.post_release_monitoring:main"
-aana-mi-production-dry-run = "scripts.production_dry_run:main"
-aana-mi-production-go-no-go = "scripts.production_go_no_go:main"
-aana-validate-hf-dataset-registry = "scripts.validate_hf_dataset_registry:main"
-aana-validate-hf-calibration = "scripts.validate_hf_calibration:main"
-aana-privacy-pii-adapter-eval = "scripts.run_privacy_pii_adapter_eval:main"
-aana-privacy-pii-hf-experiment = "scripts.run_privacy_pii_hf_experiment:main"
-aana-train-privacy-pii-v2 = "scripts.train_privacy_pii_v2:main"
-aana-analyze-privacy-pii-high-risk = "scripts.analyze_privacy_pii_high_risk_categories:main"
-aana-inspect-privacy-pii-misses = "scripts.inspect_privacy_pii_misses:main"
-aana-grounded-qa-adapter-eval = "scripts.run_grounded_qa_adapter_eval:main"
-aana-grounded-qa-hf-experiment = "scripts.run_grounded_qa_hf_experiment:main"
-aana-inspect-grounded-qa-misses = "scripts.inspect_grounded_qa_misses:main"
-aana-finance-high-risk-qa-hf-experiment = "scripts.run_finance_high_risk_qa_hf_experiment:main"
-aana-governance-compliance-hf-experiment = "scripts.run_governance_compliance_hf_experiment:main"
-aana-agent-tool-use-control-eval = "scripts.run_agent_tool_use_control_eval:main"
-aana-agent-tool-use-hf-experiment = "scripts.run_agent_tool_use_hf_experiment:main"
-aana-public-private-read-routing-hf-experiment = "scripts.run_public_private_read_routing_hf_experiment:main"
-aana-authorization-robustness-hf-experiment = "scripts.run_authorization_robustness_hf_experiment:main"
-aana-safety-adversarial-hf-experiment = "scripts.run_safety_adversarial_hf_experiment:main"
-aana-integration-validation-v1 = "scripts.run_integration_validation_v1:main"
-aana-build-agent-tool-use-diagnostic-chain = "scripts.build_agent_tool_use_diagnostic_evidence_chain:main"
-aana-validate-cross-domain-adapter-families = "scripts.validate_cross_domain_adapter_families:main"
-aana-validate-hf-dataset-proof = "scripts.validate_hf_dataset_proof:main"
-aana-validate-production-candidate-evidence-pack = "scripts.validate_production_candidate_evidence_pack:main"
-aana-validate-standard-publication = "scripts.validate_aana_standard_publication:main"
-aana-validate-public-claims-policy = "scripts.validate_public_claims_policy:main"
-aana-validate-adapter-generalization = "scripts.validate_adapter_generalization:main"
-aana-validate-security-hardening = "scripts.validate_security_hardening:main"
-aana-validate-packaging-hardening = "scripts.validate_packaging_hardening:main"
-aana-validate-adapter-layout = "scripts.validate_adapter_layout:main"
-aana-validate-bundle-certification = "scripts.validate_bundle_certification:main"
-aana-validate-platform = "scripts.validate_aana_platform:main"
-aana-validate-canonical-ids = "scripts.validate_canonical_ids:main"
+aana = "aana.cli:main"
+aana-fastapi = "aana.fastapi_app:main"
+aana-validate-platform = "aana.validate_platform:main"
 
 [tool.setuptools.packages.find]
-include = ["aana*", "eval_pipeline*", "scripts*"]
+include = ["aana*", "eval_pipeline*"]
+exclude = ["scripts*", "tests*", "evals*"]
+
+[tool.setuptools.package-data]
+aana = [
+  "adapters/*/manifest.json",
+  "bundles/*/manifest.json",
+]
 
 [tool.unittest]
 start-dir = "tests"

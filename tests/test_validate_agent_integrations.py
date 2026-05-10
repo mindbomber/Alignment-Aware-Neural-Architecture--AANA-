@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.validate_agent_integrations import validate_agent_integrations
+from scripts.validation.validate_agent_integrations import validate_agent_integrations
 
 
 class ValidateAgentIntegrationsTests(unittest.TestCase):

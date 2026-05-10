@@ -13,15 +13,15 @@
       "eval_pipeline/adapter_runner/**",
       "eval_pipeline/agent_tool_use_control.py",
       "eval_pipeline/benchmark_*.py",
-      "scripts/validate_benchmark_*.py",
-      "scripts/run_agent_tool_use_control_eval.py",
+      "scripts/validation/validate_benchmark_*.py",
+      "scripts/evals/run_agent_tool_use_control_eval.py",
       "examples/hf_dataset_validation_registry.json",
       "eval_pipeline/cross_domain_adapter_family_validation.py",
       "eval_pipeline/production_candidate_evidence_pack.py",
       "eval_pipeline/hf_dataset_registry.py",
-      "scripts/validate_cross_domain_adapter_families.py",
-      "scripts/validate_production_candidate_evidence_pack.py",
-      "scripts/validate_hf_dataset_registry.py",
+      "scripts/validation/validate_cross_domain_adapter_families.py",
+      "scripts/validation/validate_production_candidate_evidence_pack.py",
+      "scripts/hf/validate_hf_dataset_registry.py",
       "docs/families/**",
       "docs/adapter-gallery/**"
     ],
@@ -70,7 +70,7 @@
       "summary": "Move exact banking bypass probe code out of the general scaffold and keep it behind the opt-in diagnostic probe flag.",
       "changed_paths": [
         "examples/tau2/aana_contract_agent.py",
-        "examples/tau2/aana_tau2_probe_planners.py"
+        "diagnostics/probes/tau2/aana_tau2_probe_planners.py"
       ],
       "heldout_validation": {
         "task_set": "general scaffold literal scan and regression checks",
@@ -114,7 +114,7 @@
       "summary": "Turn the benchmark-fitting decision rule into a lint that blocks known answer literals from general AANA paths.",
       "changed_paths": [
         "eval_pipeline/benchmark_fit_lint.py",
-        "scripts/validate_benchmark_fit_lint.py",
+        "scripts/validation/validate_benchmark_fit_lint.py",
         "examples/benchmark_fit_lint_manifest.json"
       ],
       "heldout_validation": {
@@ -159,7 +159,7 @@
       "changed_paths": [
         "examples/hf_dataset_validation_registry.json",
         "eval_pipeline/hf_dataset_registry.py",
-        "scripts/validate_hf_dataset_registry.py"
+        "scripts/hf/validate_hf_dataset_registry.py"
       ],
       "heldout_validation": {
         "task_set": "HF dataset registry governance tests",
@@ -183,12 +183,12 @@
         "examples/privacy_pii_redaction_adapter.json",
         "examples/privacy_pii_validation_cases.json",
         "eval_pipeline/adapter_runner/verifier_modules/privacy_pii.py",
-        "scripts/run_privacy_pii_adapter_eval.py"
+        "scripts/evals/run_privacy_pii_adapter_eval.py"
       ],
       "heldout_validation": {
         "task_set": "privacy PII held-out validation cases sourced against the HF dataset registry",
         "task_set_path": "examples/privacy_pii_validation_cases.json",
-        "result_artifact": "eval_outputs/privacy_pii_adapter_upgrade_results.json",
+        "result_artifact": "docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json",
         "split": "held_out",
         "label_visibility": "hidden_from_gate",
         "status": "pass",
@@ -210,13 +210,13 @@
       "changed_paths": [
         "examples/grounded_qa_validation_cases.json",
         "eval_pipeline/adapter_runner/verifier_modules/grounded_qa.py",
-        "scripts/run_grounded_qa_adapter_eval.py",
+        "scripts/evals/run_grounded_qa_adapter_eval.py",
         "eval_pipeline/adapter_runner/verifier_catalog.py"
       ],
       "heldout_validation": {
         "task_set": "grounded QA and hallucination held-out validation cases sourced against the HF dataset registry",
         "task_set_path": "examples/grounded_qa_validation_cases.json",
-        "result_artifact": "eval_outputs/grounded_qa_adapter_upgrade_results.json",
+        "result_artifact": "docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json",
         "split": "held_out",
         "label_visibility": "hidden_from_gate",
         "status": "pass",
@@ -237,12 +237,12 @@
       "changed_paths": [
         "examples/agent_tool_use_control_validation_cases.json",
         "eval_pipeline/agent_tool_use_control.py",
-        "scripts/run_agent_tool_use_control_eval.py"
+        "scripts/evals/run_agent_tool_use_control_eval.py"
       ],
       "heldout_validation": {
         "task_set": "agent tool-use control validation cases sourced against the HF dataset registry",
         "task_set_path": "examples/agent_tool_use_control_validation_cases.json",
-        "result_artifact": "eval_outputs/agent_tool_use_control_upgrade_results.json",
+        "result_artifact": "docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json",
         "split": "held_out",
         "label_visibility": "hidden_from_gate",
         "status": "pass",
@@ -264,7 +264,7 @@
       "changed_paths": [
         "examples/cross_domain_adapter_family_validation.json",
         "eval_pipeline/cross_domain_adapter_family_validation.py",
-        "scripts/validate_cross_domain_adapter_families.py"
+        "scripts/validation/validate_cross_domain_adapter_families.py"
       ],
       "heldout_validation": {
         "task_set": "cross-domain adapter family validation governance tests",
@@ -289,7 +289,7 @@
         "docs/aana-production-candidate-evidence-pack.md",
         "examples/production_candidate_evidence_pack.json",
         "eval_pipeline/production_candidate_evidence_pack.py",
-        "scripts/validate_production_candidate_evidence_pack.py"
+        "scripts/validation/validate_production_candidate_evidence_pack.py"
       ],
       "heldout_validation": {
         "task_set": "production-candidate evidence-pack governance tests",

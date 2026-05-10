@@ -22,43 +22,43 @@ The current artifacts support narrow, measured claims about:
 
 | Proof axis | Artifact | Metric | Current result |
 | --- | --- | --- | --- |
-| False-positive control | `eval_outputs/privacy_pii_adapter_upgrade_results.json` | `false_positive_rate` | 0.000 |
-| False-positive control | `eval_outputs/privacy_pii_adapter_upgrade_results.json` | `safe_allow_rate` | 1.000 |
-| False-positive control | `eval_outputs/grounded_qa_adapter_upgrade_results.json` | `over_refusal_rate` | 0.000 |
-| Unsafe recall | `eval_outputs/privacy_pii_adapter_upgrade_results.json` | `pii_recall` | 1.000 |
-| Unsafe recall | `eval_outputs/agent_tool_use_control_upgrade_results.json` | `unsafe_action_recall` | 1.000 |
-| Groundedness | `eval_outputs/grounded_qa_adapter_upgrade_results.json` | `unsupported_claim_recall` | 1.000 |
-| Groundedness | `eval_outputs/grounded_qa_adapter_upgrade_results.json` | `answerable_safe_allow_rate` | 1.000 |
-| Groundedness | `eval_outputs/grounded_qa_adapter_upgrade_results.json` | `citation_evidence_coverage` | 1.000 |
-| Private/public read routing | `eval_outputs/agent_tool_use_control_upgrade_results.json` | `private_read_write_gating` | 1.000 |
-| Private/public read routing | `eval_outputs/agent_tool_use_control_upgrade_results.json` | `ask_defer_refuse_quality` | 1.000 |
-| Private/public read routing | `eval_outputs/agent_tool_use_control_upgrade_results.json` | `safe_allow_rate` | 1.000 |
-| Private/public read routing | `eval_outputs/agent_tool_use_control_upgrade_results.json` | `schema_failure_rate` | 0.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `tool_use_v2_unsafe_action_recall` | 1.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `read_routing_v2_public_read_allow_rate` | 1.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `read_routing_v2_private_read_escalation_rate` | 1.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_missing_auth_recall` | 1.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_stale_evidence_defer_rate` | 1.000 |
-| Agent tool-use diagnostic chain | `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_over_block_rate` | 0.000 |
-| Safety/adversarial prompt routing diagnostic | `eval_outputs/safety_adversarial_hf_experiment_results.json` | `harmful_request_recall` | 0.342 |
-| Safety/adversarial prompt routing diagnostic | `eval_outputs/safety_adversarial_hf_experiment_results.json` | `safe_prompt_allow_rate` | 0.951 |
-| Safety/adversarial prompt routing diagnostic | `eval_outputs/safety_adversarial_hf_experiment_results.json` | `false_refusal_rate` | 0.049 |
-| Safety/adversarial prompt routing diagnostic | `eval_outputs/safety_adversarial_hf_experiment_results.json` | `recovery_suggestion_quality` | 1.000 |
-| Finance high-risk QA diagnostic | `eval_outputs/finance_high_risk_qa_hf_experiment_results.json` | `unsupported_finance_claim_recall` | 1.000 |
-| Finance high-risk QA diagnostic | `eval_outputs/finance_high_risk_qa_hf_experiment_results.json` | `supported_answer_safe_allow_rate` | 1.000 |
-| Finance high-risk QA diagnostic | `eval_outputs/finance_high_risk_qa_hf_experiment_results.json` | `evidence_coverage` | 1.000 |
-| Finance high-risk QA diagnostic | `eval_outputs/finance_high_risk_qa_hf_experiment_results.json` | `over_refusal_rate` | 0.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `policy_citation_coverage` | 1.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `risk_route_accuracy` | 1.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `missing_evidence_recall` | 1.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `human_review_escalation_recall` | 1.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `safe_allow_rate` | 1.000 |
-| Governance/compliance policy-routing diagnostic | `eval_outputs/governance_compliance_hf_experiment_results.json` | `over_refusal_rate` | 0.000 |
-| Integration validation v1 held-out | `eval_outputs/integration_validation_v1_heldout_results.json` | `route_parity` | 1.000 |
-| Integration validation v1 held-out | `eval_outputs/integration_validation_v1_heldout_results.json` | `blocked_tool_non_execution` | 1.000 |
-| Integration validation v1 held-out | `eval_outputs/integration_validation_v1_heldout_results.json` | `decision_shape_parity` | 1.000 |
-| Integration validation v1 held-out | `eval_outputs/integration_validation_v1_heldout_results.json` | `audit_log_completeness` | 1.000 |
-| Integration validation v1 held-out | `eval_outputs/integration_validation_v1_heldout_results.json` | `schema_failure_rate` | 0.000 |
+| False-positive control | `docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json` | `false_positive_rate` | 0.000 |
+| False-positive control | `docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json` | `safe_allow_rate` | 1.000 |
+| False-positive control | `docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json` | `over_refusal_rate` | 0.000 |
+| Unsafe recall | `docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json` | `pii_recall` | 1.000 |
+| Unsafe recall | `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` | `unsafe_action_recall` | 1.000 |
+| Groundedness | `docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json` | `unsupported_claim_recall` | 1.000 |
+| Groundedness | `docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json` | `answerable_safe_allow_rate` | 1.000 |
+| Groundedness | `docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json` | `citation_evidence_coverage` | 1.000 |
+| Private/public read routing | `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` | `private_read_write_gating` | 1.000 |
+| Private/public read routing | `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` | `ask_defer_refuse_quality` | 1.000 |
+| Private/public read routing | `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` | `safe_allow_rate` | 1.000 |
+| Private/public read routing | `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` | `schema_failure_rate` | 0.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `tool_use_v2_unsafe_action_recall` | 1.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `read_routing_v2_public_read_allow_rate` | 1.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `read_routing_v2_private_read_escalation_rate` | 1.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_missing_auth_recall` | 1.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_stale_evidence_defer_rate` | 1.000 |
+| Agent tool-use diagnostic chain | `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json` | `authorization_v2_over_block_rate` | 0.000 |
+| Safety/adversarial prompt routing diagnostic | `docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json` | `harmful_request_recall` | 0.342 |
+| Safety/adversarial prompt routing diagnostic | `docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json` | `safe_prompt_allow_rate` | 0.951 |
+| Safety/adversarial prompt routing diagnostic | `docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json` | `false_refusal_rate` | 0.049 |
+| Safety/adversarial prompt routing diagnostic | `docs/evidence/peer_review/safety_adversarial_hf_experiment_results.json` | `recovery_suggestion_quality` | 1.000 |
+| Finance high-risk QA diagnostic | `docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json` | `unsupported_finance_claim_recall` | 1.000 |
+| Finance high-risk QA diagnostic | `docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json` | `supported_answer_safe_allow_rate` | 1.000 |
+| Finance high-risk QA diagnostic | `docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json` | `evidence_coverage` | 1.000 |
+| Finance high-risk QA diagnostic | `docs/evidence/peer_review/finance_high_risk_qa_hf_experiment_results.json` | `over_refusal_rate` | 0.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `policy_citation_coverage` | 1.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `risk_route_accuracy` | 1.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `missing_evidence_recall` | 1.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `human_review_escalation_recall` | 1.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `safe_allow_rate` | 1.000 |
+| Governance/compliance policy-routing diagnostic | `docs/evidence/peer_review/governance_compliance_hf_experiment_results.json` | `over_refusal_rate` | 0.000 |
+| Integration validation v1 held-out | `docs/evidence/peer_review/integration_validation_v1_heldout_results.json` | `route_parity` | 1.000 |
+| Integration validation v1 held-out | `docs/evidence/peer_review/integration_validation_v1_heldout_results.json` | `blocked_tool_non_execution` | 1.000 |
+| Integration validation v1 held-out | `docs/evidence/peer_review/integration_validation_v1_heldout_results.json` | `decision_shape_parity` | 1.000 |
+| Integration validation v1 held-out | `docs/evidence/peer_review/integration_validation_v1_heldout_results.json` | `audit_log_completeness` | 1.000 |
+| Integration validation v1 held-out | `docs/evidence/peer_review/integration_validation_v1_heldout_results.json` | `schema_failure_rate` | 0.000 |
 
 ## Dataset Sources
 

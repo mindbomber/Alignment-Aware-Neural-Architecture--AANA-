@@ -132,7 +132,7 @@ Grounded-QA held-out smoke:
 
 ```powershell
 $env:OPENAI_API_KEY = "<your key>"
-python scripts/run_grounded_qa_hf_experiment.py --max-rows-per-source 2 --semantic-verifier openai --output eval_outputs/grounded_qa_hf_experiment_results.semantic_openai_smoke.json
+python scripts/hf/run_grounded_qa_hf_experiment.py --max-rows-per-source 2 --semantic-verifier openai --output eval_outputs/grounded_qa_hf_experiment_results.semantic_openai_smoke.json
 ```
 
 Calibrate before enabling. The calibration path uses claim-level entailment:
@@ -141,7 +141,7 @@ and AANA only accepts the semantic judgment when the calibrated policy preserves
 safe allow.
 
 ```powershell
-python scripts/run_grounded_qa_semantic_calibration.py --calibration-rows-per-source 12 --heldout-rows-per-source 20
+python scripts/hf/run_grounded_qa_semantic_calibration.py --calibration-rows-per-source 12 --heldout-rows-per-source 20
 ```
 
 Expected output includes `deployment_recommendation.status`. Keep the semantic
@@ -166,7 +166,7 @@ Expected behavior:
 List the MCP-style AANA tool:
 
 ```powershell
-python scripts/aana_mcp_server.py --list-tools
+python scripts/integrations/aana_mcp_server.py --list-tools
 ```
 
 Expected output:
@@ -230,7 +230,7 @@ Expected output:
 Run the single integration validator:
 
 ```powershell
-python scripts/validate_agent_integrations.py
+python scripts/validation/validate_agent_integrations.py
 ```
 
 It checks:
@@ -269,7 +269,7 @@ pass -- passed=12/12
 For machine-readable output:
 
 ```powershell
-python scripts/validate_agent_integrations.py --json
+python scripts/validation/validate_agent_integrations.py --json
 ```
 
 ## Rule To Preserve

@@ -182,7 +182,7 @@
       ]
     },
     {
-      "id": "civic_government",
+      "id": "government_civic",
       "title": "Civic and Government Pilot",
       "goal": "Evaluate public-service workflows where eligibility, procurement, deadlines, policy boundaries, and review routing matter.",
       "pilot_surface": {

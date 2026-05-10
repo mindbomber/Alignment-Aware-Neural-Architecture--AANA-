@@ -1,5 +1,10 @@
 # Development Helpers
 
+Top-level commands stay intentionally small: `aana`, `aana-fastapi`, and `aana-validate-platform`.
+The repo-owned compatibility scripts in this folder are only for local development. Experiment,
+benchmark, Hugging Face, publication, validation, pilot, demo, adapter, and integration helpers
+live in grouped subfolders so the runtime surface does not blur into research tooling.
+
 `dev.py` provides short, cross-platform commands for common local checks.
 
 Run from the repository root:
@@ -33,23 +38,23 @@ python scripts/aana_cli.py certify-bundle government_civic
 python scripts/aana_cli.py production-certify --certification-policy examples/production_certification_template.json --deployment-manifest path/to/deployment.json --governance-policy path/to/governance.json --evidence-registry path/to/evidence_registry.json --observability-policy path/to/observability.json --audit-log path/to/redacted-shadow-audit.jsonl
 docker compose up --build
 Get-Content docs/integration-recipes.md
-python scripts/run_playground.py
-python scripts/run_design_partner_pilots.py --pilot all
-python scripts/run_local_demos.py
+python scripts/demos/run_playground.py
+python scripts/pilots/run_design_partner_pilots.py --pilot all
+python scripts/demos/run_local_demos.py
 start http://127.0.0.1:8765/dashboard
-python scripts/run_e2e_pilot_bundle.py
-python scripts/run_pilot_evaluation_kit.py
-python scripts/run_pilot_evaluation_kit.py --pack enterprise --report-output eval_outputs/pilot_eval/enterprise-report.md
-python scripts/run_starter_pilot_kit.py --kit all
-python scripts/run_starter_pilot_kit.py --kit enterprise
-python scripts/run_starter_pilot_kit.py --kit personal_productivity
-python scripts/run_starter_pilot_kit.py --kit civic_government
-python scripts/run_github_action_guardrails.py --changed-files "src/app.py,migrations/001.sql" --migration-diff eval_outputs/migration-diff.sql
-python scripts/community_issue_scout.py --output examples/community_issue_candidates.json
-python scripts/community_issue_solver.py --repository adhit-r/fairmind --limit 1
-python scripts/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
-python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
-python scripts/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
+python scripts/pilots/run_e2e_pilot_bundle.py
+python scripts/pilots/run_pilot_evaluation_kit.py
+python scripts/pilots/run_pilot_evaluation_kit.py --pack enterprise --report-output eval_outputs/pilot_eval/enterprise-report.md
+python scripts/pilots/run_starter_pilot_kit.py --kit all
+python scripts/pilots/run_starter_pilot_kit.py --kit enterprise
+python scripts/pilots/run_starter_pilot_kit.py --kit personal_productivity
+python scripts/pilots/run_starter_pilot_kit.py --kit government_civic
+python scripts/integrations/run_github_action_guardrails.py --changed-files "src/app.py,migrations/001.sql" --migration-diff eval_outputs/migration-diff.sql
+python scripts/benchmarks/community_issue_scout.py --output examples/community_issue_candidates.json
+python scripts/benchmarks/community_issue_solver.py --repository adhit-r/fairmind --limit 1
+python scripts/pilots/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
+python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
 python scripts/aana_cli.py release-check --skip-local-check --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
 python scripts/aana_cli.py audit-verify --manifest eval_outputs/audit/manifests/aana-internal-pilot-integrity.json
 ```

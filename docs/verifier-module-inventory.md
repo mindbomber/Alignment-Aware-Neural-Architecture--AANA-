@@ -98,7 +98,7 @@ Adapter family predicates and task construction live in `eval_pipeline/adapter_r
 
 ## Runtime Orchestration
 
-The compatibility execution path lives in `eval_pipeline/adapter_runner/runtime.py`. `scripts/run_adapter.py` and `eval_pipeline/adapter_runner/legacy_runner.py` remain thin compatibility wrappers for older CLI and import paths.
+The compatibility execution path lives in `eval_pipeline/adapter_runner/runtime.py`. `scripts/adapters/run_adapter.py` and `eval_pipeline/adapter_runner/legacy_runner.py` remain thin compatibility wrappers for older CLI and import paths.
 
 ## Stability Gate
 
@@ -106,6 +106,6 @@ After moving verifier families, run:
 
 ```powershell
 python -m unittest tests.test_adapter_runner_golden_outputs
-python scripts/compare_adapter_runner_baseline.py --ref HEAD
+python scripts/adapters/compare_adapter_runner_baseline.py --ref HEAD
 python scripts/dev.py test
 ```

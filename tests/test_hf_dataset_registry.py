@@ -194,7 +194,7 @@ class HFDatasetRegistryTests(unittest.TestCase):
             registry_path = Path(directory) / "registry.json"
             registry_path.write_text(json.dumps(valid_registry()), encoding="utf-8")
             completed = subprocess.run(
-                [sys.executable, "scripts/validate_hf_dataset_registry.py", "--registry", str(registry_path)],
+                [sys.executable, "scripts/hf/validate_hf_dataset_registry.py", "--registry", str(registry_path)],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,

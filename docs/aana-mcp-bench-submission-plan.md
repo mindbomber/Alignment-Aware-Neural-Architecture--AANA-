@@ -36,7 +36,7 @@ Conditions:
 Repo-owned wrapper:
 
 ```bash
-python scripts/run_mcp_bench_aana_ablation.py \
+python scripts/benchmarks/run_mcp_bench_aana_ablation.py \
   --mcp-bench-dir ../mcp-bench \
   --models o4-mini \
   --tasks-file tasks/mcpbench_tasks_single_runner_format.json \
@@ -207,7 +207,7 @@ AANA-specific side metrics:
 
 ## Minimal Integration Point
 
-Patch the MCP-Bench tool execution path so each candidate tool call is normalized into Agent Action Contract v1. The current wrapper does this through [scripts/run_mcp_bench_aana_ablation.py](../scripts/run_mcp_bench_aana_ablation.py) and [aana/integrations/mcp_bench.py](../aana/integrations/mcp_bench.py):
+Patch the MCP-Bench tool execution path so each candidate tool call is normalized into Agent Action Contract v1. The current wrapper does this through [scripts/benchmarks/run_mcp_bench_aana_ablation.py](../scripts/benchmarks/run_mcp_bench_aana_ablation.py) and [aana/integrations/mcp_bench.py](../aana/integrations/mcp_bench.py):
 
 ```json
 {

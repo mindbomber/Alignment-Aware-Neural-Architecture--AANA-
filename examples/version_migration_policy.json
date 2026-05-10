@@ -112,10 +112,10 @@
     "requires_migration_note": true,
     "requires_compatibility_test": true,
     "requires_version_bump": true,
-    "release_gate": "scripts/validate_versioning_migration.py"
+    "release_gate": "scripts/validation/validate_versioning_migration.py"
   },
   "release_gate": {
-    "script": "scripts/validate_versioning_migration.py",
+    "script": "scripts/validation/validate_versioning_migration.py",
     "category": "api",
     "blocks_release": true
   }

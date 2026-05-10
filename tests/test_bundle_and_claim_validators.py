@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class BundleAndClaimValidatorTests(unittest.TestCase):
     def test_bundle_certification_validator_passes(self):
         completed = subprocess.run(
-            [sys.executable, "scripts/validate_bundle_certification.py"],
+            [sys.executable, "scripts/validation/validate_bundle_certification.py"],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -21,7 +21,7 @@ class BundleAndClaimValidatorTests(unittest.TestCase):
 
     def test_public_claims_policy_validator_passes(self):
         completed = subprocess.run(
-            [sys.executable, "scripts/validate_public_claims_policy.py"],
+            [sys.executable, "scripts/validation/validate_public_claims_policy.py"],
             cwd=ROOT,
             text=True,
             capture_output=True,

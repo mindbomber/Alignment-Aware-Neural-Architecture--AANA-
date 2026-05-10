@@ -38,14 +38,14 @@ The internal-pilot security review now has executable sections for:
 - Connector permissions: support connector manifests declare least-privilege read-only scopes, denied write/delete/send/raw-export/admin scopes, reviewed data classes, reviewer, and review date. External production still needs environment-owner evidence for the selected CRM, order, ticket, email, billing, and DLP systems.
 - PII and attachment metadata: audit records remain metadata-only and attachment bodies are not stored. Attachment checks may use `attachment_id`, filename/content fingerprints, content type, size, source id, and DLP classification.
 - Rate limiting: the runtime enforces `--rate-limit-per-minute`; the internal-pilot Kubernetes config declares matching edge limit, burst, and per-authenticated-client scope. Production deployments must enforce both layers.
-- Secrets scanning: `scripts/validate_secrets_scan.py` scans deployment, runtime, docs, examples, scripts, and tests with `examples/secrets_scan_allowlist.json`. The allowlist is limited to synthetic redaction/auth test literals and documentation examples.
+- Secrets scanning: `scripts/validation/validate_secrets_scan.py` scans deployment, runtime, docs, examples, scripts, and tests with `examples/secrets_scan_allowlist.json`. The allowlist is limited to synthetic redaction/auth test literals and documentation examples.
 
 Validate the full security review with:
 
 ```powershell
-python scripts/validate_security_privacy_review.py
-python scripts/validate_secrets_scan.py
-python scripts/validate_security_hardening.py
+python scripts/validation/validate_security_privacy_review.py
+python scripts/validation/validate_secrets_scan.py
+python scripts/validation/validate_security_hardening.py
 ```
 
 The broader security hardening gate also validates CI secret scanning, dependency audit wiring, public-demo safe defaults, and the malicious-agent threat model in [aana-security-threat-model.md](aana-security-threat-model.md).
@@ -61,7 +61,7 @@ Production support audit records must remain decision metadata only. They may st
 Validate the policy and redaction proof with:
 
 ```powershell
-python scripts/validate_audit_retention_policy.py
+python scripts/validation/validate_audit_retention_policy.py
 ```
 
 This validator generates support Workflow Contract and Agent Event audit records from canonical fixtures, validates the audit schema, and scans the serialized records for raw support request, candidate, evidence, CRM, payment, internal-note, and attachment text.

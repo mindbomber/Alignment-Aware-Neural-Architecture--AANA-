@@ -17,7 +17,7 @@ The rollout source of truth is `examples/production_deployment_internal_pilot.js
 ## Validation
 
 ```powershell
-python scripts/validate_internal_pilot_plan.py
+python scripts/validation/validate_internal_pilot_plan.py
 ```
 
 The validator fails if the default phase is not `shadow_mode`, if broad autonomous enforcement is enabled, or if the phase order skips shadow/advisory gates.
@@ -27,7 +27,7 @@ The validator fails if the default phase is not `shadow_mode`, if broad autonomo
 The internal pilot runner reads the manifest default phase. With the current manifest, it starts the bridge with `--shadow-mode`.
 
 ```powershell
-python scripts/run_internal_pilot.py --json
+python scripts/pilots/run_internal_pilot.py --json
 ```
 
 Use `--pilot-phase advisory_mode` or later phases only after the prior phase has exit evidence and owner signoff. Enforced phases remain narrow and support-scoped.
@@ -37,7 +37,7 @@ Use `--pilot-phase advisory_mode` or later phases only after the prior phase has
 For the support runtime baseline, run the support shadow pilot against the canonical support Workflow Contract and Agent Event fixtures:
 
 ```powershell
-python scripts/run_support_shadow_pilot.py
+python scripts/pilots/run_support_shadow_pilot.py
 ```
 
 The runner is observe-only. It records would-block, would-revise, would-ask, would-defer, and would-refuse behavior without blocking the underlying workflow path. It writes:
@@ -54,7 +54,7 @@ The measured result artifact is referenced from `examples/internal_pilot_measure
 After shadow metrics are reviewed and the support owner approves promotion to advisory mode, run:
 
 ```powershell
-python scripts/run_support_advisory_pilot.py
+python scripts/pilots/run_support_advisory_pilot.py
 ```
 
 Advisory mode lets AANA recommend `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`, but humans remain the decision authority. Reviewer decisions are loaded from `examples/support_advisory_reviewer_decisions.json` and are stored as redacted action/safety metadata, not raw support content.
@@ -73,7 +73,7 @@ The checked-in summary is `examples/internal_pilot_advisory_results_support.json
 After advisory-mode review accepts the reviewer-agreement, false-blocker, missed-unsafe, workload, and calibration results, run the narrow enforced draft pilot:
 
 ```powershell
-python scripts/run_support_enforced_draft_pilot.py
+python scripts/pilots/run_support_enforced_draft_pilot.py
 ```
 
 This phase enforces only:
@@ -98,7 +98,7 @@ The checked-in summary is `examples/internal_pilot_enforced_draft_results_suppor
 After narrow draft enforcement is accepted and irreversible-send controls are reviewed, run:
 
 ```powershell
-python scripts/run_support_enforced_email_pilot.py
+python scripts/pilots/run_support_enforced_email_pilot.py
 ```
 
 This phase enforces only:

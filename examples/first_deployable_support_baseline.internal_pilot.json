@@ -58,14 +58,14 @@
       "id": "golden_outputs",
       "requirement": "Golden outputs pass for support reply, CRM support, email send, ticket update, invoice/billing, and candidate AIx refusal cases.",
       "status": "reached",
-      "evidence": ["tests/test_adapter_runner_golden_outputs.py", "tests/test_support_golden_regression_gates.py", "scripts/compare_adapter_runner_baseline.py"],
+      "evidence": ["tests/test_adapter_runner_golden_outputs.py", "tests/test_support_golden_regression_gates.py", "scripts/adapters/compare_adapter_runner_baseline.py"],
       "release_gate": "golden_outputs"
     },
     {
       "id": "gallery_validation",
       "requirement": "Adapter gallery validation passes and support adapters are cataloged.",
       "status": "reached",
-      "evidence": ["examples/adapter_gallery.json", "scripts/validate_adapter_gallery.py", "tests/test_adapter_gallery.py"],
+      "evidence": ["examples/adapter_gallery.json", "scripts/validation/validate_adapter_gallery.py", "tests/test_adapter_gallery.py"],
       "release_gate": "gallery_metadata"
     },
     {
@@ -79,14 +79,14 @@
       "id": "security_privacy_review",
       "requirement": "Security/privacy review is complete for repo-local controls and declares external deployment blockers.",
       "status": "reached",
-      "evidence": ["examples/security_privacy_review_support.json", "scripts/validate_security_privacy_review.py", "tests/test_security_privacy_review.py"],
+      "evidence": ["examples/security_privacy_review_support.json", "scripts/validation/validate_security_privacy_review.py", "tests/test_security_privacy_review.py"],
       "release_gate": "security_privacy_review"
     },
     {
       "id": "support_domain_owner_signoff",
       "requirement": "Support domain owner signs off on policy interpretation, verification requirements, escalation paths, safe response language, human review triggers, audit retention, customer-facing language boundaries, and allowed automation scope.",
       "status": "reached",
-      "evidence": ["examples/support_domain_owner_signoff_internal_pilot.json", "scripts/validate_support_domain_signoff.py", "docs/support-domain-owner-signoff.md"],
+      "evidence": ["examples/support_domain_owner_signoff_internal_pilot.json", "scripts/validation/validate_support_domain_signoff.py", "docs/support-domain-owner-signoff.md"],
       "release_gate": "support_domain_signoff"
     },
     {
@@ -118,7 +118,7 @@
     ]
   },
   "release_gate": {
-    "script": "scripts/validate_first_deployable_baseline.py",
+    "script": "scripts/validation/validate_first_deployable_baseline.py",
     "category": "production-profile",
     "blocks_release": true
   }

@@ -15,8 +15,12 @@
       "examples/tau2/*.py",
       "eval_pipeline/adapter_runner/**/*.py"
     ],
+    "probe_quarantine_roots": [
+      "diagnostics/probes"
+    ],
+    "public_example_probe_names_forbidden": true,
     "allowed_literal_paths": [
-      "examples/tau2/aana_tau2_probe_planners.py",
+      "diagnostics/probes/**",
       "examples/tau2/aana_tau2_adapter_config.json",
       "examples/adapter_generalization_config.json",
       "tests/**",
@@ -25,7 +29,7 @@
       "examples/adapter_heldout_validation.json",
       "examples/benchmark_reporting_manifest.json"
     ],
-    "allowed_reason": "Benchmark literals may exist only in diagnostic probes, adapter config, tests, docs, expected outputs, or reporting manifests."
+    "allowed_reason": "Benchmark literals may exist only in diagnostics/probes, adapter config, tests, docs, expected outputs, or reporting manifests. Public examples must remain general architecture examples."
   },
   "forbidden_literal_groups": [
     {

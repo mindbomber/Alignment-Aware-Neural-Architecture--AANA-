@@ -33,17 +33,17 @@ The internal-pilot artifact can pass `--require-reached` because it declares liv
 ## Validation
 
 ```powershell
-python scripts/validate_first_deployable_baseline.py
+python scripts/validation/validate_first_deployable_baseline.py
 ```
 
 Use `--require-reached` only with an environment-specific artifact that attaches approved support domain signoff and measured pilot results:
 
 ```powershell
-python scripts/validate_first_deployable_baseline.py --baseline path/to/baseline.json --require-reached
+python scripts/validation/validate_first_deployable_baseline.py --baseline path/to/baseline.json --require-reached
 ```
 
 For the checked-in internal-pilot baseline:
 
 ```powershell
-python scripts/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached
+python scripts/validation/validate_first_deployable_baseline.py --baseline examples/first_deployable_support_baseline.internal_pilot.json --require-reached
 ```

@@ -34,7 +34,7 @@ runtime gate model.
 ## AANA Setup
 
 The benchmark uses `examples/agent_action_safety_guardrail_adapter.json` and
-`scripts/aana_harmactions_eval.py`.
+`scripts/evals/aana_harmactions_eval.py`.
 
 The runner gives AANA only:
 
@@ -50,7 +50,7 @@ Benchmark labels are used only for scoring after the gate returns.
 Clone Agent Action Guard, then run:
 
 ```bash
-python scripts/aana_harmactions_eval.py \
+python scripts/evals/aana_harmactions_eval.py \
   --dataset eval_outputs/benchmark_scout/repos/Agent-Action-Guard/python/agent_action_guard/harmactions_dataset.json \
   --output eval_outputs/benchmark_scout/aana_harmactions_eval_results.json
 ```

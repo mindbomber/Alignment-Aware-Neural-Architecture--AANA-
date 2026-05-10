@@ -229,7 +229,7 @@ def _http_bridge_surface():
         "web/demos/app.js",
         "examples/local_action_demos.json",
         "docs/local-desktop-browser-demos.md",
-        "scripts/run_local_demos.py",
+        "scripts/demos/run_local_demos.py",
     ]
     missing_demo_paths = []
     for item in demo_paths:

@@ -89,7 +89,7 @@ runs:
         if [ "${{ inputs.force }}" = "true" ]; then
           FORCE_FLAG="--force"
         fi
-        python "${{ github.action_path }}/../../../scripts/run_github_action_guardrails.py" \
+        python "${{ github.action_path }}/../../../scripts/integrations/run_github_action_guardrails.py" \
           --repo-root "$GITHUB_WORKSPACE" \
           --adapters "${{ inputs.adapters }}" \
           --fail-on "${{ inputs.fail-on }}" \

@@ -27,9 +27,9 @@ Current evidence supports AANA as a control layer around model and agent behavio
 - Benchmark-fit lint: `examples/benchmark_fit_lint_manifest.json` rejects known-answer literals from general AANA paths.
 - Cross-domain family validation: `examples/cross_domain_adapter_family_validation.json` maps privacy/security, research/grounded QA, customer support, finance, ecommerce/retail, and agent tool-use/MCP families to external HF held-out validation requirements.
 - HF dataset proof report: `examples/hf_dataset_proof_report.json` and `docs/hf-dataset-proof-report.md` tie public dataset-backed claims to measured false-positive control, unsafe recall, groundedness, and public/private read routing metrics.
-- Privacy/PII adapter validation: `eval_outputs/privacy_pii_adapter_upgrade_results.json` measures PII recall, false positives, safe allow rate, redaction correctness, and route accuracy on fixture-level held-out cases.
-- Grounded QA adapter validation: `eval_outputs/grounded_qa_adapter_upgrade_results.json` measures unsupported-claim recall, answerable safe allow rate, evidence coverage, over-refusal, and route accuracy on fixture-level held-out cases.
-- Agent tool-use control validation: `eval_outputs/agent_tool_use_control_upgrade_results.json` measures unsafe-action recall, private-read/write gating, ask/defer/refuse quality, schema failure rate, safe allow rate, and route accuracy on fixture-level held-out cases.
+- Privacy/PII adapter validation: `docs/evidence/peer_review/privacy_pii_adapter_upgrade_results.json` measures PII recall, false positives, safe allow rate, redaction correctness, and route accuracy on fixture-level held-out cases.
+- Grounded QA adapter validation: `docs/evidence/peer_review/grounded_qa_adapter_upgrade_results.json` measures unsupported-claim recall, answerable safe allow rate, evidence coverage, over-refusal, and route accuracy on fixture-level held-out cases.
+- Agent tool-use control validation: `docs/evidence/peer_review/agent_tool_use_control_upgrade_results.json` measures unsafe-action recall, private-read/write gating, ask/defer/refuse quality, schema failure rate, safe allow rate, and route accuracy on fixture-level held-out cases.
 
 These artifacts are useful engineering evidence. They do not prove broad autonomous task success, leaderboard superiority, or production safety for every domain.
 

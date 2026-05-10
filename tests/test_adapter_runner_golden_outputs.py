@@ -4,7 +4,7 @@ import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-RUNNER_PATH = ROOT / "scripts" / "run_adapter.py"
+RUNNER_PATH = ROOT / "scripts" / "adapters" / "run_adapter.py"
 
 spec = importlib.util.spec_from_file_location("run_adapter", RUNNER_PATH)
 run_adapter_module = importlib.util.module_from_spec(spec)

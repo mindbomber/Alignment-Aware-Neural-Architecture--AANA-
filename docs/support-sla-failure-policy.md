@@ -35,7 +35,7 @@ Audit must not store raw customer messages, raw candidate responses, full CRM re
 ## Validation
 
 ```powershell
-python scripts/validate_support_sla_failure_policy.py
+python scripts/validation/validate_support_sla_failure_policy.py
 ```
 
 The release gate runs this validator as a production-profile check.

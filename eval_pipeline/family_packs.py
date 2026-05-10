@@ -57,7 +57,7 @@ FAMILY_DEFINITIONS = {
         "gallery_pack": "government_civic",
         "title": "Government And Civic AANA Pack",
         "eyebrow": "Government and civic family",
-        "starter_kit": "civic_government",
+        "starter_kit": "government_civic",
         "boundary": "Public-service, procurement, grant, records, privacy, eligibility, policy, and public-communication workflows.",
         "best_for": [
             "procurement and grant reviewers checking eligibility, scoring, vendor, privacy, and policy boundaries",
@@ -149,7 +149,7 @@ def family_pack(family_id, gallery_payload=None, kit_root=DEFAULT_KIT_ROOT):
             "id": manifest.get("id"),
             "title": manifest.get("title"),
             "goal": manifest.get("goal"),
-            "command": f"python scripts/run_starter_pilot_kit.py --kit {manifest.get('id')}",
+            "command": f"python scripts/pilots/run_starter_pilot_kit.py --kit {manifest.get('id')}",
             "output_dir": manifest.get("default_output_dir"),
             "files": manifest.get("files", {}),
             "path": str(kit_path.relative_to(ROOT)).replace("\\", "/"),

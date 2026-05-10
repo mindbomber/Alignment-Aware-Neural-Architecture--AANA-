@@ -158,7 +158,7 @@
     "Do not record raw customer message, raw candidate response, full CRM record, payment data, internal notes, attachment bodies, secrets, or tokens."
   ],
   "release_gate": {
-    "script": "scripts/validate_support_sla_failure_policy.py",
+    "script": "scripts/validation/validate_support_sla_failure_policy.py",
     "category": "production-profile",
     "blocks_release": true
   }

@@ -62,7 +62,7 @@ class DocsConsolidationTests(unittest.TestCase):
             "aana doctor",
             "aana run travel_planning",
             "aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl",
-            "aana-server --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl",
+            "python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl",
             "aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl",
         ]
         for relative_path in ["README.md", "docs/try-demo/index.md", "docs/getting-started.md"]:

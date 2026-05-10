@@ -1,6 +1,6 @@
 {
   "certification_policy_version": "0.1",
-  "family_id": "civic_government",
+  "family_id": "government_civic",
   "synthetic_only_default": true,
   "jurisdiction_labeling_required": true,
   "source_law_traceability_required": true,

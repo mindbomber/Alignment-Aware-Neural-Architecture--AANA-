@@ -25,7 +25,7 @@ class DesignPartnerPilotTests(unittest.TestCase):
 
         self.assertEqual(
             categories,
-            {"enterprise", "developer_tooling", "personal_productivity", "civic_government"},
+            {"enterprise", "developer_tooling", "personal_productivity", "government_civic"},
         )
         self.assertGreaterEqual(len(index["pilots"]), 3)
         self.assertLessEqual(len(index["pilots"]), 5)

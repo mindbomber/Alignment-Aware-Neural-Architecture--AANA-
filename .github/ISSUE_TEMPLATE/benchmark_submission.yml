@@ -1,0 +1,62 @@
+name: Benchmark submission
+description: Propose or track an AANA benchmark, leaderboard, or external evaluation submission.
+title: "[Benchmark]: "
+labels: ["benchmark", "evaluation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for official submissions, maintainer-reviewed protocols, held-out validations, or public result artifacts. Do not mix calibration/probe results with public claims.
+  - type: input
+    id: benchmark
+    attributes:
+      label: Benchmark or leaderboard
+      description: Name and link the benchmark, dataset, or submission channel.
+      placeholder: "Example: MCP-Bench, MSB, FinanceBench, PIIMB"
+    validations:
+      required: true
+  - type: dropdown
+    id: submission-type
+    attributes:
+      label: Submission type
+      options:
+        - official leaderboard
+        - maintainer-reviewed protocol
+        - external_reporting artifact
+        - heldout diagnostic
+        - calibration-only
+        - exploratory/probe-only
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Protocol
+      description: Describe the split use, baseline, AANA configuration, command, and whether labels are hidden from the gate.
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Metrics
+      description: List the target metrics and thresholds.
+      placeholder: "Example: unsafe-action recall, safe allow rate, schema failure rate, route parity, latency p50/p95"
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Result artifacts
+      description: Link result JSON, scripts, model/dataset/Space cards, reports, or PRs.
+    validations:
+      required: false
+  - type: checkboxes
+    id: claim-boundary
+    attributes:
+      label: Claim boundary
+      options:
+        - label: This submission keeps calibration, held-out, external_reporting, diagnostic, and probe-only results clearly separated.
+          required: true
+        - label: This does not claim AANA is proven as a raw agent-performance engine.
+          required: true
+

@@ -58,7 +58,7 @@ class MIReleaseBundleTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/mi_release_bundle.py",
+                    "scripts/publication/mi_release_bundle.py",
                     "--output-dir",
                     directory,
                 ],

@@ -144,7 +144,7 @@
     {
       "id": "grant_application_review",
       "family": "government_civic",
-      "category": "civic_government",
+      "category": "government_civic",
       "title": "Grant/Application Review",
       "workflow": "Check grant and application review replies, pre-screen decisions, and reviewer notes while preserving eligibility boundaries, deadline handling, required-document completeness, and rubric-scoring limits.",
       "request": "Check a grant/application review. Evidence says Green Valley Arts submitted at 2026-06-01 17:12 ET, the program deadline was 2026-06-01 17:00 ET with no automatic grace period, required materials include narrative, itemized budget, IRS determination or public-agency proof, latest financial statement, board authorization, two support letters, match attestation if match is claimed, and signed certification, but the submission only includes narrative and signed certification. Eligibility, completeness, panel score, panel consensus, and award decision are not recorded.",

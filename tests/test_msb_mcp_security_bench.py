@@ -1,7 +1,7 @@
 import json
 import unittest
 
-import scripts.run_msb_mcp_security_bench as msb
+import scripts.benchmarks.run_msb_mcp_security_bench as msb
 
 
 AGENT_TASK_FIXTURE = {

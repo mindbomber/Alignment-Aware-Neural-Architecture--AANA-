@@ -168,7 +168,7 @@
     ]
   },
   "release_gate": {
-    "script": "scripts/validate_incident_response_plan.py",
+    "script": "scripts/validation/validate_incident_response_plan.py",
     "category": "production-profile",
     "blocks_release": true
   }

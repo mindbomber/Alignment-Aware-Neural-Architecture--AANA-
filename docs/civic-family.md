@@ -48,7 +48,7 @@ The civic pilot surface is synthetic-only by default. It includes the `/governme
 Run:
 
 ```powershell
-python scripts/run_starter_pilot_kit.py --kit civic_government
+python scripts/pilots/run_starter_pilot_kit.py --kit government_civic
 python scripts/aana_cli.py civic-certify --json
 ```
 

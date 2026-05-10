@@ -272,7 +272,7 @@ AANA also exposes a standard MCP-style tool named `aana_pre_tool_check` for
 agents that should ask AANA before executing consequential actions:
 
 ```powershell
-python scripts/aana_mcp_server.py --list-tools
+python scripts/integrations/aana_mcp_server.py --list-tools
 ```
 
 See [AANA MCP / ChatGPT App Direction](aana-mcp-chatgpt-app.md).

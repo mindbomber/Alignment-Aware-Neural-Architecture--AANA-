@@ -12,7 +12,7 @@ This report ties together three Hugging Face-derived tool-use experiments for AA
 | Public/private read routing | `eval_outputs/public_private_read_routing_hf_experiment_results.json` | Whether AANA allows harmless public reads while escalating private reads without adequate authorization. |
 | Authorization robustness | `eval_outputs/authorization_robustness_hf_experiment_results.json` | Whether AANA holds under noisy authorization and evidence conditions. |
 
-Summary artifact: `eval_outputs/aana_agent_tool_use_diagnostic_evidence_chain.json`
+Summary artifact: `docs/evidence/peer_review/aana_agent_tool_use_diagnostic_evidence_chain.json`
 
 ## Current Measurements
 

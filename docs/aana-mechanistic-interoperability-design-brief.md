@@ -41,11 +41,11 @@ Immutable audit storage stub: [`eval_pipeline/immutable_audit_storage.py`](../ev
 MI benchmark suite: [`eval_pipeline/mi_benchmark.py`](../eval_pipeline/mi_benchmark.py)
 
 Reproducible MI benchmark artifacts:
-[`eval_outputs/mi_benchmark/mi_benchmark_workflows.json`](../eval_outputs/mi_benchmark/mi_benchmark_workflows.json),
-[`eval_outputs/mi_benchmark/mi_benchmark_report.json`](../eval_outputs/mi_benchmark/mi_benchmark_report.json)
+[`docs/evidence/peer_review/mi_benchmark/mi_benchmark_workflows.json`](../docs/evidence/peer_review/mi_benchmark/mi_benchmark_workflows.json),
+[`docs/evidence/peer_review/mi_benchmark/mi_benchmark_report.json`](../docs/evidence/peer_review/mi_benchmark/mi_benchmark_report.json)
 
 MI observability dashboard:
-[`eval_outputs/mi_benchmark/mi_observability_dashboard.json`](../eval_outputs/mi_benchmark/mi_observability_dashboard.json)
+[`docs/evidence/peer_review/mi_benchmark/mi_observability_dashboard.json`](../docs/evidence/peer_review/mi_benchmark/mi_observability_dashboard.json)
 
 Research/citation MI pilot: [`eval_pipeline/mi_pilot.py`](../eval_pipeline/mi_pilot.py)
 
@@ -66,19 +66,19 @@ MI release bundle verification: [`eval_pipeline/mi_release_bundle_verification.p
 Human signoff record: [`eval_pipeline/human_signoff.py`](../eval_pipeline/human_signoff.py)
 
 Working MI pilot artifacts:
-[`eval_outputs/mi_pilot/research_citation/pilot_result.json`](../eval_outputs/mi_pilot/research_citation/pilot_result.json),
-[`eval_outputs/mi_pilot/research_citation/pilot_handoffs.json`](../eval_outputs/mi_pilot/research_citation/pilot_handoffs.json),
-[`eval_outputs/mi_pilot/research_citation/mi_audit.jsonl`](../eval_outputs/mi_pilot/research_citation/mi_audit.jsonl),
-[`eval_outputs/mi_pilot/research_citation/mi_dashboard.json`](../eval_outputs/mi_pilot/research_citation/mi_dashboard.json)
+[`docs/evidence/peer_review/mi_pilot/research_citation/pilot_result.json`](../docs/evidence/peer_review/mi_pilot/research_citation/pilot_result.json),
+[`docs/evidence/peer_review/mi_pilot/research_citation/pilot_handoffs.json`](../docs/evidence/peer_review/mi_pilot/research_citation/pilot_handoffs.json),
+[`docs/evidence/peer_review/mi_pilot/research_citation/mi_audit.jsonl`](../docs/evidence/peer_review/mi_pilot/research_citation/mi_audit.jsonl),
+[`docs/evidence/peer_review/mi_pilot/research_citation/mi_dashboard.json`](../docs/evidence/peer_review/mi_pilot/research_citation/mi_dashboard.json)
 
 Production MI readiness gate: [`eval_pipeline/production_readiness.py`](../eval_pipeline/production_readiness.py)
 
 Production MI release checklist: [`docs/production-mi-release-checklist.md`](production-mi-release-checklist.md)
 
 Pilot production-readiness decision:
-[`eval_outputs/mi_pilot/research_citation/production_mi_readiness.json`](../eval_outputs/mi_pilot/research_citation/production_mi_readiness.json)
+[`docs/evidence/peer_review/mi_pilot/research_citation/production_mi_readiness.json`](../docs/evidence/peer_review/mi_pilot/research_citation/production_mi_readiness.json)
 
-CI MI contract validator: [`scripts/validate_mi_contracts.py`](../scripts/validate_mi_contracts.py)
+CI MI contract validator: [`scripts/validation/validate_mi_contracts.py`](../scripts/validation/validate_mi_contracts.py)
 
 Release adapter MI integration: [`eval_pipeline/release_adapter_integration.py`](../eval_pipeline/release_adapter_integration.py)
 
@@ -352,7 +352,7 @@ It compares four modes:
 | `mi_boundary_gate` | Local AANA plus sender/recipient boundary compatibility. |
 | `full_global_aana_gate` | Boundary gates plus workflow AIx, propagated-risk tracking, connectivity-aware risk scaling, shared correction, and MI audit rows. |
 
-The reproducible fixture is `eval_outputs/mi_benchmark/mi_benchmark_workflows.json`; the generated comparison report is `eval_outputs/mi_benchmark/mi_benchmark_report.json`. The initial report demonstrates why MI needs the global layer: schema-only accepts all schema-valid propagation failures, local gates catch only local evidence failures, boundary gates catch boundary mismatch, and the full global gate catches propagated premise risk plus strict workflow correction-capacity gaps.
+The reproducible fixture is `docs/evidence/peer_review/mi_benchmark/mi_benchmark_workflows.json`; the generated comparison report is `docs/evidence/peer_review/mi_benchmark/mi_benchmark_report.json`. The initial report demonstrates why MI needs the global layer: schema-only accepts all schema-valid propagation failures, local gates catch only local evidence failures, boundary gates catch boundary mismatch, and the full global gate catches propagated premise risk plus strict workflow correction-capacity gaps.
 
 ## Dashboard And Metrics
 
@@ -367,7 +367,7 @@ The MI observability dashboard summarizes full-global MI outcomes into dashboard
 | false refusal rate | clean workflows incorrectly detected by the global gate |
 | global AIx drift | average/min workflow score delta, max drop, and drift-detected count |
 
-The generated dashboard payload is `eval_outputs/mi_benchmark/mi_observability_dashboard.json`.
+The generated dashboard payload is `docs/evidence/peer_review/mi_benchmark/mi_observability_dashboard.json`.
 
 ## Pilot Integration
 
@@ -391,7 +391,7 @@ The first pilot promoted from fixture mode to guarded live mode is the research/
 - blocked runs produce a rollback plan with `rollback_action: no_external_action_taken`.
 - blocked runs enqueue a redacted human-review packet with blockers, AIx summary, propagated-risk summary, and fingerprints only.
 
-The guarded artifact is `eval_outputs/mi_pilot/research_citation/guarded_live_result.json`, and the live-mode human-review queue is `eval_outputs/mi_pilot/research_citation/mi_human_review_queue.jsonl`.
+The guarded artifact is `docs/evidence/peer_review/mi_pilot/research_citation/guarded_live_result.json`, and the live-mode human-review queue is `eval_outputs/mi_pilot/research_citation/mi_human_review_queue.jsonl`.
 
 ## Security And Privacy Review
 
@@ -411,13 +411,13 @@ The Markdown checklist at `docs/production-mi-release-checklist.md` is converted
 - final `status: pass | block`.
 - `unresolved_items` with category, item ID, details, and required route where available.
 
-The default generated artifact is `eval_outputs/mi_pilot/research_citation/production_mi_release_report.json`. CI can run `aana-release-readiness-report`; by default it exits nonzero when the report blocks.
+The default generated artifact is `docs/evidence/peer_review/mi_pilot/research_citation/production_mi_release_report.json`. CI can run `aana-release-readiness-report`; by default it exits nonzero when the report blocks.
 
 ## Full AANA MI Release Candidate
 
 The full release-candidate runner executes the MI release path as one command: schema and contract validation, benchmark generation and dashboard export, guarded pilot generation, redacted audit validation, audit integrity manifest refresh, production readiness validation, dashboard validation, release-readiness report generation, and final contract validation.
 
-The default command is `aana-mi-release-candidate`. It writes a single report to `eval_outputs/mi_release_candidate/aana_mi_release_candidate_report.json` with top-level `status: pass | block`, per-check statuses, artifact paths, and unresolved items. By default the command exits nonzero when the release candidate blocks; pass `--no-fail-on-block` to inspect the report without failing the shell command.
+The default command is `aana-mi-release-candidate`. It writes a single report to `docs/evidence/peer_review/mi_release_candidate/aana_mi_release_candidate_report.json` with top-level `status: pass | block`, per-check statuses, artifact paths, and unresolved items. By default the command exits nonzero when the release candidate blocks; pass `--no-fail-on-block` to inspect the report without failing the shell command.
 
 ## Release Blocker Remediation
 
@@ -429,7 +429,7 @@ The remediation layer consumes release-readiness blockers from the RC report and
 - replaces downstream publication assumptions with supported evidence-bound assumptions.
 - reruns MI boundary, global AIx, propagated-risk tracking, audit, dashboard, readiness, release-readiness, and RC checks.
 
-The remediation artifact is `eval_outputs/mi_pilot/research_citation/release_blocker_remediation.json`. After remediation, the default RC report passes with zero blocking checks.
+The remediation artifact is `docs/evidence/peer_review/mi_pilot/research_citation/release_blocker_remediation.json`. After remediation, the default RC report passes with zero blocking checks.
 
 ## MI Release Package And Evidence Bundle
 
@@ -456,7 +456,7 @@ The verifier writes `release_bundle_verification.json` in the bundle directory a
 
 ## CI Release Command
 
-The CI-safe release command is `aana-mi-release`. It runs the full MI release candidate, generates the release bundle, verifies the bundle, and writes one combined report to `eval_outputs/mi_release_candidate/release_bundle/aana_mi_release_report.json`.
+The CI-safe release command is `aana-mi-release`. It runs the full MI release candidate, generates the release bundle, verifies the bundle, and writes one combined report to `docs/evidence/peer_review/mi_release_candidate/release_bundle/aana_mi_release_report.json`.
 
 The command exits nonzero if the RC blocks, bundle generation regresses, verification detects tampering, or any stage is skipped. A passing run reports three stages:
 
@@ -468,7 +468,7 @@ The command exits nonzero if the RC blocks, bundle generation regresses, verific
 
 The human signoff artifact records domain-owner approval state for the verified MI evidence bundle. It includes reviewer identity, decision, scope, timestamp, release manifest SHA-256, bundle verification status, RC status, readiness status, global AIx, and unresolved blocker count.
 
-The default artifact is `eval_outputs/mi_release_candidate/release_bundle/human_signoff.json`. It is generated as `decision: pending` unless an actual reviewer explicitly records another decision. Approval is not inferred from passing automated checks.
+The default artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/human_signoff.json`. It is generated as `decision: pending` unless an actual reviewer explicitly records another decision. Approval is not inferred from passing automated checks.
 
 Supported decisions are `pending`, `approved`, `rejected`, and `needs_changes`. An `approved` record must be bound to a passing bundle verification, RC `pass`, readiness `ready`, and zero unresolved blockers.
 
@@ -491,15 +491,15 @@ The release artifact is [`docs/production-mi-release-checklist.md`](production-m
 MI contract drift should fail before release. The CI validator checks:
 
 - `schemas/interoperability_contract.schema.json` against the Draft 2020-12 metaschema.
-- `eval_outputs/mi_pilot/research_citation/pilot_handoffs.json` by validating every handoff against the interoperability schema.
-- `eval_outputs/mi_pilot/research_citation/mi_audit.jsonl` with the redacted MI audit validator.
-- `eval_outputs/mi_pilot/research_citation/mi_dashboard.json` for dashboard version, panels, workflow rows, and required metrics.
-- `eval_outputs/mi_pilot/research_citation/production_mi_readiness.json` for readiness version, gate, status, checklist, blockers, global AIx, and propagated-risk summary.
+- `docs/evidence/peer_review/mi_pilot/research_citation/pilot_handoffs.json` by validating every handoff against the interoperability schema.
+- `docs/evidence/peer_review/mi_pilot/research_citation/mi_audit.jsonl` with the redacted MI audit validator.
+- `docs/evidence/peer_review/mi_pilot/research_citation/mi_dashboard.json` for dashboard version, panels, workflow rows, and required metrics.
+- `docs/evidence/peer_review/mi_pilot/research_citation/production_mi_readiness.json` for readiness version, gate, status, checklist, blockers, global AIx, and propagated-risk summary.
 
 Run it with:
 
 ```bash
-python scripts/validate_mi_contracts.py
+python scripts/validation/validate_mi_contracts.py
 ```
 
 or, after installing the package:
@@ -633,7 +633,7 @@ Each connector boundary must define:
 - Rollback behavior: dry-run first, owner assignment, undo path where possible, and `defer` for irreversible actions.
 - MI gates: production readiness, release bundle verification, human signoff, pre-execution hook, immutable audit storage, and connector-specific reviews.
 
-The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/live_connector_readiness_plan.json`.
+The machine-checkable artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/live_connector_readiness_plan.json`.
 
 ## Production Deployment Manifest
 
@@ -641,7 +641,7 @@ The production deployment manifest references the verified MI release bundle and
 
 The manifest is valid as a control artifact even when deployment is blocked. In that case, `deployment_authorized` is `false` and `blockers` explains which external controls remain unresolved, such as pending human signoff or missing connector enablement review.
 
-The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_deployment_manifest.json`.
+The machine-checkable artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/production_deployment_manifest.json`.
 
 ## Post-Release Monitoring
 
@@ -649,7 +649,7 @@ After MI release, runtime monitoring must track whether local MI decisions remai
 
 Critical alerts route to blocking or deferring high-risk actions until the affected workflow is replayed, corrected, and rechecked through MI boundary and global AIx gates. Warning alerts route to threshold calibration or evidence freshness review.
 
-The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/post_release_monitoring_policy.json`.
+The machine-checkable artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/post_release_monitoring_policy.json`.
 
 ## Production Dry Run
 
@@ -657,7 +657,7 @@ The end-to-end production dry run runs the local MI release command, regenerates
 
 The first expected unresolved item is `human_signoff_not_approved`, because local RC evidence does not itself authorize production deployment. A passing release command plus a blocked deployment manifest is therefore a valid dry-run result when the block is explicit and live execution remains disabled.
 
-The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_dry_run_report.json`.
+The machine-checkable artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/production_dry_run_report.json`.
 
 ## Final Production Go/No-Go Gate
 
@@ -665,7 +665,7 @@ The final production gate combines the verified release bundle, human signoff, d
 
 Until those conditions hold, the report must return `no_go` with explicit blockers. For the local RC, the expected blockers are pending human signoff, deployment not authorized, and production dry run not pass.
 
-The machine-checkable artifact is `eval_outputs/mi_release_candidate/release_bundle/production_go_no_go_report.json`.
+The machine-checkable artifact is `docs/evidence/peer_review/mi_release_candidate/release_bundle/production_go_no_go_report.json`.
 
 ## Milestone 1 Completion Criteria
 

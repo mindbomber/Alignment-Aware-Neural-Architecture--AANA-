@@ -54,7 +54,7 @@ Avoid:
 Run:
 
 ```bash
-python scripts/validate_benchmark_reporting.py
+python scripts/validation/validate_benchmark_reporting.py
 ```
 
 The validator checks `examples/benchmark_reporting_manifest.json` and blocks any public claim that includes probe results, uses `--allow-benchmark-probes`, lacks limitations, or marks mixed/probe runs as public-claim eligible.

@@ -11,10 +11,10 @@ python scripts/dev.py pilot-eval
 Run a specific pack:
 
 ```powershell
-python scripts/run_pilot_evaluation_kit.py --pack enterprise
-python scripts/run_pilot_evaluation_kit.py --pack personal
-python scripts/run_pilot_evaluation_kit.py --pack civic_government
-python scripts/run_pilot_evaluation_kit.py --pack public_data_rehearsal
+python scripts/pilots/run_pilot_evaluation_kit.py --pack enterprise
+python scripts/pilots/run_pilot_evaluation_kit.py --pack personal
+python scripts/pilots/run_pilot_evaluation_kit.py --pack government_civic
+python scripts/pilots/run_pilot_evaluation_kit.py --pack public_data_rehearsal
 ```
 
 The default manifest is [examples/pilot_evaluation_kit.json](../examples/pilot_evaluation_kit.json). It defines:

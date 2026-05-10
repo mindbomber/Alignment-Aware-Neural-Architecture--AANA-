@@ -69,7 +69,7 @@ The internal pilot policy lives at
 `examples/audit_retention_policy_internal_pilot.json` and can be validated with:
 
 ```powershell
-python scripts/validate_audit_retention_policy.py
+python scripts/validation/validate_audit_retention_policy.py
 ```
 
 ## Redaction Policy

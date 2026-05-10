@@ -101,7 +101,7 @@ class PostReleaseMonitoringTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
-                    "scripts/post_release_monitoring.py",
+                    "scripts/publication/post_release_monitoring.py",
                     "--output",
                     str(output_path),
                     "--deployment-manifest",
