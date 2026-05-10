@@ -214,6 +214,7 @@ Start here:
 - [AANA head-to-head findings](docs/aana-head-to-head-findings.md)
 - [Short technical report: AANA as a pre-action control layer](docs/aana-pre-action-control-layer-technical-report.md)
 - [AANA agent-action technical report](docs/aana-agent-action-technical-report.md)
+- [Review outreach posting guide](docs/review-outreach-posting-guide.md)
 - [Production-candidate evidence pack](docs/aana-production-candidate-evidence-pack.md)
 - [Reviewed evidence artifact manifest](docs/evidence/artifact_manifest.json)
 - [Research and evaluation workflows](docs/research-evaluation-workflows.md)
