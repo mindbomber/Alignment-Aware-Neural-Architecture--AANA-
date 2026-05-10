@@ -1,3 +1,13 @@
+---
+title: AANA Demo
+sdk: gradio
+app_file: app.py
+license: mit
+python_version: "3.11"
+short_description: Try AANA's pre-action agent control layer.
+pinned: false
+---
+
 # Try AANA In 2 Minutes
 
 This local Hugging Face Space artifact is the repo-owned source for the public

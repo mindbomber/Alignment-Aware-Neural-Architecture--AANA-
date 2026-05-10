@@ -199,5 +199,8 @@ def build_demo():
     return demo
 
 
+demo = build_demo()
+
+
 if __name__ == "__main__":
-    build_demo().launch()
+    demo.launch()
