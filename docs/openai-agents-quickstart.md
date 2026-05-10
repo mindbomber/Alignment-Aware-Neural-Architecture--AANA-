@@ -238,10 +238,13 @@ It checks:
 - CLI decision-shape smoke;
 - Python SDK smoke;
 - TypeScript SDK smoke;
+- Plain Python wrapper smoke;
 - OpenAI Agents SDK wrapped-tools smoke;
+- OpenAI Agents SDK dependency-light example smoke;
 - LangChain middleware smoke;
 - AutoGen middleware smoke;
 - CrewAI middleware smoke;
+- FastAPI API-guard example smoke;
 - middleware decision-shape smoke;
 - FastAPI policy-service smoke;
 - MCP tool smoke;
@@ -251,14 +254,17 @@ It checks:
 Expected output:
 
 ```text
-pass -- passed=12/12
+pass -- passed=15/15
 - pass: cli_decision_shape_smoke
 - pass: python_sdk_smoke
 - pass: typescript_sdk_smoke
+- pass: plain_python_middleware_smoke
 - pass: openai_wrapped_tools_smoke
+- pass: openai_agents_sdk_example_middleware_smoke
 - pass: langchain_middleware_smoke
 - pass: autogen_middleware_smoke
 - pass: crewai_middleware_smoke
+- pass: fastapi_api_guard_middleware_smoke
 - pass: middleware_decision_shape_smoke
 - pass: fastapi_policy_service_smoke
 - pass: mcp_tool_smoke

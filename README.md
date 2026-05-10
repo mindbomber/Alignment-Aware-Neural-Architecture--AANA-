@@ -181,6 +181,7 @@ Use the same AANA decision shape across:
 
 - OpenAI Agents SDK
 - LangChain
+- FastAPI API guard
 - AutoGen
 - CrewAI
 - MCP tool calls
@@ -195,7 +196,7 @@ python scripts/validation/validate_agent_integrations.py
 Expected result:
 
 ```text
-pass -- passed=12/12
+pass -- passed=15/15
 ```
 
 For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-agents-quickstart.md), [docs/integrate-runtime/index.md](docs/integrate-runtime/index.md), and [examples/integrations](examples/integrations).

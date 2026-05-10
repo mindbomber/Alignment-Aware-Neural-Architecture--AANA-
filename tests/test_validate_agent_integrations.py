@@ -1,4 +1,12 @@
+import sys
 import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+while str(ROOT) in sys.path:
+    sys.path.remove(str(ROOT))
+sys.path.insert(0, str(ROOT))
 
 from scripts.validation.validate_agent_integrations import validate_agent_integrations
 
@@ -8,8 +16,8 @@ class ValidateAgentIntegrationsTests(unittest.TestCase):
         report = validate_agent_integrations()
 
         self.assertTrue(report["valid"])
-        self.assertEqual(report["passed"], 12)
-        self.assertEqual(report["total"], 12)
+        self.assertEqual(report["passed"], 15)
+        self.assertEqual(report["total"], 15)
         names = {check["name"] for check in report["checks"]}
         self.assertEqual(
             names,
@@ -17,10 +25,13 @@ class ValidateAgentIntegrationsTests(unittest.TestCase):
                 "cli_decision_shape_smoke",
                 "python_sdk_smoke",
                 "typescript_sdk_smoke",
+                "plain_python_middleware_smoke",
                 "openai_wrapped_tools_smoke",
+                "openai_agents_sdk_example_middleware_smoke",
                 "langchain_middleware_smoke",
                 "autogen_middleware_smoke",
                 "crewai_middleware_smoke",
+                "fastapi_api_guard_middleware_smoke",
                 "middleware_decision_shape_smoke",
                 "fastapi_policy_service_smoke",
                 "mcp_tool_smoke",
@@ -34,10 +45,13 @@ class ValidateAgentIntegrationsTests(unittest.TestCase):
                 "CLI",
                 "Python SDK",
                 "TypeScript SDK",
+                "Plain Python",
                 "OpenAI Agents SDK",
+                "OpenAI Agents SDK example",
                 "LangChain",
                 "AutoGen",
                 "CrewAI",
+                "FastAPI API guard",
                 "Middleware",
                 "FastAPI",
                 "MCP descriptor",

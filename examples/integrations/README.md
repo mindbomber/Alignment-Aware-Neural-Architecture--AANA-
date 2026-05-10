@@ -17,9 +17,11 @@ python examples/integrations/openai_agents_sdk.py
 python examples/integrations/openai_agents/demo.py
 python examples/integrations/openai_agents/wrapped_tools.py
 python examples/integrations/openai_agents/api_guard.py
+python examples/integrations/plain_python.py
 python examples/integrations/langchain.py
 python examples/integrations/autogen.py
 python examples/integrations/crewai.py
+python examples/integrations/fastapi_api_guard.py
 python examples/integrations/mcp.py
 python evals/openai_agents_aana/run_local.py
 python evals/aana_controlled_agents/run_local.py
@@ -34,9 +36,11 @@ python scripts/validation/validate_agent_integrations.py
 - `openai_agents/`: repo-owned OpenAI Agents SDK demo with a side-effect ledger proving blocked tools do not execute.
 - `openai_agents/wrapped_tools.py`: OpenAI Agents SDK-style functions wrapped with AANA before `function_tool(...)` registration.
 - `openai_agents/api_guard.py`: HTTP-only guard for apps that call AANA FastAPI instead of importing the package.
+- `plain_python.py`: Plain Python SDK example for wrapping ordinary callables.
 - `langchain.py`: wrap a LangChain-style `.invoke(...)` tool.
 - `autogen.py`: decorate an AutoGen-style registered function.
 - `crewai.py`: wrap a CrewAI-style `_run(...)` tool object.
+- `fastapi_api_guard.py`: call AANA through the FastAPI API guard and prove blocked writes do not execute.
 - `mcp.py`: wrap an MCP handler that receives tool-call arguments.
 - `../../scripts/integrations/aana_mcp_server.py`: tool-only MCP-style surface exposing `aana_pre_tool_check`.
 - `../chatgpt_app/`: FastAPI-hosted ChatGPT Apps/MCP prototype with `/mcp` and an optional decision viewer.
@@ -49,4 +53,10 @@ evidence. For public reads, one-line wrapping is enough:
 
 ```python
 guarded = aana.wrap_agent_tool(get_public_status)
+```
+
+The priority examples print the same adoption proof:
+
+```text
+agent proposes -> AANA checks -> blocked tools do not execute
 ```

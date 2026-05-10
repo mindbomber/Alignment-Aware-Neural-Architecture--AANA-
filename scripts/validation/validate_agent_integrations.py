@@ -17,8 +17,9 @@ from typing import Any
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+while str(ROOT) in sys.path:
+    sys.path.remove(str(ROOT))
+sys.path.insert(0, str(ROOT))
 
 from evals.aana_controlled_agents.run_local import run_eval as run_controlled_agent_eval
 
@@ -60,7 +61,11 @@ def _run_command(name: str, command: list[str], *, timeout: int = 120) -> dict[s
 
 
 def _parse_python_example_stdout(stdout: str) -> dict[str, Any]:
-    return ast.literal_eval(stdout.strip())
+    stripped = stdout.strip()
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        return ast.literal_eval(stripped)
 
 
 def _decision_shape_errors(decision: dict[str, Any]) -> list[str]:
@@ -313,17 +318,29 @@ def validate_framework_example(surface: str, filename: str) -> dict[str, Any]:
     check["surface"] = surface
     try:
         payload = _parse_python_example_stdout(check["stdout"])
-        valid = (
-            check["valid"]
-            and payload.get("aana_route") == "accept"
-            and isinstance(payload.get("tool_result"), dict)
-        )
+        if "accepted_route" in payload or "blocked_route" in payload:
+            valid = (
+                check["valid"]
+                and payload.get("accepted_route") == "accept"
+                and payload.get("blocked_route") in {"ask", "defer", "refuse"}
+                and payload.get("blocked_tool_executed") is False
+            )
+        else:
+            valid = (
+                check["valid"]
+                and payload.get("aana_route") == "accept"
+                and isinstance(payload.get("tool_result"), dict)
+            )
         check.update(
             {
                 "valid": valid,
-                "route": payload.get("aana_route"),
+                "route": payload.get("aana_route") or payload.get("accepted_route"),
+                "blocked_route": payload.get("blocked_route"),
+                "blocked_tool_executed": payload.get("blocked_tool_executed"),
                 "tool_result_keys": sorted(payload.get("tool_result", {}).keys())
                 if isinstance(payload.get("tool_result"), dict)
+                else sorted(payload.get("accepted_tool_result", {}).keys())
+                if isinstance(payload.get("accepted_tool_result"), dict)
                 else [],
             }
         )
@@ -567,10 +584,13 @@ def validate_agent_integrations() -> dict[str, Any]:
         validate_cli_decision_shape(),
         validate_python_sdk(),
         validate_typescript_sdk(),
+        validate_framework_example("Plain Python", "plain_python.py"),
         validate_openai_wrapped_tools(),
+        validate_framework_example("OpenAI Agents SDK example", "openai_agents_sdk.py"),
         validate_framework_example("LangChain", "langchain.py"),
         validate_framework_example("AutoGen", "autogen.py"),
         validate_framework_example("CrewAI", "crewai.py"),
+        validate_framework_example("FastAPI API guard", "fastapi_api_guard.py"),
         validate_middleware_decision_shape(),
         validate_fastapi_policy_service(),
         validate_mcp_tool_smoke(),

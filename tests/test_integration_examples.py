@@ -4,20 +4,26 @@ import unittest
 import json
 from pathlib import Path
 
-import aana
-from fastapi.testclient import TestClient
-from eval_pipeline.fastapi_app import create_app
+ROOT = Path(__file__).resolve().parents[1]
+while str(ROOT) in sys.path:
+    sys.path.remove(str(ROOT))
+sys.path.insert(0, str(ROOT))
+
 from evals.openai_agents_aana.run_local import run_eval
 from examples.integrations.openai_agents.api_guard import AANAApiGuard
 from examples.integrations.openai_agents.wrapped_tools import run_smoke as run_openai_wrapped_tools_smoke
+import aana
+from fastapi.testclient import TestClient
+from eval_pipeline.fastapi_app import create_app
 
 
-ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = [
+    "plain_python.py",
     "openai_agents_sdk.py",
     "langchain.py",
     "autogen.py",
     "crewai.py",
+    "fastapi_api_guard.py",
     "mcp.py",
 ]
 
@@ -34,13 +40,20 @@ class IntegrationExamplesTests(unittest.TestCase):
                 )
 
                 self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
-                self.assertIn("'aana_route': 'accept'", completed.stdout)
+                try:
+                    payload = json.loads(completed.stdout)
+                except json.JSONDecodeError:
+                    self.assertIn("'aana_route': 'accept'", completed.stdout)
+                    continue
+                self.assertEqual(payload["accepted_route"], "accept")
+                self.assertIn(payload["blocked_route"], {"ask", "defer", "refuse"})
+                self.assertFalse(payload["blocked_tool_executed"])
 
     def test_public_docs_link_each_integration_example(self):
         readme = (ROOT / "examples" / "integrations" / "README.md").read_text(encoding="utf-8")
         docs = (ROOT / "docs" / "agent-framework-middleware.md").read_text(encoding="utf-8")
 
-        for name in ["OpenAI Agents SDK", "LangChain", "AutoGen", "CrewAI", "MCP"]:
+        for name in ["Plain Python", "OpenAI Agents SDK", "LangChain", "AutoGen", "CrewAI", "FastAPI", "MCP"]:
             with self.subTest(name=name):
                 self.assertIn(name, readme)
                 self.assertIn(name, docs)

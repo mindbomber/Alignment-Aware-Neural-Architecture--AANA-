@@ -1,4 +1,8 @@
-"""AANA wrapper example for LangChain-style tools."""
+"""Plain Python AANA tool wrapper example.
+
+This is the smallest integration surface: a normal Python callable is wrapped
+with AANA before an agent runtime can execute it.
+"""
 
 from __future__ import annotations
 
@@ -10,29 +14,19 @@ import aana
 LEDGER: list[dict] = []
 
 
-class SearchPublicDocsTool:
-    name = "search_public_docs"
-    description = "Search public documentation."
-
-    def invoke(self, payload: dict) -> dict:
-        LEDGER.append({"tool_name": self.name, "query": payload["query"]})
-        return {"results": [f"public docs result for {payload['query']}"]}
+def get_public_status(service: str) -> dict:
+    LEDGER.append({"tool_name": "get_public_status", "service": service})
+    return {"service": service, "status": "ok"}
 
 
-guarded_tool = aana.langchain_tool_middleware(SearchPublicDocsTool())
+def send_email(to: str, body: str) -> dict:
+    LEDGER.append({"tool_name": "send_email", "to": to})
+    return {"sent": True, "to": to}
 
 
-class SendEmailTool:
-    name = "send_email"
-    description = "Send a customer email."
-
-    def invoke(self, payload: dict) -> dict:
-        LEDGER.append({"tool_name": self.name, "to": payload["to"]})
-        return {"sent": True, "to": payload["to"]}
-
-
-guarded_write_tool = aana.langchain_tool_middleware(
-    SendEmailTool(),
+guarded_status = aana.wrap_agent_tool(get_public_status)
+guarded_send_email = aana.wrap_agent_tool(
+    send_email,
     metadata={
         "tool_category": "write",
         "authorization_state": "validated",
@@ -53,10 +47,10 @@ guarded_write_tool = aana.langchain_tool_middleware(
 
 def run_smoke() -> dict:
     LEDGER.clear()
-    accepted = guarded_tool.invoke({"query": "AANA Agent Action Contract v1"})
-    blocked = guarded_write_tool.invoke({"to": "customer@example.com", "body": "Needs confirmation"})
-    accepted_route = guarded_tool.aana_last_gate["result"]["architecture_decision"]["route"]
-    blocked_route = guarded_write_tool.aana_last_gate["result"]["architecture_decision"]["route"]
+    accepted = guarded_status(service="docs")
+    blocked = guarded_send_email(to="customer@example.com", body="Needs confirmation")
+    accepted_route = guarded_status.aana_last_gate["result"]["architecture_decision"]["route"]
+    blocked_route = guarded_send_email.aana_last_gate["result"]["architecture_decision"]["route"]
     return {
         "pattern": "agent proposes -> AANA checks -> blocked tools do not execute",
         "accepted_route": accepted_route,

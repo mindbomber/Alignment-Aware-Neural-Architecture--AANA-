@@ -16,8 +16,10 @@ OpenAI Agents SDK, AutoGen, CrewAI, or an MCP SDK.
 Runnable examples for every integration surface are in
 `examples/integrations/`:
 
+- `plain_python.py`
 - `openai_agents_sdk.py`
 - `openai_agents/demo.py`
+- `fastapi_api_guard.py`
 - `langchain.py`
 - `autogen.py`
 - `crewai.py`
@@ -75,6 +77,15 @@ permission from shadow-mode production continuation.
 
 ## Plain Python SDK
 
+Runnable proof:
+
+```powershell
+python examples/integrations/plain_python.py
+```
+
+The example accepts a public read, blocks an unconfirmed write, and prints a
+side-effect ledger proving the blocked tool body did not execute.
+
 ```python
 import aana
 
@@ -121,6 +132,16 @@ payload = aana.execute_tool_if_allowed(
 
 ## LangChain
 
+Runnable proof:
+
+```powershell
+python examples/integrations/langchain.py
+```
+
+The example wraps a LangChain-style `.invoke(...)` tool, accepts a public docs
+search, blocks an unconfirmed email write, and prints that the blocked write
+tool body did not execute.
+
 ```python
 import aana
 
@@ -141,6 +162,16 @@ result = guarded_tool.invoke({"account_id": "acct_redacted"})
 The proxy supports common `invoke`, `ainvoke`, `run`, and `arun` tool surfaces.
 
 ## OpenAI Agents SDK
+
+Runnable proof:
+
+```powershell
+python examples/integrations/openai_agents_sdk.py
+```
+
+The example wraps functions before `agents.function_tool(...)` registration,
+accepts a public read, blocks an unconfirmed write, and prints that the blocked
+write tool body did not execute.
 
 ```python
 import aana
@@ -203,6 +234,16 @@ python examples/integrations/openai_agents/api_guard.py
 It calls `POST /pre-tool-check` and executes the wrapped tool only when the API
 route and execution policy allow enforcement execution.
 
+For the FastAPI service guard path, run:
+
+```powershell
+python examples/integrations/fastapi_api_guard.py
+```
+
+That example uses AANA's FastAPI app through an HTTP-style guard, accepts a
+public status read, blocks an unconfirmed email write, and proves the blocked
+tool body did not execute.
+
 To evaluate the OpenAI-style guarded-tool path:
 
 ```powershell
@@ -247,6 +288,16 @@ result = guarded._run(service="api")
 For CrewAI-style tool objects, the proxy wraps `_run` and `_arun`.
 
 ## MCP Tool Calls
+
+Runnable proof:
+
+```powershell
+python examples/integrations/mcp.py
+```
+
+The example wraps MCP-style handlers, accepts a public read, blocks an
+unconfirmed export write, and prints that the blocked MCP handler did not
+execute.
 
 ```python
 async def handler(arguments: dict):
