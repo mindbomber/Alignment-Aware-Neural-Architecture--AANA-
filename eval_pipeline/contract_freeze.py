@@ -6,7 +6,7 @@ import pathlib
 import re
 
 from eval_pipeline import agent_api, agent_contract, audit, aix, evidence, evidence_integrations, workflow_contract
-from scripts import validate_adapter, validate_adapter_gallery
+from scripts.validation import validate_adapter, validate_adapter_gallery
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
