@@ -27,15 +27,25 @@
           <div>
             <p class="eyebrow">Pre-tool-call contract</p>
             <h1 id="workspace-title">Paste a tool call. AANA checks before execution.</h1>
+            <p class="lede">An agent proposes a tool call. AANA checks evidence, authorization, and risk. The tool only executes if the route is accept.</p>
+            <p class="lede">Pick an example, click Run Gate, then inspect the route and execution proof. A plain permissive agent would execute the proposed tool call; AANA blocks unless the contract is satisfied.</p>
           </div>
           <div class="actions">
-            <button id="load-accept" type="button">Accept</button>
-            <button id="load-ask" type="button">Ask</button>
-            <button id="load-defer" type="button">Defer</button>
-            <button id="load-refuse" type="button">Refuse</button>
+            <button id="load-accept" type="button">Allowed: confirmed write</button>
+            <button id="load-ask" type="button">Blocked: write missing confirmation</button>
+            <button id="load-defer" type="button">Blocked: private read missing auth</button>
+            <button id="load-refuse" type="button">Blocked: unknown destructive tool</button>
             <button id="run-gate" class="primary" type="button">Run Gate</button>
           </div>
         </div>
+
+        <ul class="review-checklist" aria-label="What reviewers should look for">
+          <li>accept allows execution</li>
+          <li>ask, defer, or refuse blocks execution</li>
+          <li>missing auth/evidence becomes a blocker</li>
+          <li>runtime recommendation can be overridden</li>
+          <li>audit-safe decision data is emitted</li>
+        </ul>
 
         <div class="grid">
           <section class="editor" aria-label="Tool call editor">

@@ -207,6 +207,15 @@ function stricterRoute(left, right) {
   return routeOrder[left] >= routeOrder[right] ? left : right;
 }
 
+function isForbiddenExecutionTool(toolName) {
+  const name = String(toolName || "").toLowerCase();
+  return Array.from(forbiddenExecutionActions).some((action) => (
+    name === action ||
+    name.startsWith(`${action}_`) ||
+    name.includes(`_${action}_`)
+  ));
+}
+
 function aixForRoute(route, hardBlockers) {
   const scores = { accept: 0.95, ask: 0.72, defer: 0.45, refuse: 0.15 };
   return {
@@ -239,15 +248,13 @@ function validateEvent(event) {
   const errors = [];
   if (event.schema_version !== "aana.agent_tool_precheck.v1") errors.push({ path: "schema_version", message: "Unsupported schema_version." });
   if (!event.tool_name) errors.push({ path: "tool_name", message: "tool_name is required." });
-  if (event.tool_category === "write" && event.recommended_route === "accept" && !["validated", "confirmed"].includes(event.authorization_state)) {
-    errors.push({ path: "authorization_state", message: "write accept requires validated or confirmed authorization." });
+  if (!["public_read", "private_read", "write", "unknown"].includes(event.tool_category)) errors.push({ path: "tool_category", message: "Unsupported tool_category." });
+  if (!["none", "user_claimed", "authenticated", "validated", "confirmed"].includes(event.authorization_state)) errors.push({ path: "authorization_state", message: "Unsupported authorization_state." });
+  if (!Array.isArray(event.evidence_refs)) errors.push({ path: "evidence_refs", message: "evidence_refs must be an array." });
+  if (event.proposed_arguments === null || typeof event.proposed_arguments !== "object" || Array.isArray(event.proposed_arguments)) {
+    errors.push({ path: "proposed_arguments", message: "proposed_arguments must be an object." });
   }
-  if (event.tool_category === "private_read" && event.recommended_route === "accept" && !["authenticated", "validated", "confirmed"].includes(event.authorization_state)) {
-    errors.push({ path: "authorization_state", message: "private_read accept requires authenticated, validated, or confirmed authorization." });
-  }
-  if (event.tool_category === "unknown" && event.recommended_route === "accept") {
-    errors.push({ path: "recommended_route", message: "unknown tools cannot be accepted." });
-  }
+  if (!["accept", "ask", "defer", "refuse"].includes(event.recommended_route)) errors.push({ path: "recommended_route", message: "Unsupported recommended_route." });
   return errors;
 }
 
@@ -310,9 +317,15 @@ function gateEvent(event) {
       hardBlockers.push("write_missing_authorization");
     }
   } else {
-    aanaRoute = "defer";
-    reasons.push("unknown_tool_category_requires_review");
-    hardBlockers.push("unknown_tool_category");
+    if (isForbiddenExecutionTool(event.tool_name)) {
+      aanaRoute = "refuse";
+      reasons.push("unknown_destructive_tool_refused");
+      hardBlockers.push("unknown_destructive_tool");
+    } else {
+      aanaRoute = "defer";
+      reasons.push("unknown_tool_category_requires_review");
+      hardBlockers.push("unknown_tool_category");
+    }
   }
 
   if (hasMissingAuthorizationEvidence(event.evidence_refs)) {
