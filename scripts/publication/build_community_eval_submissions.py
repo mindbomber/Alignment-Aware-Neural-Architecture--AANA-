@@ -132,7 +132,7 @@ python eval_outputs/hf_peer_review_evidence_pack/aana-peer-review-evidence-pack/
 
 - AANA model card: {MODEL_URL}
 - AANA evidence dataset: {DATASET_URL}
-- AANA Space: {SPACE_URL}
+- Try AANA in 2 minutes: {SPACE_URL}
 - AANA artifact hub: {HUB_URL}
 
 ## Limitations

@@ -10,7 +10,7 @@ class ToolCallDemoTests(unittest.TestCase):
     def test_static_demo_files_exist_and_link_assets(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
 
-        self.assertIn("AANA Tool Call Gate", html)
+        self.assertIn("Try AANA", html)
         self.assertIn('href="app.css"', html)
         self.assertIn('src="app.js"', html)
         self.assertTrue((DEMO / "app.css").exists())
@@ -29,6 +29,8 @@ class ToolCallDemoTests(unittest.TestCase):
             "gate-decision",
             "recommended-action",
             "aix-score",
+            "execution-status",
+            "execution-proof",
         ]:
             self.assertIn(item, html)
 
@@ -41,6 +43,8 @@ class ToolCallDemoTests(unittest.TestCase):
         self.assertIn("evidence_missing_authorization", script)
         self.assertIn("schema_validation_failed", script)
         self.assertIn("public_read_allowed_without_identity_auth", script)
+        self.assertIn("guardedSyntheticExecution", script)
+        self.assertIn("synthetic_executor_call_count_after", script)
 
     def test_docs_link_to_tool_call_demo(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

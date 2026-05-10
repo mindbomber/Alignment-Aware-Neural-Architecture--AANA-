@@ -80,6 +80,7 @@ Public Hugging Face artifacts:
 
 - `mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`
 - `mindbomber/aana-peer-review-evidence-pack`
+- Try AANA in 2 minutes: `https://huggingface.co/spaces/mindbomber/aana-demo`
 - `mindbomber/aana-head-to-head-permissive-vs-aana`
 - `mindbomber/aana-head-to-head-single-classifier-vs-aana`
 - `mindbomber/aana-head-to-head-prompt-policy-vs-aana`

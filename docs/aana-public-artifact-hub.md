@@ -35,7 +35,7 @@ middleware surfaces.
 |---|---|---|
 | Model repo | AANA architecture card, limitations, and usage. | <https://huggingface.co/mindbomber/aana> |
 | Dataset repo | AANA eval cases, held-out/validation splits, result artifacts, and reproduction script. | <https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack> |
-| Space | Live "try AANA" demo for candidate answers/actions, evidence, routes, AIx score, and hard blockers. | <https://huggingface.co/spaces/mindbomber/aana-demo> |
+| Space | Live "Try AANA in 2 minutes" demo for pasted tool calls, routes, AIx score, hard blockers, missing evidence, auth state, audit-safe events, and blocked-tool non-execution proof. | <https://huggingface.co/spaces/mindbomber/aana-demo> |
 | Technical report | Architecture interpretation, limitations, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
 
 ## Bundle ID Policy
@@ -47,7 +47,7 @@ commands.
 ## Reviewer Path
 
 1. Start with the model repo for the architecture boundary and usage pattern.
-2. Run the Space to inspect AANA routing behavior interactively.
+2. Run the Space to paste a tool call, inspect AANA routing behavior, and verify that non-`accept` routes do not execute the synthetic tool.
 3. Inspect the dataset repo for measured privacy, grounded QA, tool-use, and
    integration validation artifacts.
 4. Read the technical report for the architecture interpretation, limitations,

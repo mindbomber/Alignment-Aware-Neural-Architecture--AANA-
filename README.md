@@ -7,7 +7,9 @@
 
 Public site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
 
-Try AANA in the browser: https://huggingface.co/spaces/mindbomber/aana-demo
+Try AANA in 2 minutes: https://huggingface.co/spaces/mindbomber/aana-demo
+
+Static docs demo: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
 
 ![AANA repository social preview](assets/github-social-preview.png)
 
@@ -202,6 +204,7 @@ For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-age
 
 Start here:
 
+- [Try AANA in 2 minutes](https://huggingface.co/spaces/mindbomber/aana-demo)
 - [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4)
 - [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo)

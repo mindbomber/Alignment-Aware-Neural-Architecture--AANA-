@@ -3,17 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AANA Tool Call Gate</title>
-    <meta name="description" content="Paste a proposed agent tool call and inspect the AANA pre-tool-call gate decision.">
+    <title>Try AANA In 2 Minutes</title>
+    <meta name="description" content="Paste a proposed agent tool call, inspect the AANA route, and verify blocked tools do not execute.">
     <link rel="stylesheet" href="app.css">
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="../index.html" aria-label="AANA home">
         <span class="brand-mark">AA</span>
-        <span>AANA Tool Call Gate</span>
+        <span>Try AANA</span>
       </a>
       <nav aria-label="Demo links">
+        <a href="https://huggingface.co/spaces/mindbomber/aana-demo">HF Space</a>
         <a href="../agent-tool-precheck-contract.md">Contract</a>
         <a href="../aana-agent-contract-sdk.md">SDK</a>
         <a href="https://huggingface.co/datasets/mindbomber/aana-agent-tool-contract-v1">Benchmark</a>
@@ -25,12 +26,13 @@
         <div class="workspace-head">
           <div>
             <p class="eyebrow">Pre-tool-call contract</p>
-            <h1 id="workspace-title">Paste a tool call. See the AANA route.</h1>
+            <h1 id="workspace-title">Paste a tool call. AANA checks before execution.</h1>
           </div>
           <div class="actions">
-            <button id="load-private" type="button">Private Read</button>
-            <button id="load-write" type="button">Write</button>
-            <button id="load-public" type="button">Public Read</button>
+            <button id="load-accept" type="button">Accept</button>
+            <button id="load-ask" type="button">Ask</button>
+            <button id="load-defer" type="button">Defer</button>
+            <button id="load-refuse" type="button">Refuse</button>
             <button id="run-gate" class="primary" type="button">Run Gate</button>
           </div>
         </div>
@@ -112,6 +114,10 @@
                 <span>AIx</span>
                 <strong id="aix-score">-</strong>
               </div>
+              <div class="status-card" data-tone="idle" id="execution-card">
+                <span>Execution</span>
+                <strong id="execution-status">-</strong>
+              </div>
             </div>
 
             <div class="result-panels">
@@ -123,6 +129,11 @@
               <article class="panel">
                 <h2>Reasons</h2>
                 <div id="reasons" class="chips"></div>
+              </article>
+
+              <article class="panel">
+                <h2>Execution Proof</h2>
+                <pre id="execution-proof"></pre>
               </article>
 
               <article class="panel">

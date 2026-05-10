@@ -51,32 +51,32 @@ const privateArgumentKeys = new Set([
 const publicReadHints = ["public", "score", "weather", "docs", "documentation", "search_web", "web_search", "status"];
 
 const examples = {
-  private: {
+  accept: {
     tool: {
-      tool_name: "get_recent_transactions",
-      arguments: { account_id: "acct_redacted", limit: 10 }
+      tool_name: "send_email",
+      arguments: { to: "customer@example.com", subject: "Refund approved" }
     },
-    category: "private_read",
-    auth: "authenticated",
-    risk: "finance",
+    category: "write",
+    auth: "confirmed",
+    risk: "customer_support",
     evidence: [
       {
-        source_id: "auth.email.lookup",
-        kind: "auth_event",
+        source_id: "user_confirmed_send_email",
+        kind: "approval",
         trust_tier: "verified",
         redaction_status: "redacted",
-        summary: "User identity was authenticated through email lookup."
+        summary: "User confirmed sending the support email."
       },
       {
-        source_id: "policy.bank.transactions",
-        kind: "policy",
+        source_id: "draft_id:123",
+        kind: "assistant_message",
         trust_tier: "verified",
-        redaction_status: "public",
-        summary: "Authenticated users may read their own transaction history."
+        redaction_status: "redacted",
+        summary: "Prepared support email draft exists."
       }
     ]
   },
-  write: {
+  ask: {
     tool: {
       tool_name: "send_customer_email",
       arguments: { to: "customer@example.com", body: "Refund approved for account acct_redacted." }
@@ -93,6 +93,26 @@ const examples = {
         summary: "User is authenticated, but explicit confirmation is missing."
       }
     ]
+  },
+  defer: {
+    tool: {
+      tool_name: "get_recent_transactions",
+      arguments: { account_id: "acct_redacted", limit: 10 }
+    },
+    category: "private_read",
+    auth: "none",
+    risk: "finance",
+    evidence: []
+  },
+  refuse: {
+    tool: {
+      tool_name: "delete_database",
+      arguments: { database: "prod" }
+    },
+    category: "unknown",
+    auth: "none",
+    risk: "unknown",
+    evidence: []
   },
   public: {
     tool: {
@@ -124,10 +144,13 @@ const el = {
   gate: document.querySelector("#gate-decision"),
   action: document.querySelector("#recommended-action"),
   aix: document.querySelector("#aix-score"),
+  executionStatus: document.querySelector("#execution-status"),
   gateCard: document.querySelector("#gate-card"),
   actionCard: document.querySelector("#action-card"),
+  executionCard: document.querySelector("#execution-card"),
   blockers: document.querySelector("#blockers"),
   reasons: document.querySelector("#reasons"),
+  executionProof: document.querySelector("#execution-proof"),
   eventOutput: document.querySelector("#event-output"),
   resultOutput: document.querySelector("#result-output")
 };
@@ -329,6 +352,32 @@ function gateEvent(event) {
   };
 }
 
+function syntheticTool(event) {
+  return {
+    synthetic_tool_executed: true,
+    tool_name: event.tool_name,
+    argument_keys: Object.keys(event.proposed_arguments || {}).sort(),
+    side_effects: "none_public_demo_only"
+  };
+}
+
+function guardedSyntheticExecution(event, result) {
+  const proof = {
+    required_route: "accept",
+    aana_route: result.recommended_action,
+    synthetic_executor_call_count_before: 0,
+    synthetic_executor_call_count_after: 0,
+    blocked_tool_non_execution_proven: result.recommended_action !== "accept",
+    synthetic_executor_result: null
+  };
+  if (result.recommended_action === "accept") {
+    proof.synthetic_executor_result = syntheticTool(event);
+    proof.synthetic_executor_call_count_after = 1;
+    proof.blocked_tool_non_execution_proven = false;
+  }
+  return proof;
+}
+
 function normalizeEvent() {
   const raw = parseJson(el.toolJson.value, {});
   if (raw.schema_version === "aana.agent_tool_precheck.v1") return raw;
@@ -369,13 +418,17 @@ function setTone(card, value) {
 }
 
 function render(event, result) {
+  const executionProof = guardedSyntheticExecution(event, result);
   el.gate.textContent = result.gate_decision;
   el.action.textContent = result.recommended_action;
   el.aix.textContent = result.aix ? result.aix.score.toFixed(2) : "-";
+  el.executionStatus.textContent = executionProof.synthetic_executor_call_count_after ? "ran" : "blocked";
   setTone(el.gateCard, result.gate_decision);
   setTone(el.actionCard, result.recommended_action);
+  setTone(el.executionCard, executionProof.synthetic_executor_call_count_after ? "accept" : "refuse");
   chips(el.blockers, result.hard_blockers || []);
   chips(el.reasons, result.reasons || []);
+  el.executionProof.textContent = pretty(executionProof);
   el.eventOutput.textContent = pretty(event);
   el.resultOutput.textContent = pretty(result);
 }
@@ -413,8 +466,9 @@ function loadExample(kind) {
 }
 
 document.querySelector("#run-gate").addEventListener("click", runGate);
-document.querySelector("#load-private").addEventListener("click", () => loadExample("private"));
-document.querySelector("#load-write").addEventListener("click", () => loadExample("write"));
-document.querySelector("#load-public").addEventListener("click", () => loadExample("public"));
+document.querySelector("#load-accept").addEventListener("click", () => loadExample("accept"));
+document.querySelector("#load-ask").addEventListener("click", () => loadExample("ask"));
+document.querySelector("#load-defer").addEventListener("click", () => loadExample("defer"));
+document.querySelector("#load-refuse").addEventListener("click", () => loadExample("refuse"));
 
-loadExample("private");
+loadExample("ask");

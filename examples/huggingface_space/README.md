@@ -1,4 +1,4 @@
-# AANA Agent Action Contract v1 Space
+# Try AANA In 2 Minutes
 
 This local Hugging Face Space artifact is the repo-owned source for the public
 "try AANA" demo. It accepts the frozen Agent Action Contract v1 fields and
@@ -28,10 +28,20 @@ Frozen required fields:
 - `proposed_arguments`
 - `recommended_route`
 
-The Space should call `aana.check_tool_call` with these fields and display
-`accept`, `ask`, `defer`, or `refuse` along with AIx score, hard blockers,
-evidence refs, authorization state, recovery guidance, and an audit-safe log
-event.
+The Space calls `aana.check_tool_call` with these fields and displays:
+
+- route: `accept`, `ask`, `defer`, or `refuse`
+- AIx score
+- hard blockers
+- missing evidence
+- authorization state
+- recovery guidance
+- audit-safe log event
+- blocked-tool non-execution proof from a synthetic executor
+
+The synthetic executor is intentionally safe: it records that it would have run
+only when AANA returns `accept`. It cannot send, delete, purchase, deploy,
+export, or access private data.
 
 Public evidence links:
 

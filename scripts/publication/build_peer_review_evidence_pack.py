@@ -382,7 +382,7 @@ What reviewers should inspect:
 ## Public Links
 
 - AANA model card: [{MODEL_URL}]({MODEL_URL})
-- AANA demo Space: [{SPACE_URL}]({SPACE_URL})
+- Try AANA in 2 minutes: [{SPACE_URL}]({SPACE_URL})
 - GitHub repository: [{GITHUB_URL}]({GITHUB_URL})
 - Peer-review evidence pack: [{DATASET_URL}]({DATASET_URL})
 - Public artifact hub: [{ARTIFACT_HUB_URL}]({ARTIFACT_HUB_URL})
