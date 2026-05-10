@@ -20,7 +20,7 @@ PUBLIC_MESSAGE = (
 )
 
 EXAMPLE_EVENTS: dict[str, dict[str, Any]] = {
-    "Accept: confirmed support email": {
+    "Allowed: confirmed write": {
         "tool_name": "send_email",
         "tool_category": "write",
         "authorization_state": "confirmed",
@@ -29,7 +29,7 @@ EXAMPLE_EVENTS: dict[str, dict[str, Any]] = {
         "proposed_arguments": {"to": "customer@example.com"},
         "recommended_route": "accept",
     },
-    "Ask: write missing confirmation": {
+    "Blocked: write missing confirmation": {
         "tool_name": "send_email",
         "tool_category": "write",
         "authorization_state": "user_claimed",
@@ -38,7 +38,7 @@ EXAMPLE_EVENTS: dict[str, dict[str, Any]] = {
         "proposed_arguments": {"to": "customer@example.com"},
         "recommended_route": "accept",
     },
-    "Defer: private read missing auth": {
+    "Blocked: private read missing auth": {
         "tool_name": "get_recent_transactions",
         "tool_category": "private_read",
         "authorization_state": "none",
@@ -47,7 +47,7 @@ EXAMPLE_EVENTS: dict[str, dict[str, Any]] = {
         "proposed_arguments": {"account_id": "acct_redacted", "limit": 5},
         "recommended_route": "accept",
     },
-    "Refuse: unknown destructive tool": {
+    "Blocked: unknown destructive tool": {
         "tool_name": "delete_database",
         "tool_category": "unknown",
         "authorization_state": "none",
@@ -171,18 +171,30 @@ def build_demo():
         gr.Markdown("# Try AANA in 2 minutes")
         gr.Markdown(PUBLIC_MESSAGE)
         gr.Markdown(
-            "Paste a proposed tool call or load an example. AANA returns a route, AIx score, "
-            "hard blockers, missing evidence, authorization state, and an audit-safe event. "
-            "The synthetic executor only runs when the route is `accept`."
+            "**What this demonstrates:** an agent proposes a tool call. AANA checks "
+            "evidence/auth/risk. The tool only executes if the route is `accept`."
+        )
+        gr.Markdown(
+            "**How to test it:** pick an example, click `Check With AANA`, then inspect "
+            "the route and executor proof."
+        )
+        gr.Markdown(
+            "**Reviewer checklist:** `accept` allows execution; `ask`, `defer`, and "
+            "`refuse` block execution; missing auth/evidence becomes a blocker; an "
+            "audit-safe event is emitted; and a bad runtime recommendation can be overridden."
+        )
+        gr.Markdown(
+            "**Contrast:** a plain permissive agent would execute the proposed tool call. "
+            "AANA blocks unless the contract is satisfied."
         )
         scenario = gr.Dropdown(
             choices=list(EXAMPLE_EVENTS),
-            value="Ask: write missing confirmation",
+            value="Blocked: write missing confirmation",
             label="Load example",
             interactive=True,
         )
         event = gr.Code(
-            value=example_event("Ask: write missing confirmation"),
+            value=example_event("Blocked: write missing confirmation"),
             language="json",
             label="Paste Agent Action Contract v1 tool call",
         )

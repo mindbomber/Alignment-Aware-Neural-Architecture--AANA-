@@ -23,6 +23,23 @@ Core runtime pattern:
 agent proposes -> AANA checks -> tool executes only if route == accept
 ```
 
+What this demonstrates: an agent proposes a tool call. AANA checks
+evidence/auth/risk. The tool only executes if the route is `accept`.
+
+How to test it: pick an example, click `Check With AANA`, then inspect the
+route and executor proof.
+
+Reviewer checklist:
+
+- `accept` allows execution
+- `ask`, `defer`, and `refuse` block execution
+- missing auth/evidence becomes a blocker
+- audit-safe event is emitted
+- a bad runtime recommendation can be overridden
+
+Contrast: a plain permissive agent would execute the proposed tool call. AANA
+blocks unless the contract is satisfied.
+
 This is the difference reviewers should inspect: AANA turns pre-tool safety into
 a typed contract, route table, hard execution rule, and audit-safe decision
 event instead of relying only on prompts, classifiers, LLM judges, or
