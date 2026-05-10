@@ -73,7 +73,7 @@ class MCPBenchAblationScriptTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(ROOT / "scripts" / "run_mcp_bench_aana_ablation.py"),
+                    str(ROOT / "scripts" / "benchmarks" / "run_mcp_bench_aana_ablation.py"),
                     "--mcp-bench-dir",
                     str(bench),
                     "--output-dir",

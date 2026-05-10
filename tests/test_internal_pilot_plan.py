@@ -15,7 +15,7 @@ def load_script(name, path):
     return module
 
 
-pilot_plan = load_script("validate_internal_pilot_plan", ROOT / "scripts" / "validate_internal_pilot_plan.py")
+pilot_plan = load_script("validate_internal_pilot_plan", ROOT / "scripts" / "validation" / "validate_internal_pilot_plan.py")
 
 
 class InternalPilotPlanTests(unittest.TestCase):

@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-review = load_script("validate_production_readiness_review", ROOT / "scripts" / "validate_production_readiness_review.py")
+review = load_script("validate_production_readiness_review", ROOT / "scripts" / "validation" / "validate_production_readiness_review.py")
 
 
 class ProductionReadinessReviewTests(unittest.TestCase):

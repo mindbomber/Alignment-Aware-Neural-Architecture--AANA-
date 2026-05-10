@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-pilot_bundle = load_script("run_e2e_pilot_bundle", ROOT / "scripts" / "run_e2e_pilot_bundle.py")
+pilot_bundle = load_script("run_e2e_pilot_bundle", ROOT / "scripts" / "pilots" / "run_e2e_pilot_bundle.py")
 
 
 class E2ePilotBundleTests(unittest.TestCase):

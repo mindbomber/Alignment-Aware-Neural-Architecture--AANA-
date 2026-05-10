@@ -15,7 +15,7 @@ def load_script(name, path):
     return module
 
 
-expansion = load_script("validate_support_adapter_expansion", ROOT / "scripts" / "validate_support_adapter_expansion.py")
+expansion = load_script("validate_support_adapter_expansion", ROOT / "scripts" / "validation" / "validate_support_adapter_expansion.py")
 
 
 class SupportAdapterExpansionTests(unittest.TestCase):

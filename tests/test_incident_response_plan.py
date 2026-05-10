@@ -15,7 +15,7 @@ def load_script(name, path):
     return module
 
 
-incident_plan = load_script("validate_incident_response_plan", ROOT / "scripts" / "validate_incident_response_plan.py")
+incident_plan = load_script("validate_incident_response_plan", ROOT / "scripts" / "validation" / "validate_incident_response_plan.py")
 
 
 class IncidentResponsePlanTests(unittest.TestCase):

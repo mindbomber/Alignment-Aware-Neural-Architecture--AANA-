@@ -8,6 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 while str(ROOT) in sys.path:
     sys.path.remove(str(ROOT))
 sys.path.insert(0, str(ROOT))
+loaded_evals = sys.modules.get("evals")
+if loaded_evals is not None and not str(getattr(loaded_evals, "__file__", "")).startswith(str(ROOT)):
+    del sys.modules["evals"]
 
 from evals.openai_agents_aana.run_local import run_eval
 from examples.integrations.openai_agents.api_guard import AANAApiGuard

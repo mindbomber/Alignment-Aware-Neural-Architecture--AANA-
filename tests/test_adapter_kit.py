@@ -15,8 +15,8 @@ def load_script(name, path):
     return module
 
 
-new_adapter = load_script("new_adapter", ROOT / "scripts" / "new_adapter.py")
-validate_adapter = load_script("validate_adapter", ROOT / "scripts" / "validate_adapter.py")
+new_adapter = load_script("new_adapter", ROOT / "scripts" / "adapters" / "new_adapter.py")
+validate_adapter = load_script("validate_adapter", ROOT / "scripts" / "validation" / "validate_adapter.py")
 
 
 STRICT_AIX_ADAPTERS = {

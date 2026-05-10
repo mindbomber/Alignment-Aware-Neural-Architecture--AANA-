@@ -19,7 +19,7 @@ def load_script(name, path):
     return module
 
 
-versioning = load_script("validate_versioning_migration", ROOT / "scripts" / "validate_versioning_migration.py")
+versioning = load_script("validate_versioning_migration", ROOT / "scripts" / "validation" / "validate_versioning_migration.py")
 
 
 class VersioningMigrationTests(unittest.TestCase):

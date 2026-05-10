@@ -6,7 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load_script():
-    path = ROOT / "scripts" / "aana_external_validity_hermes_head_to_head.py"
+    path = ROOT / "scripts" / "evals" / "aana_external_validity_hermes_head_to_head.py"
     spec = importlib.util.spec_from_file_location("aana_external_validity_hermes_head_to_head", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

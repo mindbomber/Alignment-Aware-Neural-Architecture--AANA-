@@ -17,7 +17,7 @@ def load_script(name, path):
     return module
 
 
-guardrails = load_script("run_github_action_guardrails", ROOT / "scripts" / "run_github_action_guardrails.py")
+guardrails = load_script("run_github_action_guardrails", ROOT / "scripts" / "integrations" / "run_github_action_guardrails.py")
 
 
 class GitHubActionGuardrailTests(unittest.TestCase):

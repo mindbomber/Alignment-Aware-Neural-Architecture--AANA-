@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-audit_retention = load_script("validate_audit_retention_policy", ROOT / "scripts" / "validate_audit_retention_policy.py")
+audit_retention = load_script("validate_audit_retention_policy", ROOT / "scripts" / "validation" / "validate_audit_retention_policy.py")
 
 
 def _policy():

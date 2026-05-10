@@ -103,6 +103,14 @@ def create_mi_release_bundle(
         paths[key] = pathlib.Path(value)
 
     missing = [f"{key}: {path}" for key, path in paths.items() if not path.exists()]
+    if missing and artifact_paths is None:
+        from eval_pipeline.mi_release_candidate import DEFAULT_MI_BENCHMARK_DIR, run_mi_release_candidate
+
+        run_mi_release_candidate(
+            report_path=DEFAULT_MI_RELEASE_CANDIDATE_REPORT,
+            benchmark_dir=DEFAULT_MI_BENCHMARK_DIR,
+        )
+        missing = [f"{key}: {path}" for key, path in paths.items() if not path.exists()]
     if missing:
         raise FileNotFoundError("Missing release bundle artifact(s): " + "; ".join(missing))
 

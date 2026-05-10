@@ -7,7 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load_script(name):
-    path = ROOT / "scripts" / f"{name}.py"
+    path = ROOT / "scripts" / "benchmarks" / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

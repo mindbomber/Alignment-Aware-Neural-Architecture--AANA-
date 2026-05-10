@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-signoff = load_script("validate_support_domain_signoff", ROOT / "scripts" / "validate_support_domain_signoff.py")
+signoff = load_script("validate_support_domain_signoff", ROOT / "scripts" / "validation" / "validate_support_domain_signoff.py")
 
 
 class SupportDomainSignoffTests(unittest.TestCase):

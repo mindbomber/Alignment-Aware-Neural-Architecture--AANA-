@@ -15,7 +15,7 @@ def load_script(name, path):
     return module
 
 
-design_pilots = load_script("run_design_partner_pilots", ROOT / "scripts" / "run_design_partner_pilots.py")
+design_pilots = load_script("run_design_partner_pilots", ROOT / "scripts" / "pilots" / "run_design_partner_pilots.py")
 
 
 class DesignPartnerPilotTests(unittest.TestCase):

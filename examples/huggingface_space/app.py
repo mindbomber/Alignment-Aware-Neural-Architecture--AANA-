@@ -211,8 +211,13 @@ def build_demo():
     return demo
 
 
-demo = build_demo()
+try:
+    demo = build_demo()
+except ModuleNotFoundError as exc:
+    if exc.name != "gradio":
+        raise
+    demo = None
 
 
 if __name__ == "__main__":
-    demo.launch()
+    build_demo().launch()

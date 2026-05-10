@@ -8,7 +8,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load_script():
-    path = ROOT / "scripts" / "aana_head_to_head_single_classifier_vs_aana.py"
+    path = ROOT / "scripts" / "evals" / "aana_head_to_head_single_classifier_vs_aana.py"
     spec = importlib.util.spec_from_file_location("aana_head_to_head_single_classifier_vs_aana", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

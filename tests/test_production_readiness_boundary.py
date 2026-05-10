@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-boundary = load_script("validate_production_readiness_boundary", ROOT / "scripts" / "validate_production_readiness_boundary.py")
+boundary = load_script("validate_production_readiness_boundary", ROOT / "scripts" / "validation" / "validate_production_readiness_boundary.py")
 
 
 class ProductionReadinessBoundaryTests(unittest.TestCase):

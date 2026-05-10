@@ -17,7 +17,7 @@ def load_script(name, path):
     return module
 
 
-baseline = load_script("validate_first_deployable_baseline", ROOT / "scripts" / "validate_first_deployable_baseline.py")
+baseline = load_script("validate_first_deployable_baseline", ROOT / "scripts" / "validation" / "validate_first_deployable_baseline.py")
 
 
 class FirstDeployableBaselineTests(unittest.TestCase):

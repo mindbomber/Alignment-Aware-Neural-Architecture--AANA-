@@ -14,7 +14,7 @@ def load_script(name, path):
     return module
 
 
-validator = load_script("validate_verifier_boundaries", ROOT / "scripts" / "validate_verifier_boundaries.py")
+validator = load_script("validate_verifier_boundaries", ROOT / "scripts" / "validation" / "validate_verifier_boundaries.py")
 
 
 class VerifierBoundaryGateTests(unittest.TestCase):

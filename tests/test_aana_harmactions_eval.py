@@ -7,7 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load_script():
-    path = ROOT / "scripts" / "aana_harmactions_eval.py"
+    path = ROOT / "scripts" / "evals" / "aana_harmactions_eval.py"
     spec = importlib.util.spec_from_file_location("aana_harmactions_eval", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

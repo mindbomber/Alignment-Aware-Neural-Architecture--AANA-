@@ -109,7 +109,7 @@ class AANAMcpServerTests(unittest.TestCase):
 
     def test_script_lists_tools(self):
         completed = subprocess.run(
-            [sys.executable, str(ROOT / "scripts" / "aana_mcp_server.py"), "--list-tools"],
+            [sys.executable, str(ROOT / "scripts" / "integrations" / "aana_mcp_server.py"), "--list-tools"],
             cwd=ROOT,
             text=True,
             capture_output=True,

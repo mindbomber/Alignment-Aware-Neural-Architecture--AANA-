@@ -6,7 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load_script():
-    path = ROOT / "scripts" / "aana_external_agent_trace_noisy_evidence_eval.py"
+    path = ROOT / "scripts" / "evals" / "aana_external_agent_trace_noisy_evidence_eval.py"
     spec = importlib.util.spec_from_file_location("aana_external_agent_trace_noisy_evidence_eval", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

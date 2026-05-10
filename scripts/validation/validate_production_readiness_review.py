@@ -39,7 +39,7 @@ def load_json(path):
 
 
 def _load_baseline_validator():
-    path = ROOT / "scripts" / "validate_first_deployable_baseline.py"
+    path = ROOT / "scripts" / "validation" / "validate_first_deployable_baseline.py"
     spec = importlib.util.spec_from_file_location("validate_first_deployable_baseline", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

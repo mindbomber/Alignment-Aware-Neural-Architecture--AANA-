@@ -14,7 +14,7 @@ def load_script(name, path):
 
 
 validate_adapter_gallery = load_script(
-    "validate_adapter_gallery", ROOT / "scripts" / "validate_adapter_gallery.py"
+    "validate_adapter_gallery", ROOT / "scripts" / "validation" / "validate_adapter_gallery.py"
 )
 
 SUPPORT_ADAPTERS = {

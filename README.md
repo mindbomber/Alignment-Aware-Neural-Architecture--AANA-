@@ -13,6 +13,8 @@ Public site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--A
 
 Try AANA in 2 minutes: https://huggingface.co/spaces/mindbomber/aana-demo
 
+Hosted static demo: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/demo/
+
 Static docs demo: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.html)
 
 ![AANA repository social preview](assets/github-social-preview.png)
@@ -20,6 +22,8 @@ Static docs demo: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.htm
 AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
+
+AANA is not production-certified by local tests alone. Public surfaces should describe AANA as demo-ready, pilot-ready, or production-candidate until live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results are complete. Passing `pilot-certify`, `release-check`, or local tests does not certify production safety.
 
 ## Recommended Local Path
 

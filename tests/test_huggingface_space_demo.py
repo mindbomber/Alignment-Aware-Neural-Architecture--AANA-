@@ -39,7 +39,7 @@ class HuggingFaceSpaceDemoTests(unittest.TestCase):
 
     def test_compact_summary_exposes_public_demo_fields(self):
         _, compact_json, proof_json, _ = self.space.check_event(
-            self.space.example_event("Ask: write missing confirmation")
+            self.space.example_event("Blocked: write missing confirmation")
         )
         compact = json.loads(compact_json)
         proof = json.loads(proof_json)
@@ -58,7 +58,7 @@ class HuggingFaceSpaceDemoTests(unittest.TestCase):
         self.assertEqual(proof["synthetic_executor_call_count_after"], 0)
 
     def test_backward_compatible_json_helper_returns_full_decision(self):
-        full = json.loads(self.space.check_json_event(self.space.example_event("Defer: private read missing auth")))
+        full = json.loads(self.space.check_json_event(self.space.example_event("Blocked: private read missing auth")))
 
         self.assertIn("architecture_decision", full)
         self.assertEqual(full["architecture_decision"]["route"], "defer")

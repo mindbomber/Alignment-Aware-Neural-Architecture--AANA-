@@ -18,6 +18,8 @@ class ValidateAANAPlatformTests(unittest.TestCase):
                 "canonical_ids",
                 "registry",
                 "agent_integrations",
+                "agent_contract_chaos",
+                "repo_organization",
                 "contract_freeze",
                 "hf_dataset_registry",
                 "hf_calibration",
@@ -28,11 +30,13 @@ class ValidateAANAPlatformTests(unittest.TestCase):
                 "adapter_generalization",
                 "benchmark_fit_lint",
                 "public_claims_policy",
+                "evidence_artifacts",
                 "cross_domain_adapter_families",
                 "production_candidate_evidence_pack",
                 "standard_publication",
                 "security_hardening",
                 "packaging_hardening",
+                "no_tracked_eval_outputs",
                 "versioning_migration",
             ],
         )
@@ -84,8 +88,8 @@ class ValidateAANAPlatformTests(unittest.TestCase):
             report = validate_aana_platform.validate_platform(fail_fast=True)
 
         self.assertFalse(report["valid"])
-        self.assertEqual(report["total"], 6)
-        self.assertEqual(report["passed"], 5)
+        self.assertEqual(report["total"], 8)
+        self.assertEqual(report["passed"], 7)
         self.assertEqual(report["checks"][-1]["name"], "contract_freeze")
 
     def test_main_returns_nonzero_on_failed_gate(self):

@@ -7,7 +7,7 @@ import pathlib
 from datetime import datetime, timezone
 from typing import Any
 
-from eval_pipeline.mi_release_bundle import DEFAULT_MI_RELEASE_BUNDLE_DIR, create_mi_release_bundle
+from eval_pipeline.mi_release_bundle import DEFAULT_ARTIFACTS, DEFAULT_MI_RELEASE_BUNDLE_DIR, create_mi_release_bundle
 from eval_pipeline.mi_release_bundle_verification import verify_mi_release_bundle
 from eval_pipeline.mi_release_candidate import (
     DEFAULT_MI_BENCHMARK_DIR,
@@ -62,7 +62,21 @@ def run_mi_release(
     bundle_payload: dict[str, Any] | None = None
     verification: dict[str, Any] | None = None
     if rc_report["status"] == "pass":
-        bundle_payload = create_mi_release_bundle(bundle_dir)
+        rc_artifacts = rc_report.get("artifacts", {})
+        bundle_artifact_paths = {key: pathlib.Path(value) for key, value in DEFAULT_ARTIFACTS.items()}
+        bundle_artifact_paths.update(
+            {
+                "release_candidate_report": pathlib.Path(rc_payload["path"]),
+                "readiness_report": pathlib.Path(rc_artifacts["release_readiness_report"]),
+                "production_readiness": pathlib.Path(rc_artifacts["readiness"]),
+                "audit_jsonl": pathlib.Path(rc_artifacts["audit_jsonl"]),
+                "audit_manifest": pathlib.Path(rc_artifacts["audit_manifest"]),
+                "dashboard": pathlib.Path(rc_artifacts["dashboard"]),
+                "benchmark_report": pathlib.Path(rc_artifacts["benchmark_report"]),
+                "pilot_handoffs": pathlib.Path(rc_artifacts["pilot_handoffs"]),
+            }
+        )
+        bundle_payload = create_mi_release_bundle(bundle_dir, artifact_paths=bundle_artifact_paths)
         manifest = bundle_payload["manifest"]
         bundle_status = "pass" if manifest.get("rc_status") == "pass" and manifest.get("readiness_status") == "ready" else "block"
         stages.append(

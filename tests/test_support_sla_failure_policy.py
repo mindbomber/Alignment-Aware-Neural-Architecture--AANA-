@@ -16,7 +16,7 @@ def load_script(name, path):
     return module
 
 
-support_sla = load_script("validate_support_sla_failure_policy", ROOT / "scripts" / "validate_support_sla_failure_policy.py")
+support_sla = load_script("validate_support_sla_failure_policy", ROOT / "scripts" / "validation" / "validate_support_sla_failure_policy.py")
 
 
 class SupportSlaFailurePolicyTests(unittest.TestCase):
