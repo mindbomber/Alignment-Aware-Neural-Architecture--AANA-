@@ -78,3 +78,8 @@ If you are evaluating AANA, the most useful feedback is concrete:
 - an evidence or authorization state the contract does not represent cleanly,
 - an integration surface where non-`accept` routes can still execute,
 - a benchmark or dataset where a control-layer submission would be appropriate.
+
+For GitHub outreach and PRs, use the [community issue intake and PR targeting
+policy](community-issue-intake.md). The short version: only open PRs where AANA
+directly improves agent tool safety, MCP security, eval harnesses, audit
+logging, authorization checks, or groundedness/citation verification.

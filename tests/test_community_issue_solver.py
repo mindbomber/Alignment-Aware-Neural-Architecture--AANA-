@@ -15,7 +15,7 @@ def load_script(name, path):
     return module
 
 
-solver = load_script("community_issue_solver", ROOT / "scripts" / "community_issue_solver.py")
+solver = load_script("community_issue_solver", ROOT / "scripts" / "benchmarks" / "community_issue_solver.py")
 
 
 class CommunityIssueSolverTests(unittest.TestCase):
@@ -26,6 +26,8 @@ class CommunityIssueSolverTests(unittest.TestCase):
             "problem": "OECD AI Risk Framework Integration",
             "aana_fit": "high",
             "issue_family": "alignment_evaluation",
+            "target_pr_area": "authorization_checks",
+            "target_pr_eligible": True,
             "adapter": "model_evaluation_release",
             "labels": ["help wanted"],
         }
@@ -41,12 +43,16 @@ class CommunityIssueSolverTests(unittest.TestCase):
         self.assertEqual(contract["adapter"], "research_answer_grounding")
         self.assertIn("AANA", contract["candidate"])
         self.assertIn("Do not claim AANA guarantees alignment", contract["constraints"][0])
+        self.assertEqual(contract["metadata"]["target_pr_area"], "authorization_checks")
+        self.assertTrue(contract["metadata"]["target_pr_eligible"])
+        self.assertTrue(any("Only propose PRs where AANA directly improves" in item for item in contract["constraints"]))
         self.assertEqual(contract["metadata"]["publish_boundary"], "public_issue_comment_or_pr_plan_only_after_aana_accept")
 
     def test_select_candidates_skips_low_fit_and_filters_repository(self):
         candidates = [
             {"repository": "a/low", "aana_fit": "low", "source": "https://github.com/a/low/issues/1"},
-            {"repository": "b/high", "aana_fit": "high", "source": "https://github.com/b/high/issues/2"},
+            {"repository": "b/high", "aana_fit": "high", "target_pr_eligible": True, "source": "https://github.com/b/high/issues/2"},
+            {"repository": "c/random", "aana_fit": "high", "target_pr_eligible": False, "source": "https://github.com/c/random/issues/3"},
         ]
 
         selected = solver.select_candidates(candidates, repository="b/high", limit=1)
@@ -60,6 +66,8 @@ class CommunityIssueSolverTests(unittest.TestCase):
             "problem": "RAG hallucination citation eval",
             "aana_fit": "high",
             "issue_family": "rag_grounding",
+            "target_pr_area": "groundedness_citation_verification",
+            "target_pr_eligible": True,
             "adapter": "research_answer_grounding",
             "labels": ["help wanted"],
             "publish_boundary": "public issue evidence only",

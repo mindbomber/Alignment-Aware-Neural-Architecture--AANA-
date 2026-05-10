@@ -70,6 +70,31 @@ def compact(text, limit=4000):
 
 
 def first_contribution(candidate):
+    target_area = candidate.get("target_pr_area", "")
+    if target_area == "agent_tool_safety":
+        return (
+            "a narrow agent tool-safety check that blocks or asks before unsafe, private, or write tool calls execute"
+        )
+    if target_area == "mcp_security":
+        return (
+            "a minimal MCP security guard that normalizes tool calls into Agent Action Contract v1 and proves blocked tools do not execute"
+        )
+    if target_area == "eval_harness":
+        return (
+            "a small eval-harness patch that compares permissive execution against AANA-gated execution with auditable metrics"
+        )
+    if target_area == "audit_logging":
+        return (
+            "an audit-safe logging patch that records route, blockers, missing evidence, authorization state, and redacted argument metadata"
+        )
+    if target_area == "authorization_checks":
+        return (
+            "an authorization-state check that separates user-claimed, authenticated, validated, and confirmed actions before execution"
+        )
+    if target_area == "groundedness_citation_verification":
+        return (
+            "a groundedness/citation verification fixture that catches unsupported claims and routes them to revise or defer"
+        )
     family = candidate.get("issue_family", "")
     if family == "alignment_evaluation":
         return (
@@ -98,11 +123,14 @@ def draft_public_response(candidate, issue):
     contribution = first_contribution(candidate)
     repo = candidate.get("repository", "")
     source = candidate.get("source", "")
+    target_area = candidate.get("target_pr_area") or "not_targeted"
     return f"""Hi, I found this while testing an AANA-gated community issue workflow.
 
 For this issue, I think the most useful first contribution is {contribution}.
 
 AANA would not replace {repo}'s implementation or act as a compliance authority. The useful role here is narrower: turn the issue scope into explicit constraints, attach public evidence, run a verifier/correction gate before publishing claims or code, and keep an audit-safe record of the decision route.
+
+Targeted PR area: `{target_area}`. I am only proposing this because it directly relates to AANA's control-layer strengths: agent tool safety, MCP security, eval harnesses, audit logging, authorization checks, or groundedness/citation verification.
 
 For this issue, I would start with:
 
@@ -110,6 +138,7 @@ For this issue, I would start with:
 - add a small fixture or checklist that maintainers can inspect in one review
 - avoid legal, regulatory, benchmark, or production-readiness claims that are not directly supported by the issue evidence
 - ask for repository-specific acceptance criteria before proposing deeper integration
+- stop if the maintainers want a broader or unrelated change, because random PRs are not useful here
 
 Evidence limits:
 
@@ -149,8 +178,10 @@ def build_workflow_contract(candidate, issue, draft):
             "Do not claim AANA guarantees alignment, compliance, correctness, or mechanistic interpretability success.",
             "Do not make legal, medical, financial, security, benchmark, or production-readiness claims without issue evidence.",
             "Stay within the public issue scope and repository contribution boundaries.",
+            "Only propose PRs where AANA directly improves agent tool safety, MCP security, eval harnesses, audit logging, authorization checks, or groundedness/citation verification.",
             "Make AANA discoverable by explaining the narrow verifier-gate contribution in practical terms.",
             "Propose a small reviewable first contribution before proposing broad integration.",
+            "Avoid random PRs, broad speculative research comments, generic docs polish, or AANA mentions that do not improve the target repository.",
             "Ask maintainers for missing acceptance criteria instead of assuming repository architecture.",
         ],
         "allowed_actions": DEFAULT_ALLOWED_ACTIONS,
@@ -158,6 +189,8 @@ def build_workflow_contract(candidate, issue, draft):
             "source_type": "github_issue",
             "source_url": source,
             "issue_family": candidate.get("issue_family", ""),
+            "target_pr_area": candidate.get("target_pr_area", ""),
+            "target_pr_eligible": candidate.get("target_pr_eligible", False),
             "policy_preset": "research_answer_grounding",
             "publish_boundary": "public_issue_comment_or_pr_plan_only_after_aana_accept",
         },
@@ -197,6 +230,8 @@ def select_candidates(candidates, repository=None, source=None, limit=1):
         if source and candidate.get("source", "") != source:
             continue
         if candidate.get("aana_fit") == "low":
+            continue
+        if not candidate.get("target_pr_eligible"):
             continue
         selected.append(candidate)
         if len(selected) >= limit:

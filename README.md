@@ -256,6 +256,7 @@ The current Python distribution name is the transitional legacy name `aana-eval-
 
 - [Try Demo](docs/try-demo/index.md)
 - [Public Review And Adoption](docs/public-review-and-adoption.md)
+- [Community Issue Intake And PR Targeting](docs/community-issue-intake.md)
 - [Build Adapter](docs/build-adapter/index.md)
 - [Evidence Handling](docs/evidence-handling.md)
 - [Architecture Map](docs/architecture-map.md)

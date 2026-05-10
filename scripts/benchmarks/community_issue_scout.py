@@ -11,13 +11,102 @@ import urllib.request
 
 
 DEFAULT_QUERIES = [
-    '"mechanistic interpretability" state:open',
-    '"AI alignment" label:"help wanted" state:open',
-    '"LLM eval" label:"good first issue" state:open',
-    '"RAG" hallucination label:"help wanted" state:open',
+    '"agent tool" safety label:"help wanted" state:open',
+    '"MCP" security state:open',
+    '"LLM eval" harness label:"help wanted" state:open',
+    '"audit log" agent state:open',
+    '"authorization" "tool call" state:open',
+    '"RAG" citation verification state:open',
 ]
 DEFAULT_LIMIT = 5
 GITHUB_SEARCH_URL = "https://api.github.com/search/issues"
+
+TARGET_PR_AREAS = {
+    "agent_tool_safety": [
+        "agent tool safety",
+        "tool safety",
+        "tool call",
+        "function calling",
+        "tool use",
+        "unsafe tool",
+        "tool execution",
+        "agent action",
+    ],
+    "mcp_security": [
+        "mcp",
+        "model context protocol",
+        "mcp security",
+        "tool injection",
+        "prompt injection",
+        "cross-boundary",
+        "data exfiltration",
+    ],
+    "eval_harness": [
+        "eval",
+        "evaluation",
+        "eval harness",
+        "evaluation harness",
+        "benchmark harness",
+        "benchmark",
+        "reproducible",
+        "scorer",
+        "grader",
+        "test harness",
+        "tests",
+        "leaderboard",
+        "metric",
+    ],
+    "audit_logging": [
+        "audit log",
+        "audit logging",
+        "audit trail",
+        "trace",
+        "tracing",
+        "observability",
+        "provenance",
+    ],
+    "authorization_checks": [
+        "authorization",
+        "permission",
+        "access control",
+        "authenticated",
+        "identity",
+        "consent",
+        "approval",
+        "scope check",
+    ],
+    "groundedness_citation_verification": [
+        "grounded",
+        "groundedness",
+        "citation",
+        "citations",
+        "source verification",
+        "evidence",
+        "hallucination",
+        "unsupported answer",
+        "rag",
+    ],
+}
+
+TARGET_PR_AREA_ADAPTER = {
+    "agent_tool_safety": "agent_action_safety_guardrail",
+    "mcp_security": "agent_action_safety_guardrail",
+    "eval_harness": "model_evaluation_release",
+    "audit_logging": "code_change_review",
+    "authorization_checks": "agent_action_safety_guardrail",
+    "groundedness_citation_verification": "research_answer_grounding",
+}
+
+TARGET_PR_POLICY = {
+    "required_direct_improvement_areas": sorted(TARGET_PR_AREAS),
+    "avoid": [
+        "random documentation polish",
+        "broad speculative research comments",
+        "taste-only UI changes",
+        "unbounded product ideas",
+        "repo changes where AANA is only mentioned but does not improve safety, evidence, authorization, auditability, or evaluation",
+    ],
+}
 
 
 FAMILY_KEYWORDS = [
@@ -25,9 +114,10 @@ FAMILY_KEYWORDS = [
         "mechanistic_interpretability",
         ["mechanistic interpretability", "interpretability", "circuit", "activation", "attention"],
     ),
-    ("alignment_evaluation", ["ai alignment", "alignment", "safety", "drift", "eval", "benchmark"]),
+    ("alignment_evaluation", ["ai alignment", "alignment", "safety", "drift", "eval", "benchmark", "harness"]),
     ("rag_grounding", ["rag", "retrieval", "hallucination", "citation", "grounding", "source"]),
-    ("deployment_guardrail", ["deploy", "release", "ci", "github action", "guardrail", "production"]),
+    ("deployment_guardrail", ["deploy", "release", "ci", "github action", "guardrail", "production", "audit"]),
+    ("agent_tool_control", ["tool call", "function calling", "agent action", "tool use", "mcp", "authorization"]),
     ("documentation", ["docs", "documentation", "readme", "guide", "tutorial"]),
 ]
 
@@ -36,6 +126,7 @@ ADAPTER_BY_FAMILY = {
     "alignment_evaluation": "model_evaluation_release",
     "rag_grounding": "research_answer_grounding",
     "deployment_guardrail": "code_change_review",
+    "agent_tool_control": "agent_action_safety_guardrail",
     "documentation": "publication_check",
 }
 
@@ -82,6 +173,22 @@ def classify_family(issue):
     return best_family
 
 
+def target_pr_area_scores(issue):
+    text = text_for(issue)
+    scores = {}
+    for area, keywords in TARGET_PR_AREAS.items():
+        score = sum(1 for keyword in keywords if keyword_matches(text, keyword))
+        if score:
+            scores[area] = score
+    return scores
+
+
+def primary_target_area(scores):
+    if not scores:
+        return ""
+    return sorted(scores.items(), key=lambda item: (-item[1], item[0]))[0][0]
+
+
 def evidence_needed(issue, family):
     base = ["issue body", "maintainer acceptance criteria", "repository contribution rules"]
     if family == "mechanistic_interpretability":
@@ -92,8 +199,10 @@ def evidence_needed(issue, family):
         return base + ["allowed source corpus", "citation policy", "unsupported-answer behavior"]
     if family == "deployment_guardrail":
         return base + ["diff or release plan", "CI output", "rollback and owner evidence"]
+    if family == "agent_tool_control":
+        return base + ["tool-call surface", "authorization assumptions", "unsafe/private/write action examples"]
     if family == "documentation":
-        return base + ["current docs page", "claim boundaries", "examples to verify"]
+        return base + ["current docs page", "claim boundaries", "examples tied to one of the allowed PR areas"]
     return base
 
 
@@ -101,8 +210,12 @@ def score_issue(issue):
     text = text_for(issue)
     labels = labels_for(issue)
     family = classify_family(issue)
+    target_scores = target_pr_area_scores(issue)
+    target_area = primary_target_area(target_scores)
     score = 0
 
+    if target_scores:
+        score += 3
     if any(label in labels for label in ["help wanted", "good first issue", "good-first-issue", "contributions welcome"]):
         score += 2
     if "pull_request" not in issue:
@@ -113,6 +226,10 @@ def score_issue(issue):
         score += 1
     if any(keyword_matches(text, term) for term in ["private", "medical", "legal", "financial", "production", "security"]):
         score += 1
+    if family == "documentation" and not target_scores:
+        score = min(score, 2)
+    if not target_scores:
+        score = min(score, 2)
 
     if score >= 5:
         fit = "high"
@@ -124,8 +241,10 @@ def score_issue(issue):
     first_action = "create workflow contract"
     if fit == "low":
         first_action = "ask clarifying question"
-    elif family in {"rag_grounding", "alignment_evaluation", "mechanistic_interpretability"}:
+    elif target_area in {"groundedness_citation_verification", "eval_harness"} or family in {"rag_grounding", "alignment_evaluation"}:
         first_action = "draft grounded response and run workflow-check"
+    elif target_area:
+        first_action = "build minimal targeted PR plan and run workflow-check"
 
     return {
         "source": issue.get("html_url", ""),
@@ -133,11 +252,14 @@ def score_issue(issue):
         "problem": issue.get("title", "").strip(),
         "aana_fit": fit,
         "issue_family": family,
-        "adapter": ADAPTER_BY_FAMILY.get(family, "research_summary"),
+        "target_pr_area": target_area,
+        "target_pr_area_scores": target_scores,
+        "target_pr_eligible": bool(target_area) and fit in {"high", "medium"},
+        "adapter": TARGET_PR_AREA_ADAPTER.get(target_area, ADAPTER_BY_FAMILY.get(family, "research_summary")),
         "labels": labels,
         "evidence_needed": evidence_needed(issue, family),
         "first_action": first_action,
-        "publish_boundary": "public issue evidence only; no private data or unmeasured claims",
+        "publish_boundary": "public issue evidence only; no private data, random PRs, or unmeasured claims",
     }
 
 
@@ -174,7 +296,14 @@ def scout(queries, limit, fixture=None, token=None):
             continue
         seen.add(key)
         candidates.append(score_issue(issue))
-    return sorted(candidates, key=lambda item: {"high": 0, "medium": 1, "low": 2}[item["aana_fit"]])
+    return sorted(
+        candidates,
+        key=lambda item: (
+            0 if item.get("target_pr_eligible") else 1,
+            {"high": 0, "medium": 1, "low": 2}[item["aana_fit"]],
+            -(item.get("target_pr_area_scores") or {}).get(item.get("target_pr_area", ""), 0),
+        ),
+    )
 
 
 def parse_args(argv=None):

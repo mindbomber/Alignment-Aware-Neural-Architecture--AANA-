@@ -14,7 +14,7 @@ def load_script(name, path):
     return module
 
 
-scout = load_script("community_issue_scout", ROOT / "scripts" / "community_issue_scout.py")
+scout = load_script("community_issue_scout", ROOT / "scripts" / "benchmarks" / "community_issue_scout.py")
 
 
 class CommunityIssueScoutTests(unittest.TestCase):
@@ -31,7 +31,9 @@ class CommunityIssueScoutTests(unittest.TestCase):
 
         self.assertEqual(candidate["aana_fit"], "high")
         self.assertEqual(candidate["issue_family"], "mechanistic_interpretability")
-        self.assertEqual(candidate["adapter"], "research_answer_grounding")
+        self.assertEqual(candidate["target_pr_area"], "eval_harness")
+        self.assertTrue(candidate["target_pr_eligible"])
+        self.assertEqual(candidate["adapter"], "model_evaluation_release")
         self.assertIn("experiment artifacts", candidate["evidence_needed"])
 
     def test_scores_vague_issue_as_low_fit(self):
@@ -46,6 +48,7 @@ class CommunityIssueScoutTests(unittest.TestCase):
         candidate = scout.score_issue(issue)
 
         self.assertEqual(candidate["aana_fit"], "low")
+        self.assertFalse(candidate["target_pr_eligible"])
         self.assertEqual(candidate["first_action"], "ask clarifying question")
 
     def test_fixture_mode_writes_ranked_candidates(self):
@@ -76,6 +79,21 @@ class CommunityIssueScoutTests(unittest.TestCase):
 
         self.assertEqual([item["aana_fit"] for item in candidates], ["high", "low"])
         self.assertEqual(candidates[0]["issue_family"], "rag_grounding")
+        self.assertEqual(candidates[0]["target_pr_area"], "groundedness_citation_verification")
+
+    def test_random_docs_issue_is_not_pr_eligible(self):
+        issue = {
+            "title": "Fix typo in README",
+            "body": "Small docs polish request.",
+            "html_url": "https://github.com/example/repo/issues/4",
+            "repository_url": "https://api.github.com/repos/example/repo",
+            "labels": [{"name": "help wanted"}],
+        }
+
+        candidate = scout.score_issue(issue)
+
+        self.assertEqual(candidate["aana_fit"], "low")
+        self.assertFalse(candidate["target_pr_eligible"])
 
 
 if __name__ == "__main__":

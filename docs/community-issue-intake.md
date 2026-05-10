@@ -2,22 +2,42 @@
 
 Use this playbook when applying AANA to public GitHub issues, research threads, forum posts, or community requests. The goal is not to claim AANA can solve any open problem. The goal is to identify issues where verifier-grounded correction has a concrete advantage: explicit constraints, available evidence, bounded actions, and audit-safe outputs.
 
+## PR Targeting Policy
+
+Submit fewer, higher-quality PRs. AANA community PRs should be opened only when
+the change directly improves at least one of these areas:
+
+- agent tool safety
+- MCP security
+- eval harnesses
+- audit logging
+- authorization checks
+- groundedness or citation verification
+
+Avoid random PRs, generic docs polish, broad speculative research comments,
+benchmarks where AANA is only name-dropped, or changes where the target project
+does not clearly benefit from AANA's control-layer strengths. If the fit is not
+obvious to a maintainer in one paragraph, do not open a PR.
+
 ## Fit Criteria
 
 Good first targets have all of these properties:
 
 - The issue asks for an answer, review, benchmark, adapter, guardrail, documentation change, evaluation harness, or reproducible check.
+- The issue maps directly to agent tool safety, MCP security, eval harnesses, audit logging, authorization checks, or groundedness/citation verification.
 - The success criteria can be written as constraints.
 - Evidence can be attached from public issue text, docs, code, papers, logs, or fixtures.
 - The proposed output can be routed to `accept`, `revise`, `retrieve`, `ask`, `defer`, or `refuse`.
 - A wrong answer has a meaningful failure mode, such as hallucinated claims, missing citations, unsafe deployment guidance, privacy leakage, benchmark drift, or unsupported confidence.
 
-Avoid issues where the desired result is mostly taste, vague speculation, private investigation, unbounded product design, or a direct intervention in a system we cannot inspect.
+Avoid issues where the desired result is mostly taste, vague speculation,
+private investigation, unbounded product design, generic docs polish, or a
+direct intervention in a system we cannot inspect.
 
 ## Intake Loop
 
 1. Capture the public source URL, repository, issue title, issue body, labels, and relevant maintainer comments.
-2. Classify the issue family: alignment evaluation, mechanistic interpretability, RAG grounding, safety review, deployment guardrail, documentation, benchmark, or adapter request.
+2. Classify the issue family and `target_pr_area`: agent tool safety, MCP security, eval harness, audit logging, authorization checks, or groundedness/citation verification.
 3. Map constraints:
    - `K_P`: factual, code, benchmark, citation, reproducibility, and environment constraints.
    - `K_B`: user harm, privacy, manipulation, medical/legal/financial risk, and human-review constraints.
@@ -44,7 +64,8 @@ python scripts/benchmarks/community_issue_scout.py --query '"mechanistic interpr
 
 The scout output is an intake heuristic. It is not an AANA gate result, does not prove the issue is worth pursuing, and should not be published directly. Convert one candidate at a time into a Workflow Contract, attach public evidence, and run `workflow-check` before drafting a community response or pull request plan.
 
-Create an AANA-gated workpack for a selected issue:
+Create an AANA-gated workpack for a selected issue. The solver now rejects
+candidates unless `target_pr_eligible` is true:
 
 ```powershell
 python scripts/benchmarks/community_issue_solver.py --repository adhit-r/fairmind --limit 1
@@ -59,6 +80,8 @@ For each candidate issue, produce:
 - `source`: URL and repository.
 - `problem`: one-sentence issue summary.
 - `aana_fit`: high, medium, or low.
+- `target_pr_area`: one of the six allowed PR areas.
+- `target_pr_eligible`: true only when the issue directly improves one of the allowed areas.
 - `adapter`: selected existing adapter or proposed new adapter.
 - `constraints`: grouped by `K_P`, `K_B`, `K_C`, and optional `F`.
 - `evidence_needed`: public artifacts needed before a useful answer.
@@ -67,11 +90,12 @@ For each candidate issue, produce:
 
 ## Suggested Starting Areas
 
-- AI alignment evaluation issues where claims must be tied to reproducible benchmarks or citations.
-- Mechanistic interpretability issues where the useful contribution is a clear experiment plan, traceability checklist, or benchmark harness rather than an unsupported theory claim.
+- Agent framework issues where unsafe, private, or write tool calls need a pre-execution check.
+- MCP security issues where tool injection, data exfiltration, or cross-boundary tool calls need gating.
+- Eval harness issues where maintainers need a paired permissive-agent versus guarded-agent comparison.
+- Audit logging issues where decisions need redacted route, blocker, authorization, and evidence metadata.
+- Authorization issues where code conflates user-claimed, authenticated, validated, and confirmed states.
 - RAG or hallucination issues where source grounding, citation limits, and unsupported-answer refusal can be checked.
-- GitHub Action or CI guardrail issues where AANA can review risky changes before deployment.
-- Documentation issues where the correction loop can prevent inflated claims about the platform.
 
 ## Example
 
