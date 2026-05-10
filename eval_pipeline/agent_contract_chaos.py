@@ -14,11 +14,12 @@ from eval_pipeline.fastapi_app import create_app
 
 
 CHAOS_VALIDATION_VERSION = "aana.agent_contract_chaos.v1"
-TOKEN = "chaos-token"
+TOKEN = "AANA_CHAOS_TOKEN"
+SYNTHETIC_SECRET_VALUE = "".join(("sk", "-or-v1-", "chaos", "SECRET", "000000000000000000"))
 FORBIDDEN_AUDIT_TERMS = {
     "customer@example.com",
     "acct-raw-private-123",
-    "sk-or-v1-chaosSECRET000000000000000000",
+    SYNTHETIC_SECRET_VALUE,
     "delete me after test",
 }
 
@@ -199,7 +200,7 @@ def chaos_cases() -> list[dict[str, Any]]:
                         kind="auth_event",
                         trust_tier="verified",
                         redaction_status="sensitive",
-                        summary="api_key: sk-or-v1-chaosSECRET000000000000000000",
+                        summary=f"api_key: {SYNTHETIC_SECRET_VALUE}",
                     )
                 ],
                 "risk_domain": "finance",

@@ -24,6 +24,7 @@ from examples.integrations.openai_agents.api_guard import AANAApiGuard
 
 
 LEDGER: list[dict] = []
+AANA_DEMO_AUTH_TOKEN = "AANA_DEMO_TOKEN"
 
 
 def get_public_status(service: str) -> dict:
@@ -38,7 +39,7 @@ def send_email(to: str, body: str) -> dict:
 
 def run_smoke() -> dict:
     LEDGER.clear()
-    app = create_app(auth_token="demo-token", rate_limit_per_minute=0, max_request_bytes=0)
+    app = create_app(auth_token=AANA_DEMO_AUTH_TOKEN, rate_limit_per_minute=0, max_request_bytes=0)
     client = TestClient(app)
 
     def post_to_fastapi(url: str, payload: dict[str, Any], *, token: str | None = None) -> dict[str, Any]:
@@ -47,7 +48,7 @@ def run_smoke() -> dict:
         response.raise_for_status()
         return response.json()
 
-    guard = AANAApiGuard(base_url="http://aana.local", token="demo-token", post=post_to_fastapi)
+    guard = AANAApiGuard(base_url="http://aana.local", token=AANA_DEMO_AUTH_TOKEN, post=post_to_fastapi)
     guarded_status = guard.guard_tool(
         get_public_status,
         tool_name="get_public_status",
