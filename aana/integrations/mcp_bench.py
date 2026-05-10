@@ -128,14 +128,19 @@ def _argument_summary(arguments: dict[str, Any]) -> dict[str, Any]:
 def infer_mcp_bench_tool_category(tool_name: str, arguments: dict[str, Any], description: str) -> str:
     """Infer a benchmark tool category without using benchmark labels."""
 
-    text = f"{tool_name} {description} {json.dumps(arguments, sort_keys=True, default=str)}".lower()
+    category = infer_tool_category(tool_name, arguments, description)
+    if category in {"public_read", "private_read"}:
+        return category
+    tool_surface = f"{tool_name} {description}".lower()
+    if any(hint in tool_surface for hint in CONSEQUENTIAL_HINTS):
+        return "write"
+    if any(hint in tool_surface for hint in UTILITY_PUBLIC_HINTS):
+        return "public_read"
+    if category == "write":
+        return category
+    text = f"{tool_surface} {json.dumps(arguments, sort_keys=True, default=str)}".lower()
     if any(hint in text for hint in CONSEQUENTIAL_HINTS):
         return "write"
-    category = infer_tool_category(tool_name, arguments, description)
-    if category != "unknown":
-        return category
-    if any(hint in text for hint in UTILITY_PUBLIC_HINTS):
-        return "public_read"
     return "unknown"
 
 

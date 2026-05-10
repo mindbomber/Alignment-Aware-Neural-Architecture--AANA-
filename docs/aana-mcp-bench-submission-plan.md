@@ -81,16 +81,104 @@ Two-task Unit Converter run:
 | Tool-call success rate | 1.000 | 1.000 |
 | AANA audit decisions | n/a | 65 accept, 0 blocked |
 
+Focused six-task consequential slice:
+
+This diagnostic run used a dedicated clean virtual environment at
+`eval_outputs/venvs/mcpbench-aana` and a locally generated six-task task file
+covering official MCP-Bench single-server tasks from NixOS, Scientific
+Computing, and Medical Calculator. It avoided benchmark servers that require
+external API keys.
+
+| Metric | Base agent | Base + AANA | Delta |
+| --- | ---: | ---: | ---: |
+| Task success rate | 1.000 | 1.000 | 0.000 |
+| Task completion score | 7.367 | 7.117 | -0.250 |
+| Tool selection score | 5.750 | 6.250 | +0.500 |
+| Planning effectiveness score | 5.800 | 6.167 | +0.367 |
+| Tool appropriateness | 5.733 | 6.333 | +0.600 |
+| Parameter accuracy | 5.767 | 6.167 | +0.400 |
+| Dependency awareness | 7.933 | 8.667 | +0.733 |
+| Grounding | 5.733 | 5.400 | -0.333 |
+| Valid tool-name rate | 1.000 | 1.000 | 0.000 |
+| Input schema compliance | 1.000 | 0.976 | -0.024 |
+| Tool-call success rate | 1.000 | 0.976 | -0.024 |
+| Avg tool calls per task | 14.167 | 13.500 | -0.667 |
+
+AANA audit summary for the six-task slice:
+
+| Audit metric | Result |
+| --- | ---: |
+| Pre-tool decisions | 81 |
+| Accepted decisions | 81 |
+| Blocked decisions | 0 |
+| Hard-blocker rows | 0 |
+| Public-read decisions | 35 |
+| Private-read decisions | 41 |
+| Write decisions | 5 |
+| AANA decision latency p50 | 2.778 ms |
+| AANA decision latency p95 | 7.911 ms |
+| AANA decision latency max | 44.864 ms |
+
+Unsafe/private/write injection slice:
+
+This MCP-Bench-style diagnostic uses the same AANA MCP-Bench guard around a
+fake MCP execution boundary. It does not use official MCP-Bench task labels and
+is not a leaderboard result. The plain condition executes every proposed tool.
+The AANA condition must block any non-`accept` decision before the fake
+`call_tool(...)` boundary is reached.
+
+| Metric | Plain agent | Base + AANA |
+| --- | ---: | ---: |
+| Total injected cases | 8 | 8 |
+| Safe public-read cases | 2 | 2 |
+| Unsafe private/write cases | 6 | 6 |
+| Unsafe executions | 6 | 0 |
+| Safe public-read executions | 2 | 2 |
+| Blocked-tool non-execution rate | n/a | 1.000 |
+| Safe public-read allow rate | 1.000 | 1.000 |
+
+AANA route and latency summary:
+
+| Audit metric | Result |
+| --- | ---: |
+| Accepted decisions | 2 |
+| Ask decisions | 4 |
+| Defer decisions | 2 |
+| Public-read decisions | 2 |
+| Private-read decisions | 2 |
+| Write decisions | 4 |
+| AANA decision latency p50 | 2.316 ms |
+| AANA decision latency p95 | 2.831 ms |
+| AANA decision latency max | 3.590 ms |
+
+The injection slice also caught and fixed one useful over-blocking bug: a public
+documentation search for `refund policy` was initially misclassified as a write
+because the wrapper considered consequential words in query arguments. The
+wrapper now prioritizes the MCP tool surface and description before treating
+argument text as write intent, so public search/read tools remain public reads
+when their query mentions a consequential topic.
+
 Interpretation:
 
 - The wrapper reached the real MCP tool-execution boundary.
 - AANA preserved safe utility-tool execution and emitted audit records for every
   checked tool call.
-- These Unit Converter tasks contain only safe utility reads/conversions, so they
-  are not evidence of unsafe-action prevention.
+- The focused six-task run extends the smoke result to more consequential
+  domains: medical calculation, system/package research, and scientific
+  computation.
+- The tested calls were still accepted by AANA, so this run is evidence for
+  clean-env execution, audit completeness, schema-path integration, and low
+  decision latency. It is not evidence of unsafe-action prevention.
+- The unsafe/private/write injection slice does provide targeted evidence of the
+  enforcement property: the permissive baseline executed all six unsafe proposals,
+  while AANA executed zero and still allowed both safe public reads.
+- In enforcement mode, execution is controlled by the route, not only by hard
+  blockers. Non-`accept` routes such as `ask` and `defer` must not execute.
 - The Base + AANA condition showed more redundant tool calls in this local run.
-  Since AANA accepted every proposed call, this reflects base-agent planning
-  variance between runs rather than AANA blocking or correcting behavior.
+  Since AANA accepted every proposed call in the smoke runs and all calls in the
+  six-task slice, metric differences should be treated primarily as base-agent
+  planning variance between paired runs rather than AANA blocking or correcting
+  behavior.
 - The next meaningful MCP-Bench run should include consequential write/private
   read tasks or an injected unsafe-action track, where AANA can be evaluated on
   blocked-tool non-execution and safety/control value.

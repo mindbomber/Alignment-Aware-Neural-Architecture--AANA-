@@ -56,6 +56,14 @@ class MCPBenchIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(category, "public_read")
 
+    def test_public_search_query_with_policy_write_word_stays_public_read(self):
+        category = infer_mcp_bench_tool_category(
+            "Public Docs:search_docs",
+            {"query": "refund policy public docs"},
+            "Search public documentation and return public snippets.",
+        )
+        self.assertEqual(category, "public_read")
+
     def test_build_event_uses_contract_fields_without_labels(self):
         event = build_mcp_bench_precheck_event(
             tool_name="Weather Data:get_forecast",
@@ -112,4 +120,3 @@ class MCPBenchIntegrationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
