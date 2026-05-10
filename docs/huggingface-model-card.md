@@ -85,6 +85,16 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - Agent-action technical report: `docs/aana-agent-action-technical-report.md`
 - Agent Action Contract v1 standard: `docs/agent-action-contract-v1.md`
 
+## Peer Review Questions
+
+Please challenge AANA in the model discussion:
+`https://huggingface.co/mindbomber/aana/discussions/1`
+
+- Are routes correct? If not, share the event, AANA decision, and expected route.
+- Are false positives acceptable? Which safe answers or tool calls are over-blocked?
+- Is evidence handling sufficient? Look for missing, stale, contradictory, untrusted, or over-redacted evidence refs.
+- Does this generalize beyond examples? Suggest external traces, domains, adapters, or benchmarks that would make the evidence stronger.
+
 ## Current Diagnostic Findings
 
 - Safety/adversarial prompt routing: deterministic AANA preserves safe allow but misses many harmful prompts; a diversified request-level verifier improves harmful-request recall while conservative calibration protects safe allow. AdvBench transfer remains weak, so this is not a content-moderation claim.

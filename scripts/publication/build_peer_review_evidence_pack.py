@@ -22,6 +22,7 @@ from scripts.validation.validate_agent_integrations import validate_agent_integr
 
 
 DEFAULT_OUTPUT_DIR = ROOT / "eval_outputs" / "hf_peer_review_evidence_pack" / "aana-peer-review-evidence-pack"
+EVIDENCE_DIR = ROOT / "docs" / "evidence" / "peer_review"
 DATASET_REPO = "mindbomber/aana-peer-review-evidence-pack"
 DATASET_URL = f"https://huggingface.co/datasets/{DATASET_REPO}"
 GITHUB_URL = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
@@ -31,15 +32,15 @@ ARTIFACT_HUB_URL = "https://huggingface.co/collections/mindbomber/aana-public-ar
 
 
 SOURCE_FILES = {
-    "privacy": ROOT / "eval_outputs" / "privacy_pii_adapter_upgrade_results.json",
-    "grounded_qa": ROOT / "eval_outputs" / "grounded_qa_adapter_upgrade_results.json",
-    "tool_use": ROOT / "eval_outputs" / "agent_tool_use_control_upgrade_results.json",
-    "agent_tool_use_diagnostic_chain": ROOT / "eval_outputs" / "aana_agent_tool_use_diagnostic_evidence_chain.json",
-    "safety_adversarial_diagnostic": ROOT / "eval_outputs" / "safety_adversarial_hf_experiment_results.json",
-    "finance_high_risk_qa_diagnostic": ROOT / "eval_outputs" / "finance_high_risk_qa_hf_experiment_results.json",
-    "governance_compliance_diagnostic": ROOT / "eval_outputs" / "governance_compliance_hf_experiment_results.json",
-    "integration_validation_v1_heldout": ROOT / "eval_outputs" / "integration_validation_v1_heldout_results.json",
-    "msb_mcp_security_bench_submission": ROOT / "eval_outputs" / "msb_mcp_security_bench_aana_results.json",
+    "privacy": EVIDENCE_DIR / "privacy_pii_adapter_upgrade_results.json",
+    "grounded_qa": EVIDENCE_DIR / "grounded_qa_adapter_upgrade_results.json",
+    "tool_use": EVIDENCE_DIR / "agent_tool_use_control_upgrade_results.json",
+    "agent_tool_use_diagnostic_chain": EVIDENCE_DIR / "aana_agent_tool_use_diagnostic_evidence_chain.json",
+    "safety_adversarial_diagnostic": EVIDENCE_DIR / "safety_adversarial_hf_experiment_results.json",
+    "finance_high_risk_qa_diagnostic": EVIDENCE_DIR / "finance_high_risk_qa_hf_experiment_results.json",
+    "governance_compliance_diagnostic": EVIDENCE_DIR / "governance_compliance_hf_experiment_results.json",
+    "integration_validation_v1_heldout": EVIDENCE_DIR / "integration_validation_v1_heldout_results.json",
+    "msb_mcp_security_bench_submission": EVIDENCE_DIR / "msb_mcp_security_bench_aana_results.json",
 }
 
 DROP_KEYS = {
@@ -387,6 +388,16 @@ What reviewers should inspect:
 - Peer-review evidence pack: [{DATASET_URL}]({DATASET_URL})
 - Public artifact hub: [{ARTIFACT_HUB_URL}]({ARTIFACT_HUB_URL})
 
+## Peer Review Questions
+
+Please challenge the evidence pack in the dataset discussion:
+[{DATASET_URL}/discussions/1]({DATASET_URL}/discussions/1)
+
+- Are routes correct? If not, share the artifact, event, AANA decision, and expected route.
+- Are false positives acceptable? Which safe answers or tool calls are over-blocked?
+- Is evidence handling sufficient? Look for missing, stale, contradictory, untrusted, or over-redacted evidence refs.
+- Does this generalize beyond examples? Suggest external traces, domains, adapters, or benchmark protocols that would make the evidence stronger.
+
 ## Reproduction
 
 To validate the downloaded evidence-pack files:
@@ -493,12 +504,14 @@ The canonical public artifact hub is
 
 ## Reviewer Questions
 
-1. Are the route labels and metrics sufficient for an auxiliary safety/control
-   track in agent benchmarks?
-2. Which fields should become mandatory in an agent pre-tool-call standard?
-3. Should future reporting prioritize unsafe-action recall, safe allow rate,
-   route accuracy, or task-success impact under AANA enforcement?
-4. Which external datasets should become the next held-out validation sources?
+1. Are routes correct? If not, share the artifact, event, AANA decision, and
+   expected route.
+2. Are false positives acceptable? Which safe answers or tool calls are
+   over-blocked?
+3. Is evidence handling sufficient? Look for missing, stale, contradictory,
+   untrusted, or over-redacted evidence refs.
+4. Does this generalize beyond examples? Suggest external traces, domains,
+   adapters, or benchmark protocols that would make the evidence stronger.
 """
 
 

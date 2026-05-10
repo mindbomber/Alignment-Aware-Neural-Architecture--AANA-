@@ -49,6 +49,16 @@ Public evidence links:
 - Peer-review evidence pack: https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack
 - Public artifact hub: https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4
 
+Peer-review request:
+
+- Are routes correct?
+- Are false positives acceptable?
+- Is evidence handling sufficient?
+- Does this generalize beyond examples?
+
+Please post critique in the Space discussion:
+https://huggingface.co/spaces/mindbomber/aana-demo/discussions/1
+
 Current diagnostic boundary: safety/adversarial prompt routing is useful but
 incomplete, FinanceBench-style QA evidence routing is controlled and not an
 official leaderboard claim, and governance/compliance routing is diagnostic

@@ -97,6 +97,16 @@ AANA is production-candidate as an audit/control/verification/correction layer.
 
 AANA is not yet proven as a raw agent-performance engine. This dataset card should not be used to imply that AANA alone outperforms base planners on raw task success or has raw agent-performance superiority.
 
+## Peer Review Questions
+
+Please challenge the evidence pack in the dataset discussion:
+`https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack/discussions/1`
+
+- Are routes correct? If not, identify the result artifact, event, AANA decision, and expected route.
+- Are false positives acceptable? Which held-out safe cases are blocked, revised, or deferred too aggressively?
+- Is evidence handling sufficient? Check whether missing, stale, contradictory, untrusted, or redacted evidence changes the route correctly.
+- Does this generalize beyond examples? Suggest held-out datasets, external traces, domains, or benchmark protocols that would strengthen peer review.
+
 ## Related Artifacts
 
 - Public artifact hub: `https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4`
@@ -105,4 +115,3 @@ AANA is not yet proven as a raw agent-performance engine. This dataset card shou
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
 - Agent Action Contract v1: `docs/agent-action-contract-v1.md`
-
