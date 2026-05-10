@@ -4,6 +4,24 @@ Alignment-Aware Neural Architecture (AANA) is an evaluation pattern for testing 
 
 The core idea is simple: do not treat the first answer as final. Generate an answer, inspect it, repair it if needed, and only then score the result.
 
+## Dynamics anchor
+
+AANA is anchored by the correction-capacity versus optimization-pressure frame:
+
+```text
+dA/dt = -pi * epsilon * (1 - gamma) - Lambda + C - Phi
+```
+
+The equation is a systems model, not a claim of perfect measurement. It says alignment degrades when pressure-amplified misclassification, irreversible loss, and viable-region drift exceed available correction capacity. In runtime terms, AANA exists to raise `C`, improve `gamma`, reduce `epsilon`, and route high-`Lambda` or high-`Phi` cases to revise, retrieve, ask, defer, or refuse instead of silently accepting them.
+
+The stability boundary is:
+
+```text
+C >= pi * epsilon * (1 - gamma) + Lambda + Phi
+```
+
+That boundary is the design target behind the adapter, verifier, evidence, correction-policy, and gate surfaces in this repository.
+
 ## How AANA differs from SOTA LLMs
 
 State-of-the-art LLMs and multimodal models already include many alignment ingredients: instruction tuning, preference optimization, policy training, refusal behavior, retrieval, tool use, safety classifiers, and sometimes inference-time safety reasoning. AANA is not a replacement for those models.

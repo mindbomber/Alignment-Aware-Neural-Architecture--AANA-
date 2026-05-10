@@ -23,6 +23,14 @@ AANA is a pre-action control layer for AI agents: agents propose actions, AANA c
 
 Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
 
+Theoretical anchor: AANA is grounded in the correction-capacity versus optimization-pressure framing:
+
+```text
+dA/dt = -pi * epsilon * (1 - gamma) - Lambda + C - Phi
+```
+
+Here `pi` is optimization pressure, `epsilon` is constraint misclassification, `gamma` is feedback fidelity, `Lambda` is irreversible or path-dependent loss, `C` is correction capacity, and `Phi` is viable-region drift. The platform's practical rule is that consequential agent actions need correction capacity to scale with divergence pressure: `C >= pi * epsilon * (1 - gamma) + Lambda + Phi`.
+
 AANA is not production-certified by local tests alone. Public surfaces should describe AANA as demo-ready, pilot-ready, or production-candidate until live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results are complete. Passing `pilot-certify`, `release-check`, or local tests does not certify production safety.
 
 ## Recommended Local Path
