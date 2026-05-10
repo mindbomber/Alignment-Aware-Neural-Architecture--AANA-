@@ -36,6 +36,7 @@ middleware surfaces.
 | Model repo | AANA architecture card, limitations, and usage. | <https://huggingface.co/mindbomber/aana> |
 | Dataset repo | AANA eval cases, held-out/validation splits, result artifacts, and reproduction script. | <https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack> |
 | Space | Live "Try AANA in 2 minutes" demo for pasted tool calls, routes, AIx score, hard blockers, missing evidence, auth state, audit-safe events, and blocked-tool non-execution proof. | <https://huggingface.co/spaces/mindbomber/aana-demo> |
+| Agent Action Contract v1 | Reusable seven-field pre-execution standard with route semantics, JSON schema, SDK, FastAPI, and MCP examples. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-action-contract-v1.md> |
 | Technical report | Architecture interpretation, limitations, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
 
 ## Bundle ID Policy
@@ -47,12 +48,13 @@ commands.
 ## Reviewer Path
 
 1. Start with the model repo for the architecture boundary and usage pattern.
-2. Run the Space to paste a tool call, inspect AANA routing behavior, and verify that non-`accept` routes do not execute the synthetic tool.
-3. Inspect the dataset repo for measured privacy, grounded QA, tool-use, and
+2. Read Agent Action Contract v1 to understand the reusable pre-execution standard.
+3. Run the Space to paste a tool call, inspect AANA routing behavior, and verify that non-`accept` routes do not execute the synthetic tool.
+4. Inspect the dataset repo for measured privacy, grounded QA, tool-use, and
    integration validation artifacts.
-4. Read the technical report for the architecture interpretation, limitations,
+5. Read the technical report for the architecture interpretation, limitations,
    and open reviewer questions.
-5. Use the [public review and adoption guide](public-review-and-adoption.md) to
+6. Use the [public review and adoption guide](public-review-and-adoption.md) to
    challenge route correctness, evidence handling, authorization assumptions,
    blocked-tool non-execution, audit safety, and integration parity.
 

@@ -86,7 +86,7 @@ Then use:
 
 No LLM API key is required for deterministic local checks. Provider keys are only needed for live model-loop experiments or optional semantic verifier paths.
 
-## Agent Action Contract
+## Agent Action Contract Standard
 
 The public contract v1 fields are:
 
@@ -120,7 +120,7 @@ AANA returns a decision shape with:
 - recovery suggestion
 - audit-safe log event
 
-See [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md) and [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md).
+See the clean reusable standard at [docs/agent-action-contract-v1.md](docs/agent-action-contract-v1.md) and the quickstart at [docs/agent-action-contract-quickstart.md](docs/agent-action-contract-quickstart.md).
 
 ## Python SDK
 
@@ -205,6 +205,7 @@ For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-age
 Start here:
 
 - [Try AANA in 2 minutes](https://huggingface.co/spaces/mindbomber/aana-demo)
+- [Agent Action Contract v1 standard](docs/agent-action-contract-v1.md)
 - [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4)
 - [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo)

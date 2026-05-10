@@ -110,6 +110,31 @@ def test_fastapi_docs_reference_public_contract_and_routes() -> None:
     assert "token auth" in docs.lower()
 
 
+def test_agent_action_contract_standard_page_has_public_examples() -> None:
+    docs = DOCS_PATH.read_text(encoding="utf-8")
+
+    for heading in [
+        "## Seven Required Fields",
+        "## Route Semantics",
+        "## Examples",
+        "## JSON Schema",
+        "## Python SDK Example",
+        "## TypeScript SDK Example",
+        "## FastAPI Example",
+        "## MCP Example",
+    ]:
+        assert heading in docs
+    for phrase in [
+        "schemas/agent_tool_precheck.schema.json",
+        "aana.check_tool_call(event)",
+        "checkToolPrecheck(event)",
+        "POST /pre-tool-check",
+        "aana_pre_tool_check",
+        "execute original tool only when route == accept",
+    ]:
+        assert phrase in docs
+
+
 def test_canonical_examples_are_schema_valid_and_match_expected_routes() -> None:
     schema = load_schema()
     validator = Draft202012Validator(schema)

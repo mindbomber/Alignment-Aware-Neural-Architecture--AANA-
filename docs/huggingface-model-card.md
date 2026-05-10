@@ -73,7 +73,7 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - CLI: `aana agent-check`, `aana pre-tool-check`, `aana audit-summary`, `aana evidence-pack`
 - FastAPI service: `POST /pre-tool-check`, `POST /agent-check`, `GET /health`
 - TypeScript SDK: `@aana/integration-sdk`
-- Contract spec: `docs/agent-action-contract-v1.md`
+- Agent Action Contract v1 standard: `docs/agent-action-contract-v1.md`
 
 ## Evidence Links
 
@@ -83,7 +83,7 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
 - Agent-action technical report: `docs/aana-agent-action-technical-report.md`
-- Agent Action Contract v1: `docs/agent-action-contract-v1.md`
+- Agent Action Contract v1 standard: `docs/agent-action-contract-v1.md`
 
 ## Current Diagnostic Findings
 
