@@ -39,6 +39,7 @@ middleware surfaces.
 | Agent Action Contract v1 | Reusable seven-field pre-execution standard with route semantics, JSON schema, SDK, FastAPI, and MCP examples. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-action-contract-v1.md> |
 | Technical report | Short peer-review report covering the problem, architecture, contract, experiments, failures, limitations, and reproduction. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-pre-action-control-layer-technical-report.md> |
 | Detailed agent-action report | Longer architecture interpretation, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
+| Public roadmap | Roadmap for contract stability, integrations, HF validation, benchmark submissions, false-positive reduction, and pilots. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/public-roadmap.md> |
 
 ## Bundle ID Policy
 
