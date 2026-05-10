@@ -11,9 +11,7 @@ Try AANA in the browser: https://huggingface.co/spaces/mindbomber/aana-demo
 
 ![AANA repository social preview](assets/github-social-preview.png)
 
-AANA is a runtime control architecture for AI agents. An agent proposes an answer or tool call, AANA checks evidence, authorization, constraints, and risk, and the action executes only when the route is `accept`.
-
-Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
 

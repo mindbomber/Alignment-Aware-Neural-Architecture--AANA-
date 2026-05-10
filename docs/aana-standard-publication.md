@@ -6,7 +6,7 @@ AANA should be published as a standard developers can wrap around agents:
 agent proposes -> AANA checks -> agent executes only if allowed
 ```
 
-Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+Public claim: AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 ## Package Surfaces
 

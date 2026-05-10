@@ -14,7 +14,7 @@ pretty_name: AANA Control-Layer Evidence Pack
 
 This dataset card template describes public AANA validation artifacts used to evaluate AANA as an audit/control/verification/correction layer.
 
-AANA makes agents more auditable, safer, more grounded, and more controllable.
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 ## Intended Use
 

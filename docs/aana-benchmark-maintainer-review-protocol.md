@@ -2,6 +2,8 @@
 
 This protocol is a maintainer-facing review request for evaluating AANA as an agent-action reliability layer, not as a base LLM benchmark entry.
 
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
+
 ## Review Goal
 
 Assess whether the AANA pre-tool-call gate should be evaluated as an additional agent safety and reliability track for tool-use benchmarks.

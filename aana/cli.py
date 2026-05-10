@@ -21,7 +21,7 @@ from eval_pipeline.semantic_verifier import build_semantic_verifier
 ROOT = pathlib.Path.cwd()
 DEFAULT_GALLERY = ROOT / "examples" / "adapter_gallery.json"
 DEFAULT_EVIDENCE_PACK = ROOT / "examples" / "production_candidate_evidence_pack.json"
-PUBLIC_ARCHITECTURE_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
+PUBLIC_ARCHITECTURE_CLAIM = "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 
 
 def _print_json(data: object) -> None:

@@ -2,7 +2,7 @@
 
 This is the canonical public artifact map for AANA.
 
-Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
+Public claim: AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 Claim boundary: AANA is currently positioned as an audit/control/verification
 and correction layer around agents. It is not yet proven as a raw

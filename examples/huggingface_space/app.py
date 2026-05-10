@@ -38,6 +38,10 @@ def build_demo():
 
     with gr.Blocks(title="Try AANA") as demo:
         gr.Markdown("# AANA Agent Action Contract v1")
+        gr.Markdown(
+            "AANA is a pre-action control layer for AI agents: agents propose actions, "
+            "AANA checks evidence/auth/risk, and tools execute only when the route is accept."
+        )
         event = gr.Code(
             value=json.dumps(EXAMPLE_EVENT, indent=2),
             language="json",

@@ -103,8 +103,10 @@ This is a public community-eval artifact submission for AANA.
 
 ## Claim Boundary
 
-AANA is submitted here as an audit/control/verification/correction layer around
-agents, not as a raw agent-performance engine or production certification.
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
+
+It is submitted here as a control-layer artifact, not as a raw agent-performance
+engine or production certification.
 
 ## Result JSON
 

@@ -13,7 +13,7 @@ pipeline_tag: text-classification
 
 # AANA: Agent Action Control Architecture
 
-AANA makes agents more auditable, safer, more grounded, and more controllable.
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 This card describes AANA as a control-layer architecture and runtime package, not as a standalone frontier model. The intended pattern is:
 

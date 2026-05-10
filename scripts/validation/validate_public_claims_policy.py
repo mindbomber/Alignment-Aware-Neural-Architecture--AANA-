@@ -18,7 +18,7 @@ from eval_pipeline.benchmark_reporting import load_manifest, validate_benchmark_
 
 DEFAULT_MANIFEST = ROOT / "examples" / "benchmark_reporting_manifest.json"
 REQUIRED_POLICY_DOC = ROOT / "docs" / "public-claims-policy.md"
-REQUIRED_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
+REQUIRED_CLAIM = "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 FORBIDDEN_RAW_ENGINE_CLAIM = "raw agent-performance engine"
 
 

@@ -944,7 +944,7 @@ def command_evidence_pack(args):
         require_existing_artifacts=args.require_existing_artifacts,
     )
     response = {
-        "architecture_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
+        "architecture_claim": "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.",
         "claim_boundary": manifest.get("claim_boundary", {}),
         "evidence_status": manifest.get("evidence_status"),
         "report_path": manifest.get("report_path"),

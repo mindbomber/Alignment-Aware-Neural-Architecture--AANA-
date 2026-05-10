@@ -15,7 +15,7 @@ def valid_manifest():
     return {
         "schema_version": "0.1",
         "policy": {
-            "main_claim": "AANA makes agents more auditable, safer, more grounded, and more controllable.",
+            "main_claim": "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.",
             "not_raw_engine_claim": "AANA is not yet proven as a raw agent-performance engine.",
             "never_merge_probe_results_into_public_claims": True,
             "require_scope_label": True,

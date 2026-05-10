@@ -2,7 +2,7 @@
 
 This page holds the long-form research, benchmark, Hugging Face, pilot, and evidence workflow details that should not live in the README product entry point.
 
-The public product claim remains: AANA makes agents more auditable, safer, more grounded, and more controllable. Do not use the workflows below to claim AANA is proven as a raw agent-performance engine.
+The public product claim remains: AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept. Do not use the workflows below to claim AANA is proven as a raw agent-performance engine.
 
 ## Evidence Boundary
 

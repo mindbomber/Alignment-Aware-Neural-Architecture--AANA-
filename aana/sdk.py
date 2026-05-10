@@ -33,7 +33,7 @@ from eval_pipeline.evidence_safety import analyze_tool_evidence_refs, grounded_q
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 
 
-PUBLIC_ARCHITECTURE_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
+PUBLIC_ARCHITECTURE_CLAIM = "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 TOOL_PRECHECK_SCHEMA_VERSION = "aana.agent_tool_precheck.v1"
 TOOL_CATEGORIES = set(CANONICAL_TOOL_CATEGORIES)
 AUTHORIZATION_STATES = set(CANONICAL_AUTHORIZATION_STATES)

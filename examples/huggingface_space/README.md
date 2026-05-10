@@ -5,7 +5,9 @@ This local Hugging Face Space artifact is the repo-owned source for the public
 returns the same route decision used by the Python SDK, FastAPI service, and MCP
 tool.
 
-Core idea:
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
+
+Core runtime pattern:
 
 ```text
 agent proposes -> AANA checks -> tool executes only if route == accept

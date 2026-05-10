@@ -1,12 +1,12 @@
 # Public Review And Adoption
 
-AANA is a pre-action control layer for AI agents:
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
+
+The runtime pattern is:
 
 ```text
 agent proposes -> AANA checks evidence, authorization, risk, and auditability -> tools execute only on accept
 ```
-
-Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable.
 
 Claim boundary: AANA is not yet proven as a raw agent-performance engine. Public results must stay labeled as calibration, held-out, diagnostic, probe-only, or external-reporting artifacts.
 

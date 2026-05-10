@@ -10,7 +10,7 @@ from typing import Any
 BENCHMARK_REPORTING_POLICY_VERSION = "0.1"
 ALLOWED_RUN_TYPES = {"general", "diagnostic_probe", "mixed"}
 PUBLIC_CLAIM_FORBIDDEN_RUN_TYPES = {"diagnostic_probe", "mixed"}
-APPROVED_MAIN_CLAIM = "AANA makes agents more auditable, safer, more grounded, and more controllable."
+APPROVED_MAIN_CLAIM = "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 APPROVED_NOT_RAW_ENGINE_CLAIM = "AANA is not yet proven as a raw agent-performance engine."
 ALLOWED_RESULT_LABELS = {"calibration", "heldout", "diagnostic", "probe", "external_reporting"}
 PUBLIC_RESULT_LABELS = {"heldout", "external_reporting"}

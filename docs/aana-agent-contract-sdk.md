@@ -4,7 +4,7 @@ The AANA agent contract SDK lets an agent runtime check tool calls before
 execution. The runtime emits a small `aana.agent_tool_precheck.v1` event, AANA
 validates it, and the gate returns `accept`, `ask`, `defer`, or `refuse`.
 
-Public claim: AANA makes agents more auditable, safer, more grounded, and more controllable. The SDK exposes that architecture through
+Public claim: AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept. The SDK exposes that architecture through
 an `architecture_decision` envelope that includes the route, AIx score, hard
 blockers, evidence refs, authorization state, correction/recovery suggestion,
 and audit-safe log event.

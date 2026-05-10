@@ -8,10 +8,13 @@ import json
 import pathlib
 import sys
 
-from eval_pipeline.benchmark_reporting import load_manifest, validate_benchmark_reporting_manifest
-
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from eval_pipeline.benchmark_reporting import load_manifest, validate_benchmark_reporting_manifest
+
 DEFAULT_MANIFEST = ROOT / "examples" / "benchmark_reporting_manifest.json"
 
 

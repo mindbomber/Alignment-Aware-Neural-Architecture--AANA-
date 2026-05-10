@@ -11,7 +11,7 @@ from typing import Any
 
 
 PUBLIC_ARCHITECTURE_CLAIM = (
-    "AANA makes agents more auditable, safer, more grounded, and more controllable."
+    "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 )
 PUBLIC_EVIDENCE_BOUNDARY = (
     "AANA is production-candidate as an audit/control/verification/correction layer. "

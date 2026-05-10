@@ -2,7 +2,7 @@
 
 The main public claim is:
 
-> AANA makes agents more auditable, safer, more grounded, and more controllable.
+> AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
 AANA must not be described as proven to be a raw agent-performance engine or as having raw agent-performance superiority. The approved boundary language is:
 

@@ -411,7 +411,7 @@ def _report(results: dict[str, dict[str, Any]]) -> str:
 
 ## Claim Under Review
 
-AANA makes agents more auditable, safer, more grounded, and more controllable.
+AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 It is currently positioned as an audit, control,
 verification, and correction layer around agents:
 

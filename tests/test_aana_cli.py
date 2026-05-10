@@ -502,7 +502,7 @@ class AanaCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("AANA evidence pack", output)
-        self.assertIn("AANA makes agents more auditable, safer, more grounded, and more controllable.", output)
+        self.assertIn("AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.", output)
         self.assertIn("validation: pass", output)
 
     def test_agent_check_writes_redacted_audit_log(self):
