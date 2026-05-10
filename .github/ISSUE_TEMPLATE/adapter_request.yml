@@ -1,0 +1,50 @@
+name: Adapter request
+description: Request a new AANA adapter, bundle, domain risk profile, or validation dataset mapping.
+title: "[Adapter Request]: "
+labels: ["adapter request", "adapter"]
+body:
+  - type: input
+    id: adapter-family
+    attributes:
+      label: Adapter family or domain
+      description: Which adapter family, bundle, or domain should AANA support?
+      placeholder: "Example: privacy_pii, grounded_qa, agent_tool_use, governance_compliance, finance, legal, pharma"
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Describe the agent action, answer type, or workflow AANA should check.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and authorization sources
+      description: What evidence refs, policy docs, user confirmations, auth state, or citations should the adapter consume?
+    validations:
+      required: true
+  - type: textarea
+    id: expected-routes
+    attributes:
+      label: Expected routes
+      description: Give examples of when AANA should accept, revise, retrieve, ask, defer, or refuse.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation source
+      description: Name held-out datasets, traces, or realistic redacted examples that could validate this adapter without benchmark fitting.
+    validations:
+      required: false
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Safety and claim boundary
+      options:
+        - label: I did not include raw secrets, tokens, private account IDs, or unnecessary personal data.
+          required: true
+        - label: I understand adapter claims need held-out validation before public performance claims.
+          required: true

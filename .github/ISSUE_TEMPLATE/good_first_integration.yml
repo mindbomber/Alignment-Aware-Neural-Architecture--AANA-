@@ -1,0 +1,48 @@
+name: Good first integration
+description: Suggest a small integration example suitable for a new contributor.
+title: "[Good First Integration]: "
+labels: ["good first integration", "integration", "help wanted"]
+body:
+  - type: input
+    id: target
+    attributes:
+      label: Target framework, SDK, or tool runtime
+      placeholder: "Example: Vercel AI SDK, Semantic Kernel, LlamaIndex, Slack bot, GitHub Action"
+    validations:
+      required: true
+  - type: textarea
+    id: minimal-example
+    attributes:
+      label: Minimal example
+      description: Describe the smallest example that should show `agent proposes -> AANA checks -> blocked tools do not execute`.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: AANA surface
+      options:
+        - plain Python SDK
+        - TypeScript SDK
+        - FastAPI API guard
+        - MCP tool/server
+        - framework middleware
+        - docs only
+    validations:
+      required: true
+  - type: textarea
+    id: blocked-case
+    attributes:
+      label: Blocked-tool proof
+      description: What side-effecting tool should be blocked, and how should the example prove it did not execute?
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution-scope
+    attributes:
+      label: Scope checks
+      options:
+        - label: This can be implemented without real credentials or live side effects.
+          required: true
+        - label: The example should fail closed when AANA returns anything other than `accept`.
+          required: true

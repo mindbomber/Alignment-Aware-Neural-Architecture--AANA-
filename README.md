@@ -4,6 +4,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![Status: Alpha Research](https://img.shields.io/badge/status-alpha%20research-orange.svg)](ROADMAP.md)
+[![Try AANA](https://img.shields.io/badge/Hugging%20Face-Try%20AANA-yellow.svg)](https://huggingface.co/spaces/mindbomber/aana-demo)
+[![Evidence Pack](https://img.shields.io/badge/evidence-peer%20review%20pack-blueviolet.svg)](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
+[![Agent Action Contract v1](https://img.shields.io/badge/contract-Agent%20Action%20v1-2ea44f.svg)](docs/agent-action-contract-v1.md)
+[![Roadmap](https://img.shields.io/badge/roadmap-public-lightgrey.svg)](docs/public-roadmap.md)
 
 Public site: https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/
 
@@ -48,6 +52,15 @@ AANA adds:
 - cross-surface parity across CLI, Python SDK, TypeScript SDK, FastAPI, MCP, and agent middleware.
 
 The value is not that AANA is a smarter base agent. The value is that AANA makes consequential agent actions inspectable, enforceable, and reviewable before execution.
+
+## Adoption Signals
+
+Looking for a first contribution?
+
+- Browse [good first integration issues](https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/labels/good%20first%20integration).
+- Request an adapter or integration with the GitHub issue templates.
+- Report safety/control failures with a redacted Agent Action Contract event.
+- Run the example stack in [examples/integrations](examples/integrations): plain Python, OpenAI Agents SDK, LangChain, FastAPI API guard, and MCP all prove blocked tools do not execute.
 
 ## Quick Start
 
