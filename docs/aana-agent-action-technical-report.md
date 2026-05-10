@@ -1,5 +1,8 @@
 # AANA Agent-Action Technical Report
 
+For the short peer-review report, see
+[AANA: A Pre-Action Control Layer For Auditable AI Agents](aana-pre-action-control-layer-technical-report.md).
+
 ## Abstract
 
 AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.

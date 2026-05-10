@@ -211,6 +211,7 @@ Start here:
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo)
 - [Public review and adoption guide](docs/public-review-and-adoption.md)
 - [AANA head-to-head findings](docs/aana-head-to-head-findings.md)
+- [Short technical report: AANA as a pre-action control layer](docs/aana-pre-action-control-layer-technical-report.md)
 - [AANA agent-action technical report](docs/aana-agent-action-technical-report.md)
 - [Production-candidate evidence pack](docs/aana-production-candidate-evidence-pack.md)
 - [Reviewed evidence artifact manifest](docs/evidence/artifact_manifest.json)

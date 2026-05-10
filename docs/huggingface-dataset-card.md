@@ -114,4 +114,5 @@ Please challenge the evidence pack in the dataset discussion:
 - Dataset registry: `examples/hf_dataset_validation_registry.json`
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
+- Short technical report: `https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-pre-action-control-layer-technical-report.md`
 - Agent Action Contract v1: `docs/agent-action-contract-v1.md`

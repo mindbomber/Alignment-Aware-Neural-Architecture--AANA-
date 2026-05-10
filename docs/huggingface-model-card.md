@@ -82,7 +82,8 @@ Execute only when AANA returns `accept`, no hard blockers, and the relevant work
 - Peer-review evidence pack: `https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack`
 - Production-candidate evidence pack: `docs/aana-production-candidate-evidence-pack.md`
 - HF dataset proof report: `docs/hf-dataset-proof-report.md`
-- Agent-action technical report: `docs/aana-agent-action-technical-report.md`
+- Short technical report: `https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-pre-action-control-layer-technical-report.md`
+- Detailed agent-action technical report: `docs/aana-agent-action-technical-report.md`
 - Agent Action Contract v1 standard: `docs/agent-action-contract-v1.md`
 
 ## Peer Review Questions

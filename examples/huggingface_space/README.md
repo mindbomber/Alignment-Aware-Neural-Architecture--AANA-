@@ -48,6 +48,7 @@ Public evidence links:
 - Model card: https://huggingface.co/mindbomber/aana
 - Peer-review evidence pack: https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack
 - Public artifact hub: https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4
+- Short technical report: https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-pre-action-control-layer-technical-report.md
 
 Peer-review request:
 

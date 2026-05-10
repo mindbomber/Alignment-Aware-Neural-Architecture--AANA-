@@ -37,7 +37,8 @@ middleware surfaces.
 | Dataset repo | AANA eval cases, held-out/validation splits, result artifacts, and reproduction script. | <https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack> |
 | Space | Live "Try AANA in 2 minutes" demo for pasted tool calls, routes, AIx score, hard blockers, missing evidence, auth state, audit-safe events, and blocked-tool non-execution proof. | <https://huggingface.co/spaces/mindbomber/aana-demo> |
 | Agent Action Contract v1 | Reusable seven-field pre-execution standard with route semantics, JSON schema, SDK, FastAPI, and MCP examples. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-action-contract-v1.md> |
-| Technical report | Architecture interpretation, limitations, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
+| Technical report | Short peer-review report covering the problem, architecture, contract, experiments, failures, limitations, and reproduction. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-pre-action-control-layer-technical-report.md> |
+| Detailed agent-action report | Longer architecture interpretation, benchmark boundary, and reviewer questions. | <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-agent-action-technical-report.md> |
 
 ## Bundle ID Policy
 

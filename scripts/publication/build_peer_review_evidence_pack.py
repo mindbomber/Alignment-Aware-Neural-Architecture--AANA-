@@ -29,6 +29,7 @@ GITHUB_URL = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture-
 MODEL_URL = "https://huggingface.co/mindbomber/aana"
 SPACE_URL = "https://huggingface.co/spaces/mindbomber/aana-demo"
 ARTIFACT_HUB_URL = "https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4"
+TECHNICAL_REPORT_URL = f"{GITHUB_URL}/blob/master/docs/aana-pre-action-control-layer-technical-report.md"
 
 
 SOURCE_FILES = {
@@ -385,6 +386,7 @@ What reviewers should inspect:
 - AANA model card: [{MODEL_URL}]({MODEL_URL})
 - Try AANA in 2 minutes: [{SPACE_URL}]({SPACE_URL})
 - GitHub repository: [{GITHUB_URL}]({GITHUB_URL})
+- Short technical report: [{TECHNICAL_REPORT_URL}]({TECHNICAL_REPORT_URL})
 - Peer-review evidence pack: [{DATASET_URL}]({DATASET_URL})
 - Public artifact hub: [{ARTIFACT_HUB_URL}]({ARTIFACT_HUB_URL})
 

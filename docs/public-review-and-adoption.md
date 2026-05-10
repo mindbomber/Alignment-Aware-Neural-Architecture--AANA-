@@ -28,7 +28,8 @@ Claim boundary: AANA is not yet proven as a raw agent-performance engine. Public
 - OpenAI Agents quickstart: [openai-agents-quickstart.md](openai-agents-quickstart.md)
 - Runtime integration guide: [integrate-runtime/index.md](integrate-runtime/index.md)
 - Public artifact hub: [aana-public-artifact-hub.md](aana-public-artifact-hub.md)
-- Technical report: [aana-agent-action-technical-report.md](aana-agent-action-technical-report.md)
+- Short technical report: [aana-pre-action-control-layer-technical-report.md](aana-pre-action-control-layer-technical-report.md)
+- Detailed agent-action report: [aana-agent-action-technical-report.md](aana-agent-action-technical-report.md)
 - Peer-review evidence pack: <https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack>
 
 Local validation:
