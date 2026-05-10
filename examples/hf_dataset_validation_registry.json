@@ -510,6 +510,44 @@
       ]
     },
     {
+      "dataset_name": "DongsenZhang/MSB",
+      "license": "mit",
+      "task_type": "mcp_security_bench_attack_templates",
+      "adapter_families": [
+        "agent_tool_gate",
+        "security",
+        "devops",
+        "mcp"
+      ],
+      "source_url": "https://huggingface.co/datasets/DongsenZhang/MSB",
+      "split_uses": [
+        {
+          "config": "agent_task",
+          "split": "train",
+          "allowed_use": "external_reporting",
+          "split_purpose": "public_claim",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use for MSB benign task/tool protocol evaluation only; do not tune on this split before reporting."
+        },
+        {
+          "config": "attack_task",
+          "split": "train",
+          "allowed_use": "external_reporting",
+          "split_purpose": "public_claim",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use for MSB attack-template protocol evaluation only; labels stay out of AANA gate input."
+        },
+        {
+          "config": "attack_type",
+          "split": "train",
+          "allowed_use": "external_reporting",
+          "split_purpose": "public_claim",
+          "adapter_family": "agent_tool_gate",
+          "notes": "Use to form the MSB attack-type cross product for protocol-level reporting, not route tuning."
+        }
+      ]
+    },
+    {
       "dataset_name": "NousResearch/hermes-function-calling-v1",
       "license": "apache-2.0",
       "task_type": "function_calling_tool_use",

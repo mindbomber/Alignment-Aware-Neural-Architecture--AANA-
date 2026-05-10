@@ -39,6 +39,7 @@ SOURCE_FILES = {
     "finance_high_risk_qa_diagnostic": ROOT / "eval_outputs" / "finance_high_risk_qa_hf_experiment_results.json",
     "governance_compliance_diagnostic": ROOT / "eval_outputs" / "governance_compliance_hf_experiment_results.json",
     "integration_validation_v1_heldout": ROOT / "eval_outputs" / "integration_validation_v1_heldout_results.json",
+    "msb_mcp_security_bench_submission": ROOT / "eval_outputs" / "msb_mcp_security_bench_aana_results.json",
 }
 
 DROP_KEYS = {
@@ -356,6 +357,7 @@ What reviewers should inspect:
 - `data/safety_adversarial_diagnostic_results.json`: safety/adversarial prompt-routing diagnostic, including the safe-allow versus harmful-recall tradeoff.
 - `data/finance_high_risk_qa_diagnostic_results.json`: FinanceBench high-risk QA evidence-routing diagnostic.
 - `data/governance_compliance_diagnostic_results.json`: governance/compliance policy-routing diagnostic for citation coverage, missing-evidence recall, risk-route accuracy, and human-review escalation.
+- `data/msb_mcp_security_bench_submission_results.json`: MCP Security Bench protocol-level submission artifact for attack-template blocking and safe public-read preservation.
 - `data/integration_validation_v1_heldout_results.json`: held-out platform validation across CLI, SDKs, FastAPI, MCP, and middleware surfaces.
 - `data/agent_integration_validation.json`: Python SDK, TypeScript SDK, OpenAI Agents SDK, LangChain, AutoGen, CrewAI, FastAPI policy service, MCP tool, and controlled-agent eval smoke validation.
 - `data/aana_peer_review_package_manifest.json`: exact AANA version, split boundaries, metrics, failures, false positives, unsupported domains, latency, and reproduction commands.
@@ -465,6 +467,11 @@ The canonical public artifact hub is
   citation presence, missing controls, private-data export risk, destructive
   action controls, and human-review escalation in a diagnostic artifact; this is
   not legal, regulatory, or platform-policy certification.
+- MSB / MCP Security Bench: published task and attack templates are converted
+  into Agent Action Contract v1 events to measure attack-template block rate,
+  safe public-read allow rate, benign consequential-action control, and schema
+  failure rate. This is a protocol-level submission artifact, not a full MSB
+  harness replay.
 - Integration validation: held-out tool-call cases produce route parity,
   blocked-tool non-execution, decision-shape parity, audit completeness, and
   zero schema failures across CLI, Python SDK, TypeScript SDK, FastAPI, MCP,
@@ -518,6 +525,7 @@ REQUIRED_FILES = [
     "data/safety_adversarial_diagnostic_results.json",
     "data/finance_high_risk_qa_diagnostic_results.json",
     "data/governance_compliance_diagnostic_results.json",
+    "data/msb_mcp_security_bench_submission_results.json",
     "data/integration_validation_v1_heldout_results.json",
     "data/agent_integration_validation.json",
     "reports/aana_peer_review_report.md",
@@ -621,6 +629,11 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
         SOURCE_FILES["governance_compliance_diagnostic"],
         _sanitize(_load_json(SOURCE_FILES["governance_compliance_diagnostic"])),
     )
+    msb_mcp_security_bench = _with_metadata(
+        "msb_mcp_security_bench_submission_results",
+        SOURCE_FILES["msb_mcp_security_bench_submission"],
+        _sanitize(_load_json(SOURCE_FILES["msb_mcp_security_bench_submission"])),
+    )
     integration_validation_v1 = _with_metadata(
         "integration_validation_v1_heldout_results",
         SOURCE_FILES["integration_validation_v1_heldout"],
@@ -640,6 +653,7 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
         "safety_adversarial_diagnostic_results": safety_adversarial,
         "finance_high_risk_qa_diagnostic_results": finance_high_risk_qa,
         "governance_compliance_diagnostic_results": governance_compliance,
+        "msb_mcp_security_bench_submission_results": msb_mcp_security_bench,
         "integration_validation_v1_heldout_results": integration_validation_v1,
         "agent_integration_validation": integration,
     }
@@ -651,6 +665,7 @@ def build_pack(output_dir: pathlib.Path) -> pathlib.Path:
     _write_json(output_dir / "data" / "safety_adversarial_diagnostic_results.json", safety_adversarial)
     _write_json(output_dir / "data" / "finance_high_risk_qa_diagnostic_results.json", finance_high_risk_qa)
     _write_json(output_dir / "data" / "governance_compliance_diagnostic_results.json", governance_compliance)
+    _write_json(output_dir / "data" / "msb_mcp_security_bench_submission_results.json", msb_mcp_security_bench)
     _write_json(output_dir / "data" / "integration_validation_v1_heldout_results.json", integration_validation_v1)
     _write_json(output_dir / "data" / "agent_integration_validation.json", integration)
     _write_json(output_dir / "data" / "aana_peer_review_package_manifest.json", _package_manifest(results))
