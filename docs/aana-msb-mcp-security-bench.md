@@ -4,6 +4,9 @@ Result label: `external_benchmark_protocol_submission`
 
 This artifact targets [MCP Security Bench (MSB)](https://huggingface.co/datasets/DongsenZhang/MSB) as an agent tool-use/control benchmark. It evaluates AANA as a pre-tool-call audit/control/verification/correction layer, not as a base LLM and not as a raw autonomous task-performance engine.
 
+Canonical maintainer-review pack:
+[maintainer-review-benchmark-submission-request.md](maintainer-review-benchmark-submission-request.md)
+
 ## Benchmark Fit
 
 MSB is a strong AANA target because it tests MCP-specific attacks across the tool-use pipeline:

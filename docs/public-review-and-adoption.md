@@ -31,6 +31,7 @@ Claim boundary: AANA is not yet proven as a raw agent-performance engine. Public
 - Short technical report: [aana-pre-action-control-layer-technical-report.md](aana-pre-action-control-layer-technical-report.md)
 - Detailed agent-action report: [aana-agent-action-technical-report.md](aana-agent-action-technical-report.md)
 - Public roadmap: [public-roadmap.md](public-roadmap.md)
+- Maintainer review / benchmark submission request: [maintainer-review-benchmark-submission-request.md](maintainer-review-benchmark-submission-request.md)
 - Review outreach posting guide: [review-outreach-posting-guide.md](review-outreach-posting-guide.md)
 - GitHub review discussion: <https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/discussions/8>
 - Peer-review evidence pack: <https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack>

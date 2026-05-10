@@ -4,6 +4,9 @@ Result label: `planned_external_benchmark_submission`
 
 This document tracks the next step after the MSB / MCP Security Bench protocol artifact. MCP-Bench evaluates tool-using LLM agents on complex real-world MCP tasks, so AANA should be submitted as a paired control layer around a base agent, not as a standalone model row.
 
+Canonical maintainer-review pack:
+[maintainer-review-benchmark-submission-request.md](maintainer-review-benchmark-submission-request.md)
+
 ## Benchmark Fit
 
 [MCP-Bench](https://github.com/Accenture/mcp-bench) is a strong AANA target because it measures whether an agent can discover, select, and use MCP tools across real task dependencies. AANA's differentiated claim is not that it is the base planner. The claim is:

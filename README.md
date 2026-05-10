@@ -228,6 +228,7 @@ Start here:
 - [Short technical report: AANA as a pre-action control layer](docs/aana-pre-action-control-layer-technical-report.md)
 - [AANA agent-action technical report](docs/aana-agent-action-technical-report.md)
 - [Public roadmap](docs/public-roadmap.md)
+- [Maintainer review / benchmark submission request](docs/maintainer-review-benchmark-submission-request.md)
 - [Review outreach posting guide](docs/review-outreach-posting-guide.md)
 - [Production-candidate evidence pack](docs/aana-production-candidate-evidence-pack.md)
 - [Reviewed evidence artifact manifest](docs/evidence/artifact_manifest.json)
