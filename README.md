@@ -207,6 +207,7 @@ Start here:
 - [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4)
 - [AANA peer-review evidence pack](https://huggingface.co/datasets/mindbomber/aana-peer-review-evidence-pack)
 - [AANA Hugging Face Space](https://huggingface.co/spaces/mindbomber/aana-demo)
+- [Public review and adoption guide](docs/public-review-and-adoption.md)
 - [AANA head-to-head findings](docs/aana-head-to-head-findings.md)
 - [AANA agent-action technical report](docs/aana-agent-action-technical-report.md)
 - [Production-candidate evidence pack](docs/aana-production-candidate-evidence-pack.md)
@@ -252,6 +253,7 @@ The current Python distribution name is the transitional legacy name `aana-eval-
 ## More Docs
 
 - [Try Demo](docs/try-demo/index.md)
+- [Public Review And Adoption](docs/public-review-and-adoption.md)
 - [Build Adapter](docs/build-adapter/index.md)
 - [Evidence Handling](docs/evidence-handling.md)
 - [Architecture Map](docs/architecture-map.md)

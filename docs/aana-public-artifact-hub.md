@@ -52,6 +52,9 @@ commands.
    integration validation artifacts.
 4. Read the technical report for the architecture interpretation, limitations,
    and open reviewer questions.
+5. Use the [public review and adoption guide](public-review-and-adoption.md) to
+   challenge route correctness, evidence handling, authorization assumptions,
+   blocked-tool non-execution, audit safety, and integration parity.
 
 ## Peer-Review Package Contents
 
@@ -96,4 +99,3 @@ The dataset repo includes a machine-readable peer-review manifest at
   public benchmark claims.
 - It does not replace benchmark-maintainer or independent human-reviewed
   evaluation for stronger leaderboard claims.
-
