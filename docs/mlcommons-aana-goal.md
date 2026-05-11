@@ -24,6 +24,7 @@ Core positioning:
 | MLCube examples | `mlcommons/mlcube_examples` | Add `hello_world/audit_manifest.example.json` | Open PR: <https://github.com/mlcommons/mlcube_examples/pull/70> |
 | AILuminate safety smoke test | `mlcommons/ailuminate` | AANA demo prompt gate summary over public demo prompts | Open PR, CLA blocked: <https://github.com/mlcommons/ailuminate/pull/34> |
 | ModelBench hazard detector | `mlcommons/modelbench` | Detector route/audit metadata proposal | Commented on issue: <https://github.com/mlcommons/modelbench/issues/1512#issuecomment-4422153155> |
+| Jailbreak taxonomy defense audit | `mlcommons/jailbreak-taxonomy` | Optional defensive-response audit metadata for taxonomy-aligned evals | Open issue: <https://github.com/mlcommons/jailbreak-taxonomy/issues/9> |
 | Croissant RAI metadata | `mlcommons/croissant` | Evidence refs, redaction status, and claim status for dataset RAI fields | Commented on issue: <https://github.com/mlcommons/croissant/issues/1012#issuecomment-4422162947> |
 | MLPerf automation provenance | `mlcommons/mlperf-automations` | Optional run audit sidecar proposal | Open issue: <https://github.com/mlcommons/mlperf-automations/issues/955> |
 
