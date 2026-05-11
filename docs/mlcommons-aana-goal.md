@@ -28,6 +28,7 @@ Core positioning:
 | Croissant RAI metadata | `mlcommons/croissant` | Evidence refs, redaction status, and claim status for dataset RAI fields | Commented on issue: <https://github.com/mlcommons/croissant/issues/1012#issuecomment-4422162947> |
 | MLPerf automation provenance | `mlcommons/mlperf-automations` | Optional run audit sidecar proposal | Open issue: <https://github.com/mlcommons/mlperf-automations/issues/955> |
 | MedPerf federated audit | `mlcommons/medperf` | Optional audit-safe metadata for federated evaluation runs | Open issue: <https://github.com/mlcommons/medperf/issues/688> |
+| GaNDLF experiment audit | `mlcommons/GaNDLF` | Optional experiment audit manifest for medical ML runs | Open issue: <https://github.com/mlcommons/GaNDLF/issues/1040> |
 
 ## Planned Tracks
 
