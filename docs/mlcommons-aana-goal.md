@@ -27,6 +27,7 @@ Core positioning:
 | Jailbreak taxonomy defense audit | `mlcommons/jailbreak-taxonomy` | Optional defensive-response audit metadata for taxonomy-aligned evals | Open issue: <https://github.com/mlcommons/jailbreak-taxonomy/issues/9> |
 | Croissant RAI metadata | `mlcommons/croissant` | Evidence refs, redaction status, and claim status for dataset RAI fields | Commented on issue: <https://github.com/mlcommons/croissant/issues/1012#issuecomment-4422162947> |
 | MLPerf automation provenance | `mlcommons/mlperf-automations` | Optional run audit sidecar proposal | Open issue: <https://github.com/mlcommons/mlperf-automations/issues/955> |
+| MedPerf federated audit | `mlcommons/medperf` | Optional audit-safe metadata for federated evaluation runs | Open issue: <https://github.com/mlcommons/medperf/issues/688> |
 
 ## Planned Tracks
 
@@ -118,4 +119,5 @@ Useful AANA contributions:
 - [x] Propose safety route/audit metadata in AILuminate or ModelBench.
 - [x] Propose dataset redaction/provenance metadata in Croissant or datasets-contrib.
 - [x] Propose automation result audit manifest in mlperf-automations or mlcflow.
+- [x] Propose audit-safe metadata for medical/federated evaluation workflows.
 - [ ] Summarize accepted, pending, and rejected maintainer feedback in AANA docs.
