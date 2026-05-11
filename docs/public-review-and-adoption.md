@@ -21,6 +21,7 @@ Claim boundary: AANA is not yet proven as a raw agent-performance engine. Public
 
 ## Try AANA In Two Minutes
 
+- Reviewer start here: [reviewer-start-here.md](reviewer-start-here.md)
 - Try AANA in 2 minutes: <https://huggingface.co/spaces/mindbomber/aana-demo>
 - Static docs demo: [tool-call-demo/index.html](tool-call-demo/index.html)
 - Agent Action Contract v1 standard: [agent-action-contract-v1.md](agent-action-contract-v1.md)

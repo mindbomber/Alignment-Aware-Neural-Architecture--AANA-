@@ -21,6 +21,8 @@ Static docs demo: [docs/tool-call-demo/index.html](docs/tool-call-demo/index.htm
 
 AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept.
 
+Maintainers and reviewers should start with [docs/reviewer-start-here.md](docs/reviewer-start-here.md). It gives the 10-minute review path, the exact claim boundary, the validation commands, and the failure cases we want challenged.
+
 Current evidence boundary: AANA is production-candidate as an audit/control/verification/correction layer. AANA is not yet proven as a raw agent-performance engine. See [docs/aana-production-candidate-evidence-pack.md](docs/aana-production-candidate-evidence-pack.md).
 
 Theoretical anchor: AANA is grounded in the correction-capacity versus optimization-pressure framing:
@@ -230,6 +232,7 @@ For the full walkthrough, see [docs/openai-agents-quickstart.md](docs/openai-age
 
 Start here:
 
+- [Reviewer start here](docs/reviewer-start-here.md)
 - [Try AANA in 2 minutes](https://huggingface.co/spaces/mindbomber/aana-demo)
 - [Agent Action Contract v1 standard](docs/agent-action-contract-v1.md)
 - [AANA public artifact hub](https://huggingface.co/collections/mindbomber/aana-public-artifact-hub-69fecc99df04ae6ed6dbc6c4)
