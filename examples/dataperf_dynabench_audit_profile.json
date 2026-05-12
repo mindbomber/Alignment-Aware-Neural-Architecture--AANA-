@@ -1,0 +1,62 @@
+{
+  "benchmark_coverage_thresholds": {
+    "minimum_adversarial_coverage": 0.2,
+    "minimum_baseline_count": 1,
+    "minimum_metric_count": 1,
+    "minimum_split_count": 2,
+    "minimum_task_count": 1
+  },
+  "claim_boundary": "DataPerf/Dynabench audit output is dataset and benchmark-readiness evidence only; it is not regulated deployment approval, production certification, or dataset legal certification.",
+  "dataset_quality_checks": {
+    "privacy_policy_required_for_sensitive_fields": true,
+    "require_distribution": true,
+    "require_intended_use": true,
+    "require_license": true,
+    "require_provenance": true
+  },
+  "drift_thresholds": {
+    "max_distribution_shift": 0.2,
+    "max_label_shift": 0.15,
+    "max_quality_regression": 0.05,
+    "max_staleness_days_elevated": 180,
+    "max_staleness_days_high": 90,
+    "max_staleness_days_standard": 365
+  },
+  "priority": "lower_than_medperf_croissant",
+  "product": "AANA AIx Audit",
+  "profile_type": "aana_dataperf_dynabench_audit_profile",
+  "profile_version": "0.1",
+  "risk_tier_rules": [
+    {
+      "conditions": [
+        "sensitive_fields_without_privacy_policy",
+        "large_drift",
+        "missing_license",
+        "missing_provenance",
+        "regulated_or_rights_impacting_domain"
+      ],
+      "tier": "high"
+    },
+    {
+      "conditions": [
+        "moderate_drift",
+        "low_adversarial_coverage",
+        "missing_baseline",
+        "dynamic_collection_without_review"
+      ],
+      "tier": "elevated"
+    },
+    {
+      "conditions": [
+        "complete_metadata",
+        "adequate_coverage",
+        "low_drift"
+      ],
+      "tier": "standard"
+    }
+  ],
+  "surfaces": [
+    "dataperf",
+    "dynabench"
+  ]
+}

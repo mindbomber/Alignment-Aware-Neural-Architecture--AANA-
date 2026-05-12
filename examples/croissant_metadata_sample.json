@@ -1,0 +1,62 @@
+{
+  "@context": {
+    "@language": "en",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "schema": "https://schema.org/"
+  },
+  "@type": "schema:Dataset",
+  "citeAs": "@dataset{support_cases_2026, title={Synthetic Support Cases}, year={2026}}",
+  "conformsTo": "http://mlcommons.org/croissant/1.1",
+  "creator": [
+    {
+      "@type": "schema:Organization",
+      "name": "AANA Synthetic Data Team"
+    }
+  ],
+  "description": "Synthetic support-case dataset for regulated AI audit demos.",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "contentUrl": "https://example.com/datasets/support_cases/synthetic_support_cases.parquet",
+      "encodingFormat": "application/x-parquet",
+      "name": "synthetic_support_cases.parquet"
+    }
+  ],
+  "intendedUse": "Evaluate customer-support AI governance behavior without exposing real customer records.",
+  "license": "https://spdx.org/licenses/CC-BY-4.0.html",
+  "name": "Synthetic Support Cases",
+  "privacyPolicy": "Synthetic data only; no real customer records.",
+  "publisher": {
+    "@type": "schema:Organization",
+    "name": "AANA"
+  },
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "dataType": "sc:Text",
+          "description": "Synthetic support case identifier.",
+          "name": "case_id"
+        },
+        {
+          "@type": "cr:Field",
+          "dataType": "sc:Text",
+          "description": "Synthetic customer email redacted to domain-level metadata.",
+          "name": "customer_email"
+        },
+        {
+          "@type": "cr:Field",
+          "dataType": "sc:Text",
+          "description": "Redacted support case text.",
+          "name": "case_summary"
+        }
+      ],
+      "name": "support_cases"
+    }
+  ],
+  "url": "https://example.com/datasets/support_cases",
+  "version": "2026.05"
+}

@@ -1,0 +1,17 @@
+{
+  "append_only": true,
+  "audit_path": "eval_outputs/durable_audit_storage/aana_audit.jsonl",
+  "durable_audit_storage_version": "0.1",
+  "manifest_path": "eval_outputs/durable_audit_storage/aana_audit.jsonl.sha256.json",
+  "production_boundary": "Local durable storage is suitable for production-candidate testing. External production still needs customer-approved immutable storage, access controls, backups, and retention enforcement.",
+  "raw_payload_storage": "disabled",
+  "redacted_records_only": true,
+  "retention": {
+    "legal_hold_supported": true,
+    "minimum_days": 365,
+    "production_remote_backend_required_for_go_live": true
+  },
+  "storage_mode": "local_append_only",
+  "storage_type": "aana_durable_audit_storage",
+  "tamper_evident_manifest": true
+}

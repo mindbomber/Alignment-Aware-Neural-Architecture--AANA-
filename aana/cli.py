@@ -10,6 +10,7 @@ import time
 
 from aana.sdk import architecture_decision, with_architecture_decision
 from eval_pipeline import agent_api
+from eval_pipeline import aix_audit
 from eval_pipeline.pre_tool_call_gate import gate_pre_tool_call, gate_pre_tool_call_v2, validate_event as validate_tool_precheck_event
 from eval_pipeline.production_candidate_evidence_pack import (
     load_manifest as load_evidence_pack_manifest,
@@ -160,6 +161,60 @@ def command_evidence_pack(args: argparse.Namespace) -> int:
     return 0 if report.get("valid") else 1
 
 
+def command_workflow_check(args: argparse.Namespace) -> int:
+    started_at = time.perf_counter()
+    workflow_request = _load_json(args.workflow)
+    result = agent_api.check_workflow_request(workflow_request, gallery_path=args.gallery)
+    result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
+    if args.shadow_mode:
+        result = agent_api.apply_shadow_mode(result)
+    if args.audit_log:
+        agent_api.append_audit_record(args.audit_log, agent_api.audit_workflow_check(workflow_request, result))
+    _print_json(result)
+    return 0 if args.shadow_mode or result.get("gate_decision") == "pass" else 1
+
+
+def command_workflow_batch(args: argparse.Namespace) -> int:
+    started_at = time.perf_counter()
+    batch_request = _load_json(args.batch)
+    result = agent_api.check_workflow_batch(batch_request, gallery_path=args.gallery)
+    latency_ms = round((time.perf_counter() - started_at) * 1000, 3)
+    for item in result.get("results", []) if isinstance(result, dict) else []:
+        if isinstance(item, dict):
+            item.setdefault("audit_metadata", {})["latency_ms"] = latency_ms
+    if args.shadow_mode:
+        result = agent_api.apply_shadow_mode(result)
+    if args.audit_log:
+        record = agent_api.audit_workflow_batch(batch_request, result)
+        for item in record.get("records", []):
+            agent_api.append_audit_record(args.audit_log, item)
+    _print_json(result)
+    return 0 if args.shadow_mode or result.get("summary", {}).get("failed", 1) == 0 else 1
+
+
+def command_aix_audit(args: argparse.Namespace) -> int:
+    report = aix_audit.run_enterprise_ops_aix_audit(
+        output_dir=args.output_dir,
+        batch_path=args.batch,
+        kit_dir=args.kit_dir,
+        gallery_path=args.gallery,
+        append=args.append,
+        shadow_mode=not args.enforce_mode,
+    )
+    if args.json:
+        _print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    print(f"AANA AIx Audit ({report['product_bundle']}): {'PASS' if report['valid'] else 'FAIL'}")
+    print(f"- Recommendation: {report['deployment_recommendation']}")
+    print(f"- Workflows: {summary['workflow_count']}")
+    print(f"- Audit records: {summary['audit_records']}")
+    print(f"- AIx report: {summary['aix_report_md']}")
+    print(f"- Report JSON: {summary['aix_report_json']}")
+    print(f"- Enterprise dashboard: {summary['enterprise_dashboard']}")
+    return 0 if report["valid"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -200,6 +255,38 @@ def build_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--manifest", default=DEFAULT_EVIDENCE_PACK)
     evidence.add_argument("--require-existing-artifacts", action="store_true")
     evidence.set_defaults(func=command_evidence_pack)
+
+    workflow = subparsers.add_parser("workflow-check", help="Check a Workflow Contract request.")
+    workflow.add_argument("--workflow", required=True, help="Workflow Contract request JSON.")
+    workflow.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    workflow.add_argument("--shadow-mode", action="store_true")
+    workflow.add_argument("--audit-log", default=None)
+    workflow.set_defaults(func=command_workflow_check)
+
+    workflow_batch = subparsers.add_parser("workflow-batch", help="Check a Workflow Contract batch request.")
+    workflow_batch.add_argument("--batch", required=True, help="Workflow Contract batch JSON.")
+    workflow_batch.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    workflow_batch.add_argument("--shadow-mode", action="store_true")
+    workflow_batch.add_argument("--audit-log", default=None)
+    workflow_batch.set_defaults(func=command_workflow_batch)
+
+    aix_audit_parser = subparsers.add_parser("aix-audit", help="Run the enterprise-ops AANA AIx Audit.")
+    aix_audit_parser.add_argument("--batch", default=None, help="Optional Workflow Contract batch JSON.")
+    aix_audit_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    aix_audit_parser.add_argument(
+        "--kit-dir",
+        default=ROOT / "examples" / "starter_pilot_kits" / "enterprise",
+        help="Enterprise starter kit directory used when --batch is not provided.",
+    )
+    aix_audit_parser.add_argument(
+        "--output-dir",
+        default=ROOT / "eval_outputs" / "aix_audit" / "enterprise_ops_pilot",
+        help="Directory for generated AIx audit artifacts.",
+    )
+    aix_audit_parser.add_argument("--append", action="store_true")
+    aix_audit_parser.add_argument("--enforce-mode", action="store_true")
+    aix_audit_parser.add_argument("--json", action="store_true")
+    aix_audit_parser.set_defaults(func=command_aix_audit)
 
     return parser
 

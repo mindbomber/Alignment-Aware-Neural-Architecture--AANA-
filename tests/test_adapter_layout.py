@@ -29,7 +29,7 @@ class AdapterLayoutTests(unittest.TestCase):
         families = load_adapter_families()
         bundles = load_bundles()
         self.assertEqual(set(bundles), set(BUNDLE_IDS))
-        self.assertEqual(set(BUNDLE_IDS), {"enterprise", "personal_productivity", "government_civic"})
+        self.assertEqual(set(BUNDLE_IDS), {"enterprise", "enterprise_ops_pilot", "personal_productivity", "government_civic"})
         for bundle in bundles.values():
             self.assertEqual(bundle["bundle_type"], "product_bundle")
             self.assertEqual(bundle["bundle_id"], bundle["canonical_id"])

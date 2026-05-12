@@ -32,7 +32,11 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+  "datasets>=2.18",
+  "joblib>=1.3",
   "pytest>=8.2",
+  "scikit-learn>=1.4",
+  "zstandard>=0.22",
 ]
 dev = [
   "build>=1.2",
@@ -73,3 +77,15 @@ aana = [
 
 [tool.unittest]
 start-dir = "tests"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [
+  ".git",
+  ".venv",
+  "build",
+  "dist",
+  "eval_outputs",
+  "node_modules",
+]
+pythonpath = [".", "tests", "scripts/evals"]

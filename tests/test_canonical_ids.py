@@ -27,12 +27,16 @@ class CanonicalIDTests(unittest.TestCase):
 
     def test_sdk_and_gallery_bundle_data_come_from_manifests(self):
         enterprise = load_bundle("enterprise")
+        enterprise_ops = load_bundle("enterprise_ops_pilot")
         civic = load_bundle("government_civic")
 
         self.assertEqual(bundle_adapter_aliases("enterprise"), enterprise["sdk_adapter_aliases"])
+        self.assertEqual(bundle_adapter_aliases("enterprise_ops_pilot"), enterprise_ops["sdk_adapter_aliases"])
         self.assertEqual(sdk.FAMILY_ADAPTER_ALIASES["enterprise"], enterprise["sdk_adapter_aliases"])
+        self.assertEqual(sdk.FAMILY_ADAPTER_ALIASES["enterprise_ops_pilot"], enterprise_ops["sdk_adapter_aliases"])
         self.assertEqual(sdk.FAMILY_ADAPTER_ALIASES["support"], enterprise["sdk_adapter_aliases"])
         self.assertEqual(adapter_gallery.BUNDLE_PACKS["enterprise"], set(enterprise["core_adapter_ids"]))
+        self.assertEqual(adapter_gallery.BUNDLE_PACKS["enterprise_ops_pilot"], set(enterprise_ops["core_adapter_ids"]))
         self.assertEqual(tuple(enterprise_family.ENTERPRISE_CORE_ADAPTERS), tuple(enterprise["core_adapter_ids"]))
         self.assertEqual(set(enterprise_family.ENTERPRISE_EVIDENCE_CONNECTORS.values()), set(enterprise["required_evidence_connectors"]))
         self.assertEqual(tuple(civic_family.CIVIC_CORE_ADAPTERS), tuple(civic["core_adapter_ids"]))

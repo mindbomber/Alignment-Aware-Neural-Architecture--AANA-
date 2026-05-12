@@ -1,45 +1,115 @@
 {
-  "pack_id": "enterprise",
+  "adapter_config_version": "0.2",
+  "pack_id": "enterprise_ops_pilot",
+  "calibration_policy": "AIx thresholds are calibrated release parameters, not theoretical proof.",
   "adapters": [
     {
+      "adapter_id": "support_reply",
+      "surface": "support_customer_communications",
+      "risk_tier": "standard",
+      "aix_beta": 1.0,
+      "layer_weights": {"P": 0.25, "B": 0.25, "C": 0.35, "F": 0.15},
+      "thresholds": {"accept_min": 0.9, "revise_min": 0.74, "defer_below": 0.66},
+      "evidence_requirements": ["account facts", "policy records", "refund eligibility", "consent state"],
+      "human_review_triggers": ["private account facts in output", "missing refund evidence", "conflicting customer/account evidence"],
+      "fixture_coverage": ["clean_accept", "revise", "missing_evidence", "unsupported_claim"],
+      "known_caveats": ["Pilot fixtures do not replace live CRM/order-system connectors."]
+    },
+    {
       "adapter_id": "crm_support_reply",
+      "surface": "support_customer_communications",
       "risk_tier": "elevated",
-      "evidence_sources": ["crm-record", "support-policy", "order-system"]
+      "aix_beta": 1.15,
+      "layer_weights": {"P": 0.25, "B": 0.25, "C": 0.35, "F": 0.15},
+      "thresholds": {"accept_min": 0.91, "revise_min": 0.76, "defer_below": 0.68},
+      "evidence_requirements": ["CRM account facts", "order-system status", "refund eligibility", "support policy", "identity verification state"],
+      "human_review_triggers": ["refund promise without order evidence", "private payment detail", "internal CRM note leakage"],
+      "fixture_coverage": ["clean_accept", "revise", "missing_evidence", "privacy_leakage", "unsupported_claim"],
+      "known_caveats": ["Production use needs authenticated CRM and order-system retrieval."]
     },
     {
       "adapter_id": "email_send_guardrail",
+      "surface": "support_customer_communications",
       "risk_tier": "strict",
-      "evidence_sources": ["draft-email", "recipient-metadata", "user-approval"]
+      "aix_beta": 1.55,
+      "layer_weights": {"P": 0.15, "B": 0.35, "C": 0.35, "F": 0.15},
+      "thresholds": {"accept_min": 0.95, "revise_min": 0.84, "defer_below": 0.74},
+      "evidence_requirements": ["draft email", "recipient metadata", "send approval", "attachment manifest", "DLP labels"],
+      "human_review_triggers": ["missing send approval", "unapproved recipient", "private attachment", "external irreversible send"],
+      "fixture_coverage": ["ask", "defer", "refuse", "privacy_leakage", "irreversible_action_routing"],
+      "known_caveats": ["V1 must run shadow/advisory before any live send enforcement."]
     },
     {
       "adapter_id": "ticket_update_checker",
+      "surface": "support_customer_communications",
       "risk_tier": "elevated",
-      "evidence_sources": ["ticket-history", "sprint-status", "support-policy"]
+      "aix_beta": 1.15,
+      "layer_weights": {"P": 0.3, "B": 0.2, "C": 0.35, "F": 0.15},
+      "thresholds": {"accept_min": 0.91, "revise_min": 0.76, "defer_below": 0.68},
+      "evidence_requirements": ["ticket history", "linked issue state", "sprint status", "support policy", "customer visibility"],
+      "human_review_triggers": ["unsupported ETA", "refund or SLA credit promise", "security/outage claim", "executive escalation"],
+      "fixture_coverage": ["clean_accept", "revise", "unsupported_claim", "defer"],
+      "known_caveats": ["Live rollout needs ticketing-system permissions and customer-visible field mapping."]
     },
     {
       "adapter_id": "data_export_guardrail",
+      "surface": "data_access_controls",
       "risk_tier": "strict",
-      "evidence_sources": ["data-classification", "access-grants", "export-request"]
+      "aix_beta": 1.55,
+      "layer_weights": {"P": 0.15, "B": 0.4, "C": 0.3, "F": 0.15},
+      "thresholds": {"accept_min": 0.95, "revise_min": 0.84, "defer_below": 0.74},
+      "evidence_requirements": ["data classification", "access grants", "export request", "destination approval", "retention policy", "legal-hold status"],
+      "human_review_triggers": ["PII export", "external destination", "missing approval", "legal hold", "overbroad scope"],
+      "fixture_coverage": ["defer", "refuse", "privacy_leakage", "hard_blocker", "irreversible_action_routing"],
+      "known_caveats": ["No production export should proceed without live DLP and access-control connectors."]
     },
     {
       "adapter_id": "access_permission_change",
+      "surface": "data_access_controls",
       "risk_tier": "high",
-      "evidence_sources": ["iam-request", "role-catalog", "approval-record"]
+      "aix_beta": 1.35,
+      "layer_weights": {"P": 0.15, "B": 0.25, "C": 0.45, "F": 0.15},
+      "thresholds": {"accept_min": 0.93, "revise_min": 0.8, "defer_below": 0.7},
+      "evidence_requirements": ["IAM request", "requester identity", "resource owner", "role catalog", "approval record", "expiration policy"],
+      "human_review_triggers": ["owner/admin role", "wildcard permission", "missing owner approval", "permanent access", "privileged production scope"],
+      "fixture_coverage": ["ask", "defer", "refuse", "missing_evidence", "hard_blocker", "irreversible_action_routing"],
+      "known_caveats": ["V1 does not grant permissions directly; it produces governance decisions only."]
     },
     {
       "adapter_id": "code_change_review",
+      "surface": "devops_release_controls",
       "risk_tier": "high",
-      "evidence_sources": ["git-diff", "test-output", "ci-status"]
+      "aix_beta": 1.35,
+      "layer_weights": {"P": 0.25, "B": 0.25, "C": 0.35, "F": 0.15},
+      "thresholds": {"accept_min": 0.93, "revise_min": 0.8, "defer_below": 0.7},
+      "evidence_requirements": ["git diff", "test output", "CI status", "secret scan output", "migration plan", "reviewer approval"],
+      "human_review_triggers": ["secret-like value", "destructive command", "failed tests", "unsafe migration", "missing reviewer approval"],
+      "fixture_coverage": ["clean_accept", "revise", "hard_blocker", "unsupported_claim"],
+      "known_caveats": ["AANA review supplements but does not replace code-owner review."]
     },
     {
       "adapter_id": "deployment_readiness",
+      "surface": "devops_release_controls",
       "risk_tier": "strict",
-      "evidence_sources": ["deployment-manifest", "ci-result", "release-notes"]
+      "aix_beta": 1.55,
+      "layer_weights": {"P": 0.2, "B": 0.25, "C": 0.4, "F": 0.15},
+      "thresholds": {"accept_min": 0.95, "revise_min": 0.84, "defer_below": 0.74},
+      "evidence_requirements": ["deployment manifest", "CI result", "rollback plan", "migration plan", "health-check report", "secret-scan output", "observability policy"],
+      "human_review_triggers": ["production deployment", "failed CI", "missing rollback", "secret exposure", "unsafe migration", "observability missing"],
+      "fixture_coverage": ["defer", "refuse", "hard_blocker", "irreversible_action_routing"],
+      "known_caveats": ["Pilot readiness does not certify production release readiness."]
     },
     {
       "adapter_id": "incident_response_update",
+      "surface": "devops_release_controls",
       "risk_tier": "elevated",
-      "evidence_sources": ["incident-timeline", "status-page-policy", "on-call-notes"]
+      "aix_beta": 1.15,
+      "layer_weights": {"P": 0.35, "B": 0.25, "C": 0.25, "F": 0.15},
+      "thresholds": {"accept_min": 0.91, "revise_min": 0.76, "defer_below": 0.68},
+      "evidence_requirements": ["incident timeline", "severity declaration", "affected services", "customer-impact metrics", "mitigation status", "ETA approval", "communications approval"],
+      "human_review_triggers": ["unverified severity", "unsupported customer-impact claim", "unapproved ETA", "resolution claim without evidence"],
+      "fixture_coverage": ["clean_accept", "revise", "unsupported_claim", "defer"],
+      "known_caveats": ["Live status-page publishing remains out of scope for V1."]
     }
   ],
   "pilot_controls": [

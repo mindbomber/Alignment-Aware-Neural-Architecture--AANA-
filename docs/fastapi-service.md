@@ -25,8 +25,19 @@ FastAPI serves OpenAPI JSON at `/openapi.json` and Swagger UI at `/docs`.
 ## Routes
 
 - `GET /health`
+- `GET /ready`
 - `POST /pre-tool-check`
+- `POST /tool-precheck` compatibility alias
 - `POST /agent-check`
+- `POST /workflow-check`
+- `POST /workflow-batch`
+- `POST /aix-audit`
+- `GET /enterprise-connectors`
+- `POST /enterprise-support-demo`
+- `POST /mlcommons-aix-report`
+- `POST /validate-event`
+- `POST /validate-workflow`
+- `POST /validate-tool-precheck`
 - `GET /openapi.json`
 - `GET /docs`
 
@@ -62,6 +73,12 @@ Scopes are route-level:
 
 - `pre_tool_check` allows `POST /pre-tool-check`
 - `agent_check` allows `POST /agent-check`
+- `workflow_check` allows `POST /workflow-check`
+- `workflow_batch` allows `POST /workflow-batch`
+- `aix_audit` allows `POST /aix-audit`
+- `enterprise_connectors` allows `GET /enterprise-connectors`
+- `enterprise_demo` allows `POST /enterprise-support-demo`
+- `validation` allows validation-only routes
 
 Rotation is operationally simple because AANA does not store sessions: deploy a
 new token through your secret manager, restart the service, update clients, then
@@ -159,6 +176,53 @@ Invoke-RestMethod `
   -Body $event `
   -ContentType "application/json"
 ```
+
+## Workflow Check And Batch
+
+Use `/workflow-check` and `/workflow-batch` for Workflow Contract requests. These are the runtime-compatible surfaces used by `AANA AIx Audit` and enterprise pilot reports.
+
+```powershell
+$workflow = Get-Content examples/workflow_crm_support_reply.json -Raw
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://127.0.0.1:8766/workflow-check `
+  -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } `
+  -Body $workflow `
+  -ContentType "application/json"
+```
+
+## Enterprise Audit, Connectors, And Demo
+
+Use `/aix-audit` to run the same local `enterprise_ops_pilot` artifact path as the CLI:
+
+```powershell
+$body = @{ output_dir = "eval_outputs/aix_audit/fastapi-enterprise-ops"; shadow_mode = $true } | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://127.0.0.1:8766/aix-audit `
+  -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } `
+  -Body $body `
+  -ContentType "application/json"
+```
+
+Use `/enterprise-connectors` to return the connector readiness plan for CRM/support, ticketing, email send, IAM/access, CI/CD, deployment, and data export. Live execution remains disabled in this artifact.
+
+Use `/enterprise-support-demo` to run the customer-support, email-send, and ticket-update buyer demo:
+
+```powershell
+$body = @{ output_dir = "eval_outputs/demos/fastapi-enterprise-support"; shadow_mode = $true } | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://127.0.0.1:8766/enterprise-support-demo `
+  -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } `
+  -Body $body `
+  -ContentType "application/json"
+```
+
+These routes are local pilot tooling. They generate redacted artifacts and reports, but they do not certify production deployment.
 
 ## OpenAI Agent API Guard
 

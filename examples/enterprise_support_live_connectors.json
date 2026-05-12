@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "Production-candidate connector configuration; not production certification.",
+  "config_type": "aana_enterprise_support_live_connectors",
+  "connectors": [
+    {
+      "approval_status": "pending",
+      "auth_token_env": "AANA_CRM_SUPPORT_TOKEN",
+      "base_url": "https://connectors.example.internal",
+      "connector_id": "crm_support",
+      "display_name": "CRM/support case context",
+      "endpoint_path": "/aana/support/case-context",
+      "environment": "pilot",
+      "owner": "Support Operations",
+      "source_mode": "dry_run",
+      "supports_shadow_reads": true,
+      "timeout_seconds": 10,
+      "write_enabled": false
+    },
+    {
+      "approval_status": "pending",
+      "auth_token_env": "AANA_EMAIL_SEND_TOKEN",
+      "base_url": "https://connectors.example.internal",
+      "connector_id": "email_send",
+      "display_name": "Email send action",
+      "endpoint_path": "/aana/email/send",
+      "environment": "pilot",
+      "owner": "Support Operations",
+      "source_mode": "dry_run",
+      "supports_shadow_reads": false,
+      "timeout_seconds": 10,
+      "write_enabled": false
+    },
+    {
+      "approval_status": "pending",
+      "auth_token_env": "AANA_TICKETING_TOKEN",
+      "base_url": "https://connectors.example.internal",
+      "connector_id": "ticketing",
+      "display_name": "Ticket update action",
+      "endpoint_path": "/aana/tickets/update",
+      "environment": "pilot",
+      "owner": "Support Operations",
+      "source_mode": "dry_run",
+      "supports_shadow_reads": false,
+      "timeout_seconds": 10,
+      "write_enabled": false
+    }
+  ],
+  "enterprise_live_connectors_version": "0.1"
+}

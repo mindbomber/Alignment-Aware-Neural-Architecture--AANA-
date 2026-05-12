@@ -16,15 +16,19 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
             ".dockerignore",
             "examples/aana_bridge.env.example",
             "docs/docker-http-bridge.md",
+            "docs/production-candidate-deployment.md",
         ]:
             self.assertTrue((ROOT / relative_path).exists(), relative_path)
 
-    def test_dockerfile_runs_http_bridge(self):
+    def test_dockerfile_runs_fastapi_runtime(self):
         dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
 
         self.assertIn("FROM python:3.11-slim", dockerfile)
         self.assertIn("EXPOSE 8765", dockerfile)
-        self.assertIn("scripts/aana_server.py", dockerfile)
+        self.assertIn('python -m pip install --no-cache-dir ".[api]"', dockerfile)
+        self.assertIn("aana-fastapi", dockerfile)
+        self.assertIn("AANA_MAX_REQUEST_BYTES", dockerfile)
+        self.assertIn("data.get('status') == 'ok'", dockerfile)
         self.assertIn("COPY Dockerfile docker-compose.yml .dockerignore ./", dockerfile)
         self.assertIn("COPY .github ./.github", dockerfile)
         self.assertIn("COPY web ./web", dockerfile)
@@ -45,6 +49,10 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
             "nginx.ingress.kubernetes.io/limit-rpm: \"60\"",
             "path: /health",
             "path: /ready",
+            "aana-fastapi",
+            "AANA_MAX_REQUEST_BYTES",
+            "AANA_BRIDGE_TOKEN_SCOPES",
+            "production_candidate_check",
             "resources:",
             "requests:",
             "limits:",
@@ -58,12 +66,18 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
         compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
 
         for expected in [
+            "aana/enterprise-ops-runtime:local",
+            "aana-fastapi",
             "AANA_BRIDGE_TOKEN",
             "aana-local-dev-token",
+            "AANA_BRIDGE_TOKEN_SCOPES",
+            "production_candidate_check",
             "AANA_ADAPTER_GALLERY",
             "examples/adapter_gallery.json",
             "AANA_AUDIT_LOG",
-            "eval_outputs/audit/docker/aana-bridge.jsonl",
+            "eval_outputs/audit/docker/aana-fastapi.jsonl",
+            "AANA_MAX_REQUEST_BYTES",
+            "data.get('status') == 'ok'",
             "./eval_outputs:/app/eval_outputs",
             "/ready",
         ]:
@@ -77,26 +91,46 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
             "AANA_GOVERNANCE_POLICY=examples/human_governance_policy_internal_pilot.json",
             "AANA_EVIDENCE_REGISTRY=examples/evidence_registry.json",
             "AANA_OBSERVABILITY_POLICY=examples/observability_policy_internal_pilot.json",
+            "AANA_PRODUCTION_CANDIDATE_PROFILE=examples/production_candidate_profile_enterprise_support.json",
+            "AANA_LIVE_CONNECTOR_CONFIG=examples/enterprise_support_live_connectors.json",
+            "AANA_MAX_REQUEST_BYTES=1048576",
         ]:
             self.assertIn(expected, env_example)
 
-    def test_docker_docs_cover_required_routes(self):
+    def test_docker_docs_cover_required_runtime_routes(self):
         docs = (ROOT / "docs" / "docker-http-bridge.md").read_text(encoding="utf-8")
 
         for expected in [
             "docker compose up --build",
             "Invoke-RestMethod http://localhost:8765/ready",
-            "http://localhost:8765/playground",
-            "http://localhost:8765/demos",
-            "http://localhost:8765/adapter-gallery",
-            "http://localhost:8765/enterprise",
-            "http://localhost:8765/personal-productivity",
-            "http://localhost:8765/government-civic",
-            "Invoke-RestMethod http://localhost:8765/adapter-gallery/data.json",
-            "Invoke-RestMethod http://localhost:8765/demos/scenarios",
+            "http://localhost:8765/docs",
+            "aana-fastapi",
+            "/production-candidate-check",
+            "/enterprise-live-connectors",
+            "/live-monitoring",
+            "AANA_BRIDGE_TOKEN_SCOPES",
+            "production_candidate_check",
+            "not production certification",
             "examples/agent_event_support_reply.json",
             "examples/workflow_research_summary_structured.json",
             "examples/workflow_batch_productive_work.json",
+        ]:
+            self.assertIn(expected, docs)
+
+    def test_production_candidate_deployment_doc_declares_artifacts_and_external_gates(self):
+        docs = (ROOT / "docs" / "production-candidate-deployment.md").read_text(encoding="utf-8")
+
+        for expected in [
+            "docker build -t aana/enterprise-ops-runtime:local .",
+            "docker compose up --build",
+            "kubectl apply -f deploy/kubernetes/aana-bridge-production-template.yaml",
+            "production-candidate-check",
+            "eval_outputs/audit/docker/aana-fastapi.jsonl",
+            "production-candidate AIx report",
+            "Production-candidate does not mean production certification.",
+            "live connector authorization",
+            "immutable audit retention",
+            "measured shadow-mode results",
         ]:
             self.assertIn(expected, docs)
 

@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "audit_retention_policy": "examples/audit_retention_policy_internal_pilot.json",
+    "aix_audit_kit": "examples/starter_pilot_kits/enterprise",
+    "connector_readiness": "examples/enterprise_ops_connector_readiness.json",
+    "deployment_manifest": "examples/production_deployment_internal_pilot.json",
+    "durable_audit_storage": "examples/durable_audit_storage.json",
+    "governance_policy": "examples/human_governance_policy_internal_pilot.json",
+    "human_review_export": "examples/human_review_queue_export.json",
+    "incident_response_plan": "examples/incident_response_plan_internal_pilot.json",
+    "live_monitoring": "examples/live_monitoring_metrics.json",
+    "live_connector_config": "examples/enterprise_support_live_connectors.json",
+    "observability_policy": "examples/observability_policy.json"
+  },
+  "claim_boundary": "Production-candidate configuration only; not production certification or go-live approval.",
+  "connectors": {
+    "default_config_allows_external_calls": false,
+    "live_approval_required": true,
+    "required": [
+      "crm_support",
+      "email_send",
+      "ticketing"
+    ],
+    "write_enabled_requires_live_approval": true
+  },
+  "human_review": {
+    "override_policy": "Overrides must be reviewer-approved and written to redacted audit metadata.",
+    "queue": "support_human_review",
+    "required_for": [
+      "defer",
+      "refuse",
+      "hard_blocker",
+      "irreversible_send",
+      "customer_visible_ticket_update"
+    ]
+  },
+  "monitoring": {
+    "dashboard_source_of_truth": "redacted_audit_metrics",
+    "drift_check_required": true,
+    "required_metrics": [
+      "gate_decision_count",
+      "recommended_action_count",
+      "aix_score_average",
+      "aix_hard_blocker_count",
+      "connector_failure_count",
+      "evidence_freshness_failure_count",
+      "latency",
+      "shadow_would_action_count"
+    ]
+  },
+  "product": "AANA Runtime + AANA AIx Audit",
+  "product_bundle": "enterprise_ops_pilot",
+  "production_candidate_profile_version": "0.1",
+  "profile_id": "enterprise_support_email_ticket_candidate",
+  "profile_type": "aana_production_candidate_profile",
+  "promotion_requirements": [
+    "Live connector manifests are approved by customer system owners.",
+    "Immutable audit retention is configured outside local JSONL.",
+    "Human-review queue and SLA are staffed.",
+    "Security review covers connector credentials and runtime deployment.",
+    "Shadow-mode results meet customer-defined success criteria.",
+    "Incident response and rollback paths are tested."
+  ],
+  "runtime": {
+    "default_mode": "shadow",
+    "direct_execution_rule": {
+      "aix_hard_blockers": 0,
+      "gate_decision": "pass",
+      "hard_blockers": 0,
+      "recommended_action": "accept",
+      "validation_errors": 0
+    },
+    "fail_closed_execution": true,
+    "shadow_mode_writes_disabled": true,
+    "supported_modes": [
+      "dry_run",
+      "shadow",
+      "enforce"
+    ]
+  },
+  "status": "production_candidate_config",
+  "wedge": "customer support + email send + ticket update"
+}

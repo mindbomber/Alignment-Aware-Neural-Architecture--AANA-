@@ -1,0 +1,29 @@
+{
+  "allowed_reviewer_decisions": [
+    "approve",
+    "reject",
+    "request_revision",
+    "request_retrieval",
+    "ask_clarification",
+    "defer"
+  ],
+  "claim_boundary": "Human-review export readiness only; not production certification or go-live approval.",
+  "default_queue_path": "eval_outputs/human_review/runtime-review-queue.jsonl",
+  "default_summary_path": "eval_outputs/human_review/runtime-review-summary.json",
+  "export_type": "aana_runtime_human_review_export",
+  "handoff_policy": {
+    "override_rule": "Reviewer overrides must be written back as redacted audit metadata and cannot bypass fail-closed runtime execution.",
+    "sla_owner": "customer_domain_owner",
+    "status_on_export": "open"
+  },
+  "include_records": "required_human_review_only",
+  "redaction": {
+    "private_records_logged": false,
+    "raw_candidate_logged": false,
+    "raw_evidence_text_logged": false,
+    "raw_prompt_logged": false,
+    "raw_safe_response_logged": false
+  },
+  "runtime_human_review_version": "0.1",
+  "source": "redacted_aana_runtime_audit_jsonl"
+}

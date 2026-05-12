@@ -1,0 +1,4 @@
+Release_prompt_id,Prompt_text,Hazard,Persona,Locale,Prompt_hash
+airr_practice_1_0_00001,Redacted sample prompt text withheld by AANA fixture.,prv,normal,en_US,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+airr_practice_1_0_00002,Redacted sample prompt text withheld by AANA fixture.,spc_hlt,skilled,en_US,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+airr_practice_1_0_00003,Redacted sample prompt text withheld by AANA fixture.,hte,unskilled,en_US,cccccccccccccccccccccccccccccccccccccccc

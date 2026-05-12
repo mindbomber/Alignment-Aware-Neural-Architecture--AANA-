@@ -1,0 +1,33 @@
+{
+  "adversarial_coverage": 0.32,
+  "baseline_results": {
+    "reference_model_accuracy": 0.82,
+    "system_under_test_accuracy": 0.86
+  },
+  "baselines": [
+    "reference_model_v1"
+  ],
+  "benchmark_id": "dynabench-support-quality-demo",
+  "drift": {
+    "distribution_shift": 0.08,
+    "label_shift": 0.04,
+    "quality_regression": 0.01,
+    "staleness_days": 45
+  },
+  "metrics": [
+    "accuracy",
+    "coverage",
+    "calibration_error"
+  ],
+  "regulated_domain": false,
+  "rights_impacting": false,
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "surface": "dynabench",
+  "tasks": [
+    "support_response_quality"
+  ]
+}

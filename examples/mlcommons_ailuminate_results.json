@@ -1,0 +1,46 @@
+{
+  "benchmark": "MLCommons AILuminate v1.1 practice-style sample",
+  "created_at": "2026-05-12T00:00:00Z",
+  "evidence_basis": "Synthetic public-shape sample for AANA importer tests; not an official MLCommons result.",
+  "evidence_quality": 0.86,
+  "hazard_scores": [
+    {
+      "hazard_uid": "vcr",
+      "samples": 120,
+      "score": 0.94,
+      "violation_rate": 0.02
+    },
+    {
+      "hazard_uid": "ssh",
+      "samples": 120,
+      "score": 0.91,
+      "violation_rate": 0.03
+    },
+    {
+      "hazard_uid": "prv",
+      "samples": 120,
+      "score": 0.96,
+      "violation_rate": 0.005
+    },
+    {
+      "hazard_uid": "spc_fin",
+      "samples": 120,
+      "score": 0.89,
+      "violation_rate": 0.015
+    },
+    {
+      "hazard_uid": "hte",
+      "samples": 120,
+      "score": 0.93,
+      "violation_rate": 0.02
+    }
+  ],
+  "language": "en_US",
+  "result_id": "sample-ailuminate-aana-import",
+  "result_type": "mlcommons_ailuminate_results",
+  "sut": {
+    "deployment_context": "regulated enterprise pilot",
+    "model": "example-chat-system",
+    "version": "sample"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "aix": {
+    "beta": 2.0,
+    "component_weights": {
+      "B": 0.35,
+      "C": 0.3,
+      "F": 0.15,
+      "P": 0.2
+    },
+    "risk_tier": "strict",
+    "thresholds": {
+      "accept_min": 0.95,
+      "defer_below": 0.9,
+      "revise_min": 0.9
+    }
+  },
+  "claim_boundary": "Healthcare evaluation profile only; pilot readiness is not production certification, clinical deployment approval, medical device clearance, or clinical advice.",
+  "deployment_context": "federated_medical_ai_evaluation",
+  "evaluation_context": {
+    "clinical_owner_signoff": {
+      "owner": "Clinical Evaluation Owner",
+      "signed_at": "2026-05-12T00:00:00Z",
+      "status": "approved"
+    },
+    "clinical_task": {
+      "clinical_domain": "radiology",
+      "intended_use": "Assist evaluation of synthetic triage workflow outputs during a federated benchmark pilot.",
+      "task_id": "triage_assist",
+      "unsupported_medical_claims_detected": false,
+      "unsupported_uses": [
+        "autonomous diagnosis",
+        "treatment selection without clinician review",
+        "emergency-care routing without human oversight"
+      ]
+    },
+    "dataset": {
+      "contains_phi": false,
+      "data_use_agreement": "synthetic-data-only",
+      "dataset_id": "synthetic-radiology-demo",
+      "provenance_source": "examples/croissant_metadata_sample.json"
+    },
+    "evaluation_owner": {
+      "contact": "redacted",
+      "name": "Clinical Evaluation Owner",
+      "role": "medical_director"
+    },
+    "irb_ethics": {
+      "reference": "synthetic-demo",
+      "required": false,
+      "status": "not_applicable_synthetic_fixture"
+    },
+    "model": {
+      "model_card": "synthetic model card metadata",
+      "model_id": "example-medical-triage-model",
+      "version": "0.1"
+    },
+    "privacy_controls": {
+      "de_identification_required": true,
+      "phi_allowed": false,
+      "privacy_boundary": "synthetic_or_deidentified_only",
+      "raw_records_in_audit_allowed": false,
+      "redacted_audit_required": true
+    },
+    "site": {
+      "jurisdiction": "US",
+      "site_id": "synthetic-hospital-site",
+      "site_name": "Synthetic Hospital Site"
+    },
+    "site_approval": {
+      "approval_reference": "synthetic-site-approval-2026-05",
+      "approval_status": "approved",
+      "approved_by": "Site Evaluation Owner"
+    }
+  },
+  "hard_blocker_rules": [
+    {
+      "description": "The evaluation site must have an explicit approval marker before healthcare audit readiness.",
+      "id": "missing_site_approval"
+    },
+    {
+      "description": "The profile must declare privacy controls, PHI boundary, and redacted audit handling.",
+      "id": "missing_privacy_boundary"
+    },
+    {
+      "description": "Unsupported diagnosis, treatment, or autonomous clinical claims block readiness.",
+      "id": "unsupported_medical_claim"
+    },
+    {
+      "description": "A clinical owner must sign off before healthcare evaluation readiness.",
+      "id": "missing_clinical_owner_signoff"
+    }
+  ],
+  "limitations": [
+    "This profile supports healthcare evaluation audit readiness, not clinical deployment approval.",
+    "Production use still requires site governance, security review, human-review operations, and measured shadow-mode evidence.",
+    "Medical claims must remain inside the declared clinical task and unsupported-use boundaries."
+  ],
+  "medperf_aix_profile_version": "0.1",
+  "mlcommons_surface": "medperf",
+  "product": "AANA AIx Audit",
+  "profile_id": "medperf_healthcare_strict_v1",
+  "profile_type": "aana_medperf_aix_profile",
+  "reporting": {
+    "healthcare_section_required": true,
+    "include_clinical_owner_signoff": true,
+    "include_irb_ethics_marker": true,
+    "include_privacy_boundary": true,
+    "include_site_summary": true
+  },
+  "required_fields": [
+    "site",
+    "dataset",
+    "model",
+    "clinical_task",
+    "evaluation_owner",
+    "privacy_controls",
+    "clinical_owner_signoff",
+    "site_approval"
+  ],
+  "risk_tier": "strict"
+}
