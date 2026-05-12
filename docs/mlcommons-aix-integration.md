@@ -1,5 +1,8 @@
 # AANA MLCommons AIx Integration
 
+For a shorter follow-up packet intended for MLCommons conversations, see
+`docs/aana-mlcommons-integration-brief.md`.
+
 AANA can sit beside MLCommons benchmark infrastructure as the audit and
 deployment-governance layer. MLCommons benchmark outputs describe how a system
 performed against a benchmark. AANA converts that evidence into an AIx report:

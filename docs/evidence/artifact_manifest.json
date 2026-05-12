@@ -151,6 +151,13 @@
       "reproduction_command": "python scripts/publication/mi_release_candidate.py --no-fail-on-block && python scripts/publication/mi_release.py"
     },
     {
+      "artifact_path": "docs/evidence/peer_review/mlcommons_aix_sample/**",
+      "result_label": "diagnostic",
+      "source_split": "synthetic_modelbench_journal_shape_sample",
+      "public_claim_allowed": false,
+      "reproduction_command": "python scripts/aana_cli.py mlcommons-aix-report --results examples/mlcommons_modelbench_journal_actual.jsonl --source-type modelbench --output-dir docs/evidence/peer_review/mlcommons_aix_sample --json"
+    },
+    {
       "artifact_path": "docs/evidence/peer_review/starter_pilot_kits/**",
       "result_label": "diagnostic",
       "source_split": "synthetic_starter_pilot_kits",
