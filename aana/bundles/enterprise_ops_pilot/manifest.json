@@ -1,0 +1,104 @@
+{
+  "bundle_id": "enterprise_ops_pilot",
+  "canonical_id": "enterprise_ops_pilot",
+  "aliases": [
+    "enterprise_aix_audit",
+    "enterprise_pilot"
+  ],
+  "bundle_type": "product_bundle",
+  "purpose": "Pilot-ready AANA AIx Audit package for enterprise support, data/access, and DevOps/release workflows.",
+  "adapter_families": [
+    "privacy_pii",
+    "grounded_qa",
+    "agent_tool_use",
+    "governance_compliance",
+    "security_devops",
+    "domain_risk"
+  ],
+  "pilot_surfaces": [
+    "support_customer_communications",
+    "data_access_controls",
+    "devops_release_controls"
+  ],
+  "core_adapter_ids": [
+    "support_reply",
+    "crm_support_reply",
+    "email_send_guardrail",
+    "ticket_update_checker",
+    "data_export_guardrail",
+    "access_permission_change",
+    "code_change_review",
+    "deployment_readiness",
+    "incident_response_update"
+  ],
+  "sdk_adapter_aliases": {
+    "access": "access_permission_change",
+    "code_review": "code_change_review",
+    "crm": "crm_support_reply",
+    "crm_support": "crm_support_reply",
+    "data_export": "data_export_guardrail",
+    "deployment": "deployment_readiness",
+    "draft": "support_reply",
+    "email": "email_send_guardrail",
+    "incident": "incident_response_update",
+    "support": "support_reply",
+    "ticket": "ticket_update_checker"
+  },
+  "required_evidence_connectors": [
+    "crm_support",
+    "ticketing",
+    "email_send",
+    "iam",
+    "ci",
+    "deployment",
+    "data_export"
+  ],
+  "human_review_required_for": [
+    "customer-visible support communications with missing account evidence",
+    "private data exports or external sharing",
+    "privileged access changes",
+    "production deployments",
+    "security or customer-impacting incidents",
+    "any defer or refuse route before enforcement rollout"
+  ],
+  "minimum_validation": {
+    "required_adapter_families": [
+      "privacy_pii",
+      "grounded_qa",
+      "agent_tool_use",
+      "governance_compliance",
+      "security_devops",
+      "domain_risk"
+    ],
+    "heldout_validation_coverage": [
+      {"adapter_family": "privacy_pii", "source": "piimb/pii-masking-benchmark sentences/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "grounded_qa", "source": "PatronusAI/HaluBench default/test", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "agent_tool_use", "source": "ScaleAI/MCP-Atlas default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "governance_compliance", "source": "tests/test_production_candidate_evidence_pack.py", "coverage_type": "repo_heldout_fixture"},
+      {"adapter_family": "security_devops", "source": "ScaleAI/MCP-Atlas default/train", "coverage_type": "hf_dataset_split"},
+      {"adapter_family": "domain_risk", "source": "nvidia/Nemotron-PII default/test", "coverage_type": "hf_dataset_split"}
+    ]
+  },
+  "aix_report": {
+    "product": "AANA AIx Audit",
+    "recommendation_labels": [
+      "pilot_ready",
+      "pilot_ready_with_controls",
+      "not_pilot_ready",
+      "insufficient_evidence"
+    ],
+    "pilot_only_claim": "Pilot readiness is not production certification."
+  },
+  "packaging_artifacts": {
+    "adapter_config": "examples/starter_pilot_kits/enterprise/adapter_config.json",
+    "calibration_fixtures": "examples/starter_pilot_kits/enterprise/calibration_fixtures.json",
+    "connector_readiness": "examples/enterprise_ops_connector_readiness.json",
+    "connector_readiness_guide": "docs/enterprise-connector-readiness.md",
+    "support_demo_guide": "docs/enterprise-support-demo-flow.md",
+    "support_demo_viewer": "web/enterprise-support-demo/index.html",
+    "pilot_guide": "docs/enterprise-ops-pilot-guide.md",
+    "dashboard_artifact": "enterprise-dashboard.json"
+  },
+  "required_split_rule": "Never tune and claim on the same dataset/config/split.",
+  "claim_boundary": "Enterprise-ops pilot claims are limited to synthetic or shadow/advisory enterprise workflows and do not certify production use."
+}

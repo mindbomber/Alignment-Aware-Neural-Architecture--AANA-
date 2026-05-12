@@ -17,6 +17,7 @@ DEFAULT_MOCK_FIXTURES = ROOT / "examples" / "evidence_mock_connector_fixtures.js
 
 CERTIFICATION_POLICY_BY_BUNDLE = {
     "enterprise": ROOT / "examples" / "enterprise_certification_policy.json",
+    "enterprise_ops_pilot": ROOT / "examples" / "enterprise_certification_policy.json",
     "personal_productivity": ROOT / "examples" / "personal_certification_policy.json",
     "government_civic": ROOT / "examples" / "civic_certification_policy.json",
 }
@@ -108,7 +109,7 @@ def _family_report(
     mock_fixtures_path: pathlib.Path | str,
     certification_policy_path: pathlib.Path | str,
 ) -> dict[str, Any]:
-    if bundle_id == "enterprise":
+    if bundle_id in {"enterprise", "enterprise_ops_pilot"}:
         return enterprise_family.enterprise_certification_report(
             gallery_path=gallery_path,
             evidence_registry_path=evidence_registry_path,

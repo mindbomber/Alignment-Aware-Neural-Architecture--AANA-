@@ -1,0 +1,658 @@
+{
+  "common_controls": {
+    "customer_secret_manager_required": true,
+    "domain_owner_signoff_required": true,
+    "human_review_operations_required": true,
+    "immutable_audit_retention_required_for_production": true,
+    "redacted_audit_only": true,
+    "security_review_required": true,
+    "shadow_mode_first": true
+  },
+  "connectors": [
+    {
+      "adapter_ids": [
+        "support_reply",
+        "crm_support_reply"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "crm.account.read_minimal",
+          "crm.case.read",
+          "crm.policy.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "crm_support",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "CRM/support",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 30,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "missing CRM owner approval",
+        "unredacted account records",
+        "no refund/order evidence mapping"
+      ],
+      "integration_id": "crm_support",
+      "irreversible_action_risk": false,
+      "live_execution_enabled": false,
+      "pilot_surface": "support_customer_communications",
+      "rate_limits": {
+        "burst": 5,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "customer account summary",
+        "case context",
+        "order/refund state",
+        "support policy reference"
+      ],
+      "setup_steps": [
+        "Create least-privilege read-only service account or OAuth app.",
+        "Map customer/account/case identifiers to redacted evidence source IDs.",
+        "Enable PII minimization before evidence enters AANA.",
+        "Run synthetic and shadow-mode support reply checks before enforcement."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Fetch redacted account facts for a known test case.",
+        "Verify no payment details or internal notes appear in audit JSONL.",
+        "Confirm stale or missing CRM evidence routes to retrieve/defer."
+      ],
+      "source_system_examples": [
+        "Salesforce Service Cloud",
+        "Zendesk Sell",
+        "HubSpot Service Hub",
+        "custom CRM"
+      ],
+      "write_capable": false
+    },
+    {
+      "adapter_ids": [
+        "ticket_update_checker",
+        "incident_response_update"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "ticket.read",
+          "ticket.comment.read",
+          "ticket.status.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "ticketing",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "Ticketing",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 15,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "private comment leakage",
+        "unmapped public/private field boundary",
+        "no ticket owner signoff"
+      ],
+      "integration_id": "ticketing",
+      "irreversible_action_risk": false,
+      "live_execution_enabled": false,
+      "pilot_surface": "support_customer_communications",
+      "rate_limits": {
+        "burst": 5,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "ticket history",
+        "public/private comment status",
+        "linked issue state",
+        "SLA or escalation state"
+      ],
+      "setup_steps": [
+        "Create read-only ticketing connector for shadow mode.",
+        "Classify public versus internal comments before evidence export.",
+        "Map ticket state and customer-visible fields to structured evidence."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Fetch one redacted ticket history record.",
+        "Confirm private comments are summarized or omitted.",
+        "Verify unsupported ETA/status claims trigger revise/defer."
+      ],
+      "source_system_examples": [
+        "Zendesk",
+        "Jira Service Management",
+        "ServiceNow",
+        "Linear"
+      ],
+      "write_capable": false
+    },
+    {
+      "adapter_ids": [
+        "email_send_guardrail"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "mail.read_metadata",
+          "mail.draft.read",
+          "mail.send_disabled_in_shadow"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "email_send",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "Email send",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 5,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "live send enabled before shadow approval",
+        "missing recipient verification",
+        "attachment body exposed"
+      ],
+      "integration_id": "email_send",
+      "irreversible_action_risk": true,
+      "live_execution_enabled": false,
+      "pilot_surface": "support_customer_communications",
+      "rate_limits": {
+        "burst": 3,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 30,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "recipient metadata",
+        "draft summary",
+        "attachment manifest",
+        "send approval state",
+        "DLP labels"
+      ],
+      "setup_steps": [
+        "Start with draft/read metadata only; disable live send in shadow mode.",
+        "Map recipient, attachment, approval, and DLP state to redacted evidence.",
+        "Require explicit send approval and recipient verification before any enforcement path."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Check wrong-recipient fixture routes to revise/refuse.",
+        "Confirm attachments are represented by metadata/fingerprint only.",
+        "Verify any live-send attempt in shadow mode routes to defer."
+      ],
+      "source_system_examples": [
+        "Gmail",
+        "Microsoft Graph/Outlook",
+        "SendGrid",
+        "customer SMTP relay"
+      ],
+      "write_capable": true
+    },
+    {
+      "adapter_ids": [
+        "access_permission_change"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "iam.request.read",
+          "iam.role.read",
+          "iam.approval.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "iam",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "IAM/access",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 10,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "write scope enabled in shadow mode",
+        "missing security-owner approval",
+        "no revocation rollback path"
+      ],
+      "integration_id": "iam",
+      "irreversible_action_risk": true,
+      "live_execution_enabled": false,
+      "pilot_surface": "data_access_controls",
+      "rate_limits": {
+        "burst": 2,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 20,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "requester identity",
+        "target principal",
+        "resource owner",
+        "role catalog",
+        "approval record",
+        "expiration"
+      ],
+      "setup_steps": [
+        "Use read-only policy simulation and approval-state retrieval for shadow mode.",
+        "Map owner/admin/wildcard changes to strict risk tier.",
+        "Require security-owner approval before any permission-changing connector is enabled."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Verify wildcard/admin request triggers defer/refuse.",
+        "Confirm missing approval routes to ask/defer.",
+        "Confirm principal IDs are redacted or fingerprinted in audit records."
+      ],
+      "source_system_examples": [
+        "Okta",
+        "Entra ID",
+        "AWS IAM",
+        "Google Cloud IAM",
+        "custom RBAC"
+      ],
+      "write_capable": true
+    },
+    {
+      "adapter_ids": [
+        "code_change_review",
+        "deployment_readiness"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "ci.status.read",
+          "ci.logs.summary.read",
+          "security.scan.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "ci",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "CI/CD",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 10,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "raw CI logs in audit",
+        "missing required-check mapping",
+        "secret scan unavailable"
+      ],
+      "integration_id": "ci",
+      "irreversible_action_risk": false,
+      "live_execution_enabled": false,
+      "pilot_surface": "devops_release_controls",
+      "rate_limits": {
+        "burst": 5,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 60,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "CI status",
+        "test output summary",
+        "secret scan status",
+        "artifact attestations",
+        "required checks"
+      ],
+      "setup_steps": [
+        "Expose status summaries rather than raw logs by default.",
+        "Map required checks, failed tests, and secret-scan outcomes to structured evidence.",
+        "Keep build secrets and full logs out of audit artifacts."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Fetch redacted CI status for a test branch.",
+        "Confirm failed tests or unknown CI status trigger revise/defer.",
+        "Verify secret-like values are not persisted in audit logs."
+      ],
+      "source_system_examples": [
+        "GitHub Actions",
+        "GitLab CI",
+        "CircleCI",
+        "Buildkite",
+        "Jenkins"
+      ],
+      "write_capable": false
+    },
+    {
+      "adapter_ids": [
+        "deployment_readiness",
+        "incident_response_update"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "deploy.manifest.read",
+          "deploy.status.read",
+          "release.rollback.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "deployment",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "Deployment",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 5,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "no rollback runbook",
+        "observability policy missing",
+        "write deploy scope enabled before approval"
+      ],
+      "integration_id": "deployment",
+      "irreversible_action_risk": true,
+      "live_execution_enabled": false,
+      "pilot_surface": "devops_release_controls",
+      "rate_limits": {
+        "burst": 2,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 20,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "deployment manifest",
+        "environment",
+        "rollback plan",
+        "health checks",
+        "migration plan",
+        "observability policy"
+      ],
+      "setup_steps": [
+        "Start with manifest/status read-only evidence.",
+        "Require rollback, health check, migration, and observability evidence before any accept route.",
+        "Keep direct deploy execution disabled until controlled enforcement is approved."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Verify missing rollback or health checks trigger revise/defer.",
+        "Confirm secret-like manifest values are blocked from audit output.",
+        "Confirm production deploy attempts route to defer in shadow mode."
+      ],
+      "source_system_examples": [
+        "Argo CD",
+        "Spinnaker",
+        "GitHub Deployments",
+        "Kubernetes",
+        "custom release system"
+      ],
+      "write_capable": true
+    },
+    {
+      "adapter_ids": [
+        "data_export_guardrail"
+      ],
+      "auth_requirements": {
+        "credential_storage": "customer_secret_manager_or_vault",
+        "least_privilege_scopes": [
+          "dataset.metadata.read",
+          "classification.read",
+          "export.request.read"
+        ],
+        "mode": "customer_managed_oauth_or_service_account",
+        "owner_approval_required": true,
+        "rotation_required": true,
+        "tokens_in_audit_logs": false
+      },
+      "connector_id": "data_export",
+      "default_runtime_route_before_approval": "defer",
+      "display_name": "Data export",
+      "failure_routes": {
+        "connector_unavailable": "defer",
+        "missing_evidence": "retrieve",
+        "stale_evidence": "retrieve",
+        "unauthorized": "defer",
+        "unknown_source": "defer",
+        "unredacted_evidence": "defer",
+        "write_attempt_in_shadow_mode": "defer"
+      },
+      "freshness_requirements": {
+        "retrieved_at_required": true,
+        "slo_minutes": 10,
+        "stale_evidence_route": "retrieve",
+        "unavailable_connector_route": "defer"
+      },
+      "go_live_blockers": [
+        "raw rows exposed",
+        "missing data-owner approval",
+        "legal-hold state unavailable"
+      ],
+      "integration_id": "data_export",
+      "irreversible_action_risk": true,
+      "live_execution_enabled": false,
+      "pilot_surface": "data_access_controls",
+      "rate_limits": {
+        "burst": 1,
+        "rate_limit_route": "defer",
+        "requests_per_minute": 15,
+        "retry_policy": "bounded_exponential_backoff_with_jitter"
+      },
+      "redaction_requirements": {
+        "audit_payload": "metadata_ids_hashes_counts_and_status_only",
+        "evidence_text_policy": "redacted_summary_or_fingerprint_only",
+        "fingerprint_required": true,
+        "raw_private_content_allowed_in_audit": false,
+        "raw_prompt_candidate_output_allowed_in_audit": false
+      },
+      "required_evidence": [
+        "data classification",
+        "field list",
+        "requester authorization",
+        "recipient/destination approval",
+        "retention policy",
+        "legal hold"
+      ],
+      "setup_steps": [
+        "Expose metadata/classification only during shadow mode, not raw rows.",
+        "Map export destination, retention, approval, and legal-hold state to structured evidence.",
+        "Require data-owner approval before any export execution connector is enabled."
+      ],
+      "shadow_mode_requirements": {
+        "dashboard_metrics_required": true,
+        "minimum_days": 14,
+        "minimum_records": 100,
+        "sample_before_enforcement": true,
+        "write_operations_disabled": true
+      },
+      "smoke_tests": [
+        "Verify PII export to external destination triggers defer/refuse.",
+        "Confirm raw rows and query text do not appear in audit logs.",
+        "Confirm missing retention or destination approval routes to retrieve/defer."
+      ],
+      "source_system_examples": [
+        "Snowflake",
+        "BigQuery",
+        "Databricks",
+        "Redshift",
+        "S3/GCS export service"
+      ],
+      "write_capable": true
+    }
+  ],
+  "created_at": "2026-05-12T01:02:30+00:00",
+  "enterprise_connector_readiness_version": "0.1",
+  "plan_type": "aana_enterprise_ops_connector_readiness",
+  "product_bundle": "enterprise_ops_pilot",
+  "summary": {
+    "connector_count": 7,
+    "live_execution_enabled_count": 0,
+    "required_connector_ids": [
+      "crm_support",
+      "ticketing",
+      "email_send",
+      "iam",
+      "ci",
+      "deployment",
+      "data_export"
+    ],
+    "shadow_mode_default": true,
+    "write_capable_connector_count": 4
+  }
+}

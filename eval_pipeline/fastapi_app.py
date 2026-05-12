@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 import aana
-from eval_pipeline import agent_api
+from eval_pipeline import agent_api, aix_audit, enterprise_connector_readiness, enterprise_support_demo
 
 
 DEFAULT_TOKEN_ENV = "AANA_BRIDGE_TOKEN"
@@ -73,6 +73,28 @@ AGENT_CHECK_EXAMPLE = {
     ],
     "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
 }
+WORKFLOW_CHECK_EXAMPLE = {
+    "contract_version": "0.1",
+    "workflow_id": "demo-support-workflow-001",
+    "adapter": "support_reply",
+    "request": "Draft a support reply using only verified facts.",
+    "candidate": "Your refund has been approved and will arrive tomorrow.",
+    "evidence": ["Refund eligibility: unavailable."],
+    "allowed_actions": ["accept", "revise", "ask", "defer", "refuse"],
+}
+WORKFLOW_BATCH_EXAMPLE = {
+    "contract_version": "0.1",
+    "batch_id": "demo-enterprise-batch",
+    "requests": [WORKFLOW_CHECK_EXAMPLE],
+}
+AIX_AUDIT_EXAMPLE = {
+    "output_dir": "eval_outputs/aix_audit/fastapi-enterprise-ops",
+    "shadow_mode": True,
+}
+ENTERPRISE_SUPPORT_DEMO_EXAMPLE = {
+    "output_dir": "eval_outputs/demos/fastapi-enterprise-support",
+    "shadow_mode": True,
+}
 HEALTH_EXAMPLE = {
     "status": "ok",
     "service": "aana-fastapi",
@@ -97,7 +119,16 @@ def _append_audit_record(audit_log_path: str | pathlib.Path | None, record: dict
 
 def _scopes_from_env(value: str | None) -> set[str]:
     if not value:
-        return {"pre_tool_check", "agent_check"}
+        return {
+            "pre_tool_check",
+            "agent_check",
+            "workflow_check",
+            "workflow_batch",
+            "validation",
+            "aix_audit",
+            "enterprise_connectors",
+            "enterprise_demo",
+        }
     scopes = {item.strip() for item in value.split(",") if item.strip()}
     return scopes or {"pre_tool_check", "agent_check"}
 
@@ -260,10 +291,42 @@ def create_app(
             "audit_log_configured": bool(audit_log_path),
             "rate_limit": {"enabled": bool(rate_limit_per_minute and rate_limit_per_minute > 0), "requests_per_minute": rate_limit_per_minute},
             "request_size_limit": {"enabled": bool(max_request_bytes and max_request_bytes > 0), "max_bytes": max_request_bytes},
-            "routes": ["/health", "/pre-tool-check", "/agent-check", "/docs", "/openapi.json"],
+            "routes": [
+                "/health",
+                "/ready",
+                "/pre-tool-check",
+                "/tool-precheck",
+                "/agent-check",
+                "/workflow-check",
+                "/workflow-batch",
+                "/aix-audit",
+                "/enterprise-connectors",
+                "/enterprise-support-demo",
+                "/validate-event",
+                "/validate-workflow",
+                "/validate-tool-precheck",
+                "/docs",
+                "/openapi.json",
+            ],
             "docs": "/docs",
         }
 
+    @app.get(
+        "/ready",
+        tags=["runtime"],
+        summary="Check AANA API readiness.",
+        description="Alias for /health used by SDK clients and deployment probes.",
+    )
+    def ready() -> dict[str, Any]:
+        return health()
+
+    @app.post(
+        "/tool-precheck",
+        dependencies=[Depends(require_scope("pre_tool_check"))],
+        tags=["checks"],
+        summary="Alias for /pre-tool-check.",
+        include_in_schema=False,
+    )
     @app.post(
         "/pre-tool-check",
         dependencies=[Depends(require_scope("pre_tool_check"))],
@@ -371,6 +434,182 @@ def create_app(
             return result
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "agent_check_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/validate-event",
+        dependencies=[Depends(require_scope("validation"))],
+        tags=["checks"],
+        summary="Validate an AANA Agent Event without running the gate.",
+    )
+    async def validate_event(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
+        return agent_api.validate_event(payload)
+
+    @app.post(
+        "/validate-workflow",
+        dependencies=[Depends(require_scope("validation"))],
+        tags=["checks"],
+        summary="Validate a Workflow Contract request without running the gate.",
+    )
+    async def validate_workflow(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
+        return agent_api.validate_workflow_request(payload)
+
+    @app.post(
+        "/validate-tool-precheck",
+        dependencies=[Depends(require_scope("validation"))],
+        tags=["checks"],
+        summary="Validate an Agent Action Contract v1 tool precheck event without running the gate.",
+    )
+    async def validate_tool_precheck(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
+        errors = aana.validate_tool_precheck_event(payload)
+        return {"valid": not errors, "errors": errors, "schema_version": "aana.agent_tool_precheck.v1"}
+
+    @app.post(
+        "/workflow-check",
+        dependencies=[Depends(require_scope("workflow_check"))],
+        tags=["checks"],
+        summary="Check a Workflow Contract request before using an AI output or action.",
+        description="Returns gate decision, recommended action, violations, AIx, safe output, and audit-safe metadata.",
+    )
+    async def workflow_check(
+        payload: dict[str, Any] = Body(
+            ...,
+            openapi_examples={
+                "supportWorkflowNeedsRevision": {
+                    "summary": "Support workflow with unsupported refund claim",
+                    "description": "A workflow candidate that needs revision because evidence is missing.",
+                    "value": WORKFLOW_CHECK_EXAMPLE,
+                }
+            },
+        ),
+        shadow_mode: bool | str | None = Query(default=None),
+    ) -> dict[str, Any]:
+        started_at = time.perf_counter()
+        try:
+            result = agent_api.check_workflow_request(payload, gallery_path=gallery_path)
+            result.setdefault("audit_metadata", {})["latency_ms"] = round((time.perf_counter() - started_at) * 1000, 3)
+            if _truthy(shadow_mode):
+                result = agent_api.apply_shadow_mode(result)
+            _append_audit_record(audit_log_path, agent_api.audit_workflow_check(payload, result))
+            return result
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "workflow_check_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/workflow-batch",
+        dependencies=[Depends(require_scope("workflow_batch"))],
+        tags=["checks"],
+        summary="Check a Workflow Contract batch and append per-item redacted audit records.",
+    )
+    async def workflow_batch(
+        payload: dict[str, Any] = Body(
+            ...,
+            openapi_examples={
+                "enterpriseBatch": {
+                    "summary": "Enterprise workflow batch",
+                    "description": "A batch request using Workflow Contract v1.",
+                    "value": WORKFLOW_BATCH_EXAMPLE,
+                }
+            },
+        ),
+        shadow_mode: bool | str | None = Query(default=None),
+    ) -> dict[str, Any]:
+        started_at = time.perf_counter()
+        try:
+            result = agent_api.check_workflow_batch(payload, gallery_path=gallery_path)
+            latency_ms = round((time.perf_counter() - started_at) * 1000, 3)
+            for item in result.get("results", []) if isinstance(result, dict) else []:
+                if isinstance(item, dict):
+                    item.setdefault("audit_metadata", {})["latency_ms"] = latency_ms
+            if _truthy(shadow_mode):
+                result = agent_api.apply_shadow_mode(result)
+            audit_batch = agent_api.audit_workflow_batch(payload, result)
+            for record in audit_batch.get("records", []):
+                _append_audit_record(audit_log_path, record)
+            return result
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "workflow_batch_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/aix-audit",
+        dependencies=[Depends(require_scope("aix_audit"))],
+        tags=["checks"],
+        summary="Run the enterprise-ops AANA AIx Audit and write local pilot artifacts.",
+        description=(
+            "Runs the same enterprise_ops_pilot audit path as the CLI: synthetic or supplied batch, "
+            "redacted audit JSONL, metrics, drift report, integrity manifest, dashboard payload, "
+            "connector readiness artifact, reviewer report, and AIx Report."
+        ),
+    )
+    async def enterprise_aix_audit(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "enterpriseOpsPilot": {
+                    "summary": "Enterprise-ops pilot audit",
+                    "description": "Generate the local AANA AIx Audit artifact bundle.",
+                    "value": AIX_AUDIT_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            return aix_audit.run_enterprise_ops_aix_audit(
+                output_dir=payload.get("output_dir", aix_audit.DEFAULT_OUTPUT_DIR),
+                batch_path=payload.get("batch_path") or payload.get("batch"),
+                kit_dir=payload.get("kit_dir", aix_audit.DEFAULT_ENTERPRISE_KIT),
+                gallery_path=payload.get("gallery_path", gallery_path),
+                append=bool(payload.get("append", False)),
+                shadow_mode=not _truthy(payload.get("enforce_mode")) if "shadow_mode" not in payload else _truthy(payload.get("shadow_mode")),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "aix_audit_failed", "message": str(exc)}) from exc
+
+    @app.get(
+        "/enterprise-connectors",
+        dependencies=[Depends(require_scope("enterprise_connectors"))],
+        tags=["checks"],
+        summary="Return the enterprise-ops connector readiness plan.",
+        description="Returns readiness requirements for CRM/support, ticketing, email send, IAM/access, CI/CD, deployment, and data export connectors.",
+    )
+    async def enterprise_connectors() -> dict[str, Any]:
+        try:
+            plan = enterprise_connector_readiness.enterprise_connector_readiness_plan()
+            validation = enterprise_connector_readiness.validate_enterprise_connector_readiness_plan(plan)
+            return {"plan": plan, "validation": validation}
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "enterprise_connectors_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/enterprise-support-demo",
+        dependencies=[Depends(require_scope("enterprise_demo"))],
+        tags=["checks"],
+        summary="Run the customer support + email send + ticket update demo flow.",
+        description=(
+            "Runs the buyer demo flow and writes the same local artifacts as the CLI: demo-flow JSON, "
+            "redacted audit log, metrics, dashboard, drift report, integrity manifest, connector readiness, "
+            "reviewer report, and AIx Report."
+        ),
+    )
+    async def enterprise_support_demo_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "supportEmailTicket": {
+                    "summary": "Support/email/ticket shadow demo",
+                    "description": "Generate the local buyer demo artifact bundle.",
+                    "value": ENTERPRISE_SUPPORT_DEMO_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            return enterprise_support_demo.run_enterprise_support_demo(
+                output_dir=payload.get("output_dir", enterprise_support_demo.DEFAULT_OUTPUT_DIR),
+                gallery_path=payload.get("gallery_path", gallery_path),
+                shadow_mode=_truthy(payload.get("shadow_mode", False)),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "enterprise_support_demo_failed", "message": str(exc)}) from exc
 
     return app
 

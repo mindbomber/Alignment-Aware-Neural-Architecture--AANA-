@@ -17,7 +17,7 @@ class BundleAndClaimValidatorTests(unittest.TestCase):
         )
 
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
-        self.assertIn("pass -- bundles=3/3", completed.stdout)
+        self.assertIn("pass -- bundles=4/4", completed.stdout)
 
     def test_public_claims_policy_validator_passes(self):
         completed = subprocess.run(

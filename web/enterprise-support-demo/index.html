@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AANA AIx Enterprise Support Demo</title>
+    <link rel="stylesheet" href="/web/enterprise-support-demo/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">AANA AIx Audit</p>
+        <h1>Customer Support Governance Demo</h1>
+        <p class="lede">Support reply, email send, and ticket update checks using redacted audit artifacts and AIx scoring.</p>
+      </div>
+      <a class="report-link" id="report-link" href="/eval_outputs/demos/enterprise_support_flow/aix-report.md">AIx Report</a>
+    </header>
+
+    <main class="shell">
+      <section class="status-row" aria-label="Demo metrics">
+        <article class="stat">
+          <span>Gate passes</span>
+          <strong id="stat-pass">-</strong>
+        </article>
+        <article class="stat">
+          <span>Interventions</span>
+          <strong id="stat-interventions">-</strong>
+        </article>
+        <article class="stat">
+          <span>AIx average</span>
+          <strong id="stat-aix">-</strong>
+        </article>
+        <article class="stat">
+          <span>Hard blockers</span>
+          <strong id="stat-blockers">-</strong>
+        </article>
+      </section>
+
+      <section class="flow-card">
+        <div class="section-head">
+          <div>
+            <h2>Runtime Flow</h2>
+            <p>Each step is generated from the local AANA runtime, not mocked UI state.</p>
+          </div>
+          <code id="generated-at">not loaded</code>
+        </div>
+        <div id="steps" class="steps"></div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Dashboard Metrics</h2>
+          <pre id="dashboard-json">Run the demo command to load dashboard metrics.</pre>
+        </article>
+        <article class="panel">
+          <h2>Audit And Report</h2>
+          <div id="artifacts" class="artifacts"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="/web/enterprise-support-demo/app.js"></script>
+  </body>
+</html>

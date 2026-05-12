@@ -244,6 +244,113 @@ export interface AanaClientResult {
   [key: string]: unknown;
 }
 
+export interface AIxAuditRequest {
+  output_dir?: string;
+  batch_path?: string;
+  batch?: string;
+  kit_dir?: string;
+  gallery_path?: string;
+  append?: boolean;
+  shadow_mode?: boolean;
+  enforce_mode?: boolean;
+}
+
+export interface AIxAuditResult extends AanaClientResult {
+  aix_audit_report_version: string;
+  valid: boolean;
+  product: "AANA AIx Audit";
+  product_bundle: "enterprise_ops_pilot";
+  deployment_recommendation: "pilot_ready" | "pilot_ready_with_controls" | "not_pilot_ready" | "insufficient_evidence";
+  summary: {
+    workflow_count: number;
+    audit_records: number;
+    output_dir: string;
+    audit_log: string;
+    metrics: string;
+    drift_report: string;
+    integrity_manifest: string;
+    reviewer_report: string;
+    enterprise_dashboard: string;
+    enterprise_connector_readiness: string;
+    aix_report_json: string;
+    aix_report_md: string;
+    materialized_batch: string;
+    [key: string]: unknown;
+  };
+  aix_report: Record<string, unknown>;
+  enterprise_dashboard: Record<string, unknown>;
+}
+
+export interface EnterpriseConnectorReadinessPlan {
+  enterprise_connector_readiness_version: string;
+  plan_type: "aana_enterprise_ops_connector_readiness";
+  product_bundle: "enterprise_ops_pilot";
+  summary: {
+    connector_count: number;
+    required_connector_ids: string[];
+    live_execution_enabled_count: number;
+    write_capable_connector_count: number;
+    shadow_mode_default: boolean;
+    [key: string]: unknown;
+  };
+  connectors: Array<Record<string, unknown>>;
+  [key: string]: unknown;
+}
+
+export interface EnterpriseConnectorReadinessResult extends AanaClientResult {
+  plan: EnterpriseConnectorReadinessPlan;
+  validation: {
+    valid: boolean;
+    errors: number;
+    warnings: number;
+    connector_count: number;
+    issues: Array<Record<string, unknown>>;
+    [key: string]: unknown;
+  };
+}
+
+export interface EnterpriseSupportDemoRequest {
+  output_dir?: string;
+  gallery_path?: string;
+  shadow_mode?: boolean;
+}
+
+export interface EnterpriseSupportDemoResult extends AanaClientResult {
+  enterprise_support_demo_version: string;
+  valid: boolean;
+  product: "AANA AIx Audit";
+  product_bundle: "enterprise_ops_pilot";
+  wedge: "customer support + email send + ticket update";
+  claim_boundary: string;
+  steps: Array<{
+    workflow_id?: string;
+    adapter?: string;
+    stage?: string;
+    title?: string;
+    aana_check?: {
+      gate_decision?: string;
+      recommended_action?: AanaAction;
+      candidate_gate?: string;
+      violation_codes?: string[];
+      [key: string]: unknown;
+    };
+    aix?: {
+      score?: number;
+      decision?: string;
+      hard_blockers?: string[];
+      candidate_score?: number;
+      candidate_decision?: string;
+      candidate_hard_blockers?: string[];
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  }>;
+  dashboard_cards: Record<string, unknown>;
+  dashboard_metrics: Record<string, unknown>;
+  aix_report_summary: Record<string, unknown>;
+  artifacts: Record<string, string>;
+}
+
 export const FAMILY_ADAPTER_ALIASES = {
   support: {
     draft: "support_reply",
@@ -260,6 +367,19 @@ export const FAMILY_ADAPTER_ALIASES = {
     deployment: "deployment_readiness",
     email: "email_send_guardrail",
     incident: "incident_response_update",
+    ticket: "ticket_update_checker"
+  },
+  enterprise_ops_pilot: {
+    access: "access_permission_change",
+    code_review: "code_change_review",
+    crm: "crm_support_reply",
+    crm_support: "crm_support_reply",
+    data_export: "data_export_guardrail",
+    deployment: "deployment_readiness",
+    draft: "support_reply",
+    email: "email_send_guardrail",
+    incident: "incident_response_update",
+    support: "support_reply",
     ticket: "ticket_update_checker"
   },
   personal_productivity: {
@@ -969,6 +1089,26 @@ export class AanaClient {
     return this.request("POST", "/workflow-batch", { contract_version: "0.1", batch_id: batchId, requests }, query);
   }
 
+  aixAudit(request: AIxAuditRequest = {}): Promise<AIxAuditResult> {
+    const body = {
+      ...request,
+      shadow_mode: request.shadow_mode ?? (request.enforce_mode ? false : this.shadowMode)
+    };
+    return this.request("POST", "/aix-audit", body) as Promise<AIxAuditResult>;
+  }
+
+  enterpriseConnectors(): Promise<EnterpriseConnectorReadinessResult> {
+    return this.request("GET", "/enterprise-connectors") as Promise<EnterpriseConnectorReadinessResult>;
+  }
+
+  enterpriseSupportDemo(request: EnterpriseSupportDemoRequest = {}): Promise<EnterpriseSupportDemoResult> {
+    const body = {
+      ...request,
+      shadow_mode: request.shadow_mode ?? this.shadowMode
+    };
+    return this.request("POST", "/enterprise-support-demo", body) as Promise<EnterpriseSupportDemoResult>;
+  }
+
   toolPrecheck(event: ToolPrecheckEvent, options: { shadowMode?: boolean } = {}): Promise<AanaClientResult> {
     const query: Record<string, string> = {};
     if (options.shadowMode ?? this.shadowMode) query.shadow_mode = "true";
@@ -1041,6 +1181,12 @@ export class FamilyAanaClient extends AanaClient {
 export class EnterpriseAANAClient extends FamilyAanaClient {
   constructor(options: AanaClientOptions) {
     super({ ...options, familyId: "enterprise", adapterAliases: FAMILY_ADAPTER_ALIASES.enterprise });
+  }
+}
+
+export class EnterpriseOpsPilotAANAClient extends FamilyAanaClient {
+  constructor(options: AanaClientOptions) {
+    super({ ...options, familyId: "enterprise_ops_pilot", adapterAliases: FAMILY_ADAPTER_ALIASES.enterprise_ops_pilot });
   }
 }
 

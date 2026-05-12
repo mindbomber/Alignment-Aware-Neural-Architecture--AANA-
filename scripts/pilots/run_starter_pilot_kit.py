@@ -123,6 +123,7 @@ def materialize_workflow(kit_id, workflow, gallery_entry, evidence, expected):
         "metadata": {
             "starter_kit": kit_id,
             "scenario": workflow_id,
+            "surface": workflow.get("surface"),
             "adapter_family": workflow.get("adapter_family"),
             "data_basis": "synthetic",
             "gallery_demo": bool(workflow.get("gallery_demo")),

@@ -203,6 +203,7 @@ def validate_canonical_ids() -> dict[str, Any]:
         _add_issue(issues, "sdk_risk_domain_drift", "SDK risk domains must match canonical IDs.")
     expected_sdk_aliases = {
         "enterprise": dict(bundle_manifests["enterprise"].get("sdk_adapter_aliases", {})),
+        "enterprise_ops_pilot": dict(bundle_manifests["enterprise_ops_pilot"].get("sdk_adapter_aliases", {})),
         "support": dict(bundle_manifests["enterprise"].get("sdk_adapter_aliases", {})),
         "personal_productivity": dict(bundle_manifests["personal_productivity"].get("sdk_adapter_aliases", {})),
         "government_civic": dict(bundle_manifests["government_civic"].get("sdk_adapter_aliases", {})),

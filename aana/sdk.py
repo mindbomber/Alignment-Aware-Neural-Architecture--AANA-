@@ -49,6 +49,7 @@ class AANAClientError(RuntimeError):
 
 FAMILY_ADAPTER_ALIASES = {
     "enterprise": bundle_adapter_aliases("enterprise"),
+    "enterprise_ops_pilot": bundle_adapter_aliases("enterprise_ops_pilot"),
     "support": bundle_adapter_aliases("enterprise"),
     "personal_productivity": bundle_adapter_aliases("personal_productivity"),
     "government_civic": bundle_adapter_aliases("government_civic"),
@@ -959,6 +960,15 @@ class FamilyAANAClient(AANAClient):
 class EnterpriseAANAClient(FamilyAANAClient):
     def __init__(self, **kwargs):
         super().__init__(family_id="enterprise", adapter_aliases=FAMILY_ADAPTER_ALIASES["enterprise"], **kwargs)
+
+
+class EnterpriseOpsPilotAANAClient(FamilyAANAClient):
+    def __init__(self, **kwargs):
+        super().__init__(
+            family_id="enterprise_ops_pilot",
+            adapter_aliases=FAMILY_ADAPTER_ALIASES["enterprise_ops_pilot"],
+            **kwargs,
+        )
 
 
 class SupportAANAClient(FamilyAANAClient):

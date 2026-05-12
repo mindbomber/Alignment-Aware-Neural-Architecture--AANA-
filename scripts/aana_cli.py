@@ -27,12 +27,15 @@ from eval_pipeline import (
     contract_freeze,
     bundle_certification,
     enterprise_family,
+    enterprise_connector_readiness,
+    enterprise_support_demo,
     evidence_integrations,
     personal_family,
     pilot_certification,
     production,
     production_certification,
     support_aix_calibration,
+    aix_audit,
 )
 from eval_pipeline import agent_api
 from eval_pipeline.production_candidate_evidence_pack import (
@@ -75,6 +78,9 @@ READ_FILE_ARGS_BY_COMMAND = {
     "audit-reviewer-report": ["audit_log", "metrics", "drift_report", "manifest"],
     "audit-manifest": ["audit_log", "previous_manifest"],
     "audit-verify": ["manifest"],
+    "aix-audit": ["batch", "gallery"],
+    "enterprise-connectors": [],
+    "enterprise-support-demo": ["gallery"],
     "production-preflight": ["deployment_manifest", "evidence_registry", "observability_policy"],
     "pilot-certify": ["gallery", "evidence_registry"],
     "certify-bundle": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
@@ -163,6 +169,33 @@ def cli_command_matrix():
             "writes": [],
             "dry_run": False,
             "example": "python scripts/aana_cli.py support-aix-calibration --json",
+        },
+        {
+            "command": "aix-audit",
+            "category": "audit",
+            "json_output": True,
+            "public_api": "aix_report",
+            "reads": ["--batch", "--kit-dir", "--gallery"],
+            "writes": ["--output-dir"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py aix-audit --output-dir eval_outputs/aix_audit/enterprise_ops_pilot",
+        },
+        {
+            "command": "enterprise-connectors",
+            "description": "Generate the enterprise-ops live connector readiness plan for CRM/support, ticketing, email, IAM, CI/CD, deployment, and data export.",
+            "reads": [],
+            "writes": ["--output"],
+            "example": "python scripts/aana_cli.py enterprise-connectors --output examples/enterprise_ops_connector_readiness.json --json",
+        },
+        {
+            "command": "enterprise-support-demo",
+            "category": "demo",
+            "json_output": True,
+            "public_api": "aix_report",
+            "reads": ["--gallery"],
+            "writes": ["--output-dir"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py enterprise-support-demo --output-dir eval_outputs/demos/enterprise_support_flow",
         },
         {
             "command": "run",
@@ -1416,6 +1449,74 @@ def command_audit_verify(args):
     return 0 if report["valid"] else 1
 
 
+def command_aix_audit(args):
+    report = aix_audit.run_enterprise_ops_aix_audit(
+        output_dir=args.output_dir,
+        batch_path=args.batch,
+        kit_dir=args.kit_dir,
+        gallery_path=args.gallery,
+        append=args.append,
+        shadow_mode=not args.enforce_mode,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    summary = report["summary"]
+    status = "PASS" if report["valid"] else "FAIL"
+    print(f"AANA AIx Audit ({report['product_bundle']}): {status}")
+    print(f"- Recommendation: {report['deployment_recommendation']}")
+    print(f"- Workflows: {summary['workflow_count']}")
+    print(f"- Audit records: {summary['audit_records']}")
+    print(f"- AIx report: {summary['aix_report_md']}")
+    print(f"- Report JSON: {summary['aix_report_json']}")
+    print(f"- Enterprise dashboard: {summary['enterprise_dashboard']}")
+    print(f"- Metrics: {summary['metrics']}")
+    print(f"- Integrity manifest: {summary['integrity_manifest']}")
+    return 0 if report["valid"] else 1
+
+
+def command_enterprise_connectors(args):
+    result = enterprise_connector_readiness.write_enterprise_connector_readiness_plan(args.output)
+    if args.json:
+        print_json(result)
+        return 0 if result["validation"]["valid"] else 1
+    status = "PASS" if result["validation"]["valid"] else "FAIL"
+    summary = result["plan"]["summary"]
+    print(f"AANA enterprise connector readiness: {status}")
+    print(f"- Output: {result['path']}")
+    print(f"- Connectors: {summary['connector_count']}")
+    print(f"- Required: {', '.join(summary['required_connector_ids'])}")
+    print(f"- Live execution enabled: {summary['live_execution_enabled_count']}")
+    if result["validation"]["issues"]:
+        print("Issues:")
+        for issue in result["validation"]["issues"]:
+            print(f"- {issue['level']} {issue['path']}: {issue['message']}")
+    return 0 if result["validation"]["valid"] else 1
+
+
+def command_enterprise_support_demo(args):
+    flow = enterprise_support_demo.run_enterprise_support_demo(
+        output_dir=args.output_dir,
+        gallery_path=args.gallery,
+        shadow_mode=args.shadow_mode,
+    )
+    if args.json:
+        print_json(flow)
+        return 0 if flow["valid"] else 1
+    status = "PASS" if flow["valid"] else "FAIL"
+    artifacts = flow["artifacts"]
+    print(f"AANA enterprise support demo: {status}")
+    print(f"- Wedge: {flow['wedge']}")
+    print(f"- Steps: {len(flow['steps'])}")
+    print(f"- Demo flow: {artifacts['demo_flow']}")
+    print(f"- Demo summary: {artifacts['demo_summary']}")
+    print(f"- Audit log: {artifacts['audit_log']}")
+    print(f"- Dashboard: {artifacts['dashboard']}")
+    print(f"- AIx report: {artifacts['aix_report_md']}")
+    print(f"- Recommendation: {flow['aix_report_summary']['deployment_recommendation']}")
+    return 0 if flow["valid"] else 1
+
+
 def command_pilot_certify(args):
     report = pilot_certification.pilot_readiness_report(
         gallery_path=args.gallery,
@@ -2549,6 +2650,52 @@ def build_parser():
     audit_verify_parser.add_argument("--manifest", required=True, help="Path to audit integrity manifest JSON file.")
     audit_verify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     audit_verify_parser.set_defaults(func=command_audit_verify)
+
+    aix_audit_parser = subparsers.add_parser(
+        "aix-audit",
+        help="Run the enterprise-ops AANA AIx Audit and generate redacted audit, metrics, drift, manifest, and AIx Report artifacts.",
+    )
+    aix_audit_parser.add_argument("--batch", default=None, help="Optional Workflow Contract batch JSON. Defaults to the enterprise starter kit.")
+    aix_audit_parser.add_argument(
+        "--kit-dir",
+        default=str(ROOT / "examples" / "starter_pilot_kits" / "enterprise"),
+        help="Enterprise starter kit directory used when --batch is not provided.",
+    )
+    aix_audit_parser.add_argument(
+        "--output-dir",
+        default=str(ROOT / "eval_outputs" / "aix_audit" / "enterprise_ops_pilot"),
+        help="Directory for generated AIx audit artifacts.",
+    )
+    aix_audit_parser.add_argument("--append", action="store_true", help="Append to an existing audit log instead of starting fresh.")
+    aix_audit_parser.add_argument("--enforce-mode", action="store_true", help="Record audit records as enforce mode instead of shadow mode.")
+    aix_audit_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    aix_audit_parser.set_defaults(func=command_aix_audit)
+
+    enterprise_connectors_parser = subparsers.add_parser(
+        "enterprise-connectors",
+        help="Generate the enterprise-ops live connector readiness plan.",
+    )
+    enterprise_connectors_parser.add_argument(
+        "--output",
+        default=str(ROOT / "examples" / "enterprise_ops_connector_readiness.json"),
+        help="Path to write connector readiness JSON.",
+    )
+    enterprise_connectors_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    enterprise_connectors_parser.set_defaults(func=command_enterprise_connectors)
+
+    enterprise_support_demo_parser = subparsers.add_parser(
+        "enterprise-support-demo",
+        help="Run the customer support + email send + ticket update buyer demo flow.",
+    )
+    enterprise_support_demo_parser.add_argument(
+        "--output-dir",
+        default=str(ROOT / "eval_outputs" / "demos" / "enterprise_support_flow"),
+        help="Directory for generated demo artifacts.",
+    )
+    enterprise_support_demo_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    enterprise_support_demo_parser.add_argument("--shadow-mode", action="store_true", help="Annotate results as observe-only shadow mode.")
+    enterprise_support_demo_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    enterprise_support_demo_parser.set_defaults(func=command_enterprise_support_demo)
 
     pilot_certify_parser = subparsers.add_parser("pilot-certify", help="Certify repo-local AANA pilot surfaces and print a public readiness score.")
     pilot_certify_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")

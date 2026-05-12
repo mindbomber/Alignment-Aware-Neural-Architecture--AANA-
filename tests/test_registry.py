@@ -15,7 +15,7 @@ def test_unified_registry_loads_core_platform_surfaces():
         "security_devops",
         "domain_risk",
     }
-    assert set(platform.bundle_ids) == {"enterprise", "personal_productivity", "government_civic"}
+    assert set(platform.bundle_ids) == {"enterprise", "enterprise_ops_pilot", "personal_productivity", "government_civic"}
     assert platform.routes == ("accept", "revise", "retrieve", "ask", "defer", "refuse")
     assert platform.route_table["accept"]["execution_allowed"] is True
     assert all(not platform.route_table[route]["execution_allowed"] for route in platform.routes if route != "accept")

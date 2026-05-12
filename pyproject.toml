@@ -73,3 +73,15 @@ aana = [
 
 [tool.unittest]
 start-dir = "tests"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [
+  ".git",
+  ".venv",
+  "build",
+  "dist",
+  "eval_outputs",
+  "node_modules",
+]
+pythonpath = [".", "tests", "scripts/evals"]
