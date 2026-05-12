@@ -309,6 +309,194 @@ export interface EnterpriseConnectorReadinessResult extends AanaClientResult {
   };
 }
 
+export interface DurableAuditStorageRequest {
+  source_audit_log?: string;
+  audit_path?: string;
+  manifest_path?: string;
+  config_path?: string;
+  write_config?: boolean;
+  verify?: boolean;
+}
+
+export interface DurableAuditStorageResult extends AanaClientResult {
+  durable_audit_storage_version?: string;
+  storage_type?: "aana_durable_audit_storage";
+  storage_mode?: "local_append_only";
+  valid?: boolean;
+  audit_path?: string;
+  manifest_path?: string;
+  record_count?: number;
+  line_count?: number;
+  append_only?: boolean;
+  manifest_sha256?: string;
+  audit_log_sha256?: string;
+  redacted_records_only?: boolean;
+  raw_payload_storage?: "disabled";
+  issues?: Array<Record<string, unknown>>;
+  [key: string]: unknown;
+}
+
+export interface HumanReviewExportRequest {
+  audit_log_path?: string;
+  audit_log?: string;
+  queue_path?: string;
+  queue_output?: string;
+  summary_path?: string;
+  summary_output?: string;
+  config_path?: string;
+  include_all?: boolean;
+  append?: boolean;
+  write_config?: boolean;
+}
+
+export interface HumanReviewExportResult extends AanaClientResult {
+  runtime_human_review_version?: string;
+  export_type?: "aana_runtime_human_review_export";
+  valid?: boolean;
+  audit_log_path?: string;
+  queue_path?: string;
+  summary_path?: string | null;
+  packet_count?: number;
+  include_all?: boolean;
+  append?: boolean;
+  summary?: {
+    packet_count: number;
+    redacted_records_only: boolean;
+    raw_payload_logged: false;
+    review_status: Record<string, number>;
+    by_queue: Record<string, number>;
+    by_priority: Record<string, number>;
+    by_recommended_action: Record<string, number>;
+    by_adapter: Record<string, number>;
+    hard_blockers: Record<string, number>;
+    violation_codes: Record<string, number>;
+    [key: string]: unknown;
+  };
+  source_validation?: Record<string, unknown>;
+  packet_validation?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface LiveMonitoringRequest {
+  audit_log_path?: string;
+  audit_log?: string;
+  config_path?: string;
+  config?: string;
+  output_path?: string;
+  output?: string;
+  write_config?: boolean;
+}
+
+export interface LiveMonitoringResult extends AanaClientResult {
+  live_monitoring_version?: string;
+  report_type?: "aana_live_monitoring_report";
+  status?: "healthy" | "warning" | "critical";
+  healthy?: boolean;
+  audit_log_path?: string;
+  record_count?: number;
+  redacted_records_only?: true;
+  raw_payload_logged?: false;
+  thresholds?: Record<string, number>;
+  checks?: Array<Record<string, unknown>>;
+  summary?: Record<string, unknown>;
+  cards?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  dashboard?: Record<string, unknown>;
+  claim_boundary?: string;
+  [key: string]: unknown;
+}
+
+export interface EnterpriseLiveConnectorsRequest {
+  config_path?: string;
+  config?: string;
+  output_path?: string;
+  output?: string;
+  mode?: "dry_run" | "shadow" | "enforce";
+}
+
+export interface EnterpriseLiveConnectorsResult extends AanaClientResult {
+  enterprise_live_connectors_version: string;
+  config_type: "aana_enterprise_support_live_connectors";
+  valid: boolean;
+  mode: "dry_run" | "shadow" | "enforce";
+  claim_boundary: string;
+  validation: {
+    valid: boolean;
+    issues: Array<Record<string, unknown>>;
+    summary: {
+      connector_count: number;
+      required_connector_ids: string[];
+      live_approved_count: number;
+      write_enabled_count: number;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  results: {
+    crm_support?: Record<string, unknown>;
+    email_send?: Record<string, unknown>;
+    ticketing?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  summary: {
+    connector_count: number;
+    executed_count: number;
+    blocked_count: number;
+    raw_payload_logged: boolean;
+    [key: string]: unknown;
+  };
+}
+
+export interface ProductionCandidateProfileRequest {
+  profile_path?: string;
+  profile?: string;
+}
+
+export interface ProductionCandidateProfileResult extends AanaClientResult {
+  profile: {
+    production_candidate_profile_version: string;
+    profile_type: "aana_production_candidate_profile";
+    profile_id: string;
+    product_bundle: "enterprise_ops_pilot";
+    status: "production_candidate_config";
+    claim_boundary: string;
+    [key: string]: unknown;
+  };
+  validation: {
+    valid: boolean;
+    production_candidate_ready: boolean;
+    go_live_ready: boolean;
+    errors: number;
+    warnings: number;
+    issues: Array<Record<string, unknown>>;
+    component_reports: Record<string, unknown>;
+    summary: Record<string, unknown>;
+  };
+}
+
+export interface ProductionCandidateCheckRequest {
+  profile_path?: string;
+  profile?: string;
+  artifact_dir?: string;
+}
+
+export interface ProductionCandidateCheckResult extends AanaClientResult {
+  production_candidate_check_version: string;
+  check_type: "aana_production_candidate_check";
+  valid: boolean;
+  production_candidate_ready: boolean;
+  go_live_ready: boolean;
+  status: "pass" | "warn" | "fail";
+  errors: number;
+  warnings: number;
+  issues: Array<Record<string, unknown>>;
+  profile_path: string;
+  artifact_dir?: string | null;
+  artifact_summary: Record<string, unknown>;
+  component_reports: Record<string, unknown>;
+  claim_boundary: string;
+}
+
 export interface EnterpriseSupportDemoRequest {
   output_dir?: string;
   gallery_path?: string;
@@ -1099,6 +1287,30 @@ export class AanaClient {
 
   enterpriseConnectors(): Promise<EnterpriseConnectorReadinessResult> {
     return this.request("GET", "/enterprise-connectors") as Promise<EnterpriseConnectorReadinessResult>;
+  }
+
+  durableAuditStorage(request: DurableAuditStorageRequest = {}): Promise<DurableAuditStorageResult> {
+    return this.request("POST", "/durable-audit-storage", request) as Promise<DurableAuditStorageResult>;
+  }
+
+  humanReviewExport(request: HumanReviewExportRequest = {}): Promise<HumanReviewExportResult> {
+    return this.request("POST", "/human-review-export", request) as Promise<HumanReviewExportResult>;
+  }
+
+  liveMonitoring(request: LiveMonitoringRequest = {}): Promise<LiveMonitoringResult> {
+    return this.request("POST", "/live-monitoring", request) as Promise<LiveMonitoringResult>;
+  }
+
+  enterpriseLiveConnectors(request: EnterpriseLiveConnectorsRequest = {}): Promise<EnterpriseLiveConnectorsResult> {
+    return this.request("POST", "/enterprise-live-connectors", request) as Promise<EnterpriseLiveConnectorsResult>;
+  }
+
+  productionCandidateProfile(request: ProductionCandidateProfileRequest = {}): Promise<ProductionCandidateProfileResult> {
+    return this.request("POST", "/production-candidate-profile", request) as Promise<ProductionCandidateProfileResult>;
+  }
+
+  productionCandidateCheck(request: ProductionCandidateCheckRequest = {}): Promise<ProductionCandidateCheckResult> {
+    return this.request("POST", "/production-candidate-check", request) as Promise<ProductionCandidateCheckResult>;
   }
 
   enterpriseSupportDemo(request: EnterpriseSupportDemoRequest = {}): Promise<EnterpriseSupportDemoResult> {

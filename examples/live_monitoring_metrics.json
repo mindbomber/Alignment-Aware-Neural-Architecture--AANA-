@@ -1,0 +1,46 @@
+{
+  "alert_routes": {
+    "critical": "support_incident_response",
+    "warning": "support_ops_monitoring"
+  },
+  "claim_boundary": "Live monitoring readiness only; not production certification or go-live approval.",
+  "config_type": "aana_live_monitoring_config",
+  "live_monitoring_version": "0.1",
+  "product_bundle": "enterprise_ops_pilot",
+  "redaction": {
+    "private_records_logged": false,
+    "raw_candidate_logged": false,
+    "raw_evidence_text_logged": false,
+    "raw_prompt_logged": false,
+    "raw_safe_response_logged": false
+  },
+  "required_metrics": [
+    "audit_records_total",
+    "gate_decision_count",
+    "recommended_action_count",
+    "aix_score_average",
+    "aix_score_min",
+    "aix_hard_blocker_count",
+    "human_review_rate",
+    "refusal_defer_rate",
+    "connector_failure_count",
+    "evidence_freshness_failure_count",
+    "latency_p95_ms",
+    "shadow_would_block_rate",
+    "shadow_would_intervene_rate"
+  ],
+  "source_of_truth": "redacted_aana_runtime_audit_jsonl",
+  "thresholds": {
+    "max_aix_hard_blocker_rate": 0.0,
+    "max_connector_failure_rate": 0.0,
+    "max_evidence_freshness_failure_rate": 0.0,
+    "max_human_review_rate": 0.5,
+    "max_latency_p95_ms": 2000.0,
+    "max_refusal_defer_rate": 0.5,
+    "max_shadow_would_block_rate": 0.25,
+    "max_shadow_would_intervene_rate": 0.75,
+    "min_aix_average": 0.85,
+    "min_aix_min": 0.5,
+    "min_records": 1
+  }
+}

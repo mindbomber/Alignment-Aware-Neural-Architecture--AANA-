@@ -1,0 +1,22 @@
+{
+  "@context": {
+    "cr": "http://mlcommons.org/croissant/",
+    "schema": "https://schema.org/"
+  },
+  "@type": "schema:Dataset",
+  "description": "Dataset with intentionally missing governance metadata for tests.",
+  "name": "Incomplete Dataset",
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "dataType": "sc:Text",
+          "name": "patient_name"
+        }
+      ],
+      "name": "records"
+    }
+  ]
+}

@@ -24,18 +24,21 @@ metadata:
 data:
   AANA_BRIDGE_HOST: "0.0.0.0"
   AANA_BRIDGE_PORT: "8765"
+  AANA_BRIDGE_TOKEN_SCOPES: "pre_tool_check,agent_check,workflow_check,workflow_batch,validation,aix_audit,durable_audit_storage,human_review_export,live_monitoring,enterprise_connectors,enterprise_live_connectors,enterprise_demo,mlcommons_aix_report,production_candidate_profile,production_candidate_check"
   AANA_ADAPTER_GALLERY: "examples/adapter_gallery.json"
-  AANA_AUDIT_LOG: "/app/eval_outputs/audit/production/aana-bridge.jsonl"
-  AANA_MAX_BODY_BYTES: "1048576"
+  AANA_AUDIT_LOG: "/app/eval_outputs/audit/production/aana-fastapi.jsonl"
+  AANA_MAX_REQUEST_BYTES: "1048576"
   AANA_RATE_LIMIT_PER_MINUTE: "60"
   AANA_EDGE_RATE_LIMIT_PER_MINUTE: "60"
   AANA_EDGE_RATE_LIMIT_BURST: "15"
   AANA_EDGE_RATE_LIMIT_SCOPE: "per authenticated client token"
-  AANA_READ_TIMEOUT_SECONDS: "30"
   AANA_EVIDENCE_REGISTRY: "replace-with-approved-evidence-registry"
   AANA_DEPLOYMENT_MANIFEST: "examples/production_deployment_template.json"
   AANA_GOVERNANCE_POLICY: "examples/human_governance_policy_template.json"
   AANA_OBSERVABILITY_POLICY: "examples/observability_policy.json"
+  AANA_PRODUCTION_CANDIDATE_PROFILE: "examples/production_candidate_profile_enterprise_support.json"
+  AANA_LIVE_CONNECTOR_CONFIG: "replace-with-approved-live-connector-config"
+  AANA_LIVE_MONITORING_CONFIG: "replace-with-approved-live-monitoring-config"
   AANA_REVIEW_ROUTE: "replace-with-production-human-review-queue"
   AANA_PROFILE_STATUS: "requires-external-evidence-and-owner-signoff"
   AANA_TLS_TERMINATION: "managed ingress controller"
@@ -86,7 +89,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: bridge
-          image: registry.example/aana/http-bridge:0.1
+          image: registry.example/aana/enterprise-ops-runtime:0.1
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
@@ -101,14 +104,13 @@ spec:
             - -c
             - >
               mkdir -p "$(dirname "$AANA_AUDIT_LOG")" &&
-              python scripts/aana_server.py
+              aana-fastapi
               --host "$AANA_BRIDGE_HOST"
               --port "$AANA_BRIDGE_PORT"
               --gallery "$AANA_ADAPTER_GALLERY"
               --audit-log "$AANA_AUDIT_LOG"
-              --max-body-bytes "$AANA_MAX_BODY_BYTES"
               --rate-limit-per-minute "$AANA_RATE_LIMIT_PER_MINUTE"
-              --read-timeout-seconds "$AANA_READ_TIMEOUT_SECONDS"
+              --max-request-bytes "$AANA_MAX_REQUEST_BYTES"
           volumeMounts:
             - name: audit-log
               mountPath: /app/eval_outputs/audit

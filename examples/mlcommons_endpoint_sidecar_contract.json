@@ -1,0 +1,159 @@
+{
+  "audit_logging": {
+    "allowed_fields": [
+      "run_id",
+      "endpoint_id",
+      "request_id",
+      "gate_decision",
+      "recommended_action",
+      "aix_score",
+      "aix_decision",
+      "hard_blockers",
+      "violation_codes",
+      "latency_ms",
+      "input_fingerprint",
+      "output_fingerprint"
+    ],
+    "forbidden_fields": [
+      "raw_prompt",
+      "raw_output",
+      "headers",
+      "credentials",
+      "phi",
+      "pii",
+      "sample_text"
+    ],
+    "redacted_jsonl_required": true
+  },
+  "benchmark_run_metadata": {
+    "optional_fields": [
+      "hardware_profile",
+      "region",
+      "dataset_id",
+      "operator",
+      "git_sha",
+      "runner_version"
+    ],
+    "redacted_fields_only": true,
+    "required_fields": [
+      "run_id",
+      "benchmark_suite",
+      "benchmark_version",
+      "scenario",
+      "sut_endpoint_id",
+      "model_id",
+      "started_at",
+      "traffic_class"
+    ]
+  },
+  "claim_boundary": "AANA endpoint sidecar evidence is runtime governance evidence only; it is not MLCommons benchmark certification, production certification, or go-live approval for regulated industries.",
+  "contract_type": "aana_mlcommons_endpoint_sidecar_contract",
+  "contract_version": "0.1",
+  "endpoint_precheck_contract": {
+    "example": {
+      "benchmark": {
+        "scenario": "offline",
+        "suite": "mlcommons-endpoints",
+        "version": "0.1"
+      },
+      "candidate_output_fingerprint": {
+        "length": 512,
+        "sha256": "redacted-output-sha256"
+      },
+      "endpoint_id": "sut-chat-endpoint",
+      "evidence_refs": [
+        {
+          "redaction_status": "redacted",
+          "source_id": "benchmark-run-config"
+        }
+      ],
+      "input_fingerprint": {
+        "length": 2048,
+        "sha256": "redacted-input-sha256"
+      },
+      "metadata": {
+        "sample_index": 1,
+        "traffic_class": "benchmark"
+      },
+      "model": {
+        "model_id": "example-sut",
+        "version": "2026-05-12"
+      },
+      "policy_refs": [
+        "endpoint_fail_closed_policy"
+      ],
+      "request_id": "req-000001",
+      "run_id": "mlc-endpoint-run-2026-05-12",
+      "runtime_mode": "shadow",
+      "schema_version": "aana.mlcommons_endpoint_precheck.v1"
+    },
+    "redaction_rule": "Store fingerprints, IDs, metrics, and governance metadata only; do not store raw prompts, raw completions, payloads, headers, credentials, PHI, PII, or benchmark sample text.",
+    "required_fields": [
+      "run_id",
+      "endpoint_id",
+      "request_id",
+      "benchmark",
+      "model",
+      "input_fingerprint",
+      "candidate_output_fingerprint",
+      "evidence_refs",
+      "runtime_mode"
+    ],
+    "schema_version": "aana.mlcommons_endpoint_precheck.v1"
+  },
+  "fail_closed_policy": {
+    "bridge_unavailable": "block_or_defer",
+    "contract_invalid": "block",
+    "direct_forward_requires": {
+      "aix_hard_blockers": 0,
+      "contract_errors": 0,
+      "gate_decision": "pass",
+      "hard_blockers": 0,
+      "recommended_action": "accept"
+    },
+    "hard_blocker_present": "block",
+    "live_endpoint_deployment": true,
+    "shadow_mode": "log_would_block_without_blocking_benchmark"
+  },
+  "impact_fields": {
+    "latency": {
+      "recommended": [
+        "p99_ms",
+        "timeout_count",
+        "sidecar_timeout_count"
+      ],
+      "required": [
+        "baseline_p50_ms",
+        "baseline_p95_ms",
+        "sidecar_p50_ms",
+        "sidecar_p95_ms",
+        "overhead_p95_ms"
+      ]
+    },
+    "throughput": {
+      "recommended": [
+        "tokens_per_second_baseline",
+        "tokens_per_second_sidecar",
+        "concurrency"
+      ],
+      "required": [
+        "baseline_requests_per_second",
+        "sidecar_requests_per_second",
+        "throughput_delta_percent"
+      ]
+    }
+  },
+  "pattern": {
+    "default_mode": "shadow",
+    "modes": [
+      "observe",
+      "shadow",
+      "enforce"
+    ],
+    "name": "aana_sidecar_proxy",
+    "placement": "AANA sits beside or in front of the system-under-test endpoint and forwards allowed benchmark requests/responses.",
+    "runner_modification_required": false
+  },
+  "product": "AANA Runtime + AANA AIx Audit",
+  "surface": "mlcommons_endpoints"
+}

@@ -13,10 +13,12 @@ REQUIRED_ENV_KEYS = {
     "AANA_BRIDGE_PORT",
     "AANA_ADAPTER_GALLERY",
     "AANA_AUDIT_LOG",
-    "AANA_MAX_BODY_BYTES",
+    "AANA_MAX_REQUEST_BYTES",
     "AANA_RATE_LIMIT_PER_MINUTE",
-    "AANA_READ_TIMEOUT_SECONDS",
     "AANA_EVIDENCE_REGISTRY",
+    "AANA_PRODUCTION_CANDIDATE_PROFILE",
+    "AANA_LIVE_CONNECTOR_CONFIG",
+    "AANA_LIVE_MONITORING_CONFIG",
 }
 
 
@@ -27,18 +29,19 @@ class DeploymentPackageTests(unittest.TestCase):
     def load_json(self, relative_path):
         return json.loads(self.read_text(relative_path))
 
-    def test_dockerfile_runs_bridge_with_deployment_config(self):
+    def test_dockerfile_runs_fastapi_with_deployment_config(self):
         dockerfile = self.read_text("Dockerfile")
 
         self.assertIn("FROM python:3.11-slim", dockerfile)
-        self.assertIn("scripts/aana_server.py", dockerfile)
+        self.assertIn("aana-fastapi", dockerfile)
+        self.assertIn('python -m pip install --no-cache-dir ".[api]"', dockerfile)
         self.assertIn("--host", dockerfile)
         self.assertIn("--gallery", dockerfile)
         self.assertIn("--audit-log", dockerfile)
-        self.assertIn("--max-body-bytes", dockerfile)
+        self.assertIn("--max-request-bytes", dockerfile)
         self.assertIn("--rate-limit-per-minute", dockerfile)
-        self.assertIn("--read-timeout-seconds", dockerfile)
         self.assertIn("/ready", dockerfile)
+        self.assertIn("data.get('status') == 'ok'", dockerfile)
         self.assertIn("HEALTHCHECK", dockerfile)
         for key in REQUIRED_ENV_KEYS - {"AANA_BRIDGE_TOKEN"}:
             self.assertIn(key, dockerfile)
@@ -48,9 +51,12 @@ class DeploymentPackageTests(unittest.TestCase):
 
         for key in REQUIRED_ENV_KEYS:
             self.assertIn(key, compose)
-        self.assertIn("aana/http-bridge:local", compose)
-        self.assertIn("scripts/aana_server.py", compose)
+        self.assertIn("aana/enterprise-ops-runtime:local", compose)
+        self.assertIn("aana-fastapi", compose)
+        self.assertIn("AANA_BRIDGE_TOKEN_SCOPES", compose)
+        self.assertIn("production_candidate_check", compose)
         self.assertIn("/ready", compose)
+        self.assertIn("data.get('status') == 'ok'", compose)
         self.assertIn("./eval_outputs:/app/eval_outputs", compose)
 
     def test_deploy_env_example_declares_required_runtime_knobs(self):
@@ -74,7 +80,9 @@ class DeploymentPackageTests(unittest.TestCase):
             "AANA_BRIDGE_TOKEN",
             "AANA_AUDIT_LOG",
             "AANA_EVIDENCE_REGISTRY",
-            "scripts/aana_server.py",
+            "AANA_MAX_REQUEST_BYTES",
+            "AANA_BRIDGE_TOKEN_SCOPES",
+            "aana-fastapi",
             "livenessProbe:",
             "readinessProbe:",
             "path: /health",

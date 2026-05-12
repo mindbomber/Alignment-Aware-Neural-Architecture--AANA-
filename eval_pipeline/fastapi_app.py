@@ -25,7 +25,19 @@ from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 import aana
-from eval_pipeline import agent_api, aix_audit, enterprise_connector_readiness, enterprise_support_demo
+from eval_pipeline import (
+    agent_api,
+    aix_audit,
+    durable_audit_storage,
+    enterprise_connector_readiness,
+    enterprise_live_connectors,
+    enterprise_support_demo,
+    live_monitoring,
+    mlcommons_aix,
+    production_candidate_check,
+    production_candidate_profile,
+    runtime_human_review,
+)
 
 
 DEFAULT_TOKEN_ENV = "AANA_BRIDGE_TOKEN"
@@ -95,6 +107,24 @@ ENTERPRISE_SUPPORT_DEMO_EXAMPLE = {
     "output_dir": "eval_outputs/demos/fastapi-enterprise-support",
     "shadow_mode": True,
 }
+ENTERPRISE_LIVE_CONNECTORS_EXAMPLE = {
+    "mode": "dry_run",
+    "config_path": "examples/enterprise_support_live_connectors.json",
+}
+MLCOMMONS_AIX_REPORT_EXAMPLE = {
+    "results_path": "examples/mlcommons_ailuminate_results.json",
+    "source_type": "ailuminate",
+    "profile_path": "examples/mlcommons_aix_profile.json",
+    "output_dir": "eval_outputs/mlcommons_aix/fastapi",
+}
+PRODUCTION_CANDIDATE_PROFILE_EXAMPLE = {
+    "profile_path": "examples/production_candidate_profile_enterprise_support.json",
+}
+DURABLE_AUDIT_STORAGE_EXAMPLE = {
+    "source_audit_log": "eval_outputs/aix_audit/enterprise_ops_pilot/audit.jsonl",
+    "audit_path": "eval_outputs/durable_audit_storage/aana_audit.jsonl",
+    "manifest_path": "eval_outputs/durable_audit_storage/aana_audit.jsonl.sha256.json",
+}
 HEALTH_EXAMPLE = {
     "status": "ok",
     "service": "aana-fastapi",
@@ -126,8 +156,15 @@ def _scopes_from_env(value: str | None) -> set[str]:
             "workflow_batch",
             "validation",
             "aix_audit",
+            "durable_audit_storage",
+            "human_review_export",
+            "live_monitoring",
             "enterprise_connectors",
+            "enterprise_live_connectors",
             "enterprise_demo",
+            "mlcommons_aix_report",
+            "production_candidate_profile",
+            "production_candidate_check",
         }
     scopes = {item.strip() for item in value.split(",") if item.strip()}
     return scopes or {"pre_tool_check", "agent_check"}
@@ -300,8 +337,14 @@ def create_app(
                 "/workflow-check",
                 "/workflow-batch",
                 "/aix-audit",
+                "/durable-audit-storage",
+                "/human-review-export",
+                "/live-monitoring",
                 "/enterprise-connectors",
+                "/enterprise-live-connectors",
                 "/enterprise-support-demo",
+                "/production-candidate-profile",
+                "/production-candidate-check",
                 "/validate-event",
                 "/validate-workflow",
                 "/validate-tool-precheck",
@@ -564,6 +607,137 @@ def create_app(
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "aix_audit_failed", "message": str(exc)}) from exc
 
+    @app.post(
+        "/durable-audit-storage",
+        dependencies=[Depends(require_scope("durable_audit_storage"))],
+        tags=["checks"],
+        summary="Import or verify durable append-only storage for redacted AANA audit logs.",
+        description=(
+            "Provides a local production-candidate durable storage option for normal AANA runtime audit records. "
+            "It accepts redacted audit JSONL, appends to durable storage, writes a tamper-evident manifest, "
+            "and verifies append-only prefix preservation. It is not a substitute for customer-approved remote immutable storage."
+        ),
+    )
+    async def durable_audit_storage_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "importAudit": {
+                    "summary": "Import redacted audit JSONL",
+                    "description": "Append an existing audit log to durable local storage.",
+                    "value": DURABLE_AUDIT_STORAGE_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            audit_path = payload.get("audit_path", durable_audit_storage.DEFAULT_DURABLE_AUDIT_JSONL)
+            manifest_path = payload.get("manifest_path", durable_audit_storage.DEFAULT_DURABLE_AUDIT_MANIFEST)
+            if _truthy(payload.get("write_config")):
+                return durable_audit_storage.write_durable_audit_storage_config(
+                    payload.get("config_path", durable_audit_storage.DEFAULT_DURABLE_AUDIT_CONFIG_PATH)
+                )
+            if _truthy(payload.get("verify")):
+                return durable_audit_storage.verify_durable_audit_storage(audit_path=audit_path, manifest_path=manifest_path)
+            source = payload.get("source_audit_log")
+            if not source:
+                raise ValueError("source_audit_log is required unless write_config or verify is true.")
+            return durable_audit_storage.import_audit_log_to_durable_storage(
+                source,
+                audit_path=audit_path,
+                manifest_path=manifest_path,
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "durable_audit_storage_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/human-review-export",
+        dependencies=[Depends(require_scope("human_review_export"))],
+        tags=["checks"],
+        summary="Export human-review queue packets from redacted AANA runtime audit logs.",
+        description=(
+            "Creates standalone review packets and a summary JSON from already-redacted AANA audit JSONL. "
+            "Packets preserve decisions, AIx summaries, blockers, violation codes, evidence source IDs, and fingerprints "
+            "without copying prompts, candidates, evidence text, private records, or safe responses."
+        ),
+    )
+    async def human_review_export_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "exportReviewQueue": {
+                    "summary": "Export runtime human-review queue",
+                    "description": "Create review packets from redacted AANA audit JSONL.",
+                    "value": {
+                        "audit_log_path": "eval_outputs/aix_audit/enterprise_ops_pilot/aana-audit.jsonl",
+                        "queue_path": "eval_outputs/human_review/runtime-review-queue.jsonl",
+                        "summary_path": "eval_outputs/human_review/runtime-review-summary.json",
+                    },
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            if _truthy(payload.get("write_config")):
+                return runtime_human_review.write_human_review_export_config(
+                    payload.get("config_path", runtime_human_review.DEFAULT_RUNTIME_HUMAN_REVIEW_CONFIG_PATH)
+                )
+            audit_log_path = payload.get("audit_log_path") or payload.get("audit_log")
+            if not audit_log_path:
+                raise ValueError("audit_log_path is required unless write_config is true.")
+            return runtime_human_review.export_runtime_human_review_queue(
+                audit_log_path,
+                queue_path=payload.get("queue_path") or payload.get("queue_output", runtime_human_review.DEFAULT_RUNTIME_HUMAN_REVIEW_QUEUE_PATH),
+                summary_path=payload.get("summary_path") or payload.get("summary_output", runtime_human_review.DEFAULT_RUNTIME_HUMAN_REVIEW_SUMMARY_PATH),
+                include_all=_truthy(payload.get("include_all")),
+                append=_truthy(payload.get("append")),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "human_review_export_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/live-monitoring",
+        dependencies=[Depends(require_scope("live_monitoring"))],
+        tags=["checks"],
+        summary="Evaluate live monitoring metrics from redacted AANA runtime audit logs.",
+        description=(
+            "Builds live/shadow health metrics from redacted AANA audit JSONL and checks production-candidate thresholds "
+            "for AIx score, blockers, connector failures, evidence freshness, human review, latency, and shadow interventions."
+        ),
+    )
+    async def live_monitoring_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "liveMonitoring": {
+                    "summary": "Evaluate live monitoring metrics",
+                    "value": {
+                        "audit_log_path": "eval_outputs/aix_audit/enterprise_ops_pilot/aana-audit.jsonl",
+                        "config_path": "examples/live_monitoring_metrics.json",
+                        "output_path": "eval_outputs/monitoring/live-monitoring-report.json",
+                    },
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            if _truthy(payload.get("write_config")):
+                return live_monitoring.write_live_monitoring_config(
+                    payload.get("config_path", live_monitoring.DEFAULT_LIVE_MONITORING_CONFIG_PATH)
+                )
+            audit_log_path = payload.get("audit_log_path") or payload.get("audit_log")
+            if not audit_log_path:
+                raise ValueError("audit_log_path is required unless write_config is true.")
+            config_path = payload.get("config_path") or payload.get("config")
+            config = live_monitoring.load_live_monitoring_config(config_path) if config_path else live_monitoring.live_monitoring_config()
+            return live_monitoring.live_monitoring_report(
+                audit_log_path,
+                config=config,
+                output_path=payload.get("output_path") or payload.get("output", live_monitoring.DEFAULT_LIVE_MONITORING_REPORT_PATH),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "live_monitoring_failed", "message": str(exc)}) from exc
+
     @app.get(
         "/enterprise-connectors",
         dependencies=[Depends(require_scope("enterprise_connectors"))],
@@ -578,6 +752,137 @@ def create_app(
             return {"plan": plan, "validation": validation}
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "enterprise_connectors_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/enterprise-live-connectors",
+        dependencies=[Depends(require_scope("enterprise_live_connectors"))],
+        tags=["checks"],
+        summary="Validate and smoke-test production-candidate support/email/ticket connectors.",
+        description=(
+            "Runs the real connector client layer in dry-run, shadow, or enforce mode. "
+            "Dry-run performs no external calls. Writes execute only when the connector is "
+            "live-approved/write-enabled and the AANA runtime result is pass/accept with no blockers."
+        ),
+    )
+    async def enterprise_live_connectors_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "dryRunSmoke": {
+                    "summary": "Dry-run connector smoke",
+                    "description": "Validate the production-candidate connector config without external calls.",
+                    "value": ENTERPRISE_LIVE_CONNECTORS_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            return enterprise_live_connectors.run_enterprise_support_connector_smoke(
+                config_path=payload.get("config_path") or payload.get("config"),
+                output_path=payload.get("output_path") or payload.get("output"),
+                mode=payload.get("mode", "dry_run"),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "enterprise_live_connectors_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/mlcommons-aix-report",
+        dependencies=[Depends(require_scope("mlcommons_aix_report"))],
+        tags=["checks"],
+        summary="Generate an AANA AIx Report from MLCommons benchmark results.",
+        description=(
+            "Imports AILuminate or ModelBench-style result artifacts and writes normalized MLCommons results, "
+            "an AIx report JSON, and a Markdown report. This is production-candidate evidence only, not production certification."
+        ),
+    )
+    async def mlcommons_aix_report_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "ailuminate": {
+                    "summary": "AILuminate result import",
+                    "description": "Generate an AANA AIx Report from AILuminate-style hazard scores.",
+                    "value": MLCOMMONS_AIX_REPORT_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            return mlcommons_aix.run_mlcommons_aix_report(
+                results_path=payload.get("results_path") or payload.get("results", mlcommons_aix.DEFAULT_MLCOMMONS_RESULTS_PATH),
+                source_type=payload.get("source_type", "ailuminate"),
+                profile_path=payload.get("profile_path") or payload.get("profile", mlcommons_aix.DEFAULT_MLCOMMONS_PROFILE_PATH),
+                output_dir=payload.get("output_dir") or payload.get("output", mlcommons_aix.DEFAULT_MLCOMMONS_OUTPUT_DIR),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "mlcommons_aix_report_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/production-candidate-profile",
+        dependencies=[Depends(require_scope("production_candidate_profile"))],
+        tags=["checks"],
+        summary="Validate the enterprise support production-candidate config profile.",
+        description=(
+            "Validates the profile tying together runtime fail-closed policy, live connector config, "
+            "connector readiness, deployment, governance, observability, audit retention, incident response, "
+            "and promotion requirements. A valid profile is not go-live approval."
+        ),
+    )
+    async def production_candidate_profile_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "enterpriseSupport": {
+                    "summary": "Enterprise support production-candidate profile",
+                    "description": "Validate the local profile artifact and linked production-candidate configs.",
+                    "value": PRODUCTION_CANDIDATE_PROFILE_EXAMPLE,
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            path = payload.get("profile_path") or payload.get("profile")
+            profile = (
+                production_candidate_profile.load_production_candidate_profile(path)
+                if path
+                else production_candidate_profile.default_production_candidate_profile()
+            )
+            validation = production_candidate_profile.validate_production_candidate_profile(profile)
+            return {"profile": profile, "validation": validation}
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "production_candidate_profile_failed", "message": str(exc)}) from exc
+
+    @app.post(
+        "/production-candidate-check",
+        dependencies=[Depends(require_scope("production_candidate_check"))],
+        tags=["checks"],
+        summary="Validate production-candidate config and optional shadow-pilot artifacts.",
+        description=(
+            "Combines the production-candidate profile guard with optional run-artifact checks for redacted audit logs, "
+            "live monitoring, human-review export, durable audit storage, connector smoke evidence, and AIx report boundaries."
+        ),
+    )
+    async def production_candidate_check_route(
+        payload: dict[str, Any] = Body(
+            default_factory=dict,
+            openapi_examples={
+                "shadowPilot": {
+                    "summary": "Check a shadow pilot artifact directory",
+                    "value": {
+                        "profile_path": "examples/production_candidate_profile_enterprise_support.json",
+                        "artifact_dir": "eval_outputs/internal_shadow_pilot/enterprise_ops_2026_05_12",
+                    },
+                }
+            },
+        ),
+    ) -> dict[str, Any]:
+        try:
+            return production_candidate_check.production_candidate_check(
+                profile_path=payload.get("profile_path") or payload.get("profile", production_candidate_check.DEFAULT_PRODUCTION_CANDIDATE_PROFILE_PATH),
+                artifact_dir=payload.get("artifact_dir"),
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error": "production_candidate_check_failed", "message": str(exc)}) from exc
 
     @app.post(
         "/enterprise-support-demo",

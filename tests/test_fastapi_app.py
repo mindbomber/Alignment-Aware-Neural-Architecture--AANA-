@@ -29,9 +29,16 @@ class FastApiAppTests(unittest.TestCase):
             [
                 "agent_check",
                 "aix_audit",
+                "durable_audit_storage",
                 "enterprise_connectors",
                 "enterprise_demo",
+                "enterprise_live_connectors",
+                "human_review_export",
+                "live_monitoring",
+                "mlcommons_aix_report",
                 "pre_tool_check",
+                "production_candidate_check",
+                "production_candidate_profile",
                 "validation",
                 "workflow_batch",
                 "workflow_check",
@@ -46,8 +53,13 @@ class FastApiAppTests(unittest.TestCase):
         self.assertIn("/workflow-check", openapi_payload["paths"])
         self.assertIn("/workflow-batch", openapi_payload["paths"])
         self.assertIn("/aix-audit", openapi_payload["paths"])
+        self.assertIn("/durable-audit-storage", openapi_payload["paths"])
         self.assertIn("/enterprise-connectors", openapi_payload["paths"])
+        self.assertIn("/enterprise-live-connectors", openapi_payload["paths"])
         self.assertIn("/enterprise-support-demo", openapi_payload["paths"])
+        self.assertIn("/mlcommons-aix-report", openapi_payload["paths"])
+        self.assertIn("/production-candidate-profile", openapi_payload["paths"])
+        self.assertIn("/production-candidate-check", openapi_payload["paths"])
         self.assertIn("HTTPBearer", openapi_payload["components"]["securitySchemes"])
         self.assertIn("APIKeyHeader", openapi_payload["components"]["securitySchemes"])
         pre_tool_body = openapi_payload["paths"]["/pre-tool-check"]["post"]["requestBody"]["content"]["application/json"]
@@ -234,6 +246,99 @@ class FastApiAppTests(unittest.TestCase):
             self.assertNotIn("payroll.xlsx", audit_text)
             self.assertIn("not production certification", " ".join(payload["aix_report"]["limitations"]).lower())
 
+    def test_fastapi_durable_audit_storage_imports_and_verifies_redacted_audit(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = pathlib.Path(temp_dir) / "source.jsonl"
+            durable = pathlib.Path(temp_dir) / "durable.jsonl"
+            manifest = pathlib.Path(temp_dir) / "durable.jsonl.sha256.json"
+            event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+            result = agent_api.check_event(event)
+            agent_api.append_audit_record(source, agent_api.audit_event_check(event, result))
+            client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+
+            imported = client.post(
+                "/durable-audit-storage",
+                json={"source_audit_log": str(source), "audit_path": str(durable), "manifest_path": str(manifest)},
+                headers={"Authorization": "Bearer secret-token"},
+            )
+            verified = client.post(
+                "/durable-audit-storage",
+                json={"verify": True, "audit_path": str(durable), "manifest_path": str(manifest)},
+                headers={"Authorization": "Bearer secret-token"},
+            )
+
+            self.assertEqual(imported.status_code, 200, imported.text)
+            self.assertEqual(imported.json()["record_count"], 1)
+            self.assertTrue(durable.exists())
+            self.assertTrue(manifest.exists())
+            self.assertEqual(verified.status_code, 200, verified.text)
+            self.assertTrue(verified.json()["valid"], verified.json())
+            self.assertFalse("Hi Maya" in durable.read_text(encoding="utf-8"))
+
+    def test_fastapi_human_review_export_writes_redacted_queue(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = pathlib.Path(temp_dir) / "source.jsonl"
+            queue = pathlib.Path(temp_dir) / "review-queue.jsonl"
+            summary = pathlib.Path(temp_dir) / "review-summary.json"
+            event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+            result = agent_api.check_event(event)
+            result["recommended_action"] = "defer"
+            result["gate_decision"] = "fail"
+            result.setdefault("aix", {})["decision"] = "defer"
+            result["aix"]["hard_blockers"] = ["missing_policy_evidence"]
+            agent_api.append_audit_record(source, agent_api.audit_event_check(event, result))
+            client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+
+            response = client.post(
+                "/human-review-export",
+                json={"audit_log_path": str(source), "queue_path": str(queue), "summary_path": str(summary)},
+                headers={"Authorization": "Bearer secret-token"},
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            payload = response.json()
+            self.assertTrue(payload["valid"], payload)
+            self.assertEqual(payload["packet_count"], 1)
+            self.assertTrue(queue.exists())
+            self.assertTrue(summary.exists())
+            self.assertFalse("Hi Maya" in queue.read_text(encoding="utf-8"))
+            self.assertEqual(json.loads(summary.read_text(encoding="utf-8"))["review_status"]["open"], 1)
+
+    def test_fastapi_live_monitoring_writes_report_from_redacted_audit(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = pathlib.Path(temp_dir) / "source.jsonl"
+            output = pathlib.Path(temp_dir) / "live-monitoring.json"
+            event = agent_api.load_json_file(ROOT / "examples" / "agent_event_support_reply.json")
+            result = agent_api.check_event(event)
+            result["gate_decision"] = "pass"
+            result["candidate_gate"] = "pass"
+            result["recommended_action"] = "accept"
+            result["violations"] = []
+            result["aix"] = {
+                "aix_version": "0.1",
+                "score": 0.96,
+                "components": {"P": 0.96, "B": 0.96, "C": 0.96, "F": 0.96},
+                "decision": "accept",
+                "hard_blockers": [],
+            }
+            result["audit_metadata"] = {"latency_ms": 42.0}
+            agent_api.append_audit_record(source, agent_api.audit_event_check(event, result))
+            client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+
+            response = client.post(
+                "/live-monitoring",
+                json={"audit_log_path": str(source), "output_path": str(output)},
+                headers={"Authorization": "Bearer secret-token"},
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            payload = response.json()
+            self.assertEqual(payload["status"], "healthy", payload["checks"])
+            self.assertTrue(payload["healthy"])
+            self.assertTrue(output.exists())
+            self.assertFalse(payload["raw_payload_logged"])
+            self.assertNotIn("Hi Maya", output.read_text(encoding="utf-8"))
+
     def test_fastapi_enterprise_connectors_matches_readiness_contract(self):
         client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
 
@@ -255,6 +360,81 @@ class FastApiAppTests(unittest.TestCase):
             self.assertFalse(connector["auth_requirements"]["tokens_in_audit_logs"])
             self.assertFalse(connector["redaction_requirements"]["raw_private_content_allowed_in_audit"])
             self.assertTrue(connector["shadow_mode_requirements"]["write_operations_disabled"])
+
+    def test_fastapi_enterprise_live_connectors_smoke_is_dry_run_by_default(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = pathlib.Path(temp_dir) / "enterprise-live-connectors.json"
+            client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+            response = client.post(
+                "/enterprise-live-connectors",
+                json={"output_path": str(output), "mode": "dry_run"},
+                headers={"Authorization": "Bearer secret-token"},
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            payload = response.json()
+            self.assertTrue(payload["valid"], payload)
+            self.assertEqual(payload["summary"]["connector_count"], 3)
+            self.assertEqual(payload["summary"]["executed_count"], 0)
+            self.assertFalse(payload["summary"]["raw_payload_logged"])
+            self.assertEqual(payload["results"]["email_send"]["route"], "dry_run")
+            self.assertEqual(payload["results"]["ticketing"]["route"], "defer")
+            self.assertTrue(output.exists())
+
+    def test_fastapi_production_candidate_profile_validates_linked_config(self):
+        client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+        response = client.post(
+            "/production-candidate-profile",
+            json={"profile_path": "examples/production_candidate_profile_enterprise_support.json"},
+            headers={"Authorization": "Bearer secret-token"},
+        )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertEqual(payload["profile"]["profile_type"], "aana_production_candidate_profile")
+        self.assertTrue(payload["validation"]["valid"], payload["validation"])
+        self.assertTrue(payload["validation"]["production_candidate_ready"])
+        self.assertFalse(payload["validation"]["go_live_ready"])
+        self.assertIn("live_connector_config", payload["validation"]["component_reports"])
+        self.assertIn("not production certification", payload["profile"]["claim_boundary"].lower())
+
+    def test_fastapi_mlcommons_aix_report_generates_artifacts(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+            response = client.post(
+                "/mlcommons-aix-report",
+                json={
+                    "results_path": "examples/mlcommons_ailuminate_results.json",
+                    "source_type": "ailuminate",
+                    "profile_path": "examples/mlcommons_aix_profile.json",
+                    "output_dir": temp_dir,
+                },
+                headers={"Authorization": "Bearer secret-token"},
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            payload = response.json()
+            self.assertTrue(payload["valid"], payload)
+            self.assertEqual(payload["source_type"], "ailuminate")
+            self.assertEqual(payload["deployment_recommendation"], "pilot_ready")
+            self.assertTrue(pathlib.Path(payload["artifacts"]["report_json"]).exists())
+            self.assertIn("not production certification", payload["report"]["limitations"][0].lower())
+
+    def test_fastapi_production_candidate_check_validates_profile(self):
+        client = TestClient(create_app(auth_token="secret-token", rate_limit_per_minute=0, max_request_bytes=0))
+        response = client.post(
+            "/production-candidate-check",
+            json={"profile_path": "examples/production_candidate_profile_enterprise_support.json"},
+            headers={"Authorization": "Bearer secret-token"},
+        )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertTrue(payload["valid"], payload)
+        self.assertTrue(payload["production_candidate_ready"])
+        self.assertFalse(payload["go_live_ready"])
+        self.assertEqual(payload["check_type"], "aana_production_candidate_check")
+        self.assertIn("not production certification", payload["claim_boundary"].lower())
 
     def test_fastapi_enterprise_support_demo_matches_shadow_demo_flow(self):
         with tempfile.TemporaryDirectory() as temp_dir:

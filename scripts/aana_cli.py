@@ -25,15 +25,27 @@ from eval_pipeline import (
     civic_family,
     common,
     contract_freeze,
+    croissant_evidence,
+    dataperf_dynabench_audit,
     bundle_certification,
+    durable_audit_storage,
     enterprise_family,
     enterprise_connector_readiness,
+    enterprise_live_connectors,
     enterprise_support_demo,
     evidence_integrations,
+    live_monitoring,
+    medperf_aix,
+    mlcommons_aix,
+    mlcommons_endpoint_sidecar,
+    mlcflow_aana_step,
     personal_family,
     pilot_certification,
     production,
+    production_candidate_check,
+    production_candidate_profile,
     production_certification,
+    runtime_human_review,
     support_aix_calibration,
     aix_audit,
 )
@@ -78,9 +90,21 @@ READ_FILE_ARGS_BY_COMMAND = {
     "audit-reviewer-report": ["audit_log", "metrics", "drift_report", "manifest"],
     "audit-manifest": ["audit_log", "previous_manifest"],
     "audit-verify": ["manifest"],
+    "human-review-export": ["audit_log"],
+    "live-monitoring": ["audit_log"],
+    "durable-audit-storage": [],
     "aix-audit": ["batch", "gallery"],
     "enterprise-connectors": [],
+    "enterprise-live-connectors": ["config"],
     "enterprise-support-demo": ["gallery"],
+    "production-candidate-profile": ["profile"],
+    "production-candidate-check": ["profile"],
+    "mlcommons-aix-report": ["results"],
+    "croissant-evidence-import": ["metadata"],
+    "medperf-aix-profile": [],
+    "mlcommons-endpoint-sidecar": [],
+    "mlcflow-aana-step": ["results"],
+    "dataperf-dynabench-audit": ["metadata", "benchmark"],
     "production-preflight": ["deployment_manifest", "evidence_registry", "observability_policy"],
     "pilot-certify": ["gallery", "evidence_registry"],
     "certify-bundle": ["gallery", "evidence_registry", "mock_fixtures", "certification_policy"],
@@ -181,11 +205,116 @@ def cli_command_matrix():
             "example": "python scripts/aana_cli.py aix-audit --output-dir eval_outputs/aix_audit/enterprise_ops_pilot",
         },
         {
+            "command": "mlcommons-aix-report",
+            "category": "audit",
+            "json_output": True,
+            "public_api": "mlcommons_aix_report",
+            "reads": ["--results", "--profile"],
+            "writes": ["--output-dir"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py mlcommons-aix-report --results examples/mlcommons_ailuminate_results.json --json",
+        },
+        {
+            "command": "croissant-evidence-import",
+            "category": "audit",
+            "json_output": True,
+            "public_api": "evidence_registry",
+            "reads": ["--metadata"],
+            "writes": ["--output-registry", "--report"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py croissant-evidence-import --metadata examples/croissant_metadata_sample.json --json",
+        },
+        {
+            "command": "medperf-aix-profile",
+            "category": "audit",
+            "json_output": True,
+            "public_api": "aix_report",
+            "reads": ["--profile"],
+            "writes": ["--report", "--write-default"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py medperf-aix-profile --profile examples/medperf_aix_profile_healthcare.json --json",
+        },
+        {
+            "command": "mlcommons-endpoint-sidecar",
+            "category": "runtime",
+            "json_output": True,
+            "public_api": "runtime_governance",
+            "reads": ["--contract"],
+            "writes": ["--report", "--write-default"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py mlcommons-endpoint-sidecar --contract examples/mlcommons_endpoint_sidecar_contract.json --json",
+        },
+        {
+            "command": "mlcflow-aana-step",
+            "category": "automation",
+            "json_output": True,
+            "public_api": "aix_report",
+            "reads": ["--results", "--profile"],
+            "writes": ["--output-dir", "--manifest"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py mlcflow-aana-step --results examples/mlcommons_modelbench_journal_actual.jsonl --source-type modelbench --json",
+        },
+        {
+            "command": "dataperf-dynabench-audit",
+            "category": "audit",
+            "json_output": True,
+            "public_api": "aix_report",
+            "reads": ["--metadata", "--benchmark", "--profile"],
+            "writes": ["--report", "--write-default-profile"],
+            "dry_run": False,
+            "example": "python scripts/aana_cli.py dataperf-dynabench-audit --metadata examples/croissant_metadata_sample.json --benchmark examples/dataperf_dynabench_benchmark_summary.json --json",
+        },
+        {
+            "command": "durable-audit-storage",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--source-audit-log", "--config"],
+            "writes": ["--audit-path", "--manifest-path"],
+            "example": "python scripts/aana_cli.py durable-audit-storage --write-config --json",
+        },
+        {
+            "command": "human-review-export",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--audit-log"],
+            "writes": ["--queue-output", "--summary-output"],
+            "example": "python scripts/aana_cli.py human-review-export --audit-log eval_outputs/audit/aana-audit.jsonl --json",
+        },
+        {
+            "command": "live-monitoring",
+            "category": "audit",
+            "json_output": True,
+            "reads": ["--audit-log", "--config"],
+            "writes": ["--output"],
+            "example": "python scripts/aana_cli.py live-monitoring --audit-log eval_outputs/audit/aana-audit.jsonl --json",
+        },
+        {
             "command": "enterprise-connectors",
             "description": "Generate the enterprise-ops live connector readiness plan for CRM/support, ticketing, email, IAM, CI/CD, deployment, and data export.",
             "reads": [],
             "writes": ["--output"],
             "example": "python scripts/aana_cli.py enterprise-connectors --output examples/enterprise_ops_connector_readiness.json --json",
+        },
+        {
+            "command": "enterprise-live-connectors",
+            "description": "Validate and smoke-test production-candidate CRM/support, email-send, and ticket-update connector clients.",
+            "reads": ["--config"],
+            "writes": ["--output"],
+            "example": "python scripts/aana_cli.py enterprise-live-connectors --mode dry_run --output eval_outputs/connectors/enterprise-support-live.json --json",
+        },
+        {
+            "command": "production-candidate-profile",
+            "description": "Validate or write the enterprise support production-candidate config profile.",
+            "reads": ["--profile"],
+            "writes": ["--write-default"],
+            "example": "python scripts/aana_cli.py production-candidate-profile --json",
+        },
+        {
+            "command": "production-candidate-check",
+            "description": "Validate production-candidate config and optional shadow-pilot artifact evidence.",
+            "reads": ["--profile", "--artifact-dir"],
+            "writes": [],
+            "example": "python scripts/aana_cli.py production-candidate-check --artifact-dir eval_outputs/internal_shadow_pilot/enterprise_ops_2026_05_12 --json",
         },
         {
             "command": "enterprise-support-demo",
@@ -1449,6 +1578,116 @@ def command_audit_verify(args):
     return 0 if report["valid"] else 1
 
 
+def command_human_review_export(args):
+    if args.write_config:
+        result = runtime_human_review.write_human_review_export_config(args.config)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA human-review export config: {status}")
+        print(f"- Config: {result['config_path']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    if not args.audit_log:
+        raise CliError("--audit-log is required unless --write-config is used.")
+    result = runtime_human_review.export_runtime_human_review_queue(
+        args.audit_log,
+        queue_path=args.queue_output,
+        summary_path=args.summary_output,
+        include_all=args.include_all,
+        append=args.append,
+    )
+    if args.json:
+        print_json(result)
+        return 0 if result["valid"] else 1
+    print("AANA human-review queue export: PASS")
+    print(f"- Source audit log: {result['audit_log_path']}")
+    print(f"- Queue JSONL: {result['queue_path']}")
+    if result.get("summary_path"):
+        print(f"- Summary JSON: {result['summary_path']}")
+    print(f"- Packets: {result['packet_count']}")
+    return 0
+
+
+def command_live_monitoring(args):
+    if args.write_config:
+        result = live_monitoring.write_live_monitoring_config(args.config)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA live monitoring config: {status}")
+        print(f"- Config: {result['config_path']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    if not args.audit_log:
+        raise CliError("--audit-log is required unless --write-config is used.")
+    report = live_monitoring.live_monitoring_report_jsonl(
+        args.audit_log,
+        config_path=args.config,
+        output_path=args.output,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["status"] != "critical" else 1
+    print(f"AANA live monitoring: {report['status'].upper()}")
+    print(f"- Audit log: {report['audit_log_path']}")
+    print(f"- Records: {report['record_count']}")
+    print(f"- Critical checks: {report['summary']['critical_count']}")
+    print(f"- Warning checks: {report['summary']['warning_count']}")
+    if args.output:
+        print(f"- Report: {args.output}")
+    return 0 if report["status"] != "critical" else 1
+
+
+def command_durable_audit_storage(args):
+    if args.write_config:
+        result = durable_audit_storage.write_durable_audit_storage_config(args.config)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA durable audit storage config: {status}")
+        print(f"- Config: {result['path']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    if args.verify:
+        report = durable_audit_storage.verify_durable_audit_storage(
+            audit_path=args.audit_path,
+            manifest_path=args.manifest_path,
+        )
+        if args.json:
+            print_json(report)
+            return 0 if report["valid"] else 1
+        status = "PASS" if report["valid"] else "FAIL"
+        print(f"AANA durable audit storage verify: {status}")
+        print(f"- Audit log: {report['audit_path']}")
+        print(f"- Manifest: {report['manifest_path']}")
+        print(f"- Records: {report.get('record_count')}")
+        for issue in report.get("issues", []):
+            print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+        return 0 if report["valid"] else 1
+
+    if not args.source_audit_log:
+        raise CliError("--source-audit-log is required unless --write-config or --verify is used.")
+    receipt = durable_audit_storage.import_audit_log_to_durable_storage(
+        args.source_audit_log,
+        audit_path=args.audit_path,
+        manifest_path=args.manifest_path,
+    )
+    if args.json:
+        print_json(receipt)
+        return 0
+    print("AANA durable audit storage import: PASS")
+    print(f"- Source: {args.source_audit_log}")
+    print(f"- Durable audit log: {receipt['audit_path']}")
+    print(f"- Manifest: {receipt['manifest_path']}")
+    print(f"- Imported records: {receipt['record_count']}")
+    print(f"- Total records: {receipt['line_count']}")
+    return 0
+
+
 def command_aix_audit(args):
     report = aix_audit.run_enterprise_ops_aix_audit(
         output_dir=args.output_dir,
@@ -1475,6 +1714,195 @@ def command_aix_audit(args):
     return 0 if report["valid"] else 1
 
 
+def command_mlcommons_aix_report(args):
+    if args.write_default_profile:
+        result = mlcommons_aix.write_mlcommons_aix_profile(args.profile)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA MLCommons AIx profile write: {status}")
+        print(f"- Profile: {result['path']}")
+        print(f"- Surfaces: {result['validation']['surface_count']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    report = mlcommons_aix.run_mlcommons_aix_report(
+        results_path=args.results,
+        source_type=args.source_type,
+        profile_path=args.profile,
+        output_dir=args.output_dir,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "FAIL"
+    print(f"AANA MLCommons AIx Report: {status}")
+    print(f"- Source type: {report['source_type']}")
+    print(f"- Recommendation: {report['deployment_recommendation']}")
+    print(f"- Overall AIx: {report['overall_aix']}")
+    print(f"- Hard blockers: {', '.join(report['hard_blockers']) or 'none'}")
+    print(f"- Report: {report['artifacts']['report_markdown']}")
+    print(f"- Report JSON: {report['artifacts']['report_json']}")
+    return 0 if report["valid"] else 1
+
+
+def command_croissant_evidence_import(args):
+    report = croissant_evidence.import_croissant_evidence(
+        metadata_path=args.metadata,
+        output_registry=args.output_registry,
+        report_path=args.report,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "FAIL"
+    summary = report["summary"]
+    print(f"AANA Croissant evidence import: {status}")
+    print(f"- Dataset: {summary['name']}")
+    print(f"- Source ID: {summary['source_id']}")
+    print(f"- Output registry: {report['output_registry']}")
+    print(f"- Report: {report['report_path']}")
+    print(f"- Errors: {report['gap_report']['errors']}")
+    print(f"- Warnings: {report['gap_report']['warnings']}")
+    for issue in report["gap_report"]["gaps"]:
+        print(f"- {issue['level'].upper()} {issue['field']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_medperf_aix_profile(args):
+    if args.write_default:
+        result = medperf_aix.write_medperf_aix_profile(args.profile)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA MedPerf AIx profile write: {status}")
+        print(f"- Profile: {result['path']}")
+        print(f"- Risk tier: {result['profile']['risk_tier']}")
+        print(f"- Healthcare evaluation ready: {result['validation']['healthcare_evaluation_ready']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    profile = medperf_aix.load_medperf_aix_profile(args.profile)
+    validation = medperf_aix.validate_medperf_aix_profile(profile)
+    section = medperf_aix.build_medperf_aix_report_section(profile, validation)
+    result = {"profile": profile, "validation": validation, "healthcare_aix_report_section": section}
+    if args.report:
+        written = medperf_aix.write_medperf_aix_report_section(args.profile, args.report)
+        result["report_path"] = written["path"]
+    if args.json:
+        print_json(result)
+        return 0 if validation["valid"] else 1
+    status = "PASS" if validation["valid"] else "FAIL"
+    print(f"AANA MedPerf AIx profile: {status}")
+    print(f"- Profile: {args.profile}")
+    if args.report:
+        print(f"- Report section: {args.report}")
+    print(f"- Risk tier: {validation['risk_tier']}")
+    print(f"- Healthcare evaluation ready: {validation['healthcare_evaluation_ready']}")
+    print(f"- Go-live ready: {validation['go_live_ready']}")
+    print(f"- Hard blockers: {', '.join(validation['hard_blockers']) if validation['hard_blockers'] else 'none'}")
+    for issue in validation["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if validation["valid"] else 1
+
+
+def command_mlcommons_endpoint_sidecar(args):
+    if args.write_default:
+        result = mlcommons_endpoint_sidecar.write_endpoint_sidecar_contract(args.contract)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA MLCommons endpoint sidecar contract write: {status}")
+        print(f"- Contract: {result['path']}")
+        print(f"- Shadow benchmark ready: {result['validation']['ready_for_shadow_benchmarking']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    contract = mlcommons_endpoint_sidecar.load_endpoint_sidecar_contract(args.contract)
+    validation = mlcommons_endpoint_sidecar.validate_endpoint_sidecar_contract(contract)
+    result = {"contract": contract, "validation": validation}
+    if args.report:
+        written = mlcommons_endpoint_sidecar.write_endpoint_sidecar_readiness_report(
+            contract_path=args.contract,
+            report_path=args.report,
+        )
+        result["report_path"] = written["path"]
+    if args.json:
+        print_json(result)
+        return 0 if validation["valid"] else 1
+    status = "PASS" if validation["valid"] else "FAIL"
+    print(f"AANA MLCommons endpoint sidecar contract: {status}")
+    print(f"- Contract: {args.contract}")
+    if args.report:
+        print(f"- Report: {args.report}")
+    print(f"- Shadow benchmark ready: {validation['ready_for_shadow_benchmarking']}")
+    print(f"- Live endpoint enforcement ready: {validation['ready_for_live_endpoint_enforcement']}")
+    for issue in validation["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if validation["valid"] else 1
+
+
+def command_mlcflow_aana_step(args):
+    result = mlcflow_aana_step.run_mlcflow_aana_step(
+        results_path=args.results,
+        source_type=args.source_type,
+        profile_path=args.profile,
+        output_dir=args.output_dir,
+        manifest_path=args.manifest,
+        benchmark_command=args.benchmark_command,
+        benchmark_cwd=args.benchmark_cwd,
+        benchmark_timeout_seconds=args.benchmark_timeout_seconds,
+    )
+    if args.json:
+        print_json(result)
+        return 0 if result["valid"] else 1
+    status = result["step_status"].upper()
+    print(f"AANA MLCFlow automation step: {status}")
+    print(f"- Source type: {result['aix_result']['source_type']}")
+    print(f"- Recommendation: {result['aix_result']['deployment_recommendation']}")
+    print(f"- Overall AIx: {result['aix_result']['overall_aix']}")
+    print(f"- Hard blockers: {', '.join(result['hard_blockers']) or 'none'}")
+    print(f"- Manifest: {result['manifest_path']}")
+    if result["fail_reasons"]:
+        print(f"- Fail reasons: {', '.join(result['fail_reasons'])}")
+    return 0 if result["valid"] else 1
+
+
+def command_dataperf_dynabench_audit(args):
+    if args.write_default_profile:
+        result = dataperf_dynabench_audit.write_dataperf_dynabench_profile(args.profile)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA DataPerf/Dynabench audit profile write: {status}")
+        print(f"- Profile: {result['path']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    report = dataperf_dynabench_audit.run_dataperf_dynabench_audit(
+        metadata_path=args.metadata,
+        benchmark_path=args.benchmark,
+        profile_path=args.profile,
+        report_path=args.report,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "WARN"
+    summary = report["summary"]
+    print(f"AANA DataPerf/Dynabench audit: {status}")
+    print(f"- Dataset: {summary['dataset']}")
+    print(f"- Benchmark: {summary['benchmark_id']}")
+    print(f"- Risk tier: {summary['risk_tier']}")
+    print(f"- Dataset quality: {report['dataset_quality']['quality_score']}")
+    print(f"- Benchmark coverage: {report['benchmark_coverage']['coverage_score']}")
+    print(f"- Drift risk: {report['drift_risk']['risk_level']}")
+    print(f"- Report: {args.report}")
+    for gap in report["evidence_gaps"]:
+        print(f"- {gap['level'].upper()} {gap['code']}: {gap['message']}")
+    return 0 if report["valid"] else 1
+
+
 def command_enterprise_connectors(args):
     result = enterprise_connector_readiness.write_enterprise_connector_readiness_plan(args.output)
     if args.json:
@@ -1492,6 +1920,92 @@ def command_enterprise_connectors(args):
         for issue in result["validation"]["issues"]:
             print(f"- {issue['level']} {issue['path']}: {issue['message']}")
     return 0 if result["validation"]["valid"] else 1
+
+
+def command_enterprise_live_connectors(args):
+    if args.write_default_config:
+        result = enterprise_live_connectors.write_enterprise_live_connector_config(args.config)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA enterprise live connector config: {status}")
+        print(f"- Output: {result['path']}")
+        print(f"- Connectors: {result['validation']['summary']['connector_count']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    report = enterprise_live_connectors.run_enterprise_support_connector_smoke(
+        config_path=args.config,
+        output_path=args.output,
+        mode=args.mode,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "FAIL"
+    summary = report["summary"]
+    print(f"AANA enterprise live connector smoke: {status}")
+    print(f"- Mode: {report['mode']}")
+    print(f"- Connectors: {summary['connector_count']}")
+    print(f"- Executed: {summary['executed_count']}")
+    print(f"- Blocked/deferred: {summary['blocked_count']}")
+    if args.output:
+        print(f"- Output: {args.output}")
+    if report["validation"]["issues"]:
+        print("Issues:")
+        for issue in report["validation"]["issues"]:
+            print(f"- {issue['level']} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_production_candidate_profile(args):
+    if args.write_default:
+        result = production_candidate_profile.write_production_candidate_profile(args.profile)
+        if args.json:
+            print_json(result)
+            return 0 if result["validation"]["valid"] else 1
+        status = "PASS" if result["validation"]["valid"] else "FAIL"
+        print(f"AANA production-candidate profile write: {status}")
+        print(f"- Profile: {result['path']}")
+        print(f"- Wedge: {result['profile']['wedge']}")
+        print(f"- Warnings: {result['validation']['warnings']}")
+        return 0 if result["validation"]["valid"] else 1
+
+    profile = production_candidate_profile.load_production_candidate_profile(args.profile)
+    report = production_candidate_profile.validate_production_candidate_profile(profile)
+    if args.json:
+        print_json({"profile": profile, "validation": report})
+        return 0 if report["valid"] else 1
+    status = "PASS" if report["valid"] else "FAIL"
+    print(f"AANA production-candidate profile: {status}")
+    print(f"- Profile: {args.profile}")
+    print(f"- Production-candidate ready: {report['production_candidate_ready']}")
+    print(f"- Go-live ready: {report['go_live_ready']}")
+    print(f"- Warnings: {report['warnings']}")
+    for issue in report["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_production_candidate_check(args):
+    report = production_candidate_check.production_candidate_check(
+        profile_path=args.profile,
+        artifact_dir=args.artifact_dir,
+    )
+    if args.json:
+        print_json(report)
+        return 0 if report["valid"] else 1
+    print(f"AANA production-candidate check: {report['status'].upper()}")
+    print(f"- Profile: {report['profile_path']}")
+    if report.get("artifact_dir"):
+        print(f"- Artifact dir: {report['artifact_dir']}")
+    print(f"- Production-candidate ready: {report['production_candidate_ready']}")
+    print(f"- Go-live ready: {report['go_live_ready']}")
+    print(f"- Errors: {report['errors']}")
+    print(f"- Warnings: {report['warnings']}")
+    for issue in report["issues"]:
+        print(f"- {issue['level'].upper()} {issue['path']}: {issue['message']}")
+    return 0 if report["valid"] else 1
 
 
 def command_enterprise_support_demo(args):
@@ -2651,6 +3165,76 @@ def build_parser():
     audit_verify_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     audit_verify_parser.set_defaults(func=command_audit_verify)
 
+    human_review_export_parser = subparsers.add_parser(
+        "human-review-export",
+        help="Export open human-review packets from redacted AANA runtime audit JSONL.",
+    )
+    human_review_export_parser.add_argument("--audit-log", default=None, help="Source redacted AANA audit JSONL file.")
+    human_review_export_parser.add_argument(
+        "--queue-output",
+        default=str(ROOT / "eval_outputs" / "human_review" / "runtime-review-queue.jsonl"),
+        help="Path to write the human-review queue JSONL.",
+    )
+    human_review_export_parser.add_argument(
+        "--summary-output",
+        default=str(ROOT / "eval_outputs" / "human_review" / "runtime-review-summary.json"),
+        help="Path to write the human-review queue summary JSON.",
+    )
+    human_review_export_parser.add_argument(
+        "--config",
+        default=str(ROOT / "examples" / "human_review_queue_export.json"),
+        help="Path to write the default human-review export config when --write-config is used.",
+    )
+    human_review_export_parser.add_argument("--include-all", action="store_true", help="Export all audit records, not only review-required records.")
+    human_review_export_parser.add_argument("--append", action="store_true", help="Append packets instead of replacing the queue JSONL.")
+    human_review_export_parser.add_argument("--write-config", action="store_true", help="Write the default human-review export config.")
+    human_review_export_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    human_review_export_parser.set_defaults(func=command_human_review_export)
+
+    live_monitoring_parser = subparsers.add_parser(
+        "live-monitoring",
+        help="Evaluate live monitoring metrics from redacted AANA runtime audit JSONL.",
+    )
+    live_monitoring_parser.add_argument("--audit-log", default=None, help="Source redacted AANA audit JSONL file.")
+    live_monitoring_parser.add_argument(
+        "--config",
+        default=str(ROOT / "examples" / "live_monitoring_metrics.json"),
+        help="Live monitoring metric config JSON.",
+    )
+    live_monitoring_parser.add_argument(
+        "--output",
+        default=str(ROOT / "eval_outputs" / "monitoring" / "live-monitoring-report.json"),
+        help="Path to write live monitoring report JSON.",
+    )
+    live_monitoring_parser.add_argument("--write-config", action="store_true", help="Write the default live monitoring config.")
+    live_monitoring_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    live_monitoring_parser.set_defaults(func=command_live_monitoring)
+
+    durable_audit_parser = subparsers.add_parser(
+        "durable-audit-storage",
+        help="Configure, import into, or verify local durable append-only storage for redacted AANA audit JSONL.",
+    )
+    durable_audit_parser.add_argument(
+        "--config",
+        default=str(ROOT / "examples" / "durable_audit_storage.json"),
+        help="Path to write the durable audit storage config when --write-config is used.",
+    )
+    durable_audit_parser.add_argument("--source-audit-log", default=None, help="Existing redacted AANA audit JSONL to import.")
+    durable_audit_parser.add_argument(
+        "--audit-path",
+        default=str(ROOT / "eval_outputs" / "durable_audit_storage" / "aana_audit.jsonl"),
+        help="Durable audit JSONL path.",
+    )
+    durable_audit_parser.add_argument(
+        "--manifest-path",
+        default=str(ROOT / "eval_outputs" / "durable_audit_storage" / "aana_audit.jsonl.sha256.json"),
+        help="Durable audit manifest path.",
+    )
+    durable_audit_parser.add_argument("--write-config", action="store_true", help="Write the default durable audit storage config.")
+    durable_audit_parser.add_argument("--verify", action="store_true", help="Verify the durable audit log and manifest.")
+    durable_audit_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    durable_audit_parser.set_defaults(func=command_durable_audit_storage)
+
     aix_audit_parser = subparsers.add_parser(
         "aix-audit",
         help="Run the enterprise-ops AANA AIx Audit and generate redacted audit, metrics, drift, manifest, and AIx Report artifacts.",
@@ -2671,6 +3255,178 @@ def build_parser():
     aix_audit_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     aix_audit_parser.set_defaults(func=command_aix_audit)
 
+    mlcommons_parser = subparsers.add_parser(
+        "mlcommons-aix-report",
+        help="Generate an AANA AIx Report from MLCommons AILuminate or ModelBench result artifacts.",
+    )
+    mlcommons_parser.add_argument(
+        "--results",
+        default=str(ROOT / "examples" / "mlcommons_ailuminate_results.json"),
+        help="MLCommons AILuminate/ModelBench result JSON.",
+    )
+    mlcommons_parser.add_argument(
+        "--source-type",
+        choices=["ailuminate", "modelbench"],
+        default="ailuminate",
+        help="Input result shape to import.",
+    )
+    mlcommons_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "mlcommons_aix_profile.json"),
+        help="AANA MLCommons AIx profile JSON.",
+    )
+    mlcommons_parser.add_argument(
+        "--output-dir",
+        default=str(ROOT / "eval_outputs" / "mlcommons_aix"),
+        help="Directory for normalized MLCommons results and AIx report artifacts.",
+    )
+    mlcommons_parser.add_argument("--write-default-profile", action="store_true", help="Write the default MLCommons AIx profile.")
+    mlcommons_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    mlcommons_parser.set_defaults(func=command_mlcommons_aix_report)
+
+    croissant_parser = subparsers.add_parser(
+        "croissant-evidence-import",
+        help="Import Croissant metadata JSON into an AANA evidence registry source with provenance gap checks.",
+    )
+    croissant_parser.add_argument(
+        "--metadata",
+        default=str(ROOT / "examples" / "croissant_metadata_sample.json"),
+        help="Croissant metadata JSON.",
+    )
+    croissant_parser.add_argument(
+        "--output-registry",
+        default=str(ROOT / "eval_outputs" / "croissant" / "evidence-registry.json"),
+        help="AANA evidence registry JSON to write.",
+    )
+    croissant_parser.add_argument(
+        "--report",
+        default=str(ROOT / "eval_outputs" / "croissant" / "croissant-evidence-report.json"),
+        help="Croissant import gap report JSON to write.",
+    )
+    croissant_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    croissant_parser.set_defaults(func=command_croissant_evidence_import)
+
+    medperf_parser = subparsers.add_parser(
+        "medperf-aix-profile",
+        help="Validate or write the strict MedPerf healthcare AIx profile and report section.",
+    )
+    medperf_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "medperf_aix_profile_healthcare.json"),
+        help="MedPerf healthcare AIx profile JSON.",
+    )
+    medperf_parser.add_argument(
+        "--report",
+        default=None,
+        help="Optional path to write the healthcare-specific AIx Report section JSON.",
+    )
+    medperf_parser.add_argument(
+        "--write-default",
+        action="store_true",
+        help="Write the default strict MedPerf healthcare AIx profile before validating it.",
+    )
+    medperf_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    medperf_parser.set_defaults(func=command_medperf_aix_profile)
+
+    endpoint_sidecar_parser = subparsers.add_parser(
+        "mlcommons-endpoint-sidecar",
+        help="Validate or write the MLCommons endpoint sidecar/proxy runtime governance contract.",
+    )
+    endpoint_sidecar_parser.add_argument(
+        "--contract",
+        default=str(ROOT / "examples" / "mlcommons_endpoint_sidecar_contract.json"),
+        help="MLCommons endpoint sidecar contract JSON.",
+    )
+    endpoint_sidecar_parser.add_argument(
+        "--report",
+        default=None,
+        help="Optional path to write the endpoint sidecar readiness report JSON.",
+    )
+    endpoint_sidecar_parser.add_argument(
+        "--write-default",
+        action="store_true",
+        help="Write the default endpoint sidecar contract before validating it.",
+    )
+    endpoint_sidecar_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    endpoint_sidecar_parser.set_defaults(func=command_mlcommons_endpoint_sidecar)
+
+    mlcflow_step_parser = subparsers.add_parser(
+        "mlcflow-aana-step",
+        help="Run AANA as an MLCFlow automation step: collect MLCommons artifact, generate AIx report, write manifest, and fail on hard blockers.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--results",
+        default=str(ROOT / "examples" / "mlcommons_ailuminate_results.json"),
+        help="MLCommons AILuminate/ModelBench result artifact collected from the benchmark run.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--source-type",
+        choices=["ailuminate", "modelbench"],
+        default="ailuminate",
+        help="Input result shape to import.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "mlcommons_aix_profile.json"),
+        help="AANA MLCommons AIx profile JSON.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--output-dir",
+        default=str(ROOT / "eval_outputs" / "mlcflow_aana_step"),
+        help="Directory for normalized results, AIx reports, and step manifest.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--manifest",
+        default=None,
+        help="Optional explicit path for the MLCFlow step manifest JSON.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--benchmark-command",
+        default=None,
+        help="Optional benchmark command to run before collecting the MLCommons artifact.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--benchmark-cwd",
+        default=str(ROOT),
+        help="Working directory for --benchmark-command.",
+    )
+    mlcflow_step_parser.add_argument(
+        "--benchmark-timeout-seconds",
+        type=int,
+        default=3600,
+        help="Timeout for --benchmark-command.",
+    )
+    mlcflow_step_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    mlcflow_step_parser.set_defaults(func=command_mlcflow_aana_step)
+
+    dataperf_dynabench_parser = subparsers.add_parser(
+        "dataperf-dynabench-audit",
+        help="Run a DataPerf/Dynabench dataset quality, coverage, evidence-gap, drift-risk, and risk-tier audit.",
+    )
+    dataperf_dynabench_parser.add_argument(
+        "--metadata",
+        default=str(ROOT / "examples" / "croissant_metadata_sample.json"),
+        help="Dataset metadata JSON, preferably Croissant-shaped.",
+    )
+    dataperf_dynabench_parser.add_argument(
+        "--benchmark",
+        default=str(ROOT / "examples" / "dataperf_dynabench_benchmark_summary.json"),
+        help="DataPerf/Dynabench benchmark coverage summary JSON.",
+    )
+    dataperf_dynabench_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "dataperf_dynabench_audit_profile.json"),
+        help="DataPerf/Dynabench audit profile JSON.",
+    )
+    dataperf_dynabench_parser.add_argument(
+        "--report",
+        default=str(ROOT / "eval_outputs" / "dataperf_dynabench" / "audit-report.json"),
+        help="Path to write the audit report JSON.",
+    )
+    dataperf_dynabench_parser.add_argument("--write-default-profile", action="store_true", help="Write the default audit profile.")
+    dataperf_dynabench_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    dataperf_dynabench_parser.set_defaults(func=command_dataperf_dynabench_audit)
+
     enterprise_connectors_parser = subparsers.add_parser(
         "enterprise-connectors",
         help="Generate the enterprise-ops live connector readiness plan.",
@@ -2682,6 +3438,68 @@ def build_parser():
     )
     enterprise_connectors_parser.add_argument("--json", action="store_true", help="Emit JSON.")
     enterprise_connectors_parser.set_defaults(func=command_enterprise_connectors)
+
+    enterprise_live_connectors_parser = subparsers.add_parser(
+        "enterprise-live-connectors",
+        help="Validate and smoke-test production-candidate CRM/support, email-send, and ticket-update connectors.",
+    )
+    enterprise_live_connectors_parser.add_argument(
+        "--config",
+        default=str(ROOT / "examples" / "enterprise_support_live_connectors.json"),
+        help="Enterprise support live connector config JSON.",
+    )
+    enterprise_live_connectors_parser.add_argument(
+        "--output",
+        default=None,
+        help="Optional path to write the connector smoke report JSON.",
+    )
+    enterprise_live_connectors_parser.add_argument(
+        "--mode",
+        choices=enterprise_live_connectors.EXECUTION_MODES,
+        default="dry_run",
+        help="Connector execution mode. Dry-run is the default and performs no external calls.",
+    )
+    enterprise_live_connectors_parser.add_argument(
+        "--write-default-config",
+        action="store_true",
+        help="Write the default production-candidate connector config instead of running smoke checks.",
+    )
+    enterprise_live_connectors_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    enterprise_live_connectors_parser.set_defaults(func=command_enterprise_live_connectors)
+
+    production_candidate_profile_parser = subparsers.add_parser(
+        "production-candidate-profile",
+        help="Validate or write the enterprise support production-candidate config profile.",
+    )
+    production_candidate_profile_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "production_candidate_profile_enterprise_support.json"),
+        help="Production-candidate profile JSON.",
+    )
+    production_candidate_profile_parser.add_argument(
+        "--write-default",
+        action="store_true",
+        help="Write the default enterprise support production-candidate profile before validating it.",
+    )
+    production_candidate_profile_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    production_candidate_profile_parser.set_defaults(func=command_production_candidate_profile)
+
+    production_candidate_check_parser = subparsers.add_parser(
+        "production-candidate-check",
+        help="Validate production-candidate config and optional shadow-pilot artifact evidence.",
+    )
+    production_candidate_check_parser.add_argument(
+        "--profile",
+        default=str(ROOT / "examples" / "production_candidate_profile_enterprise_support.json"),
+        help="Production-candidate profile JSON.",
+    )
+    production_candidate_check_parser.add_argument(
+        "--artifact-dir",
+        default=None,
+        help="Optional run artifact directory containing audit, monitoring, review, durable, connector, and report outputs.",
+    )
+    production_candidate_check_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    production_candidate_check_parser.set_defaults(func=command_production_candidate_check)
 
     enterprise_support_demo_parser = subparsers.add_parser(
         "enterprise-support-demo",

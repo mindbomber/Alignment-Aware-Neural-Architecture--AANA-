@@ -34,6 +34,7 @@ FastAPI serves OpenAPI JSON at `/openapi.json` and Swagger UI at `/docs`.
 - `POST /aix-audit`
 - `GET /enterprise-connectors`
 - `POST /enterprise-support-demo`
+- `POST /mlcommons-aix-report`
 - `POST /validate-event`
 - `POST /validate-workflow`
 - `POST /validate-tool-precheck`
