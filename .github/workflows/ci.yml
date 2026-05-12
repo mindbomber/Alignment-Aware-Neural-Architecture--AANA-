@@ -50,6 +50,9 @@ jobs:
           npm --prefix sdk/typescript install
           npm --prefix sdk/typescript run build
 
+      - name: Run Python regression suite
+        run: python -m pytest -q
+
       - name: Run AANA platform CI gate
         run: python scripts/validate_aana_platform.py
 

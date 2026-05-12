@@ -16,7 +16,16 @@ Thanks for considering a contribution. This repository is intended to be underst
 2. Create a feature branch.
 3. Make a focused change.
 4. Run the relevant scripts with a small `--limit` or `--dry-run`.
-5. Open a pull request explaining what changed and how you checked it.
+5. Run focused tests for the changed surface.
+6. Before committing or pushing code changes, run the full regression suite:
+
+```powershell
+python -m pytest -q
+```
+
+7. Open a pull request explaining what changed and how you checked it.
+
+GitHub CI also runs the full pytest regression suite on pushes and pull requests. Treat local tests as the fast feedback loop and CI as the required independent check.
 
 ## Style
 
