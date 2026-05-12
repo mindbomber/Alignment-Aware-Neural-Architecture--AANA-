@@ -33,6 +33,46 @@ Here `pi` is optimization pressure, `epsilon` is constraint misclassification, `
 
 AANA is not production-certified by local tests alone. Public surfaces should describe AANA as demo-ready, pilot-ready, or production-candidate until live evidence connectors, domain owner signoff, audit retention, observability, human review path, security review, deployment manifest, incident response plan, and measured pilot results are complete. Passing `pilot-certify`, `release-check`, or local tests does not certify production safety.
 
+## AANA for MLCommons
+
+MLCommons generates trusted benchmark evidence. AANA turns that evidence into regulated-deployment audit artifacts and runtime governance controls.
+
+```text
+AILuminate / ModelBench / MedPerf / Croissant
+  -> AANA AIx Audit
+  -> AIx Report + hard blockers + evidence gaps + runtime controls
+```
+
+AANA currently includes MLCommons-facing support for:
+
+- AILuminate and ModelBench artifact import through `mlcommons-aix-report`,
+- a checked-in sample AIx Report from a ModelBench-style journal,
+- a Croissant evidence registry importer for dataset provenance,
+- a strict MedPerf healthcare AIx profile,
+- an MLCommons endpoint sidecar pattern,
+- an MLCFlow automation step,
+- DataPerf/Dynabench dataset audit wrappers.
+
+Try the MLCommons report path:
+
+```powershell
+python scripts/aana_cli.py mlcommons-aix-report `
+  --results examples/mlcommons_modelbench_journal_actual.jsonl `
+  --source-type modelbench `
+  --output-dir eval_outputs/mlcommons_aix/modelbench `
+  --json
+```
+
+Review the buyer-facing sample artifacts:
+
+- [AANA + MLCommons Integration Brief](docs/aana-mlcommons-integration-brief.md)
+- [Full MLCommons AIx integration docs](docs/mlcommons-aix-integration.md)
+- [Sample MLCommons AIx Report](docs/evidence/peer_review/mlcommons_aix_sample/mlcommons-aix-report.md)
+- [Sample MLCommons AIx Report JSON](docs/evidence/peer_review/mlcommons_aix_sample/mlcommons-aix-report.json)
+- [Normalized MLCommons Results](docs/evidence/peer_review/mlcommons_aix_sample/normalized-mlcommons-results.json)
+
+AANA does not certify MLCommons compliance, replace MLCommons benchmarks, or prove regulated production readiness from benchmark results alone. It consumes MLCommons evidence and adds deployment-facing governance: AIx scoring, hard-blocker checks, evidence-gap analysis, remediation guidance, and runtime enforcement patterns.
+
 ## Recommended Local Path
 
 Use AANA first as a runtime guardrail layer: install the package, run `aana` checks locally, wrap one consequential tool, and only then add API or middleware surfaces. The Workflow Contract, Agent Event Contract, and Agent Action Contract are the product path; eval workflows, benchmark runners, and research scripts under `scripts/` are validation tooling, not the public runtime interface.
