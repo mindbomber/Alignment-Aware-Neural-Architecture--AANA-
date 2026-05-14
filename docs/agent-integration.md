@@ -175,17 +175,17 @@ python scripts/aana_cli.py policy-presets --json
 
 Included presets cover message sending, file writes, code commits, support replies, research summaries, bookings or purchases, and private-data use.
 
-## Local HTTP Bridge
+## Local HTTP Service
 
-Agents that work best with HTTP tools can run AANA as a local bridge:
+Agents that work best with HTTP tools can run AANA as the installed FastAPI policy service:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl --rate-limit-per-minute 120
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl --rate-limit-per-minute 120
 ```
 
-For production-like local use, set `AANA_BRIDGE_TOKEN` before starting the bridge. POST routes then require either `Authorization: Bearer <token>` or `X-AANA-Token: <token>`. Use `--auth-token-file` when the host environment needs token rotation without restarting the bridge; the token file is reread on every POST request. The bridge rejects oversized POST bodies by default at `1048576` bytes; use `--max-body-bytes` only when the deployment has a reviewed reason to change that limit. `--rate-limit-per-minute` adds a process-local per-client POST limit, and `--read-timeout-seconds` bounds request-body reads. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the bridge process.
+For production-like local use, set `AANA_BRIDGE_TOKEN` before starting the service. POST routes then require either `Authorization: Bearer <token>` or `X-AANA-Token: <token>`. The service rejects oversized POST bodies by default at `65536` bytes; use `--max-request-bytes` only when the deployment has a reviewed reason to change that limit. `--rate-limit-per-minute` adds a process-local per-client POST limit. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the service process.
 
-Use `GET /ready` before routing traffic. It checks the adapter gallery, auth configuration, and audit-log parent directory. See [`http-bridge-runbook.md`](http-bridge-runbook.md) for token rotation, structured error payloads, audit append guarantees, timeout behavior, and deployment guidance.
+Use `GET /ready` before routing traffic. See [`fastapi-service.md`](fastapi-service.md) for public service startup, auth, structured error payloads, audit append guarantees, request-size limits, and deployment guidance. The legacy [`http-bridge-runbook.md`](http-bridge-runbook.md) covers `python scripts/aana_server.py` for repo-local playground, dashboard, and local demo workflows.
 
 For audit trails, call `eval_pipeline.agent_api.audit_event_check(event, result)` after `check_event(event)`. The audit record keeps event IDs, adapter IDs, decisions, recommended actions, AIx score summaries, violation codes, and SHA-256 fingerprints, but excludes raw user requests, planned actions, evidence, and safe responses.
 
@@ -206,23 +206,17 @@ python scripts/aana_cli.py validate-observability --observability-policy example
 python scripts/aana_cli.py release-check --deployment-manifest path/to/your-production-deployment.json --governance-policy path/to/your-governance-policy.json --observability-policy path/to/your-observability-policy.json
 ```
 
-If the package is installed locally, the same bridge is available as:
+If the package is installed locally, the service is available as:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+aana-fastapi --host 127.0.0.1 --port 8766
 ```
 
 Available routes:
 
 - `GET /health`
-- `GET /policy-presets`
 - `GET /openapi.json`
-- `GET /schemas`
-- `GET /schemas/agent-event.schema.json`
-- `GET /schemas/agent-check-result.schema.json`
-- `GET /schemas/aix.schema.json`
-- `GET /schemas/workflow-request.schema.json`
-- `GET /schemas/workflow-result.schema.json`
+- `GET /docs`
 - `POST /validate-event`
 - `POST /agent-check`
 - `POST /validate-workflow`
@@ -232,32 +226,24 @@ PowerShell example:
 
 ```powershell
 $event = Get-Content examples/agent_event_support_reply.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-event -Body $event -ContentType 'application/json'
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Body $event -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/validate-event -Body $event -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/agent-check -Body $event -ContentType 'application/json'
 ```
 
-This is the easiest integration path for agent frameworks that expose local tools, webhooks, or HTTP request actions. Keep the bridge bound to `127.0.0.1` unless you have a real deployment boundary, authentication, logging, and network controls.
+This is the easiest integration path for agent frameworks that expose local tools, webhooks, or HTTP request actions. Keep the service bound to `127.0.0.1` unless you have a real deployment boundary, authentication, logging, and network controls.
 
 For non-agent apps, notebooks, and workflow tools, use the more general Workflow Contract:
 
 ```powershell
 $workflow = Get-Content examples/workflow_research_summary.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-workflow -Body $workflow -ContentType 'application/json'
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Body $workflow -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/validate-workflow -Body $workflow -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/workflow-check -Body $workflow -ContentType 'application/json'
 ```
 
 The OpenAPI route is useful for tools that can import an HTTP contract:
 
 ```powershell
-Invoke-RestMethod http://127.0.0.1:8765/openapi.json
-```
-
-The schema routes are useful for tools that want only the event or result shape:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-event.schema.json
-Invoke-RestMethod http://127.0.0.1:8765/schemas/agent-check-result.schema.json
-Invoke-RestMethod http://127.0.0.1:8765/schemas/aix.schema.json
+Invoke-RestMethod http://127.0.0.1:8766/openapi.json
 ```
 
 OpenClaw-style no-code and low-code entry points are documented in:
@@ -300,11 +286,11 @@ Expose an approved AANA checker as a named local tool. The tool should accept a 
 Expose the local bridge as an agent tool:
 
 ```text
-POST http://127.0.0.1:8765/validate-event
+POST http://127.0.0.1:8766/validate-event
 Content-Type: application/json
 Body: the AANA agent event
 
-POST http://127.0.0.1:8765/agent-check
+POST http://127.0.0.1:8766/agent-check
 Content-Type: application/json
 Body: the AANA agent event
 ```
@@ -320,14 +306,7 @@ aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
 For tools that ingest OpenAPI, point them at:
 
 ```text
-http://127.0.0.1:8765/openapi.json
-```
-
-For tools that ingest JSON Schema directly, use:
-
-```text
-http://127.0.0.1:8765/schemas/agent-event.schema.json
-http://127.0.0.1:8765/schemas/agent-check-result.schema.json
+http://127.0.0.1:8766/openapi.json
 ```
 
 ## OpenClaw-Style Setup

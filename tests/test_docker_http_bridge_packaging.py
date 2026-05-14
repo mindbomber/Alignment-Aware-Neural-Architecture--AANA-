@@ -102,6 +102,8 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
 
         for expected in [
             "docker compose up --build",
+            "local service examples use `aana-fastapi` on",
+            "Docker and deployment examples intentionally use host port",
             "Invoke-RestMethod http://localhost:8765/ready",
             "http://localhost:8765/docs",
             "aana-fastapi",
@@ -123,6 +125,8 @@ class DockerHttpBridgePackagingTests(unittest.TestCase):
         for expected in [
             "docker build -t aana/enterprise-ops-runtime:local .",
             "docker compose up --build",
+            "local installed-service docs use `aana-fastapi` on",
+            "Docker and deployment runbooks intentionally use host port",
             "kubectl apply -f deploy/kubernetes/aana-bridge-production-template.yaml",
             "production-candidate-check",
             "eval_outputs/audit/docker/aana-fastapi.jsonl",

@@ -15,6 +15,8 @@ Use this checklist before publishing any AANA artifact to PyPI, npm, or Hugging 
 ## PyPI
 
 - [ ] Confirm current distribution name and migration status: `aana-eval-pipeline` is transitional; import package and CLI remain `aana`.
+- [ ] Do not publish new user-facing install docs that present `aana-eval-pipeline` as the permanent product name; docs should say AANA and use the `aana` import/CLI surface.
+- [ ] If renaming the distribution to `aana`, require migration notes, owner/access confirmation, a compatibility window for `aana-eval-pipeline`, stable `import aana`, and stable `aana`, `aana-fastapi`, and `aana-validate-platform` commands.
 - [ ] Confirm public console scripts are limited to `aana`, `aana-fastapi`, and `aana-validate-platform`.
 - [ ] Confirm default install excludes repo-local `scripts*`, `tests*`, and `evals*`.
 - [ ] Confirm FastAPI dependencies remain behind the `api` extra.

@@ -16,7 +16,24 @@ Export metrics:
 python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/recipes/shadow-mode.jsonl --output eval_outputs/audit/recipes/shadow-mode-metrics.json
 ```
 
-Start the local dashboard:
+For HTTP integrations, start the installed FastAPI policy service:
+
+```powershell
+$env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/recipes/shadow-mode.jsonl
+```
+
+Use `?shadow_mode=true` when only one request should be observe-only:
+
+```powershell
+$workflow = Get-Content examples/workflow_deployment_readiness.json -Raw
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8766/workflow-check?shadow_mode=true" -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $workflow
+```
+
+## Repo-Local Dashboard
+
+The dashboard route is part of the legacy repo-local bridge, not the installed
+FastAPI policy service. Use it only when you need the local dashboard UI:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
@@ -27,15 +44,6 @@ Open:
 
 ```text
 http://127.0.0.1:8765/dashboard
-```
-
-## HTTP Per-Request Shadow Mode
-
-Use `?shadow_mode=true` when only one request should be observe-only:
-
-```powershell
-$workflow = Get-Content examples/workflow_deployment_readiness.json -Raw
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8765/workflow-check?shadow_mode=true" -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $workflow
 ```
 
 ## Expected Result

@@ -10,19 +10,29 @@ This is the one recommended developer path for local platform onboarding:
 2. Run `doctor`.
 3. Run one gallery example.
 4. Run a Workflow Contract check.
-5. Start the HTTP bridge with audit logging.
+5. Start the FastAPI policy service with audit logging.
 6. Inspect the redacted audit output.
 
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
+
 ```powershell
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
-aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana audit-summary --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
-The bridge exposes `http://127.0.0.1:8765/ready`, `http://127.0.0.1:8765/playground`, `http://127.0.0.1:8765/adapter-gallery`, `/workflow-check`, `/agent-check`, and `/openapi.json`.
+If you are not using a local Windows `.venv`, install into your active environment instead:
+
+```powershell
+python -m pip install -e ".[api]"
+```
+
+The installed service exposes `http://127.0.0.1:8766/ready`, `http://127.0.0.1:8766/docs`, `/workflow-check`, `/agent-check`, `/pre-tool-check`, and `/openapi.json`. Use `python scripts/aana_server.py` only when you specifically need the repo-local playground, dashboard, or local demo pages.
 
 ## Hosted Demo
 

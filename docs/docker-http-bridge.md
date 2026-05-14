@@ -17,6 +17,12 @@ docker compose up --build
 
 The runtime listens on `http://localhost:8765` by default.
 
+Port convention: the installed local service examples use `aana-fastapi` on
+`127.0.0.1:8766`. Docker and deployment examples intentionally use host port
+`8765`, mapped to container port `8765`, so containerized pilot commands stay
+separate from the local developer service. Override the host port with
+`AANA_BRIDGE_PORT` in `.env` only when `8765` is already in use.
+
 Readiness does not require POST authorization:
 
 ```powershell

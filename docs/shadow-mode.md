@@ -53,22 +53,38 @@ The metrics export includes:
 - `shadow_would_defer_count`
 - `shadow_would_refuse_count`
 
-## HTTP Bridge
+## FastAPI Service
 
-Start the whole bridge in shadow mode:
+Start the installed FastAPI policy service:
+
+```powershell
+$env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl
+```
+
+Enable shadow mode for one request:
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8766/workflow-check?shadow_mode=true" -Method Post -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body (Get-Content examples/workflow_research_summary.json -Raw)
+```
+
+The service still returns the AANA recommendation, but the response explicitly
+marks the production effect as `not_blocked`.
+
+## Repo-Local Dashboard
+
+The dashboard route is part of the legacy repo-local bridge, not the installed
+FastAPI policy service. Use it only when you need the local dashboard UI:
 
 ```powershell
 python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
 ```
 
-Or enable shadow mode for one request:
+Open:
 
-```powershell
-Invoke-RestMethod "http://127.0.0.1:8765/workflow-check?shadow_mode=true" -Method Post -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body (Get-Content examples/workflow_research_summary.json -Raw)
+```text
+http://127.0.0.1:8765/dashboard
 ```
-
-The bridge still returns the AANA recommendation, but the response explicitly
-marks the production effect as `not_blocked`.
 
 ## Interpreting Would Actions
 

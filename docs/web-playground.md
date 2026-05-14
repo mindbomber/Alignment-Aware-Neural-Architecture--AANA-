@@ -1,12 +1,13 @@
 # AANA Web Playground
 
 The local web playground lets a non-engineer try adapter gallery demos without
-memorizing CLI commands. It runs from the same HTTP bridge as the agent and
-workflow APIs, so the browser can call AANA checks without CORS or extra setup.
+memorizing CLI commands. It is a legacy repo-local UI route served by
+`python scripts/aana_server.py` or the Docker demo profile on port `8765`.
+Use `aana-fastapi` on `127.0.0.1:8766` for API/runtime integrations.
 
 ## Start
 
-With Python:
+With the repo-local Python UI runner:
 
 ```powershell
 python scripts/demos/run_playground.py
@@ -23,6 +24,9 @@ Open:
 ```text
 http://localhost:8765/playground
 ```
+
+The `8765` links in this page are intentional repo-local UI routes. They are
+not the recommended public API service path.
 
 Open a specific adapter from the gallery:
 
@@ -74,10 +78,11 @@ click Try this adapter
 click Run AANA Check
 ```
 
-The playground calls `POST /playground/check`. The response includes the same
+The playground calls `POST /playground/check` on the legacy repo-local UI
+server. The response includes the same
 Workflow Contract result shape used by `/workflow-check`, plus a redacted audit
-record preview. If the bridge was launched with `--audit-log`, the record is
-also appended to the configured JSONL audit log.
+record preview. If the repo-local UI server was launched with `--audit-log`,
+the record is also appended to the configured JSONL audit log.
 
 ## Endpoint Summary
 

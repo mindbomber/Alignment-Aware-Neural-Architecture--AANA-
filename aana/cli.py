@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
+import platform
 import sys
 import time
 
@@ -25,6 +27,15 @@ DEFAULT_EVIDENCE_PACK = ROOT / "examples" / "production_candidate_evidence_pack.
 PUBLIC_ARCHITECTURE_CLAIM = "AANA is a pre-action control layer for AI agents: agents propose actions, AANA checks evidence/auth/risk, and tools execute only when the route is accept."
 
 
+def _check_status(name: str, status: str, message: str, details: dict | None = None) -> dict:
+    return {
+        "name": name,
+        "status": status,
+        "message": message,
+        "details": details or {},
+    }
+
+
 def _print_json(data: object) -> None:
     print(json.dumps(data, indent=2, ensure_ascii=False))
 
@@ -34,6 +45,136 @@ def _load_json(path: str | pathlib.Path) -> dict:
     if not isinstance(payload, dict):
         raise ValueError(f"{path} must contain a JSON object.")
     return payload
+
+
+def _provider_status() -> dict:
+    provider = os.environ.get("AANA_PROVIDER", "openai").strip().lower()
+    if provider == "openai":
+        ready = bool(os.environ.get("OPENAI_API_KEY"))
+        return _check_status(
+            "provider_config",
+            "pass" if ready else "warn",
+            "OpenAI-compatible provider is configured." if ready else "No live OpenAI API key found. Local demos still work.",
+            {
+                "provider": provider,
+                "api_key_present": ready,
+                "custom_endpoint_configured": bool(os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENAI_API_BASE")),
+            },
+        )
+    if provider == "anthropic":
+        ready = bool(os.environ.get("ANTHROPIC_API_KEY"))
+        return _check_status(
+            "provider_config",
+            "pass" if ready else "warn",
+            "Anthropic provider is configured." if ready else "No live Anthropic API key found. Local demos still work.",
+            {
+                "provider": provider,
+                "api_key_present": ready,
+                "custom_endpoint_configured": bool(os.environ.get("ANTHROPIC_MESSAGES_URL") or os.environ.get("ANTHROPIC_BASE_URL")),
+            },
+        )
+    return _check_status(
+        "provider_config",
+        "fail",
+        f"Unsupported AANA_PROVIDER {provider!r}. Supported providers: openai, anthropic.",
+        {"provider": provider},
+    )
+
+
+def _doctor_report(gallery_path: str | pathlib.Path = DEFAULT_GALLERY) -> dict:
+    checks = []
+    gallery_path = pathlib.Path(gallery_path)
+    python_ok = sys.version_info >= (3, 10)
+    checks.append(
+        _check_status(
+            "python",
+            "pass" if python_ok else "fail",
+            f"Python {platform.python_version()} detected.",
+            {"executable": sys.executable, "requires": ">=3.10"},
+        )
+    )
+    checks.append(
+        _check_status(
+            "runtime_cli",
+            "pass",
+            "AANA runtime CLI is importable.",
+            {"root": str(ROOT), "module": __name__},
+        )
+    )
+    if not gallery_path.exists():
+        checks.append(
+            _check_status(
+                "adapter_gallery",
+                "warn",
+                "Adapter gallery not found; skipping repo onboarding gallery check for packaged runtime install.",
+                {"gallery_path": str(gallery_path), "skipped": True},
+            )
+        )
+        checks.append(
+            _check_status(
+                "agent_event_examples",
+                "warn",
+                "Agent event examples not found; skipping repo onboarding examples check for packaged runtime install.",
+                {"gallery_path": str(gallery_path), "skipped": True},
+            )
+        )
+    else:
+        try:
+            gallery = agent_api.load_gallery(gallery_path)
+            entries = agent_api.gallery_entries(gallery)
+            checks.append(
+                _check_status(
+                    "adapter_gallery",
+                    "pass" if entries else "fail",
+                    f"Adapter gallery loaded with {len(entries)} adapter(s)." if entries else "Adapter gallery has no adapters.",
+                    {"adapter_ids": [entry.get("id") for entry in entries]},
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(_check_status("adapter_gallery", "fail", str(exc)))
+        try:
+            agent_examples = agent_api.run_agent_event_examples(gallery_path=gallery_path)
+            checks.append(
+                _check_status(
+                    "agent_event_examples",
+                    "pass" if agent_examples["valid"] else "fail",
+                    f"{agent_examples['count']} agent event examples checked.",
+                    {"checked_examples": agent_examples["checked_examples"]},
+                )
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            checks.append(_check_status("agent_event_examples", "fail", str(exc)))
+    schemas = agent_api.schema_catalog()
+    required_schemas = {
+        "agent_event",
+        "agent_check_result",
+        "workflow_request",
+        "workflow_batch_request",
+        "workflow_result",
+        "workflow_batch_result",
+    }
+    schema_ok = required_schemas.issubset(schemas)
+    checks.append(
+        _check_status(
+            "agent_schemas",
+            "pass" if schema_ok else "fail",
+            "Agent and workflow schemas are available." if schema_ok else "Agent or workflow schemas are incomplete.",
+            {"schemas": sorted(schemas.keys())},
+        )
+    )
+    checks.append(_provider_status())
+    failed = [item for item in checks if item["status"] == "fail"]
+    warnings = [item for item in checks if item["status"] == "warn"]
+    return {
+        "valid": not failed,
+        "summary": {
+            "status": "pass" if not failed else "fail",
+            "checks": len(checks),
+            "failures": len(failed),
+            "warnings": len(warnings),
+        },
+        "checks": checks,
+    }
 
 
 def command_agent_check(args: argparse.Namespace) -> int:
@@ -65,6 +206,117 @@ def command_agent_check(args: argparse.Namespace) -> int:
     response = with_architecture_decision(response, event, audit_record=record)
     _print_json(response)
     return 0 if args.shadow_mode or response.get("gate_decision") == "pass" else 1
+
+
+def command_doctor(args: argparse.Namespace) -> int:
+    report = _doctor_report(gallery_path=args.gallery)
+    if args.json:
+        _print_json(report)
+    else:
+        summary = report["summary"]
+        print(f"AANA doctor: {summary['status']} ({summary['failures']} failure(s), {summary['warnings']} warning(s)).")
+        for check in report["checks"]:
+            print(f"- {check['status'].upper()} {check['name']}: {check['message']}")
+    return 0 if report["valid"] else 1
+
+
+def command_list(args: argparse.Namespace) -> int:
+    gallery = agent_api.load_gallery(args.gallery)
+    rows = []
+    for entry in agent_api.gallery_entries(gallery):
+        rows.append(
+            {
+                "id": entry.get("id"),
+                "title": entry.get("title"),
+                "status": entry.get("status"),
+                "best_for": entry.get("best_for", []),
+                "adapter_path": entry.get("adapter_path"),
+            }
+        )
+    if args.json:
+        _print_json({"adapters": rows})
+        return 0
+
+    print("Available AANA adapters:")
+    for row in rows:
+        best_for = ", ".join(row["best_for"])
+        print(f"- {row['id']}: {row['title']} ({row['status']})")
+        print(f"  Best for: {best_for}")
+        print(f"  File: {row['adapter_path']}")
+    return 0
+
+
+def _workflow_request_from_gallery_entry(entry: dict) -> dict:
+    return {
+        "contract_version": agent_api.WORKFLOW_CONTRACT_VERSION,
+        "workflow_id": f"gallery-{entry['id']}",
+        "adapter": entry["id"],
+        "request": entry["prompt"],
+        "candidate": entry.get("bad_candidate"),
+        "allowed_actions": ["accept", "revise", "retrieve", "ask", "defer", "refuse"],
+        "metadata": {
+            "surface": "aana_cli_run",
+            "gallery_title": entry.get("title"),
+            "gallery_status": entry.get("status"),
+        },
+    }
+
+
+def command_run(args: argparse.Namespace) -> int:
+    gallery = agent_api.load_gallery(args.gallery)
+    entry = agent_api.find_entry(gallery, args.adapter_id)
+    result = agent_api.check_workflow_request(
+        _workflow_request_from_gallery_entry(entry),
+        gallery_path=args.gallery,
+    )
+    _print_json(result)
+    return 0 if result.get("gate_decision") == "pass" else 1
+
+
+def command_run_agent_examples(args: argparse.Namespace) -> int:
+    report = agent_api.run_agent_event_examples(events_dir=args.events_dir, gallery_path=args.gallery)
+    if args.json:
+        _print_json(report)
+    else:
+        status = "valid" if report["valid"] else "invalid"
+        print(f"Agent event examples are {status}: {report['count']} checked.")
+        for item in report["checked_examples"]:
+            expectation = "ok" if item["passed_expectations"] else "unexpected"
+            print(
+                f"- {item['event_id']}: adapter={item['adapter_id']} "
+                f"candidate_gate={item['candidate_gate']} gate={item['gate_decision']} "
+                f"action={item['recommended_action']} aix={item.get('aix_decision')} "
+                f"expectations={expectation}"
+            )
+    return 0 if report["valid"] else 1
+
+
+def command_scaffold_agent_event(args: argparse.Namespace) -> int:
+    output_path = pathlib.Path(args.output_dir) / f"{args.adapter_id}.json"
+    if args.dry_run:
+        event = agent_api.build_agent_event_from_gallery(args.adapter_id, gallery_path=args.gallery, agent=args.agent)
+        _print_json(
+            {
+                "dry_run": True,
+                "would_create": {"event": str(output_path)},
+                "event_preview": event,
+                "next_steps": [
+                    f"aana scaffold-agent-event {args.adapter_id} --output-dir {args.output_dir}",
+                    f"aana agent-check --event {output_path}",
+                ],
+            }
+        )
+        return 0
+
+    created = agent_api.scaffold_agent_event(
+        args.adapter_id,
+        output_dir=args.output_dir,
+        gallery_path=args.gallery,
+        agent=args.agent,
+        force=args.force,
+    )
+    _print_json({"created": created})
+    return 0
 
 
 def command_pre_tool_check(args: argparse.Namespace) -> int:
@@ -223,6 +475,36 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    doctor = subparsers.add_parser("doctor", help="Check local AANA runtime readiness.")
+    doctor.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    doctor.add_argument("--json", action="store_true", help="Emit JSON.")
+    doctor.set_defaults(func=command_doctor)
+
+    list_parser = subparsers.add_parser("list", help="List gallery adapters.")
+    list_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    list_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    list_parser.set_defaults(func=command_list)
+
+    run_parser = subparsers.add_parser("run", help="Run a gallery adapter by id.")
+    run_parser.add_argument("adapter_id", help="Gallery adapter id.")
+    run_parser.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    run_parser.set_defaults(func=command_run)
+
+    run_examples = subparsers.add_parser("run-agent-examples", help="Run executable Agent Event examples.")
+    run_examples.add_argument("--events-dir", default=agent_api.DEFAULT_AGENT_EVENTS_DIR, help="Directory of Agent Event JSON files.")
+    run_examples.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    run_examples.add_argument("--json", action="store_true", help="Emit JSON.")
+    run_examples.set_defaults(func=command_run_agent_examples)
+
+    scaffold_event = subparsers.add_parser("scaffold-agent-event", help="Create a starter Agent Event JSON from a gallery adapter.")
+    scaffold_event.add_argument("adapter_id", help="Gallery adapter id.")
+    scaffold_event.add_argument("--output-dir", default=agent_api.DEFAULT_AGENT_EVENTS_DIR, help="Output directory for the event JSON.")
+    scaffold_event.add_argument("--gallery", default=DEFAULT_GALLERY, help="Adapter gallery JSON.")
+    scaffold_event.add_argument("--agent", default="openclaw", help="Agent/runtime label to include in the event.")
+    scaffold_event.add_argument("--dry-run", action="store_true", help="Preview the event without writing a file.")
+    scaffold_event.add_argument("--force", action="store_true", help="Overwrite an existing event file.")
+    scaffold_event.set_defaults(func=command_scaffold_agent_event)
 
     agent = subparsers.add_parser("agent-check", help="Check an AI-agent event against a gallery adapter.")
     agent.add_argument("--event", required=True, help="Agent event JSON.")

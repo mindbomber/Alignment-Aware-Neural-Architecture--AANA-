@@ -54,14 +54,14 @@ Start a reviewed bridge:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-long-random-token"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl --rate-limit-per-minute 120
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl --rate-limit-per-minute 120
 ```
 
 Configure the connector:
 
 ```json
 {
-  "bridgeBaseUrl": "http://127.0.0.1:8765",
+  "bridgeBaseUrl": "http://127.0.0.1:8766",
   "bridgeToken": "replace-with-a-long-random-token",
   "timeoutMs": 8000,
   "requireExplicitBridgeBaseUrl": true

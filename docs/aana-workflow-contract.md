@@ -22,8 +22,18 @@ This is different from prompt engineering, RAG, evals, or broad safety filters:
 
 Install the repo locally:
 
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
+
 ```powershell
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
+```
+
+Fallback for an active environment with `pip` available:
+
+```powershell
+python -m pip install -e ".[api]"
 ```
 
 For new programmatic integrations, use the typed runtime API:
@@ -255,24 +265,24 @@ python scripts/aana_cli.py workflow-schema workflow_result
 python scripts/aana_cli.py workflow-schema workflow_batch_result
 ```
 
-## HTTP Bridge
+## HTTP Service
 
-Start the local bridge:
+Start the installed FastAPI policy service:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 For production-like local runs, require POST authentication:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl --rate-limit-per-minute 120
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl --rate-limit-per-minute 120
 ```
 
-Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The bridge also rejects oversized POST bodies; the default limit is `1048576` bytes and can be changed with `--max-body-bytes`. `--auth-token-file` rereads a token file on every POST request for local token rotation. `--rate-limit-per-minute` adds a process-local per-client POST limit. `--read-timeout-seconds` bounds request-body reads. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the bridge process.
+Clients must then send either `Authorization: Bearer <token>` or `X-AANA-Token: <token>` on POST requests. The service also rejects oversized POST bodies; the default limit is `65536` bytes and can be changed with `--max-request-bytes`. `--rate-limit-per-minute` adds a process-local per-client POST limit. With `--audit-log`, successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls append redacted audit records from the service process.
 
-See [`http-bridge-runbook.md`](http-bridge-runbook.md) for token rotation, structured errors, readiness checks, audit append guarantees, timeout behavior, and deployment guidance.
+See [`fastapi-service.md`](fastapi-service.md) for public service startup, auth, request-size limits, readiness checks, audit append guarantees, and deployment guidance. The legacy [`http-bridge-runbook.md`](http-bridge-runbook.md) covers `python scripts/aana_server.py` for repo-local playground, dashboard, and local demo workflows.
 
 For audit trails, use `aana.audit_workflow_check(workflow_request, result)` or `aana.audit_workflow_batch(batch_request, result)`. These helpers produce redacted records with IDs, gate decisions, recommended actions, AIx score summaries, violation codes, counts, and SHA-256 fingerprints for checked text. They do not include raw requests, candidates, evidence, constraints, or outputs.
 
@@ -290,22 +300,19 @@ Workflow routes:
 - `POST /workflow-check`
 - `POST /validate-workflow-batch`
 - `POST /workflow-batch`
-- `GET /schemas/workflow-request.schema.json`
-- `GET /schemas/workflow-batch-request.schema.json`
-- `GET /schemas/workflow-result.schema.json`
-- `GET /schemas/workflow-batch-result.schema.json`
-- `GET /schemas/aix.schema.json`
+- `GET /openapi.json`
+- `GET /docs`
 - `GET /ready`
 
 PowerShell example:
 
 ```powershell
 $workflow = Get-Content examples/workflow_research_summary.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/validate-workflow -Body $workflow -ContentType 'application/json'
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Body $workflow -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/validate-workflow -Body $workflow -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/workflow-check -Body $workflow -ContentType 'application/json'
 
 $batch = Get-Content examples/workflow_batch_productive_work.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-batch -Body $batch -ContentType 'application/json'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/workflow-batch -Body $batch -ContentType 'application/json'
 ```
 
 ## Adapter Boundary

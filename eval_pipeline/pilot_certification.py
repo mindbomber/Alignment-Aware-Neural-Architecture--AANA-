@@ -320,7 +320,7 @@ def _adapter_path(path):
 def _adapters_surface(gallery_path):
     gallery = agent_api.load_gallery(gallery_path)
     entries = agent_api.gallery_entries(gallery)
-    gallery_report = agent_api.validate_adapter_gallery.validate_gallery(gallery, run_examples=False)
+    gallery_report = agent_api.adapter_gallery_validation.validate_gallery(gallery, run_examples=False)
     missing_files = []
     missing_aix = []
     untuned_aix = []

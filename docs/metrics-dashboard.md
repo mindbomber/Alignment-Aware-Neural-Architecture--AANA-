@@ -1,6 +1,10 @@
 # AANA Metrics Dashboard
 
-The local HTTP bridge serves a reviewer dashboard at:
+The metrics dashboard is a legacy repo-local UI route served on port `8765`.
+Use it for local pilot review and demo inspection. Use `aana-fastapi` on
+`127.0.0.1:8766` for API/runtime integrations.
+
+Start the repo-local dashboard server:
 
 ```powershell
 python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-dashboard.jsonl --shadow-mode
@@ -43,7 +47,7 @@ GET /dashboard/mi-metrics
 
 It reads `docs/evidence/peer_review/mi_pilot/research_citation/mi_dashboard.json` and returns pass/fail rate, propagated error rate, correction success rate, false accept/refusal rates, global AIx drift, and workflow rows for the Mechanistic Interoperability panel.
 
-If the bridge was not started with `--audit-log`, the dashboard returns a waiting state with zero counts. Once checks append redacted audit records, refresh the page to review pilot behavior.
+If the repo-local dashboard server was not started with `--audit-log`, the dashboard returns a waiting state with zero counts. Once checks append redacted audit records, refresh the page to review pilot behavior.
 
 ## Review Interpretation
 

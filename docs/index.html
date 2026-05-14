@@ -679,10 +679,10 @@
               the tool executes only on <code>accept</code>.
             </p>
             <div class="section-actions">
-              <button class="button ink" type="button" data-copy-command="python -m pip install -e .">Copy install command</button>
+              <button class="button ink" type="button" data-copy-command="uv pip install --python .\.venv\Scripts\python.exe -e &quot;.[api]&quot;">Copy uv install command</button>
               <button class="button ink" type="button" data-copy-command="aana doctor">Copy doctor command</button>
               <button class="button ink" type="button" data-copy-command="aana agent-check --event examples/agent_event_support_reply.json">Copy agent check</button>
-              <button class="button ink" type="button" data-copy-command="python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl">Copy HTTP bridge</button>
+              <button class="button ink" type="button" data-copy-command="aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl">Copy API service</button>
               <a class="button ink" href="agent-action-contract-v1.md">Read contract</a>
               <a class="button ink" href="openai-agents-quickstart.md">Integration quickstart</a>
               <a class="button ink" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/README.md" target="_blank" rel="noopener">Read the full README</a>
@@ -704,18 +704,20 @@
 
 aana agent-check --event examples/agent_event_support_reply.json
 aana run-agent-examples
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 python scripts/validate_agent_integrations.py</code></pre>
             <p class="demo-note">
               Agent-event files are local development fixtures. Standalone skills should use a reviewed tool/API connector, keep review payloads redacted, and avoid executing inferred local script paths.
             </p>
             <pre><code># Optional installable command form:
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana list
 aana run-agent-examples
 aana agent-check --event examples/agent_event_support_reply.json
-python scripts/aana_server.py --host 127.0.0.1 --port 8765</code></pre>
+aana-fastapi --host 127.0.0.1 --port 8766</code></pre>
           </div>
         </div>
       </section>
@@ -775,7 +777,7 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765</code></pre>
             </a>
             <a class="resource-card" href="integrate-runtime/">
               <h3>Integrate Runtime</h3>
-              <p>Use the Workflow Contract, Agent Event Contract, Python SDK, HTTP bridge, CI recipes, audit, and production-boundary checks.</p>
+              <p>Use the Workflow Contract, Agent Event Contract, Python SDK, FastAPI service, CI recipes, audit, and production-boundary checks.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/aana-workflow-contract.md" target="_blank" rel="noopener">
               <h3>Workflow Contract</h3>
@@ -795,7 +797,7 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765</code></pre>
             </a>
             <a class="resource-card" href="adapter-gallery/">
               <h3>Adapter Gallery</h3>
-              <p>Search adapters by workflow, then use the local bridge to open the selected example in the playground and run an AANA check.</p>
+              <p>Search adapters by workflow, then use the local service or repo playground to run the selected AANA check.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/agent-integration.md" target="_blank" rel="noopener">
               <h3>Agent Integration Kit</h3>
@@ -813,8 +815,8 @@ python scripts/aana_server.py --host 127.0.0.1 --port 8765</code></pre>
               <h3>Agent Event Examples</h3>
               <p>Executable support, travel, meal-planning, and research-summary events that agents can validate and run before acting.</p>
             </a>
-            <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/scripts/aana_server.py" target="_blank" rel="noopener">
-              <h3>Local HTTP Bridge</h3>
+            <a class="resource-card" href="fastapi-service.md">
+              <h3>FastAPI Service</h3>
               <p>Run AANA on localhost so non-Python agents can validate events, POST planned actions to the gate, and import the OpenAPI route.</p>
             </a>
             <a class="resource-card" href="https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/eval_pipeline/agent_contract.py" target="_blank" rel="noopener">
