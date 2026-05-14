@@ -77,14 +77,26 @@ AANA does not certify MLCommons compliance, replace MLCommons benchmarks, or pro
 
 Use AANA first as a runtime guardrail layer: install the package, run `aana` checks locally, wrap one consequential tool, and only then add API or middleware surfaces. The Workflow Contract, Agent Event Contract, and Agent Action Contract are the product path; eval workflows, benchmark runners, and research scripts under `scripts/` are validation tooling, not the public runtime interface.
 
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
+
 ```powershell
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
-aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana audit-summary --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
+
+If you are not using a local Windows `.venv`, use the Python interpreter for your active environment:
+
+```powershell
+python -m pip install -e ".[api]"
+```
+
+`uv pip install --python ...` is the most reliable Windows path when a virtual environment exists but does not have `pip` bootstrapped.
 
 ## What AANA Adds
 
@@ -114,14 +126,29 @@ Looking for a first contribution?
 - Report safety/control failures with a redacted Agent Action Contract event.
 - Run the example stack in [examples/integrations](examples/integrations): plain Python, OpenAI Agents SDK, LangChain, FastAPI API guard, and MCP all prove blocked tools do not execute.
 
+Research collaboration notes:
+
+- [AANA + MLCommons Integration Brief](docs/aana-mlcommons-integration-brief.md)
+- [AANA + Apart Research Collaboration Brief](docs/aana-apart-research-collaboration-brief.md)
+
 ## Quick Start
 
 Clone and install locally:
 
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
+
 ```powershell
 git clone https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-.git
 cd Alignment-Aware-Neural-Architecture--AANA-
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
+```
+
+Fallback for an active environment with `pip` available:
+
+```powershell
+python -m pip install -e ".[api]"
 ```
 
 Run a pre-tool-call check:

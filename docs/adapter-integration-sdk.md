@@ -27,14 +27,14 @@ request = client.workflow_request(
 result = client.workflow_check(request)
 ```
 
-Use a running HTTP bridge:
+Use the running FastAPI policy service:
 
 ```python
 import os
 import aana
 
 client = aana.SupportAANAClient(
-    base_url="http://127.0.0.1:8765",
+    base_url="http://127.0.0.1:8766",
     token=os.environ["AANA_BRIDGE_TOKEN"],
     shadow_mode=True,
 )
@@ -94,7 +94,7 @@ The TypeScript package lives under `sdk/typescript`.
 import { AanaClient, workflowRequest } from "@aana/integration-sdk";
 
 const client = new AanaClient({
-  baseUrl: "http://127.0.0.1:8765",
+  baseUrl: "http://127.0.0.1:8766",
   token: process.env.AANA_BRIDGE_TOKEN,
   shadowMode: true
 });

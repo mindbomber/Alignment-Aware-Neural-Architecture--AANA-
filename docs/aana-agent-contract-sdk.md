@@ -51,7 +51,7 @@ print(result["architecture_decision"]["hard_blockers"])
 Bridge client:
 
 ```python
-client = aana.AANAClient(base_url="http://127.0.0.1:8765", token="...")
+client = aana.AANAClient(base_url="http://127.0.0.1:8766", token="...")
 result = client.tool_precheck(event)
 ```
 
@@ -135,4 +135,3 @@ const result = await client.toolPrecheck(event);
 
 The bridge route uses the same deterministic schema-based gate as the local
 Python and TypeScript helpers.
-

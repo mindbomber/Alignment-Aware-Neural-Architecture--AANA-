@@ -10,18 +10,18 @@ Run the included CRM support workflow:
 python scripts/aana_cli.py workflow-check --workflow examples/workflow_crm_support_reply.json --evidence-registry examples/evidence_registry.json --require-structured-evidence --audit-log eval_outputs/audit/recipes/crm-support.jsonl
 ```
 
-For HTTP integrations, start the bridge:
+For HTTP integrations, start the installed FastAPI policy service:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/recipes/crm-support.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/recipes/crm-support.jsonl
 ```
 
 Then post the Workflow Contract:
 
 ```powershell
 $workflow = Get-Content examples/workflow_crm_support_reply.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $workflow
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/workflow-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $workflow
 ```
 
 ## Evidence Expected

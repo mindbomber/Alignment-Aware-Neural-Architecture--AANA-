@@ -19,8 +19,8 @@ sys.path.insert(0, str(ROOT))
 
 import new_adapter
 import run_adapter
-import validate_adapter
-import validate_adapter_gallery
+from eval_pipeline import adapter_gallery_validation as validate_adapter_gallery
+from eval_pipeline import adapter_validation as validate_adapter
 from eval_pipeline import (
     civic_family,
     common,

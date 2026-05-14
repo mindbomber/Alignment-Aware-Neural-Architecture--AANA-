@@ -6,7 +6,7 @@ import pathlib
 import re
 
 from eval_pipeline import agent_api, agent_contract, audit, aix, evidence, evidence_integrations, workflow_contract
-from scripts.validation import validate_adapter, validate_adapter_gallery
+from eval_pipeline import adapter_gallery_validation, adapter_validation
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -618,8 +618,8 @@ def validate_fixtures(gallery_path=None, evidence_registry_path=None):
     evidence_registry_path = pathlib.Path(evidence_registry_path or ROOT / "examples" / "evidence_registry.json")
     issues = []
 
-    gallery = validate_adapter_gallery.load_gallery(gallery_path)
-    gallery_report = validate_adapter_gallery.validate_gallery(gallery, run_examples=True)
+    gallery = adapter_gallery_validation.load_gallery(gallery_path)
+    gallery_report = adapter_gallery_validation.validate_gallery(gallery, run_examples=True)
     for issue in gallery_report.get("issues", []):
         level = "error" if issue.get("level") == "error" else "warning"
         issues.append(_issue(level, f"adapter_gallery.{issue.get('path')}", issue.get("message", "Gallery issue.")))
@@ -630,7 +630,7 @@ def validate_fixtures(gallery_path=None, evidence_registry_path=None):
             continue
         adapter_count += 1
         adapter_path = ROOT / entry["adapter_path"]
-        adapter_report = validate_adapter.validate_adapter(validate_adapter.load_adapter(adapter_path))
+        adapter_report = adapter_validation.validate_adapter(adapter_validation.load_adapter(adapter_path))
         for issue in adapter_report.get("issues", []):
             if issue.get("level") == "error":
                 issues.append(_issue("error", f"{entry.get('id')}.{issue.get('path')}", issue.get("message", "Adapter issue.")))

@@ -4,18 +4,18 @@ Use this recipe when a local agent is about to send, publish, book, buy, edit fi
 
 ## Copy
 
-Start the local bridge with token auth and redacted audit logging:
+Start the installed FastAPI policy service with token auth and redacted audit logging:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/recipes/local-agent.jsonl --rate-limit-per-minute 120
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/recipes/local-agent.jsonl --rate-limit-per-minute 120
 ```
 
 Check the included support-reply event:
 
 ```powershell
 $event = Get-Content examples/agent_event_support_reply.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/agent-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $event
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/agent-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $event
 ```
 
 The same event can be checked through the CLI:

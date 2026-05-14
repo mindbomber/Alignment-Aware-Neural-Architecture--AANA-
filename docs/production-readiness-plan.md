@@ -18,7 +18,7 @@ Completion criteria:
 - Versioned Agent Event and Agent Check result schemas.
 - Python SDK functions for single checks, file checks, and batch checks.
 - CLI commands for validation, execution, schema printing, and example discovery.
-- HTTP bridge routes for validation, single checks, batch checks, schemas, health, and OpenAPI.
+- FastAPI service routes for validation, single checks, batch checks, health, and OpenAPI.
 
 Primary files:
 
@@ -26,34 +26,34 @@ Primary files:
 - `eval_pipeline/workflow_contract.py`
 - `eval_pipeline/agent_contract.py`
 - `eval_pipeline/agent_api.py`
-- `eval_pipeline/agent_server.py`
+- `eval_pipeline/fastapi_app.py`
 - `scripts/aana_cli.py`
 
 ## Milestone 2: Secure Local Integration Boundary
 
-Status: complete for local bridge safeguards; production deployments still need host-level controls.
+Status: complete for local FastAPI service safeguards; production deployments still need host-level controls.
 
-Goal: keep the bridge from acting like an unauthenticated, unbounded local action service.
+Goal: keep the service from acting like an unauthenticated, unbounded local action service.
 
 Completion criteria:
 
 - POST body limit with `413` rejection for oversized requests.
 - Optional bearer token or `X-AANA-Token` requirement for POST routes.
 - Environment-token support through `AANA_BRIDGE_TOKEN`.
-- Documentation that the bridge should stay on `127.0.0.1` unless a deployment adds authentication, TLS, logging, and network controls.
+- Documentation that the service should stay on `127.0.0.1` unless a deployment adds authentication, TLS, logging, and network controls.
 - Unit tests for authorization and body-size behavior.
 
 Operational defaults:
 
 - Bind host: `127.0.0.1`
-- Default max body: `1048576` bytes
+- Default request-size limit: `65536` bytes
 - Token env var: `AANA_BRIDGE_TOKEN`
 
 Example:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 Clients must then send:
@@ -207,12 +207,12 @@ python scripts/aana_cli.py audit-drift --audit-log eval_outputs/audit/aana-audit
 python scripts/aana_cli.py audit-manifest --audit-log eval_outputs/audit/aana-audit.jsonl --output eval_outputs/audit/manifests/aana-audit-integrity.json
 python scripts/aana_cli.py audit-verify --manifest eval_outputs/audit/manifests/aana-audit-integrity.json
 python scripts/aana_cli.py audit-reviewer-report --audit-log eval_outputs/audit/aana-audit.jsonl --metrics eval_outputs/audit/aana-metrics.json --drift-report eval_outputs/audit/aana-aix-drift.json --manifest eval_outputs/audit/manifests/aana-audit-integrity.json --output eval_outputs/audit/aana-reviewer-report.md
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
-The CLI can append audit records for direct command-line checks. The HTTP bridge appends redacted audit records itself for successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls when `--audit-log` is set, so callers do not need to duplicate audit writes. The `audit-validate` command checks audit schema compatibility and rejects raw prompt, candidate, evidence, constraints, safe-response, and output fields. The `audit-metrics` command converts redacted audit JSONL into flat dashboard fields such as `gate_decision_count.pass`, `recommended_action_count.revise`, `violation_code_count.<code>`, `aix_score_average`, and `aix_decision_count.<decision>`. The `audit-drift` command turns those AIx metrics into a release-review drift report for low score, hard blockers, and unexpected AIx decisions. The `audit-manifest` command records the audit JSONL SHA-256, byte size, record count, summary, optional previous-manifest hash, and manifest self-hash; `audit-verify` recomputes those values to catch local tampering. The `audit-reviewer-report` command writes a Markdown handoff summarizing schema/redaction status, gate/action counts, AIx distribution, top violations, drift issues, and manifest hashes. The JSONL file, metrics export, drift report, reviewer report, and manifest are redacted handoff formats, not a complete production audit store. Production deployments still need retention policy, append-only storage, access controls, and review workflows.
+The CLI can append audit records for direct command-line checks. The FastAPI service appends redacted audit records itself for successful `/agent-check`, `/workflow-check`, and `/workflow-batch` calls when `--audit-log` is set, so callers do not need to duplicate audit writes. The `audit-validate` command checks audit schema compatibility and rejects raw prompt, candidate, evidence, constraints, safe-response, and output fields. The `audit-metrics` command converts redacted audit JSONL into flat dashboard fields such as `gate_decision_count.pass`, `recommended_action_count.revise`, `violation_code_count.<code>`, `aix_score_average`, and `aix_decision_count.<decision>`. The `audit-drift` command turns those AIx metrics into a release-review drift report for low score, hard blockers, and unexpected AIx decisions. The `audit-manifest` command records the audit JSONL SHA-256, byte size, record count, summary, optional previous-manifest hash, and manifest self-hash; `audit-verify` recomputes those values to catch local tampering. The `audit-reviewer-report` command writes a Markdown handoff summarizing schema/redaction status, gate/action counts, AIx distribution, top violations, drift issues, and manifest hashes. The JSONL file, metrics export, drift report, reviewer report, and manifest are redacted handoff formats, not a complete production audit store. Production deployments still need retention policy, append-only storage, access controls, and review workflows.
 
-The HTTP bridge also serves a local metrics dashboard at `GET /dashboard` and a redacted dashboard feed at `GET /dashboard/metrics`. The dashboard shows gate/action counts, violation trends, AIx average/min/max, hard blockers, adapter breakdowns, and shadow-mode would-block/would-intervene rates from the configured audit log. It is intended for pilot review and uses the same redacted audit records as the CLI metrics exporter.
+The legacy repo-local bridge also serves a local metrics dashboard at `GET /dashboard` and a redacted dashboard feed at `GET /dashboard/metrics`. The dashboard shows gate/action counts, violation trends, AIx average/min/max, hard blockers, adapter breakdowns, and shadow-mode would-block/would-intervene rates from the configured audit log. It is intended for pilot review and uses the same redacted audit records as the CLI metrics exporter. Use `aana-fastapi` for API/runtime integration; use `python scripts/aana_server.py` only when you need the repo-local dashboard, playground, or local demo UI.
 
 Local observability policy validation:
 
@@ -265,41 +265,41 @@ docker compose up --build
 Invoke-RestMethod http://localhost:8765/ready
 ```
 
-The Docker bridge packages the HTTP server, adapter gallery, internal pilot profiles, web playground, local action demos, and a mounted redacted audit log path. See `docs/docker-http-bridge.md` for POST examples for `/agent-check`, `/workflow-check`, and `/workflow-batch`.
+The Docker runtime packages the FastAPI service, adapter gallery, internal pilot profiles, web playground, local action demos, and a mounted redacted audit log path. Docker intentionally uses host port `8765` mapped to container port `8765`, while the installed local service examples use `aana-fastapi` on `127.0.0.1:8766`. See `docs/docker-http-bridge.md` for POST examples for `/agent-check`, `/workflow-check`, and `/workflow-batch`.
 
 Copyable integration recipes are published in `docs/integration-recipes.md`. They cover GitHub Actions, local agents, CRM support drafts, deployment reviews, and shadow-mode pilots, each pointing to checked-in payloads and commands that produce a working result.
 
-Web playground:
+Repo-local web playground:
 
 ```powershell
 python scripts/demos/run_playground.py
 ```
 
-Open `http://localhost:8765/playground` to pick an adapter, edit the proposed answer or action, and inspect violations, AIx, safe response, and redacted audit preview.
+Open `http://localhost:8765/playground` to pick an adapter, edit the proposed answer or action, and inspect violations, AIx, safe response, and redacted audit preview. This route is a repo-local UI path, not the recommended public API service path.
 
-Local desktop/browser demos:
+Repo-local desktop/browser demos:
 
 ```powershell
 python scripts/demos/run_local_demos.py
 ```
 
-Open `http://localhost:8765/demos` to test AANA around email send, file operation, calendar scheduling, purchase/booking, and research-grounding checks using synthetic evidence.
+Open `http://localhost:8765/demos` to test AANA around email send, file operation, calendar scheduling, purchase/booking, and research-grounding checks using synthetic evidence. These routes are repo-local UI demos.
 
 Shadow mode:
 
 ```powershell
 python scripts/aana_cli.py agent-check --event examples/agent_event_support_reply.json --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
 python scripts/aana_cli.py audit-metrics --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --output eval_outputs/audit/shadow/aana-shadow-metrics.json
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl --shadow-mode
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/shadow/aana-shadow.jsonl
 ```
 
-Shadow mode keeps production behavior unchanged while writing redacted telemetry for would-pass, would-revise, would-defer, and would-refuse decisions. Use it for early user evaluation before enforcing any adapter route.
+Shadow mode keeps production behavior unchanged while writing redacted telemetry for would-pass, would-revise, would-defer, and would-refuse decisions. Use CLI `--shadow-mode` or FastAPI `?shadow_mode=true` request parameters for early user evaluation before enforcing any adapter route. Use the legacy repo-local bridge on `8765` only when you need the local dashboard UI.
 
 Adapter Integration SDK:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --auth-token aana-local-dev-token --audit-log eval_outputs/audit/sdk/aana-sdk.jsonl --shadow-mode
 $env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
+aana-fastapi --host 127.0.0.1 --port 8766 --auth-token aana-local-dev-token --audit-log eval_outputs/audit/sdk/aana-sdk.jsonl
 python examples/sdk/python_client_example.py
 ```
 
@@ -313,7 +313,7 @@ python scripts/aana_cli.py pilot-certify --json
 python scripts/dev.py pilot-certify
 ```
 
-The certification command prints a public readiness score and fails if any repo-local pilot surface is missing its required gates for CLI, Python API, HTTP bridge, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, or contract freeze.
+The certification command prints a public readiness score and fails if any repo-local pilot surface is missing its required gates for CLI, Python API, FastAPI service, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, or contract freeze.
 
 Production certification:
 
@@ -394,7 +394,7 @@ python scripts/pilots/run_e2e_pilot_bundle.py --event support_reply --event rese
 python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl
 python scripts/pilots/run_internal_pilot.py --audit-log eval_outputs/audit/aana-internal-pilot.jsonl --metrics-output eval_outputs/audit/aana-internal-pilot-metrics.json
 python scripts/pilots/pilot_smoke_test.py --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
-python scripts/pilots/pilot_smoke_test.py --base-url http://127.0.0.1:8765 --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
+python scripts/pilots/pilot_smoke_test.py --base-url http://127.0.0.1:8766 --audit-log eval_outputs/audit/aana-pilot-smoke.jsonl
 ```
 
 The e2e pilot bundle is the broadest one-command local pilot path. It checks multiple agent events across adapters, writes redacted audit JSONL, exports audit metrics, writes an audit integrity manifest, runs `release-check` with internal pilot deployment/governance/evidence/observability profiles, and then runs `python scripts/dev.py production-profiles`. Use `--event` to narrow the bundle while debugging and `--skip-production-profiles` only when avoiding recursive validation inside focused tests.
@@ -405,7 +405,7 @@ The Starter Pilot Kits are the fastest realistic no-private-data handoff path. T
 
 The Design Partner Pilots are the first field-evaluation package. They define four controlled pilots across enterprise support operations, developer tooling/release, personal productivity irreversible actions, and civic/government-style workflows. The runner writes redacted audit logs, metrics, dashboard payloads, AIx drift reports, audit manifests, reviewer reports, field-note templates, and structured feedback templates under `eval_outputs/design_partner_pilots/`. Use `python scripts/pilots/run_design_partner_pilots.py --pilot all` before scheduling partner sessions, then attach redacted `<pilot_id>.json` feedback files with `--feedback-dir` to collect real failure modes, friction points, and adoption blockers.
 
-The Hosted Demo is the public no-clone option at `/demo/` on the project site. It is a static GitHub Pages surface backed by `docs/demo/scenarios.json`, uses only precomputed synthetic examples, accepts no secrets, and cannot send email, delete files, deploy releases, run migrations, submit payments, book purchases, or export private data. Use it for first-contact evaluation before asking someone to clone the repo, run Docker, or connect a local bridge.
+The Hosted Demo is the public no-clone option at `/demo/` on the project site. It is a static GitHub Pages surface backed by `docs/demo/scenarios.json`, uses only precomputed synthetic examples, accepts no secrets, and cannot send email, delete files, deploy releases, run migrations, submit payments, book purchases, or export private data. Use it for first-contact evaluation before asking someone to clone the repo, run Docker, or connect a local service.
 
 The GitHub Action is the first team-facing CI integration. It packages the code review, deployment readiness, API contract change, infrastructure change, and database migration adapters behind a composite action at `.github/actions/aana-guardrails`. Teams can add one workflow step to PR/release jobs, feed in test output, deployment manifests, OpenAPI diffs, IaC plans, and migration evidence, and receive redacted audit logs, metrics JSON, a report JSON, and a Markdown job summary. Use `fail-on: candidate-block` for PR blocking mode or `fail-on: never` for advisory shadow mode.
 
@@ -445,12 +445,12 @@ The checked-in template is a concrete local governance profile. The `human_gover
 Completed in this repository:
 
 - Production milestone list and release gates.
-- Optional POST authorization for the local HTTP bridge.
-- POST body-size limit for the local HTTP bridge.
-- Tests for local bridge auth and request-size safeguards.
+- Optional POST authorization for the local FastAPI service and legacy repo-local bridge.
+- POST body-size/request-size limits for the local FastAPI service and legacy repo-local bridge.
+- Tests for local service auth and request-size safeguards.
 - Redacted audit-record helpers for agent, workflow, and workflow-batch checks.
 - Tests proving audit records preserve decision metadata without storing raw checked text.
-- HTTP bridge server-side audit append for successful agent, workflow, and workflow-batch gate checks.
+- FastAPI service server-side audit append for successful agent, workflow, and workflow-batch gate checks.
 - SHA-256 audit integrity manifests, verification, tamper-detection tests, and pilot-runner manifest and metrics generation.
 - End-to-end pilot bundle that runs multiple agent events, redacted audit logging, metrics export, audit integrity manifest generation, release-check, and production-profile validation in one command.
 - Pilot Evaluation Kit with enterprise, personal, civic/government, and public-data-rehearsal packs plus redacted audit logs, audit metrics, JSON reports, and Markdown reviewer reports.
@@ -459,13 +459,13 @@ Completed in this repository:
 - Python runtime API hardening with typed public `eval_pipeline` exports, versioned `RuntimeResult` and `ValidationReport` dataclasses, predictable `AANAError` exception subclasses, typed `aana.*_typed` compatibility helpers, runtime API smoke tests, and public API reference docs.
 - Agent Event Contract hardening for candidate field validation, structured evidence objects, source/freshness validation, allowed-action validation, route mismatch warnings, policy preset compatibility, schema route examples, and valid/invalid contract fixtures.
 - Workflow Contract hardening for strict structured evidence mode, batch behavior guarantees, per-item runtime failure isolation, safe non-accept fallback on failed items, source-registry validation, and canonical adapter-family workflow examples.
-- HTTP Bridge hardening with token-file rotation support, structured error payloads, `/ready` dependency checks, process-local POST rate limits, request body read timeouts, locked server-side audit appends, concurrent request tests, and deployment runbook guidance.
+- FastAPI service hardening with structured error payloads, `/ready` dependency checks, process-local POST rate limits, request-size limits, locked server-side audit appends, concurrent request tests, and deployment runbook guidance; the legacy repo-local bridge keeps dashboard/playground support and token-file rotation for maintainer workflows.
 - Skills/plugins hardening with OpenClaw/Codex result-handling guidance, conformance tests for AIx and action-routing rules, runtime connector readiness and batch tools, high-risk workflow examples, and plugin install/use docs.
 - Evidence Integration Stub hardening with machine-checkable auth scopes, freshness SLOs, redaction expectations, failure modes, normalized evidence helpers, public SDK helpers, CLI fixture checks, contract-freeze fixture validation, and mock connector fixtures/tests for CRM/support, email, calendar, IAM, CI, deployment, billing, and data export.
 - Observability and Audit hardening with audit record schema validation, redaction checks, audit metrics compatibility validation, AIx drift reports, Markdown reviewer reports, contract-freeze drift fixture validation, and CI artifact generation for redacted audit JSONL, metrics, drift, manifest, and reviewer handoff files.
-- Pilot Surface Certification with a one-command public readiness score and matrix for CLI, Python API, HTTP bridge, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, and contract freeze.
+- Pilot Surface Certification with a one-command public readiness score and matrix for CLI, Python API, FastAPI service, adapters, Agent Event Contract, Workflow Contract, skills/plugins, evidence, audit/metrics, docs, and contract freeze.
 - Production Certification with an explicit demo/pilot/production boundary, shadow-mode duration and record-count requirements, required metrics, human-review routing, connector evidence, and audit-retention gates.
-- Dockerized HTTP Bridge packaging with `docker compose up --build`, local token auth, mounted redacted audit logs, bundled internal pilot profiles, and endpoint examples for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch`.
+- Dockerized FastAPI service packaging with `docker compose up --build`, local token auth, mounted redacted audit logs, bundled internal pilot profiles, and endpoint examples for `/ready`, `/agent-check`, `/workflow-check`, and `/workflow-batch`.
 - Web Playground for local adapter gallery demos with editable request/candidate fields, allowed-action fallback presets, verifier violations, AIx details, safe response, and redacted audit preview.
 - Local Desktop/Browser Demos for email send, file operations, calendar scheduling, purchase/booking, and research grounding, backed by synthetic evidence templates, `GET /demos/scenarios`, and the same Workflow Contract/audit path as `/playground/check`.
 - Starter Pilot Kits for enterprise, personal productivity, and civic/government packs with synthetic data, adapter config, workflow examples, expected outcomes, redacted audit logs, metrics reports, and Markdown pilot reports.

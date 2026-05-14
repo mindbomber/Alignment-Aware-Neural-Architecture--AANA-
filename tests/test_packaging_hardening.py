@@ -1,10 +1,12 @@
 import copy
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
 import tomllib
 import unittest
+import zipfile
 from pathlib import Path
 
 from eval_pipeline.packaging_hardening import validate_packaging_hardening
@@ -123,6 +125,120 @@ class PackagingHardeningTests(unittest.TestCase):
 
         self.assertFalse(report["valid"])
         self.assertTrue(any("surface_boundaries_checked" in issue["path"] for issue in report["issues"]))
+
+    def test_runtime_modules_do_not_import_excluded_script_validators(self):
+        runtime_files = [
+            ROOT / "eval_pipeline" / "agent_api.py",
+            ROOT / "eval_pipeline" / "contract_freeze.py",
+        ]
+        forbidden = [
+            "from scripts.validation",
+            "import validate_adapter",
+            "import validate_adapter_gallery",
+            "scripts/validation",
+            "scripts\\\\validation",
+        ]
+
+        offenders = []
+        for path in runtime_files:
+            text = path.read_text(encoding="utf-8")
+            offenders.extend(f"{path.relative_to(ROOT)} contains {marker}" for marker in forbidden if marker in text)
+
+        self.assertEqual(offenders, [])
+
+    def test_built_wheel_public_cli_smoke_in_clean_venv(self):
+        if shutil.which("uv") is None:
+            self.skipTest("uv is required for clean wheel smoke test")
+
+        event = {
+            "tool_name": "get_recent_transactions",
+            "tool_category": "private_read",
+            "authorization_state": "authenticated",
+            "evidence_refs": [
+                {
+                    "source_id": "auth.test-session",
+                    "kind": "auth_context",
+                    "trust_tier": "system",
+                    "redaction_status": "redacted",
+                    "summary": "User is authenticated for the account view.",
+                    "provenance": "test",
+                    "freshness": "current",
+                }
+            ],
+            "risk_domain": "finance",
+            "proposed_arguments": {"account_id": "acct_test", "limit": 5},
+            "recommended_route": "accept",
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            tmp = Path(directory)
+            wheel_dir = tmp / "dist"
+            venv_dir = tmp / "venv"
+            event_path = tmp / "pre_tool_event.json"
+            event_path.write_text(json.dumps(event), encoding="utf-8")
+
+            build = subprocess.run(
+                ["uv", "build", "--wheel", "--out-dir", str(wheel_dir)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(build.returncode, 0, build.stdout + build.stderr)
+
+            wheels = sorted(wheel_dir.glob("*.whl"))
+            self.assertEqual(len(wheels), 1)
+            wheel = wheels[0]
+            with zipfile.ZipFile(wheel) as archive:
+                packaged = archive.namelist()
+                self.assertFalse(any(name.startswith("scripts/") for name in packaged))
+                entry_points = [
+                    archive.read(name).decode("utf-8")
+                    for name in packaged
+                    if name.endswith("entry_points.txt")
+                ][0]
+                self.assertIn("aana = aana.cli:main", entry_points)
+                self.assertNotIn("scripts.aana_cli", entry_points)
+
+            create_venv = subprocess.run(
+                ["uv", "venv", "--python", sys.executable, str(venv_dir)],
+                cwd=tmp,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(create_venv.returncode, 0, create_venv.stdout + create_venv.stderr)
+
+            python = venv_dir / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+            aana = venv_dir / ("Scripts/aana.exe" if sys.platform == "win32" else "bin/aana")
+            install = subprocess.run(
+                ["uv", "pip", "install", "--python", str(python), str(wheel)],
+                cwd=tmp,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(install.returncode, 0, install.stdout + install.stderr)
+
+            help_result = subprocess.run([str(aana), "--help"], cwd=tmp, text=True, capture_output=True)
+            self.assertEqual(help_result.returncode, 0, help_result.stdout + help_result.stderr)
+            self.assertIn("pre-tool-check", help_result.stdout)
+
+            doctor = subprocess.run([str(aana), "doctor", "--json"], cwd=tmp, text=True, capture_output=True)
+            self.assertEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
+            doctor_report = json.loads(doctor.stdout)
+            doctor_checks = {item["name"]: item for item in doctor_report["checks"]}
+            self.assertTrue(doctor_report["valid"])
+            self.assertEqual(doctor_checks["adapter_gallery"]["status"], "warn")
+            self.assertTrue(doctor_checks["adapter_gallery"]["details"]["skipped"])
+            self.assertEqual(doctor_checks["agent_event_examples"]["status"], "warn")
+            self.assertTrue(doctor_checks["agent_event_examples"]["details"]["skipped"])
+
+            precheck = subprocess.run(
+                [str(aana), "pre-tool-check", "--event", str(event_path)],
+                cwd=tmp,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(precheck.returncode, 0, precheck.stdout + precheck.stderr)
+            self.assertIn('"route": "accept"', precheck.stdout)
 
     def test_cli_validates_packaging_manifest(self):
         with tempfile.TemporaryDirectory() as directory:

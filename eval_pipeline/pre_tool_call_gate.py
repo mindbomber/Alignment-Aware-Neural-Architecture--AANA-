@@ -31,6 +31,31 @@ from eval_pipeline.semantic_verifier import run_tool_semantic_verifier
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_SCHEMA = ROOT / "schemas" / "agent_tool_precheck.schema.json"
 DEFAULT_TAU2_MODEL = ROOT / "eval_outputs" / "benchmark_scout" / "aana_tau2_action_taxonomy_v2.joblib"
+FALLBACK_AGENT_ACTION_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://aana.dev/schemas/agent_action_contract_v1.schema.json",
+    "title": "AANA Agent Action Contract v1",
+    "type": "object",
+    "additionalProperties": True,
+    "required": [
+        "tool_name",
+        "tool_category",
+        "authorization_state",
+        "evidence_refs",
+        "risk_domain",
+        "proposed_arguments",
+        "recommended_route",
+    ],
+    "properties": {
+        "tool_name": {"type": "string", "minLength": 1},
+        "tool_category": {"type": "string", "enum": ["public_read", "private_read", "write", "unknown"]},
+        "authorization_state": {"type": "string", "enum": ["none", "user_claimed", "authenticated", "validated", "confirmed"]},
+        "evidence_refs": {"type": "array"},
+        "risk_domain": {"type": "string"},
+        "proposed_arguments": {"type": "object"},
+        "recommended_route": {"type": "string", "enum": ["accept", "ask", "defer", "refuse"]},
+    },
+}
 ROUTE_ORDER = {
     "accept": 0,
     "ask": 1,
@@ -50,6 +75,8 @@ AUTH_STATES_BY_ORDER = list(AUTHORIZATION_STATES)
 
 def load_schema(schema_path: pathlib.Path | str = DEFAULT_SCHEMA) -> dict[str, Any]:
     path = pathlib.Path(schema_path)
+    if not path.exists() and path == DEFAULT_SCHEMA:
+        return FALLBACK_AGENT_ACTION_SCHEMA
     return json.loads(path.read_text(encoding="utf-8"))
 
 

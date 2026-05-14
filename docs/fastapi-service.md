@@ -297,7 +297,7 @@ Docker:
 FROM python:3.13-slim
 WORKDIR /app
 COPY . /app
-RUN pip install -e .[api]
+RUN pip install -e ".[api]"
 ENV AANA_RATE_LIMIT_PER_MINUTE=60
 ENV AANA_MAX_REQUEST_BYTES=65536
 CMD ["aana-fastapi", "--host", "127.0.0.1", "--port", "8766", "--audit-log", "eval_outputs/audit/aana-fastapi.jsonl"]

@@ -8,28 +8,34 @@ If you are comparing AANA to simply using a stronger frontier LLM or multimodal 
 
 ## Recommended Local Path
 
-Use this path for platform onboarding. It exercises install, health checks, the adapter catalog, the Workflow Contract, the HTTP bridge, and redacted audit output without mixing in advanced research/eval workflows.
+Use this path for platform onboarding. It exercises install, health checks, the adapter catalog, the Workflow Contract, the FastAPI policy service, and redacted audit output without mixing in advanced research/eval workflows.
+
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
 
 ```powershell
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
 aana pre-tool-check --event examples/agent_tool_precheck_private_read.json
 aana evidence-pack --require-existing-artifacts
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
-aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana audit-summary --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 What each step proves:
 
-- `python -m pip install -e .` installs the CLI and Python package entrypoints.
+- `uv venv --python 3.12 .venv` creates the local Windows virtual environment when it does not already exist; Python 3.12 is recommended for onboarding, while the package supports Python 3.10+.
+- `uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"` installs the CLI, Python package entrypoints, and API dependencies into that environment, even if it does not have `pip` bootstrapped.
+- `.\.venv\Scripts\Activate.ps1` puts `aana` and `aana-fastapi` on the current PowerShell path.
 - `aana doctor` checks Python, schemas, gallery examples, agent examples, and optional provider config.
 - `aana run travel_planning` runs a catalog-backed adapter example through the public contract path.
 - `aana workflow-check ... --audit-log ...` checks a Workflow Contract payload and writes a redacted decision record.
 - `aana pre-tool-check ...` shows the agent action gate with route, AIx score, blockers, evidence refs, authorization state, correction path, and audit-safe log metadata.
 - `aana evidence-pack ...` prints the public claim boundary and validates the evidence pack.
-- `python scripts/aana_server.py ... --audit-log ...` starts the local HTTP bridge for playground, gallery, and API integration.
+- `aana-fastapi ... --audit-log ...` starts the installed HTTP policy service for API integration.
 - `aana audit-summary ...` verifies that audit output is inspectable without raw prompts, candidates, evidence, or safe responses.
 
 ## Keep Research/Eval Separate
@@ -101,22 +107,34 @@ python scripts/aana_cli.py run-agent-examples
 python scripts/aana_cli.py scaffold-agent-event support_reply --output-dir examples/agent_events
 python scripts/aana_cli.py agent-schema agent_event
 python scripts/aana_cli.py policy-presets
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+aana-fastapi --host 127.0.0.1 --port 8766
 python scripts/aana_cli.py scaffold "insurance claim triage"
 ```
 
 After local install, use the shorter command form:
 
+Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install `uv` from [docs.astral.sh/uv](https://docs.astral.sh/uv/) or use the `pip` fallback below.
+
 ```powershell
-python -m pip install -e .
+uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana list
 aana run-agent-examples
 aana scaffold-agent-event support_reply --output-dir examples/agent_events
-python scripts/aana_server.py --host 127.0.0.1 --port 8765
+aana-fastapi --host 127.0.0.1 --port 8766
 ```
 
 The `doctor` command checks Python version, gallery health, executable adapter examples, agent event examples, schemas, and optional live provider configuration. Missing API keys are warnings because local demos do not need a provider account.
+
+If you are not using a local Windows `.venv`, install into your active environment instead:
+
+```powershell
+python -m pip install -e ".[api]"
+```
+
+Use the `uv pip install --python ...` form when a virtual environment exists but does not have `pip` bootstrapped.
 
 The older scripts still work directly, but the command hub is the easiest starting point.
 
@@ -154,9 +172,9 @@ Before an agent starts calling AANA, validate the event shape with `python scrip
 
 To create a new event without hand-writing JSON, run `python scripts/aana_cli.py scaffold-agent-event <adapter_id>`. Start with `support_reply`, `crm_support_reply`, `email_send_guardrail`, `file_operation_guardrail`, `code_change_review`, `incident_response_update`, `security_vulnerability_disclosure`, `access_permission_change`, `database_migration_guardrail`, `experiment_ab_test_launch`, `feature_flag_rollout`, `sales_proposal_checker`, `customer_success_renewal`, `invoice_billing_reply`, `insurance_claim_triage`, `grant_application_review`, `product_requirements_checker`, `procurement_vendor_risk`, `hiring_candidate_feedback`, `performance_review`, `learning_tutor_answer_checker`, `api_contract_change`, `infrastructure_change_guardrail`, `data_pipeline_change`, `model_evaluation_release`, `deployment_readiness`, `legal_safety_router`, `medical_safety_router`, `financial_advice_router`, `booking_purchase_guardrail`, `calendar_scheduling`, `data_export_guardrail`, `publication_check`, `meeting_summary_checker`, `ticket_update_checker`, `research_answer_grounding`, `travel_planning`, `meal_planning`, or `research_summary`, then replace `candidate_action` and `available_evidence` with the real planned action and verified context from your agent.
 
-If your agent framework prefers HTTP tools or webhooks, run the local bridge with `python scripts/aana_server.py --audit-log eval_outputs/audit/aana-bridge.jsonl`, POST the event JSON to `http://127.0.0.1:8765/validate-event`, then POST the same event to `http://127.0.0.1:8765/agent-check`. General app workflows can use `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch` with the workflow request shape. When `--audit-log` is set, successful gate checks append redacted audit records from the bridge process.
+If your agent framework prefers HTTP tools or webhooks, run the installed service with `aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl`, POST the event JSON to `http://127.0.0.1:8766/validate-event`, then POST the same event to `http://127.0.0.1:8766/agent-check`. General app workflows can use `POST /validate-workflow`, `POST /workflow-check`, `POST /validate-workflow-batch`, and `POST /workflow-batch` with the workflow request shape. When `--audit-log` is set, successful gate checks append redacted audit records from the service process.
 
-The bridge also exposes `http://127.0.0.1:8765/openapi.json` and JSON Schema routes under `/schemas` for tools that can import machine-readable contracts. After `python -m pip install -e .`, you can start it with `python scripts/aana_server.py`.
+The service also exposes `http://127.0.0.1:8766/openapi.json` and `http://127.0.0.1:8766/docs`. The legacy repo-local bridge remains available through `python scripts/aana_server.py` for playground, dashboard, and local demo workflows that are not part of the default installed service path.
 
 To verify the internal pilot bridge path end to end, run:
 

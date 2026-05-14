@@ -62,13 +62,15 @@ class IntegrationRecipeTests(unittest.TestCase):
                 "uses: mindbomber/Alignment-Aware-Neural-Architecture--AANA-/.github/actions/aana-guardrails@main",
             ],
             "docs/recipes/use-aana-with-a-local-agent.md": [
-                "python scripts/aana_server.py",
+                "aana-fastapi",
                 "python scripts/aana_cli.py agent-check",
                 "Invoke-RestMethod",
             ],
             "docs/recipes/use-aana-with-crm-support-drafts.md": [
                 "python scripts/aana_cli.py workflow-check",
                 "--require-structured-evidence",
+                "aana-fastapi",
+                "http://127.0.0.1:8766/workflow-check",
                 "Invoke-RestMethod",
             ],
             "docs/recipes/use-aana-for-deployment-reviews.md": [
@@ -78,6 +80,9 @@ class IntegrationRecipeTests(unittest.TestCase):
             "docs/recipes/use-aana-in-shadow-mode.md": [
                 "python scripts/aana_cli.py workflow-batch",
                 "--shadow-mode",
+                "aana-fastapi",
+                "http://127.0.0.1:8766/workflow-check?shadow_mode=true",
+                "legacy repo-local bridge",
                 "http://127.0.0.1:8765/dashboard",
             ],
         }

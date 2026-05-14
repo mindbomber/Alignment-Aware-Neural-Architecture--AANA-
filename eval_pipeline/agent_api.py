@@ -2,16 +2,11 @@
 
 import json
 import pathlib
-import sys
-
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-VALIDATION_SCRIPTS = ROOT / "scripts" / "validation"
-if str(VALIDATION_SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(VALIDATION_SCRIPTS))
 
+from eval_pipeline import adapter_gallery_validation
 from eval_pipeline.adapter_runner import legacy_runner as run_adapter
-import validate_adapter_gallery
 from eval_pipeline import agent_contract, audit, aix, evidence as evidence_registry, evidence_integrations, workflow_contract
 from eval_pipeline.adapter_runner import results as result_assembly
 from eval_pipeline.adapter_runner.verifier_modules.grounded_qa import grounded_qa_repair, grounded_qa_tool_report
@@ -259,7 +254,7 @@ def load_json_file(path):
 
 
 def load_gallery(path=DEFAULT_GALLERY):
-    return validate_adapter_gallery.load_gallery(path)
+    return adapter_gallery_validation.load_gallery(path)
 
 
 def gallery_entries(gallery):

@@ -56,7 +56,7 @@ import os
 import aana
 
 client = aana.SupportAANAClient(
-    base_url="http://127.0.0.1:8765",
+    base_url="http://127.0.0.1:8766",
     token=os.environ["AANA_BRIDGE_TOKEN"],
     shadow_mode=True,
 )
@@ -112,7 +112,7 @@ def aana_support_gate(state):
 
 ```python
 def support_guardrail_tool(user_request, draft_reply, evidence):
-    client = aana.SupportAANAClient(base_url="http://127.0.0.1:8765", token=os.environ["AANA_BRIDGE_TOKEN"])
+    client = aana.SupportAANAClient(base_url="http://127.0.0.1:8766", token=os.environ["AANA_BRIDGE_TOKEN"])
     event = client.agent_event(
         adapter_id="draft",
         user_request=user_request,
@@ -124,18 +124,18 @@ def support_guardrail_tool(user_request, draft_reply, evidence):
 
 ## HTTP
 
-Start the bridge:
+Start the installed FastAPI policy service:
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "aana-local-dev-token"
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/support-agent.jsonl --rate-limit-per-minute 120
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/support-agent.jsonl --rate-limit-per-minute 120
 ```
 
 Run one Workflow Contract fixture:
 
 ```powershell
 $payload = Get-Content examples/workflow_crm_support_reply.json -Raw
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/workflow-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $payload
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/workflow-check -Headers @{ Authorization = "Bearer $env:AANA_BRIDGE_TOKEN" } -ContentType "application/json" -Body $payload
 ```
 
 Run the canonical support batch by extracting `cases[*].workflow_request` from:
@@ -154,6 +154,9 @@ python scripts/aana_cli.py audit-summary --audit-log eval_outputs/audit/support-
 ```
 
 ## Web Playground
+
+The playground links below use the legacy repo-local bridge on `8765`; use
+`aana-fastapi` on `8766` for API integrations.
 
 Open support examples directly:
 

@@ -17,6 +17,12 @@ The image installs the API extra, starts `aana-fastapi`, exposes port `8765`,
 runs as UID `10001`, and writes redacted audit records under
 `/app/eval_outputs`.
 
+Port convention: local installed-service docs use `aana-fastapi` on
+`127.0.0.1:8766`; Docker and deployment runbooks intentionally use host port
+`8765`, mapped to container port `8765`, to keep containerized pilot traffic
+separate from the local developer service. Override the host port with
+`AANA_BRIDGE_PORT` in `.env` only when `8765` is already in use.
+
 ## Run With Compose
 
 ```powershell

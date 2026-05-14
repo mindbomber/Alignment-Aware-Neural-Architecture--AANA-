@@ -14,7 +14,7 @@
             <p class="eyebrow">AANA Docs</p>
             <h1>Try Demo</h1>
           </div>
-          <p>Follow one local path: install, run doctor, run a gallery example, check a workflow, start the HTTP bridge, and inspect redacted audit output.</p>
+          <p>Follow one local path: install, run doctor, run a gallery example, check a workflow, start the FastAPI policy service, and inspect redacted audit output.</p>
         </div>
         <div class="resource-grid">
           <a class="resource-card" href="../demo/"><h3>Hosted Demo</h3><p>Try static synthetic examples with no secrets and no real actions.</p></a>
@@ -22,12 +22,15 @@
           <a class="resource-card" href="../getting-started.md"><h3>Getting Started</h3><p>Run the local command hub and no-key examples.</p></a>
           <a class="resource-card" href="../results-interpretation.md"><h3>Read Results</h3><p>Interpret demo and evaluation outputs without overstating claims.</p></a>
         </div>
-        <pre><code>python -m pip install -e .
+        <p>Prerequisite: Python 3.10+ is supported; Python 3.12 is recommended for local onboarding. Install <code>uv</code> from <a href="https://docs.astral.sh/uv/">docs.astral.sh/uv</a> or use the <code>pip</code> fallback in the Markdown guide.</p>
+        <pre><code>uv venv --python 3.12 .venv
+uv pip install --python .\.venv\Scripts\python.exe -e ".[api]"
+.\.venv\Scripts\Activate.ps1
 aana doctor
 aana run travel_planning
 aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl
-aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl</code></pre>
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana audit-summary --audit-log eval_outputs/audit/aana-fastapi.jsonl</code></pre>
       </div>
     </main>
   </body>

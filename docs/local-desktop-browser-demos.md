@@ -1,13 +1,16 @@
 # AANA Local Desktop/Browser Demos
 
 The local desktop/browser demos are a curated surface for everyday irreversible
-actions. They use synthetic evidence and the same HTTP bridge, Workflow
-Contract, AIx scoring, correction policy, and redacted audit path as the rest of
-the AANA runtime.
+actions. They are legacy repo-local UI routes served by
+`python scripts/aana_server.py` or the Docker demo profile on port `8765`. Use
+`aana-fastapi` on `127.0.0.1:8766` for API/runtime integrations.
+
+The demos still use the Workflow Contract, AIx scoring, correction policy, and
+redacted audit path with synthetic evidence.
 
 ## Start
 
-With Python:
+With the repo-local Python UI runner:
 
 ```powershell
 python scripts/demos/run_local_demos.py
@@ -24,6 +27,9 @@ Open:
 ```text
 http://localhost:8765/demos
 ```
+
+The `8765` links in this page are intentional repo-local UI routes. They are
+not the recommended public API service path.
 
 The default local token is `aana-local-dev-token` unless `AANA_BRIDGE_TOKEN` or
 `--auth-token` is set.
@@ -59,8 +65,8 @@ The default local token is `aana-local-dev-token` unless `AANA_BRIDGE_TOKEN` or
 
 The UI calls `GET /demos/scenarios` for the scenario bundle and
 `POST /playground/check` for the actual Workflow Contract check. Launching the
-bridge with `--audit-log` appends the same redacted audit record preview shown
-in the browser.
+repo-local UI server with `--audit-log` appends the same redacted audit record
+preview shown in the browser.
 
 ## Files
 

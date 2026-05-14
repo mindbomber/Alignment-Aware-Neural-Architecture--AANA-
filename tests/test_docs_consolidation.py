@@ -58,17 +58,20 @@ class DocsConsolidationTests(unittest.TestCase):
 
     def test_recommended_local_path_is_single_platform_onboarding_path(self):
         expected_commands = [
-            "python -m pip install -e .",
+            "uv venv --python 3.12 .venv",
+            'uv pip install --python .\\.venv\\Scripts\\python.exe -e ".[api]"',
+            ".\\.venv\\Scripts\\Activate.ps1",
             "aana doctor",
             "aana run travel_planning",
             "aana workflow-check --workflow examples/workflow_research_summary.json --audit-log eval_outputs/audit/local-onboarding.jsonl",
-            "python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/aana-bridge.jsonl",
-            "aana audit-summary --audit-log eval_outputs/audit/local-onboarding.jsonl",
+            "aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl",
+            "aana audit-summary --audit-log eval_outputs/audit/aana-fastapi.jsonl",
         ]
         for relative_path in ["README.md", "docs/try-demo/index.md", "docs/getting-started.md"]:
             text = (ROOT / relative_path).read_text(encoding="utf-8")
             with self.subTest(path=relative_path):
                 self.assertIn("Recommended Local Path", text)
+                self.assertIn("Python 3.10+ is supported; Python 3.12 is recommended for local onboarding.", text)
                 self.assertIn("research", text.lower())
                 self.assertIn("eval workflows", text.lower())
                 for command in expected_commands:

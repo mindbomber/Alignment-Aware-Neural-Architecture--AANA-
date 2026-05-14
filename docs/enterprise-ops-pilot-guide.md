@@ -62,11 +62,14 @@ The fixture set covers clean accept, revise, ask, defer, refuse, missing evidenc
 
 ## Shadow Mode Path
 
-Use the synthetic report to confirm routing and audit shape before connecting real systems. For real pilots, run AANA in shadow mode first:
+Use the synthetic report to confirm routing and audit shape before connecting real systems. For real pilots, run the installed FastAPI service first, then send shadow-mode checks with `?shadow_mode=true` or an SDK client configured for shadow mode:
 
 ```powershell
-python scripts/aana_server.py --host 127.0.0.1 --port 8765 --audit-log eval_outputs/audit/enterprise-shadow.jsonl --shadow-mode
+$env:AANA_BRIDGE_TOKEN = "replace-with-a-secret"
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/enterprise-shadow.jsonl
 ```
+
+For containerized pilots, use the Docker runtime in [`docker-http-bridge.md`](docker-http-bridge.md); Docker intentionally uses host port `8765` while the installed local service examples use `8766`.
 
 Then connect approved evidence sources for CRM/support, ticketing, email, IAM, CI, deployment, and data export. Keep raw prompts, candidates, private records, outputs, and safe responses out of the redacted audit log.
 

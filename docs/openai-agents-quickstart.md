@@ -72,7 +72,7 @@ fields: `tool_name`, `tool_category`, `authorization_state`, `evidence_refs`,
 
 ```powershell
 $env:AANA_BRIDGE_TOKEN = "local-dev-secret"
-python scripts/aana_fastapi.py --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
+aana-fastapi --host 127.0.0.1 --port 8766 --audit-log eval_outputs/audit/aana-fastapi.jsonl
 ```
 
 In another terminal, call `/pre-tool-check`:
