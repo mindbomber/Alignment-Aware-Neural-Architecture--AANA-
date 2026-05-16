@@ -57,8 +57,10 @@ eval = [
 
 [project.urls]
 Homepage = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
+Documentation = "https://mindbomber.github.io/Alignment-Aware-Neural-Architecture--AANA-/"
 Repository = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-"
 Issues = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/issues"
+Reviewer-Guide = "https://github.com/mindbomber/Alignment-Aware-Neural-Architecture--AANA-/blob/master/docs/reviewer-start-here.md"
 
 [project.scripts]
 aana = "aana.cli:main"
